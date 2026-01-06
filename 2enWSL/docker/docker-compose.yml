@@ -1,0 +1,78 @@
+# ============================================================
+# docker-compose.yml - Week 2 WSL Starter Kit
+# Socket Programming: TCP and UDP
+# NETWORKING class - ASE, Informatics | by Revolvix
+# ============================================================
+# 
+# Usage:
+#   docker compose up -d        # Start all services
+#   docker compose down         # Stop all services
+#   docker compose logs -f      # View logs
+#   docker compose ps           # List running containers
+#
+# ============================================================
+
+name: week2-socket-lab
+
+services:
+  # Main laboratory container
+  lab:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: week2_lab
+    hostname: week2-lab
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    ports:
+      - "9090:9090"    # TCP server
+      - "9091:9091/udp" # UDP server
+      - "8080:8080"    # HTTP (optional)
+    volumes:
+      - ../src:/app/src:ro
+      - ../pcap:/app/pcap
+      - ../artifacts:/app/artifacts
+    networks:
+      week2_network:
+        ipv4_address: 10.0.2.10
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - TERM=xterm-256color
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Portainer for container management
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: week2_portainer
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - week2_network
+    restart: unless-stopped
+
+networks:
+  week2_network:
+    name: week2_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
+          gateway: 10.0.2.1
+
+volumes:
+  portainer_data:
+    name: week2_portainer_data
