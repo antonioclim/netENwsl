@@ -1,0 +1,85 @@
+# Week 4 Laboratory - Docker Compose Configuration
+# NETWORKING class - ASE, Informatics | by Revolvix
+#
+# This configuration provides a containerised environment for
+# custom TCP/UDP protocol development and testing.
+
+services:
+  # Main laboratory container with all protocol servers
+  week4-lab:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: week4_demo
+    hostname: week4-lab
+    working_dir: /app
+    
+    # Run as host user to preserve file ownership
+    user: "${UID:-1000}:${GID:-1000}"
+    
+    # Environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TEXT_PORT=5400
+      - BINARY_PORT=5401
+      - UDP_PORT=5402
+    
+    # Volume mounts for persistence and development
+    volumes:
+      - ../src:/app/src:ro
+      - ../artifacts:/app/artifacts
+      - ../pcap:/app/pcap
+    
+    # Port mappings
+    ports:
+      - "5400:5400"      # TEXT protocol server
+      - "5401:5401"      # BINARY protocol server
+      - "5402:5402/udp"  # UDP sensor server
+    
+    # Network configuration
+    networks:
+      - week4_network
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(1); s.connect(('localhost',5400)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Default command runs the demo
+    command: ["python3", "-u", "src/apps/text_proto_server.py", "--port", "5400"]
+    
+    # Restart policy
+    restart: unless-stopped
+
+  # Portainer for container management
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: week4_portainer
+    restart: unless-stopped
+    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    
+    ports:
+      - "9443:9443"
+    
+    networks:
+      - week4_network
+
+# Named volumes
+volumes:
+  portainer_data:
+    name: week4_portainer_data
+
+# Custom network
+networks:
+  week4_network:
+    name: week4_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
