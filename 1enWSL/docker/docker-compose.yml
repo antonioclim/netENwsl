@@ -1,8 +1,9 @@
 # Week 1 Laboratory - Docker Compose Configuration
 # NETWORKING class - ASE, Informatics | by Revolvix
 #
-# This configuration provides an isolated network laboratory environment
-# for fundamental networking exercises.
+# ADAPTED FOR: WSL2 + Ubuntu 22.04 + Docker (in WSL) + Portainer Global
+# NOTE: Portainer is NOT included here - it runs globally on port 9000
+#       Access it at http://localhost:9000 (credentials: stud/studstudstud)
 
 services:
   # Main laboratory container with networking tools
@@ -35,18 +36,13 @@ services:
     tty: true
     restart: unless-stopped
 
-  # Portainer for container management (optional)
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: week1_portainer
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    ports:
-      - "9443:9443"
-    restart: unless-stopped
-    profiles:
-      - management
+# NOTE: Portainer is NOT defined here!
+# It runs as a global service on port 9000
+# Started separately with: docker start portainer
+# Or deployed fresh with:
+#   docker run -d -p 9000:9000 --name portainer --restart=always \
+#     -v /var/run/docker.sock:/var/run/docker.sock \
+#     -v portainer_data:/data portainer/portainer-ce:latest
 
 networks:
   week1_network:
@@ -56,7 +52,3 @@ networks:
       config:
         - subnet: 172.20.1.0/24
           gateway: 172.20.1.1
-
-volumes:
-  portainer_data:
-    name: week1_portainer_data

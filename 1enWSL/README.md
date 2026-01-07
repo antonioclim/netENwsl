@@ -4,6 +4,64 @@
 >
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+
+---
+
+## Environment Verification
+
+Before starting this lab, verify your environment is properly configured.
+
+### From Windows PowerShell:
+
+```powershell
+# Check WSL status - Ubuntu-22.04 should be default
+wsl --status
+# Expected: Default Distribution: Ubuntu-22.04
+
+# Check Docker is accessible via WSL
+wsl docker ps
+# Expected: At minimum, "portainer" container running
+
+# Check Portainer is accessible
+curl http://localhost:9000
+# Expected: HTML response (Portainer UI)
+```
+
+### From Ubuntu Terminal (WSL):
+
+```bash
+# Start Docker service if not running
+sudo service docker start
+
+# Verify Portainer is running
+docker ps --filter name=portainer
+# Expected: portainer container with status "Up"
+
+# Verify Docker version
+docker --version
+# Expected: Docker version 28.x or higher
+```
+
+### Access Points
+
+| Service | URL/Port | Credentials |
+|---------|----------|-------------|
+| **Portainer** | http://localhost:9000 | `stud` / `studstudstud` |
+| Network Lab Container | Shell via Docker | N/A |
+| TCP Test Server | localhost:9090 | N/A |
+| UDP Test Server | localhost:9091 | N/A |
+
+> **Note:** Portainer runs as a global service (not per-lab). It's always available at port 9000.
+
+---
+
 ## Overview
 
 This laboratory introduces the foundational concepts of computer networking through hands-on experimentation with essential diagnostic tools. The session establishes the critical skills required for network troubleshooting and analysis that will serve as the cornerstone for all subsequent laboratory work.
@@ -11,6 +69,8 @@ This laboratory introduces the foundational concepts of computer networking thro
 Computer networks permeate every aspect of modern computing infrastructure. Understanding how to diagnose connectivity issues, inspect network configurations, and analyse traffic flows represents essential competencies for any computing professional. This week focuses on developing practical intuition about network behaviour through direct observation and measurement.
 
 The exercises progress from basic interface inspection through connectivity validation to traffic capture and protocol analysis. Students will work with industry-standard tools including `ip`, `ss`, `ping`, `netcat`, `tcpdump`, and `tshark`, developing the diagnostic vocabulary necessary for effective network administration.
+
+---
 
 ## Learning Objectives
 
@@ -24,6 +84,8 @@ By the end of this laboratory session, you will be able to:
 6. **Compare** TCP and UDP communication patterns through packet capture examination
 7. **Evaluate** network configurations to diagnose common connectivity problems
 
+---
+
 ## Prerequisites
 
 ### Knowledge Requirements
@@ -33,53 +95,73 @@ By the end of this laboratory session, you will be able to:
 - Familiarity with client-server communication model
 - Elementary Python programming (variables, functions, basic I/O)
 
-### Software Requirements
+### Software Requirements (Pre-installed)
 
-- Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend)
-- Wireshark (native Windows application)
-- Python 3.11 or later
-- Git (recommended)
+Your environment should already have:
 
-### Hardware Requirements
+- ✅ Windows 10/11 with WSL2 enabled
+- ✅ Ubuntu 22.04 LTS (default WSL distribution)
+- ✅ Docker Engine in WSL (NOT Docker Desktop)
+- ✅ Portainer CE running on port 9000
+- ✅ Wireshark (native Windows application)
+- ✅ Python 3.11+ with packages: docker, scapy, dpkt
 
-- Minimum 8GB RAM (16GB recommended)
-- 10GB free disk space
-- Network connectivity (for initial setup only; exercises run offline)
+If any of these are missing, see the [Prerequisites Documentation](../PREREQUISITES_EN.md).
+
+### Standard Credentials
+
+| Service | Username | Password |
+|---------|----------|----------|
+| Ubuntu WSL | `stud` | `stud` |
+| Portainer | `stud` | `studstudstud` |
+
+---
 
 ## Quick Start
 
-### First-Time Setup (Run Once)
+### Step 1: Open Ubuntu Terminal
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK1_WSLkit
+From Windows, either:
+- Click "Ubuntu" in Start menu, or
+- In PowerShell, type: `wsl`
 
-# Verify prerequisites
+### Step 2: Navigate to Lab Directory
+
+```bash
+# If you cloned to D:/NETWORKING/
+cd /mnt/d/NETWORKING/WEEK1
+```
+
+### Step 3: Verify Prerequisites
+
+```bash
 python setup/verify_environment.py
-
-# If any issues, run the installer helper
-python setup/install_prerequisites.py
 ```
 
-### Starting the Laboratory
+All checks should pass. If any fail, resolve them before proceeding.
 
-```powershell
-# Start all services
+### Step 4: Start the Laboratory
+
+```bash
+# Ensure Docker is running
+sudo service docker start
+
+# Start lab containers
 python scripts/start_lab.py
-
-# Verify everything is running
-python scripts/start_lab.py --status
 ```
 
-### Accessing Services
+### Step 5: Verify Everything is Running
 
-| Service | URL/Port | Credentials |
-|---------|----------|-------------|
-| Portainer | https://localhost:9443 | Set on first access |
-| Network Lab Container | Shell via Docker | N/A |
-| TCP Test Server | localhost:9090 | N/A |
-| UDP Test Server | localhost:9091 | N/A |
+```bash
+# Check lab containers
+docker ps
+
+# Expected output should show:
+# - week1_lab (the laboratory container)
+# - portainer (global management interface)
+```
+
+---
 
 ## Laboratory Exercises
 
@@ -92,7 +174,7 @@ python scripts/start_lab.py --status
 **Steps:**
 
 1. Open a terminal in the lab container:
-   ```powershell
+   ```bash
    docker exec -it week1_lab bash
    ```
 
@@ -117,6 +199,8 @@ python scripts/start_lab.py --status
 ```bash
 python tests/test_exercises.py --exercise 1
 ```
+
+---
 
 ### Exercise 2: Connectivity Testing with Ping
 
@@ -152,6 +236,8 @@ PING host=127.0.0.1 tx=5 rx=5 avg_rtt=0.045 ms
 ```bash
 python tests/test_exercises.py --exercise 2
 ```
+
+---
 
 ### Exercise 3: TCP Communication with Netcat
 
@@ -195,6 +281,8 @@ python tests/test_exercises.py --exercise 2
 python tests/test_exercises.py --exercise 3
 ```
 
+---
+
 ### Exercise 4: Traffic Capture and Analysis
 
 **Objective:** Capture network packets and analyse TCP handshake
@@ -237,10 +325,16 @@ python tests/test_exercises.py --exercise 3
        -E header=y -E separator=, > artifacts/capture_analysis.csv
    ```
 
+**Wireshark Analysis (Windows):**
+
+Open Wireshark, start capture on `vEthernet (WSL)` interface, then generate traffic as above. Use filter: `tcp.port == 9090`
+
 **Verification:**
 ```bash
 python tests/test_exercises.py --exercise 4
 ```
+
+---
 
 ### Exercise 5: PCAP Statistical Analysis
 
@@ -272,13 +366,15 @@ python tests/test_exercises.py --exercise 4
 python tests/test_exercises.py --exercise 5
 ```
 
+---
+
 ## Demonstrations
 
 ### Demo 1: Complete Network Diagnostic Sequence
 
 This automated demonstration shows a professional diagnostic workflow:
 
-```powershell
+```bash
 python scripts/run_demo.py --demo 1
 ```
 
@@ -292,7 +388,7 @@ python scripts/run_demo.py --demo 1
 
 Demonstrates the fundamental differences between connection-oriented and connectionless transport:
 
-```powershell
+```bash
 python scripts/run_demo.py --demo 2
 ```
 
@@ -302,11 +398,13 @@ python scripts/run_demo.py --demo 2
 - TCP provides delivery confirmation; UDP does not
 - Packet overhead differences between protocols
 
+---
+
 ## Packet Capture and Analysis
 
-### Capturing Traffic
+### Capturing Traffic Inside Container
 
-```powershell
+```bash
 # Start capture with Python helper
 python scripts/capture_traffic.py --interface eth0 --output pcap/week1_capture.pcap
 
@@ -314,7 +412,15 @@ python scripts/capture_traffic.py --interface eth0 --output pcap/week1_capture.p
 docker exec week1_lab tcpdump -i any -w /work/pcap/capture.pcap
 ```
 
-### Opening Captures in Wireshark (Windows)
+### Capturing Traffic with Wireshark (Windows)
+
+1. Open Wireshark from Start menu
+2. Select interface: **vEthernet (WSL)** or **vEthernet (WSL) (Hyper-V firewall)**
+3. Start capture
+4. Generate traffic in lab container
+5. Stop capture and analyse
+
+### Opening Captures in Wireshark
 
 1. Navigate to the `pcap/` directory
 2. Double-click any `.pcap` file to open in Wireshark
@@ -342,27 +448,44 @@ icmp
 ip.addr == 127.0.0.1
 ```
 
-## Shutdown and Cleanup
+---
 
-### End of Session
+## Cleanup
 
-```powershell
-# Stop all containers (preserves data)
-python scripts/stop_lab.py
+After completing the lab, clean up resources:
 
-# Verify shutdown
-docker ps
+```bash
+# Stop lab containers (Portainer keeps running!)
+docker-compose -f docker/docker-compose.yml down
+
+# Remove lab networks (if created)
+docker network prune -f
+
+# Remove lab images (optional, saves space)
+docker image prune -f
+```
+
+**⚠️ Important:** Always keep Portainer running for other labs!
+
+```bash
+# NEVER do this (unless you want to stop Portainer):
+# docker stop portainer
+
+# Verify Portainer is still running:
+docker ps --filter name=portainer
 ```
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
-# Remove all containers, networks, and volumes for this week
+```bash
+# Remove all containers, networks for this week
 python scripts/cleanup.py --full
 
 # Verify cleanup
 docker system df
 ```
+
+---
 
 ## Homework Assignments
 
@@ -376,29 +499,110 @@ Create a comprehensive network configuration report for your home or university 
 
 Capture and analyse a complete HTTP transaction (use `curl` or a web browser). Identify all TCP connection phases: establishment, data transfer, and termination. Submit annotated screenshots and the PCAP file.
 
+---
+
 ## Troubleshooting
 
 ### Common Issues
 
-#### Issue: Docker containers fail to start
-**Solution:** Ensure Docker Desktop is running with WSL2 backend. Verify with `docker info` and check that "Operating System" shows "Docker Desktop".
+#### Issue: Docker service not running in WSL
+**Solution:**
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
 
-#### Issue: Permission denied when running scripts
-**Solution:** Run `chmod +x scripts/*.py` or execute with `python scripts/script_name.py` explicitly.
+#### Issue: "Cannot connect to Docker daemon"
+**Solution:** Docker service isn't running. Start it:
+```bash
+sudo service docker start
+```
+
+#### Issue: Permission denied when running docker
+**Solution:** Your user isn't in the docker group:
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+#### Issue: Portainer not accessible at localhost:9000
+**Solution:** Portainer container might be stopped:
+```bash
+docker start portainer
+# Or redeploy if it doesn't exist:
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+#### Issue: Lab container won't start
+**Solution:** Check for port conflicts:
+```bash
+docker ps -a
+netstat -tlnp | grep -E "9090|9091|9092"
+```
 
 #### Issue: Netcat connection refused
 **Solution:** Verify the server is running with `ss -tlnp | grep PORT`. Ensure no firewall is blocking local connections.
 
-#### Issue: No packets captured
-**Solution:** Verify the correct interface with `ip link show`. Use `-i any` to capture on all interfaces. Ensure traffic is being generated during capture.
-
-#### Issue: tshark permission denied
-**Solution:** Either run as root in the container or add user to the `wireshark` group: `sudo usermod -aG wireshark $USER`
+#### Issue: No packets captured in Wireshark
+**Solution:**
+- Ensure you're capturing on `vEthernet (WSL)` interface
+- Generate traffic while capturing
+- Check display filter isn't too restrictive
 
 #### Issue: Python import errors
-**Solution:** Ensure you have installed requirements: `pip install -r setup/requirements.txt --break-system-packages`
+**Solution:** Ensure you have installed requirements:
+```bash
+pip install -r setup/requirements.txt --break-system-packages
+```
 
 See `docs/troubleshooting.md` for additional solutions.
+
+---
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         WINDOWS 11                               │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │   Wireshark     │  │    Browser      │  │   PowerShell    │  │
+│  │   (Capture)     │  │  (Portainer)    │  │   (Commands)    │  │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘  │
+│           │                    │                    │           │
+│           │              localhost:9000             │           │
+│           ▼                    ▼                    ▼           │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │              vEthernet (WSL) - Virtual Network              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                              │                                   │
+│  ┌───────────────────────────┴───────────────────────────────┐  │
+│  │                        WSL2                                │  │
+│  │  ┌─────────────────────────────────────────────────────┐  │  │
+│  │  │                  Ubuntu 22.04 LTS                    │  │  │
+│  │  │  ┌─────────────────────────────────────────────┐    │  │  │
+│  │  │  │              Docker Engine                   │    │  │  │
+│  │  │  │                                              │    │  │  │
+│  │  │  │  ┌──────────────┐    ┌──────────────┐      │    │  │  │
+│  │  │  │  │  week1_lab   │    │  portainer   │      │    │  │  │
+│  │  │  │  │  Container   │    │  (global)    │      │    │  │  │
+│  │  │  │  │              │    │  :9000       │      │    │  │  │
+│  │  │  │  │ Ports:       │    └──────────────┘      │    │  │  │
+│  │  │  │  │ 9090 (TCP)   │                          │    │  │  │
+│  │  │  │  │ 9091 (UDP)   │                          │    │  │  │
+│  │  │  │  │ 9092 (alt)   │                          │    │  │  │
+│  │  │  │  └──────────────┘                          │    │  │  │
+│  │  │  │                                              │    │  │  │
+│  │  │  │         Docker Networks                     │    │  │  │
+│  │  │  │   week1_network (172.20.1.0/24)            │    │  │  │
+│  │  │  └─────────────────────────────────────────────┘    │  │  │
+│  │  └─────────────────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## Theoretical Background
 
@@ -425,6 +629,8 @@ Network sockets transition through defined states:
 
 Understanding these states is essential for diagnosing connection problems.
 
+---
+
 ## References
 
 - Kurose, J. & Ross, K. (2016). *Computer Networking: A Top-Down Approach* (7th ed.). Pearson.
@@ -432,37 +638,8 @@ Understanding these states is essential for diagnosing connection problems.
 - Stevens, W. R. (1994). *TCP/IP Illustrated, Volume 1*. Addison-Wesley.
 - Fall, K. & Stevens, W. R. (2011). *TCP/IP Illustrated, Volume 1* (2nd ed.). Addison-Wesley.
 
-## Architecture Diagram
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Windows 10/11 Host                           │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    Docker Desktop                         │  │
-│  │  ┌────────────────────────────────────────────────────┐  │  │
-│  │  │              week1_lab Container                    │  │  │
-│  │  │                                                     │  │  │
-│  │  │   ┌─────────┐    ┌─────────┐    ┌─────────┐       │  │  │
-│  │  │   │  ping   │    │ netcat  │    │ tcpdump │       │  │  │
-│  │  │   └────┬────┘    └────┬────┘    └────┬────┘       │  │  │
-│  │  │        │              │              │             │  │  │
-│  │  │   ┌────┴──────────────┴──────────────┴────┐       │  │  │
-│  │  │   │          Network Stack (lo/eth0)       │       │  │  │
-│  │  │   └───────────────────────────────────────┘       │  │  │
-│  │  │                                                     │  │  │
-│  │  │   Ports: 9090 (TCP), 9091 (UDP)                   │  │  │
-│  │  └────────────────────────────────────────────────────┘  │  │
-│  │                                                           │  │
-│  │  Network: week1_network (bridge)                         │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│  ┌────────────────┐    ┌────────────────┐                     │
-│  │   Wireshark    │    │   Portainer    │                     │
-│  │   (native)     │    │  :9443 (web)   │                     │
-│  └────────────────┘    └────────────────┘                     │
-└─────────────────────────────────────────────────────────────────┘
-```
-
 ---
 
 *NETWORKING class - ASE, Informatics | by Revolvix*
+
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*

@@ -5,6 +5,9 @@ NETWORKING class - ASE, Informatics | by Revolvix
 
 This script starts all Docker containers and verifies the laboratory environment
 is ready for networking exercises.
+
+ADAPTED FOR: WSL2 + Ubuntu 22.04 + Docker (in WSL) + Portainer Global
+NOTE: Portainer is NOT started by this script - it runs globally on port 9000
 """
 
 from __future__ import annotations
@@ -25,6 +28,7 @@ from scripts.utils.logger import setup_logger
 logger = setup_logger("start_lab")
 
 # Service definitions for Week 1
+# NOTE: Portainer is NOT included - it runs as a global service
 SERVICES = {
     "lab": {
         "container": "week1_lab",
@@ -34,12 +38,13 @@ SERVICES = {
     },
 }
 
-PORTAINER_SERVICE = {
+# Global Portainer service (for status checks only, NOT started by this script)
+PORTAINER_GLOBAL = {
     "portainer": {
-        "container": "week1_portainer",
-        "port": 9443,
-        "health_check": "https://localhost:9443",
-        "startup_time": 10
+        "container": "portainer",
+        "port": 9000,
+        "health_check": "http://localhost:9000",
+        "startup_time": 0  # Already running
     }
 }
 
@@ -57,6 +62,34 @@ def check_docker_running() -> bool:
         return False
 
 
+def start_docker_service() -> bool:
+    """Attempt to start Docker service (WSL environment)."""
+    try:
+        result = subprocess.run(
+            ["sudo", "service", "docker", "start"],
+            capture_output=True,
+            timeout=30
+        )
+        time.sleep(2)  # Wait for service to start
+        return check_docker_running()
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
+def check_portainer_running() -> bool:
+    """Check if global Portainer is running."""
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=portainer", "--format", "{{.Names}}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        return "portainer" in result.stdout.lower()
+    except:
+        return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Start Week 1 Laboratory Environment",
@@ -66,7 +99,10 @@ Examples:
   python scripts/start_lab.py              # Start lab containers
   python scripts/start_lab.py --status     # Check status only
   python scripts/start_lab.py --rebuild    # Force rebuild images
-  python scripts/start_lab.py --portainer  # Also start Portainer
+  python scripts/start_lab.py --shell      # Open shell after starting
+
+NOTE: Portainer runs globally on port 9000 and is NOT managed by this script.
+      Access Portainer at: http://localhost:9000 (stud/studstudstud)
         """
     )
     parser.add_argument(
@@ -86,11 +122,6 @@ Examples:
         help="Run in detached mode (default: True)"
     )
     parser.add_argument(
-        "--portainer",
-        action="store_true",
-        help="Also start Portainer management interface"
-    )
-    parser.add_argument(
         "--shell",
         action="store_true",
         help="Open interactive shell in lab container after starting"
@@ -99,8 +130,12 @@ Examples:
 
     # Verify Docker is running
     if not check_docker_running():
-        logger.error("Docker is not running. Please start Docker Desktop.")
-        return 1
+        logger.warning("Docker is not running. Attempting to start...")
+        if start_docker_service():
+            logger.info("Docker service started successfully.")
+        else:
+            logger.error("Failed to start Docker. Please run: sudo service docker start")
+            return 1
 
     docker_dir = PROJECT_ROOT / "docker"
     
@@ -112,16 +147,35 @@ Examples:
 
     # Status check only
     if args.status:
-        services = SERVICES.copy()
-        if args.portainer:
-            services.update(PORTAINER_SERVICE)
-        docker.show_status(services)
+        logger.info("Checking service status...")
+        docker.show_status(SERVICES)
+        
+        # Also show Portainer status
+        logger.info("")
+        logger.info("Global Portainer status:")
+        if check_portainer_running():
+            logger.info("  [\033[92mRUNNING\033[0m] Portainer on http://localhost:9000")
+        else:
+            logger.warning("  [\033[91mSTOPPED\033[0m] Portainer - start with: docker start portainer")
         return 0
 
     logger.info("=" * 60)
     logger.info("Starting Week 1 Laboratory Environment")
     logger.info("NETWORKING class - ASE, Informatics | by Revolvix")
     logger.info("=" * 60)
+    logger.info("")
+    logger.info("Environment: WSL2 + Ubuntu 22.04 + Docker + Portainer Global")
+    logger.info("")
+
+    # Check global Portainer
+    if not check_portainer_running():
+        logger.warning("Global Portainer is not running!")
+        logger.warning("Start it with: docker start portainer")
+        logger.warning("Or deploy fresh with:")
+        logger.warning("  docker run -d -p 9000:9000 --name portainer --restart=always \\")
+        logger.warning("    -v /var/run/docker.sock:/var/run/docker.sock \\")
+        logger.warning("    -v portainer_data:/data portainer/portainer-ce:latest")
+        logger.info("")
 
     try:
         # Create necessary directories
@@ -135,41 +189,19 @@ Examples:
                 logger.error("Failed to build images")
                 return 1
 
-        # Determine which services to start
-        services_to_start = ["lab"]
-        if args.portainer:
-            services_to_start = None  # Start all including Portainer
-
-        # Start containers
-        logger.info("Starting containers...")
-        if args.portainer:
-            # Use --profile management to include Portainer
-            result = subprocess.run(
-                ["docker", "compose", "-f", str(docker.compose_file),
-                 "--profile", "management", "up", "-d"],
-                cwd=docker_dir.parent,
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                logger.error(f"Failed to start containers: {result.stderr}")
-                return 1
-        else:
-            if not docker.compose_up(detach=args.detach, services=services_to_start):
-                logger.error("Failed to start containers")
-                return 1
+        # Start lab containers (NOT Portainer)
+        logger.info("Starting lab containers...")
+        if not docker.compose_up(detach=args.detach, services=["lab"]):
+            logger.error("Failed to start containers")
+            return 1
 
         # Wait for services to initialise
         logger.info("Waiting for services to initialise...")
         time.sleep(3)
 
         # Verify services
-        services = SERVICES.copy()
-        if args.portainer:
-            services.update(PORTAINER_SERVICE)
-        
         logger.info("Checking service status...")
-        all_healthy = docker.verify_services(services)
+        all_healthy = docker.verify_services(SERVICES)
 
         if all_healthy:
             logger.info("")
@@ -180,8 +212,7 @@ Examples:
             logger.info(f"  Lab Container: docker exec -it week1_lab bash")
             logger.info(f"  TCP Test Port: localhost:9090")
             logger.info(f"  UDP Test Port: localhost:9091")
-            if args.portainer:
-                logger.info(f"  Portainer:     https://localhost:9443")
+            logger.info(f"  Portainer:     http://localhost:9000 (stud/studstudstud)")
             logger.info("")
             logger.info("Quick start:")
             logger.info("  docker exec -it week1_lab bash")
@@ -196,7 +227,7 @@ Examples:
         else:
             logger.error("Some services failed to start. Check logs above.")
             logger.info("\nTroubleshooting:")
-            logger.info("  docker compose -f docker/docker-compose.yml logs")
+            logger.info("  docker-compose -f docker/docker-compose.yml logs")
             return 1
 
     except Exception as e:
