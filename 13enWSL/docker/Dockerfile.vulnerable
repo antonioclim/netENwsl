@@ -1,0 +1,47 @@
+# Week 13 - Vulnerable FTP Service (Educational Stub)
+# NETWORKING class - ASE, Informatics | by Revolvix
+#
+# This image provides:
+# - vsftpd FTP server on port 21
+# - Educational backdoor stub on port 6200 (does NOT execute commands)
+#
+# WARNING: This is for controlled laboratory use only.
+
+FROM ubuntu:22.04
+
+LABEL maintainer="Revolvix - NETWORKING class"
+LABEL description="Week 13 vulnerable FTP service for educational purposes"
+
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install vsftpd and netcat for the stub
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        vsftpd \
+        netcat-openbsd \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create FTP directories
+RUN mkdir -p /var/ftp/pub && \
+    chmod 755 /var/ftp && \
+    chmod 755 /var/ftp/pub
+
+# Create a test file for FTP browsing
+RUN echo "Week 13 - FTP Server Test File" > /var/ftp/pub/readme.txt && \
+    echo "This is an intentionally vulnerable service for educational purposes." >> /var/ftp/pub/readme.txt
+
+# Copy vsftpd configuration
+COPY configs/vsftpd.conf /etc/vsftpd.conf
+
+# Copy entrypoint script
+COPY entrypoint_vsftpd.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Expose ports
+EXPOSE 21 6200
+
+# Start services
+ENTRYPOINT ["/entrypoint.sh"]
