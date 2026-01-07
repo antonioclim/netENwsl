@@ -1,0 +1,45 @@
+# =============================================================================
+# Dockerfile: Python HTTP Backend Server
+# Week 8 Laboratory - Transport Layer
+# NETWORKING class - ASE, Informatics | by Revolvix
+# =============================================================================
+
+FROM python:3.11-slim
+
+LABEL maintainer="ASE CSIE - Computer Networks"
+LABEL description="HTTP Backend Server for Week 8 Laboratory"
+LABEL version="1.0"
+
+# Environment variables (configurable at runtime)
+ENV HTTP_PORT=8080
+ENV WWW_DIR=/var/www
+ENV BACKEND_ID=0
+ENV BACKEND_NAME=Backend
+
+# Working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy application code
+COPY src/apps/backend_server.py /app/
+COPY src/utils/ /app/utils/
+
+# Create directories
+RUN mkdir -p ${WWW_DIR} /app/logs
+
+# Copy default web content
+COPY www/ ${WWW_DIR}/
+
+# Expose port
+EXPOSE ${HTTP_PORT}
+
+# Health check
+HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${HTTP_PORT}/health || exit 1
+
+# Run the server
+CMD ["sh", "-c", "python3 /app/backend_server.py --port ${HTTP_PORT} --www ${WWW_DIR} --id ${BACKEND_ID} --name ${BACKEND_NAME}"]

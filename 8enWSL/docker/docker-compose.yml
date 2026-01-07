@@ -1,0 +1,195 @@
+# =============================================================================
+# Docker Compose: Week 8 Laboratory Infrastructure
+# Transport Layer: HTTP Server and Reverse Proxies
+# NETWORKING class - ASE, Informatics | by Revolvix
+# =============================================================================
+#
+# Architecture:
+#   nginx (reverse proxy + load balancer) → backend1, backend2, backend3
+#
+# Usage:
+#   docker compose up -d          # Start in background
+#   docker compose logs -f        # View logs
+#   docker compose down           # Stop and cleanup
+#   docker compose down -v        # Stop and remove volumes
+#
+# Ports:
+#   8080  - HTTP (nginx)
+#   8443  - HTTPS (nginx, self-signed)
+#   9443  - Portainer (optional)
+#
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # NGINX Reverse Proxy with Load Balancing
+  # ===========================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: week8-nginx-proxy
+    hostname: nginx-proxy
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./volumes/nginx-logs:/var/log/nginx
+    depends_on:
+      backend1:
+        condition: service_healthy
+      backend2:
+        condition: service_healthy
+      backend3:
+        condition: service_healthy
+    networks:
+      week8-network:
+        ipv4_address: 172.28.8.10
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    labels:
+      - "com.ase.week=8"
+      - "com.ase.project=week8-lab"
+      - "com.ase.role=proxy"
+
+  # ===========================================================================
+  # Backend HTTP Servers (Python)
+  # ===========================================================================
+  backend1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: week8-backend-1
+    hostname: backend1
+    environment:
+      - HTTP_PORT=8080
+      - BACKEND_ID=1
+      - BACKEND_NAME=Backend-Alpha
+    expose:
+      - "8080"
+    volumes:
+      - ../www:/var/www:ro
+    networks:
+      week8-network:
+        ipv4_address: 172.28.8.21
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    labels:
+      - "com.ase.week=8"
+      - "com.ase.project=week8-lab"
+      - "com.ase.role=backend"
+      - "com.ase.backend.id=1"
+
+  backend2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: week8-backend-2
+    hostname: backend2
+    environment:
+      - HTTP_PORT=8080
+      - BACKEND_ID=2
+      - BACKEND_NAME=Backend-Beta
+    expose:
+      - "8080"
+    volumes:
+      - ../www:/var/www:ro
+    networks:
+      week8-network:
+        ipv4_address: 172.28.8.22
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    labels:
+      - "com.ase.week=8"
+      - "com.ase.project=week8-lab"
+      - "com.ase.role=backend"
+      - "com.ase.backend.id=2"
+
+  backend3:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: week8-backend-3
+    hostname: backend3
+    environment:
+      - HTTP_PORT=8080
+      - BACKEND_ID=3
+      - BACKEND_NAME=Backend-Gamma
+    expose:
+      - "8080"
+    volumes:
+      - ../www:/var/www:ro
+    networks:
+      week8-network:
+        ipv4_address: 172.28.8.23
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    labels:
+      - "com.ase.week=8"
+      - "com.ase.project=week8-lab"
+      - "com.ase.role=backend"
+      - "com.ase.backend.id=3"
+
+  # ===========================================================================
+  # Portainer CE (Optional Container Management)
+  # ===========================================================================
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: week8-portainer
+    hostname: portainer
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer-data:/data
+    networks:
+      week8-network:
+        ipv4_address: 172.28.8.100
+    restart: unless-stopped
+    profiles:
+      - management
+    labels:
+      - "com.ase.week=8"
+      - "com.ase.project=week8-lab"
+      - "com.ase.role=management"
+
+# =============================================================================
+# Docker Network
+# =============================================================================
+networks:
+  week8-network:
+    driver: bridge
+    name: week8-laboratory-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.8.0/24
+          gateway: 172.28.8.1
+
+# =============================================================================
+# Persistent Volumes
+# =============================================================================
+volumes:
+  portainer-data:
+    driver: local
+    name: week8-portainer-data
