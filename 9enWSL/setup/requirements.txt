@@ -1,0 +1,17 @@
+# Python dependencies for Week 9 Laboratory setup
+# NETWORKING class - ASE, Informatics | by Revolvix
+
+# Docker SDK for Python
+docker>=6.0.0
+
+# HTTP requests
+requests>=2.28.0
+
+# YAML parsing for docker-compose files
+pyyaml>=6.0
+
+# FTP server library for exercises
+pyftpdlib>=1.5.7
+
+# Optional: coloured terminal output
+colorama>=0.4.6

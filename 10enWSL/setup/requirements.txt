@@ -1,0 +1,52 @@
+# Requirements – Week 10: HTTP/HTTPS, REST + Network Services
+# NETWORKING class - ASE, Informatics | by Revolvix
+#
+# Install with: pip install -r requirements.txt
+
+# ============================================================================
+# CORE DEPENDENCIES
+# ============================================================================
+
+# HTTP/REST framework and client
+flask>=3.0.0
+requests>=2.31.0
+urllib3>=2.0.0
+
+# DNS protocol implementation
+dnslib>=0.9.23
+
+# SSH client library
+paramiko>=3.4.0
+
+# FTP server library
+pyftpdlib>=1.5.9
+
+# ============================================================================
+# DOCKER MANAGEMENT
+# ============================================================================
+
+# Docker SDK for Python
+docker>=7.0.0
+
+# ============================================================================
+# UTILITIES
+# ============================================================================
+
+# YAML parsing (for Docker Compose analysis)
+pyyaml>=6.0
+
+# Rich console output (optional but recommended)
+# rich>=13.0.0
+
+# ============================================================================
+# TESTING
+# ============================================================================
+
+pytest>=7.4.0
+
+# ============================================================================
+# DEV TOOLS (OPTIONAL)
+# ============================================================================
+# black>=23.0.0
+# flake8>=6.0.0
+# mypy>=1.5.0
