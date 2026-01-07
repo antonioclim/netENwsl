@@ -1,0 +1,9 @@
+# Week 5 WSL Kit - Setup Requirements
+# NETWORKING class - ASE, Informatics | by Revolvix
+
+# Optional packages for enhanced functionality
+# Core functionality works without these
+
+docker>=6.0.0          # Docker SDK for Python
+requests>=2.28.0       # HTTP library
+pyyaml>=6.0            # YAML parsing
