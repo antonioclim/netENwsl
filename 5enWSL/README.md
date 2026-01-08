@@ -4,6 +4,191 @@
 >
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `5enWSL`
+
+| Component | Details |
+|-----------|---------|
+| Windows | Windows 10/11 with WSL2 enabled |
+| Linux Distribution | Ubuntu 22.04 LTS (default WSL distro) |
+| Container Runtime | Docker Engine (in WSL) |
+| Management Interface | Portainer CE on port 9000 (global) |
+| Packet Analysis | Wireshark (native Windows application) |
+
+---
+
+## 📥 Cloning This Week's Laboratory
+
+### Step 1: Open PowerShell (Windows)
+
+Press `Win + X` → Select "Windows Terminal" or "PowerShell"
+
+### Step 2: Navigate and Clone
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone Week 5
+git clone https://github.com/antonioclim/netENwsl.git WEEK5
+cd WEEK5
+```
+
+### Step 3: Verify Clone
+```powershell
+dir
+# You should see: docker/, scripts/, src/, README.md, etc.
+```
+
+### Alternative: Clone Inside WSL
+
+```bash
+# In Ubuntu terminal
+mkdir -p /mnt/d/NETWORKING
+cd /mnt/d/NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK5
+cd WEEK5
+```
+
+---
+
+## 🔧 Initial Environment Setup (First Time Only)
+
+### Step 1: Open Ubuntu Terminal
+
+From Windows:
+- Click "Ubuntu" in Start menu, OR
+- In PowerShell type: `wsl`
+
+You will see the Ubuntu prompt:
+```
+stud@YOURPC:~$
+```
+
+### Step 2: Start Docker Service
+
+```bash
+# Start Docker (required after each Windows restart)
+sudo service docker start
+# Password: stud
+
+# Verify Docker is running
+docker ps
+```
+
+**Expected output:**
+```
+CONTAINER ID   IMAGE                    STATUS          NAMES
+abc123...      portainer/portainer-ce   Up 2 hours      portainer
+```
+
+### Step 3: Verify Portainer Access
+
+Open browser and navigate to: **http://localhost:9000**
+
+**Login credentials:**
+- Username: `stud`
+- Password: `studstudstud`
+
+### Step 4: Navigate to Laboratory Directory
+
+```bash
+cd /mnt/d/NETWORKING/WEEK5/5enWSL
+ls -la
+```
+
+---
+
+## 🖥️ Understanding Portainer Interface
+
+### Dashboard Overview
+
+After login at http://localhost:9000, you will see:
+1. **Home** - List of Docker environments
+2. **local** - Click to manage local Docker
+
+### Viewing Containers
+
+Navigate: **Home → local → Containers**
+
+You will see a table showing all containers with:
+- Name, State, Image, Created, IP Address, Ports
+
+### Container Actions in Portainer
+
+For any container, you can:
+- **Start/Stop/Restart**: Use the action buttons
+- **Logs**: Click container name → "Logs" tab
+- **Console**: Click container name → "Console" tab → "Connect"
+- **Inspect**: View detailed JSON configuration
+- **Stats**: Real-time CPU/Memory/Network usage
+
+### Modifying Container IP Address
+
+1. Navigate: **Networks → week5_labnet**
+2. View current IPAM configuration (10.5.0.0/24)
+3. To change:
+   - Stop containers using the network
+   - Edit `docker-compose.yml`
+   - Recreate: `docker compose down && docker compose up -d`
+
+**⚠️ NEVER use port 9000** - reserved for Portainer!
+
+---
+
+## 🦈 Wireshark Setup and Usage
+
+### When to Open Wireshark
+
+Open Wireshark:
+- **BEFORE** generating network traffic you want to capture
+- When exercises mention "capture", "analyse packets", or "observe traffic"
+
+### Step 1: Launch Wireshark
+
+From Windows Start Menu: Search "Wireshark" → Click to open
+
+### Step 2: Select Capture Interface
+
+**CRITICAL:** Select the correct interface for WSL traffic:
+
+| Interface Name | When to Use |
+|----------------|-------------|
+| **vEthernet (WSL)** | ✅ Most common - captures WSL Docker traffic |
+| **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
+| **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
+
+### Essential Wireshark Filters for Week 5
+
+| Filter | Purpose |
+|--------|---------|
+| `ip.addr == 10.5.0.0/24` | Week 5 labnet traffic |
+| `udp.port == 9999` | UDP Echo server traffic |
+| `icmp` | ICMP (ping) traffic |
+| `ipv6` | IPv6 traffic only |
+| `icmpv6` | ICMPv6 including Neighbour Discovery |
+
+### Following a UDP Conversation
+
+1. Find any UDP packet
+2. Right-click → **Follow → UDP Stream**
+3. View the complete exchange
+
+### Saving Captures
+
+1. **File → Save As**
+2. Navigate to: `D:\NETWORKING\WEEK5\pcap\`
+3. Filename: `capture_exercise_N.pcap`
+
+---
+
 ## Overview
 
 The network layer represents the cornerstone of internetworking, providing the fundamental mechanisms that enable communication across heterogeneous networks. This laboratory session delves into the intricacies of IPv4 and IPv6 addressing, examining how logical addresses are assigned, calculated and organised to create scalable network infrastructures.
@@ -33,7 +218,8 @@ By the end of this laboratory session, you will be able to:
 
 ### Software Requirements
 - Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend)
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
 - Wireshark (native Windows)
 - Python 3.11 or later
 - Git
@@ -47,32 +233,38 @@ By the end of this laboratory session, you will be able to:
 
 ### First-Time Setup (Run Once)
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK5_WSLkit
+```bash
+# Open Ubuntu terminal (WSL)
+wsl
+
+# Navigate to the kit directory
+cd /mnt/d/NETWORKING/WEEK5/5enWSL
+
+# Start Docker if not running
+sudo service docker start
 
 # Verify prerequisites
-python setup/verify_environment.py
+python3 setup/verify_environment.py
 
 # If any issues, run the installer helper
-python setup/install_prerequisites.py
+python3 setup/install_prerequisites.py
 ```
 
 ### Starting the Laboratory
 
-```powershell
+```bash
 # Start all services
-python scripts/start_lab.py
+python3 scripts/start_lab.py
 
 # Verify everything is running
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 ```
 
 ### Accessing Services
 
 | Service | URL/Port | Credentials |
 |---------|----------|-------------|
-| Portainer | https://localhost:9443 | Set on first access |
+| Portainer | http://localhost:9000 | stud / studstudstud |
 | Python Container | Interactive shell | N/A |
 | UDP Echo Server | localhost:9999/udp | N/A |
 
@@ -86,29 +278,29 @@ python scripts/start_lab.py --status
 
 **Steps:**
 
-1. Open a PowerShell terminal and navigate to the kit directory
+1. Open Ubuntu terminal and navigate to the kit directory
 2. Start the Docker environment:
-   ```powershell
-   python scripts/start_lab.py
+   ```bash
+   python3 scripts/start_lab.py
    ```
 3. Execute the CIDR analysis tool:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_01_cidr_flsm.py analyze 192.168.10.14/26 --verbose
    ```
 4. Observe the output, noting the network address, broadcast address and host range
 5. Experiment with different prefix lengths:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_01_cidr_flsm.py analyze 10.0.0.100/24
    docker exec -it week5_python python /app/src/exercises/ex_5_01_cidr_flsm.py analyze 172.16.50.1/28
    ```
 6. Examine the binary conversion:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_01_cidr_flsm.py binary 192.168.10.14
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 1
+```bash
+python3 tests/test_exercises.py --exercise 1
 ```
 
 ### Exercise 2: FLSM Subnetting
@@ -122,19 +314,19 @@ python tests/test_exercises.py --exercise 1
 1. Understand the scenario: Your organisation has been allocated 192.168.100.0/24 and requires 4 equal subnets
 2. Calculate manually how many bits must be borrowed from the host portion
 3. Verify your calculation using the FLSM tool:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_01_cidr_flsm.py flsm 192.168.100.0/24 4
    ```
 4. Observe the subnet boundaries, broadcast addresses and usable host counts
 5. Try different scenarios:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_01_cidr_flsm.py flsm 10.0.0.0/24 8
    docker exec -it week5_python python /app/src/exercises/ex_5_01_cidr_flsm.py flsm 172.16.0.0/16 16
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 2
+```bash
+python3 tests/test_exercises.py --exercise 2
 ```
 
 ### Exercise 3: VLSM Allocation
@@ -149,18 +341,18 @@ python tests/test_exercises.py --exercise 2
 2. Available address space: 172.16.0.0/24
 3. Understand why VLSM is more efficient than FLSM for this scenario
 4. Execute the VLSM allocation:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_02_vlsm_ipv6.py vlsm 172.16.0.0/24 60 20 10 2
    ```
 5. Analyse the efficiency percentages for each subnet
 6. Try a more complex scenario:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_02_vlsm_ipv6.py vlsm 10.10.0.0/22 200 100 50 25 10 2 2 2
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 3
+```bash
+python3 tests/test_exercises.py --exercise 3
 ```
 
 ### Exercise 4: IPv6 Address Operations
@@ -172,25 +364,25 @@ python tests/test_exercises.py --exercise 3
 **Steps:**
 
 1. Explore IPv6 address types:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_02_vlsm_ipv6.py ipv6-types
    ```
 2. Compress an expanded IPv6 address:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_02_vlsm_ipv6.py ipv6 2001:0db8:0000:0000:0000:0000:0000:0001
    ```
 3. Expand a compressed address:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_02_vlsm_ipv6.py ipv6-expand 2001:db8::1
    ```
 4. Generate IPv6 /64 subnets from a /48 allocation:
-   ```powershell
+   ```bash
    docker exec -it week5_python python /app/src/exercises/ex_5_02_vlsm_ipv6.py ipv6-subnets 2001:db8:10::/48 64 10
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 4
+```bash
+python3 tests/test_exercises.py --exercise 4
 ```
 
 ## Demonstrations
@@ -199,8 +391,8 @@ python tests/test_exercises.py --exercise 4
 
 Automated demonstration showcasing CIDR analysis, FLSM partitioning and VLSM allocation.
 
-```powershell
-python scripts/run_demo.py --demo 1
+```bash
+python3 scripts/run_demo.py --demo 1
 ```
 
 **What to observe:**
@@ -212,8 +404,8 @@ python scripts/run_demo.py --demo 1
 
 Demonstrates containerised network communication with explicit IP addressing.
 
-```powershell
-python scripts/run_demo.py --demo 2
+```bash
+python3 scripts/run_demo.py --demo 2
 ```
 
 **What to observe:**
@@ -225,9 +417,9 @@ python scripts/run_demo.py --demo 2
 
 ### Capturing Traffic
 
-```powershell
+```bash
 # Start capture in Docker network
-python scripts/capture_traffic.py --interface eth0 --output pcap/week5_capture.pcap
+python3 scripts/capture_traffic.py --interface eth0 --output pcap/week5_capture.pcap
 
 # Or capture directly from UDP server container
 docker exec week5_udp-server tcpdump -i eth0 -w /app/pcap/udp_traffic.pcap &
@@ -256,9 +448,9 @@ icmpv6
 
 ### End of Session
 
-```powershell
-# Stop all containers (preserves data)
-python scripts/stop_lab.py
+```bash
+# Stop all containers (Portainer stays running!)
+python3 scripts/stop_lab.py
 
 # Verify shutdown
 docker ps
@@ -266,9 +458,9 @@ docker ps
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
+```bash
 # Remove all containers, networks, and volumes for this week
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 
 # Verify cleanup
 docker system df
@@ -289,7 +481,7 @@ Given an existing IPv4 /22 network with 12 subnets, propose an equivalent IPv6 a
 ### Common Issues
 
 #### Issue: Docker containers fail to start
-**Solution:** Ensure Docker Desktop is running and WSL2 integration is enabled. Run `docker info` to verify.
+**Solution:** Ensure Docker is running in WSL. Run `sudo service docker start` then `docker info` to verify.
 
 #### Issue: Python module not found errors
 **Solution:** Ensure you're executing commands from the correct directory. The container mounts expect the kit structure.
@@ -298,7 +490,7 @@ Given an existing IPv4 /22 network with 12 subnets, propose an equivalent IPv6 a
 **Solution:** Check that port 9999/udp is properly mapped. Use `docker ps` to verify port bindings.
 
 #### Issue: Wireshark cannot capture Docker traffic
-**Solution:** On Windows, capture on the "Ethernet" or "Wi-Fi" interface. For container-internal traffic, use tcpdump within containers.
+**Solution:** On Windows, capture on the "vEthernet (WSL)" interface. For container-internal traffic, use tcpdump within containers.
 
 See `docs/troubleshooting.md` for more solutions.
 
@@ -328,6 +520,7 @@ The network layer (Layer 3) provides end-to-end logical addressing and routing c
 │                    Docker Network: labnet                        │
 │                    Subnet: 10.5.0.0/24                          │
 │                    Gateway: 10.5.0.1                            │
+│            (WSL2 + Ubuntu 22.04 + Docker + Portainer)           │
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
@@ -339,9 +532,191 @@ The network layer (Layer 3) provides end-to-end logical addressing and routing c
 │                             │    UDP Echo        │               │
 │                             └────────────────────┘               │
 │                                                                  │
+│  Portainer: http://localhost:9000 (global service)              │
+│  Credentials: stud / studstudstud                               │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
+## 🔧 Extended Troubleshooting
+
+### Docker Issues
+
+**Problem:** "Cannot connect to Docker daemon"
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
+
+**Problem:** Permission denied when running docker
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+# Or logout and login again
+```
+
+**Problem:** Docker service won't start
+```bash
+sudo service docker status  # Check status
+sudo dockerd  # Run manually to see errors
+```
+
+### Portainer Issues
+
+**Problem:** Cannot access http://localhost:9000
+```bash
+# Check if Portainer container exists and is running
+docker ps -a | grep portainer
+
+# If stopped, start it
+docker start portainer
+
+# If doesn't exist, create it
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+**Problem:** Forgot Portainer password
+```bash
+# Reset Portainer (loses settings but not containers)
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+# Recreate with command above, set new password
+```
+
+### WSL Issues
+
+**Problem:** WSL not starting
+```powershell
+# In PowerShell (Administrator)
+wsl --status
+wsl --list --verbose
+```
+
+**Problem:** Cannot access Windows files from WSL
+```bash
+ls /mnt/
+# Should show: c, d, etc.
+```
+
+### Wireshark Issues
+
+**Problem:** No packets captured
+- ✅ Verify correct interface selected (vEthernet WSL)
+- ✅ Ensure traffic is being generated DURING capture
+- ✅ Check display filter isn't hiding packets (clear filter)
+- ✅ Try "Capture → Options" and enable promiscuous mode
+
+**Problem:** "No interfaces found" or permission error
+- Run Wireshark as Administrator (right-click → Run as administrator)
+- Reinstall Npcap with "WinPcap API-compatible Mode" option checked
+
+**Problem:** Can't see Docker container traffic
+- Select `vEthernet (WSL)` interface, not `Ethernet` or `Wi-Fi`
+- Ensure containers are on bridge network, not host network
+
+### Network Issues
+
+**Problem:** Container can't reach internet
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week5_labnet
+
+# Check DNS in container
+docker exec week5_python cat /etc/resolv.conf
+```
+
+**Problem:** Port already in use
+```bash
+# Find what's using the port
+sudo netstat -tlnp | grep 9999
+# Or
+sudo ss -tlnp | grep 9999
+
+# Kill the process or use different port
+```
+
+### Subnetting Calculation Issues
+
+**Problem:** VLSM allocation fails
+```bash
+# Ensure host requirements are sorted largest-first
+# Tool expects requirements in any order but validates total space
+```
+
+**Problem:** IPv6 address compression incorrect
+```bash
+# Remember: only ONE :: allowed per address
+# Leading zeros can be removed: 0db8 → db8
+# Consecutive all-zero groups become ::
+```
+
+---
+
+## 🧹 Complete Cleanup Procedure
+
+### End of Session (Quick)
+
+```bash
+# Stop lab containers (Portainer stays running!)
+cd /mnt/d/NETWORKING/WEEK5/5enWSL
+docker compose -f docker/docker-compose.yml down
+
+# Verify - should still show portainer
+docker ps
+```
+
+### End of Week (Thorough)
+
+```bash
+# Remove this week's containers and networks
+docker compose -f docker/docker-compose.yml down --volumes
+
+# Remove unused images
+docker image prune -f
+
+# Remove unused networks
+docker network prune -f
+
+# Check disk usage
+docker system df
+```
+
+### Full Reset (Before New Semester)
+
+```bash
+# WARNING: This removes EVERYTHING except Portainer
+docker stop $(docker ps -q | grep -v $(docker ps -q --filter name=portainer)) 2>/dev/null
+docker rm $(docker ps -aq | grep -v $(docker ps -aq --filter name=portainer)) 2>/dev/null
+docker image prune -a -f
+docker network prune -f
+docker volume prune -f
+
+# Verify Portainer still running
+docker ps
+```
+
+**⚠️ NEVER run `docker system prune -a` without excluding Portainer!**
+
+---
+
+## 📊 Week 5 Network Configuration Summary
+
+| Resource | Value | Notes |
+|----------|-------|-------|
+| Subnet | 10.5.0.0/24 | Week 5 labnet |
+| Gateway | 10.5.0.1 | Docker bridge gateway |
+| Python Container IP | 10.5.0.10 | Exercise environment |
+| UDP Server IP | 10.5.0.20 | Echo server |
+| UDP Client IP | 10.5.0.30 | Echo client |
+| UDP Echo Port | 9999/udp | Server port |
+| Portainer | 9000 | **RESERVED - Global service** |
+
+---
+
 *NETWORKING class - ASE, Informatics | by Revolvix*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
