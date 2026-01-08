@@ -4,6 +4,199 @@
 >
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `10enWSL`
+
+| Component | Details |
+|-----------|---------|
+| Windows | Windows 10/11 with WSL2 enabled |
+| Linux Distribution | Ubuntu 22.04 LTS (default WSL distro) |
+| Container Runtime | Docker Engine (in WSL) |
+| Management Interface | Portainer CE on port 9000 (global) |
+| Packet Analysis | Wireshark (native Windows application) |
+
+---
+
+## 📥 Cloning This Week's Laboratory
+
+### Step 1: Open PowerShell (Windows)
+
+Press `Win + X` → Select "Windows Terminal" or "PowerShell"
+
+### Step 2: Navigate and Clone
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone Week 10
+git clone https://github.com/antonioclim/netENwsl.git WEEK10
+cd WEEK10
+```
+
+### Step 3: Verify Clone
+```powershell
+dir
+# You should see: docker/, scripts/, src/, README.md, etc.
+```
+
+### Alternative: Clone Inside WSL
+
+```bash
+# In Ubuntu terminal
+mkdir -p /mnt/d/NETWORKING
+cd /mnt/d/NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK10
+cd WEEK10
+```
+
+---
+
+## 🔧 Initial Environment Setup (First Time Only)
+
+### Step 1: Open Ubuntu Terminal
+
+From Windows:
+- Click "Ubuntu" in Start menu, OR
+- In PowerShell type: `wsl`
+
+You will see the Ubuntu prompt:
+```
+stud@YOURPC:~$
+```
+
+### Step 2: Start Docker Service
+
+```bash
+# Start Docker (required after each Windows restart)
+sudo service docker start
+# Password: stud
+
+# Verify Docker is running
+docker ps
+```
+
+**Expected output:**
+```
+CONTAINER ID   IMAGE                    STATUS          NAMES
+abc123...      portainer/portainer-ce   Up 2 hours      portainer
+```
+
+### Step 3: Verify Portainer Access
+
+Open browser and navigate to: **http://localhost:9000**
+
+**Login credentials:**
+- Username: `stud`
+- Password: `studstudstud`
+
+### Step 4: Navigate to Laboratory Directory
+
+```bash
+cd /mnt/d/NETWORKING/WEEK10/10enWSL
+ls -la
+```
+
+---
+
+## 🖥️ Understanding Portainer Interface
+
+### Dashboard Overview
+
+After login at http://localhost:9000, you will see:
+1. **Home** - List of Docker environments
+2. **local** - Click to manage local Docker
+
+### Viewing Containers
+
+Navigate: **Home → local → Containers**
+
+You will see a table showing all containers with:
+- Name, State, Image, Created, IP Address, Ports
+
+### Container Actions in Portainer
+
+For any container, you can:
+- **Start/Stop/Restart**: Use the action buttons
+- **Logs**: Click container name → "Logs" tab
+- **Console**: Click container name → "Console" tab → "Connect"
+- **Inspect**: View detailed JSON configuration
+- **Stats**: Real-time CPU/Memory/Network usage
+
+### Week 10 Network Configuration
+
+Navigate: **Networks → week10_labnet**
+
+Current configuration:
+- Subnet: 172.20.0.0/24
+- Web server: 172.20.0.10
+- DNS server: 172.20.0.53
+- SSH server: 172.20.0.22
+- FTP server: 172.20.0.21
+- Debug container: 172.20.0.200
+
+**⚠️ NEVER use port 9000** - reserved for Portainer!
+
+---
+
+## 🦈 Wireshark Setup and Usage
+
+### When to Open Wireshark
+
+Open Wireshark:
+- **BEFORE** generating network traffic you want to capture
+- When exercises mention "capture", "analyse packets", or "observe traffic"
+
+### Step 1: Launch Wireshark
+
+From Windows Start Menu: Search "Wireshark" → Click to open
+
+### Step 2: Select Capture Interface
+
+**CRITICAL:** Select the correct interface for WSL traffic:
+
+| Interface Name | When to Use |
+|----------------|-------------|
+| **vEthernet (WSL)** | ✅ Most common - captures WSL Docker traffic |
+| **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
+| **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
+
+### Essential Wireshark Filters for Week 10
+
+| Filter | Purpose |
+|--------|---------|
+| `tcp.port == 8000 && http` | HTTP traffic to web server |
+| `udp.port == 5353` | DNS queries to custom server |
+| `tcp.port == 2222` | SSH connections |
+| `tcp.port == 2121` | FTP control channel |
+| `tcp.portrange == 30000-30009` | FTP passive data channels |
+| `ssl.handshake` | TLS handshakes (HTTPS) |
+| `ip.addr == 172.20.0.0/24` | All lab network traffic |
+| `http.request` | HTTP requests only |
+| `dns` | DNS protocol traffic |
+
+### Analysing Application Layer Protocols
+
+1. **HTTP Analysis**: Filter `http`, examine request methods, status codes
+2. **DNS Analysis**: Filter `dns`, check query names and response IPs
+3. **SSH Analysis**: Filter `tcp.port == 2222`, observe encrypted payloads
+4. **TLS Analysis**: Filter `ssl`, examine certificate exchange
+
+### Saving Captures
+
+1. **File → Save As**
+2. Navigate to: `D:\NETWORKING\WEEK10\pcap\`
+3. Filename: `capture_week10.pcap`
+
+---
+
 ## Overview
 
 This laboratory explores the application layer of the TCP/IP protocol stack, focusing on HTTP/HTTPS communication, RESTful API design patterns, and fundamental network services including DNS, SSH and FTP. The session bridges theoretical protocol specifications with practical implementation through Docker-orchestrated service environments and Python-based exercises.
@@ -33,7 +226,8 @@ By the end of this laboratory session, you will be able to:
 
 ### Software Requirements
 - Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend)
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
 - Wireshark (native Windows installation)
 - Python 3.11 or later
 - Git (recommended)
@@ -47,32 +241,38 @@ By the end of this laboratory session, you will be able to:
 
 ### First-Time Setup (Run Once)
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK10_WSLkit
+```bash
+# Open Ubuntu terminal (WSL)
+wsl
+
+# Navigate to the kit directory
+cd /mnt/d/NETWORKING/WEEK10/10enWSL
+
+# Start Docker if not running
+sudo service docker start
 
 # Verify prerequisites are installed
-python setup/verify_environment.py
+python3 setup/verify_environment.py
 
 # If any issues arise, run the installer helper
-python setup/install_prerequisites.py
+python3 setup/install_prerequisites.py
 ```
 
 ### Starting the Laboratory
 
-```powershell
+```bash
 # Start all Docker services
-python scripts/start_lab.py
+python3 scripts/start_lab.py
 
 # Verify services are healthy
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 ```
 
 ### Accessing Services
 
 | Service | URL/Port | Credentials |
 |---------|----------|-------------|
-| Portainer | https://localhost:9443 | Set on first access |
+| Portainer | http://localhost:9000 | stud / studstudstud |
 | HTTP Web Server | http://localhost:8000 | None required |
 | Custom DNS Server | localhost:5353/udp | N/A |
 | SSH Server | localhost:2222 | labuser / labpass |
@@ -91,14 +291,14 @@ python scripts/start_lab.py --status
 **Steps:**
 
 1. Ensure the Docker stack is running:
-   ```powershell
-   python scripts/start_lab.py --status
+   ```bash
+   python3 scripts/start_lab.py --status
    ```
 
-2. Query the HTTP service from PowerShell:
-   ```powershell
-   curl.exe -v http://localhost:8000/
-   curl.exe -v http://localhost:8000/hello.txt
+2. Query the HTTP service from the terminal:
+   ```bash
+   curl -v http://localhost:8000/
+   curl -v http://localhost:8000/hello.txt
    ```
 
 3. Observe the following in the verbose output:
@@ -111,8 +311,8 @@ python scripts/start_lab.py --status
 5. Re-run the curl commands and correlate HTTP requests with TCP segments.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 1
+```bash
+python3 tests/test_exercises.py --exercise 1
 ```
 
 **Expected Observations:**
@@ -137,7 +337,7 @@ python tests/test_exercises.py --exercise 1
    ```
 
 2. Alternatively, enter the debug container:
-   ```powershell
+   ```bash
    docker exec -it week10_debug bash
    dig @dns-server -p 5353 web.lab.local +short
    ```
@@ -145,8 +345,8 @@ python tests/test_exercises.py --exercise 1
 3. Observe the difference between successful resolution and NXDOMAIN responses.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 2
+```bash
+python3 tests/test_exercises.py --exercise 2
 ```
 
 **Expected Observations:**
@@ -162,8 +362,8 @@ python tests/test_exercises.py --exercise 2
 
 **Steps:**
 
-1. Connect to the SSH server from PowerShell:
-   ```powershell
+1. Connect to the SSH server from the terminal:
+   ```bash
    ssh -p 2222 labuser@localhost
    # Password: labpass
    ```
@@ -176,15 +376,15 @@ python tests/test_exercises.py --exercise 2
    ```
 
 3. Run the automated Paramiko demo:
-   ```powershell
-   python src/apps/ssh_demo.py
+   ```bash
+   python3 src/apps/ssh_demo.py
    ```
 
 4. Capture the SSH traffic in Wireshark and examine the handshake packets.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 3
+```bash
+python3 tests/test_exercises.py --exercise 3
 ```
 
 **Expected Observations:**
@@ -201,8 +401,8 @@ python tests/test_exercises.py --exercise 3
 **Steps:**
 
 1. Connect to the FTP server using Python ftplib:
-   ```powershell
-   python src/apps/ftp_demo.py
+   ```bash
+   python3 src/apps/ftp_demo.py
    ```
 
 2. Alternatively, use an interactive client from WSL:
@@ -216,8 +416,8 @@ python tests/test_exercises.py --exercise 3
 3. Observe multiple TCP connections in Wireshark during file listing and transfer.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 4
+```bash
+python3 tests/test_exercises.py --exercise 4
 ```
 
 **Expected Observations:**
@@ -234,41 +434,41 @@ python tests/test_exercises.py --exercise 4
 **Steps:**
 
 1. Generate a self-signed TLS certificate:
-   ```powershell
-   python src/exercises/ex_10_01_https.py generate-cert
+   ```bash
+   python3 src/exercises/ex_10_01_https.py generate-cert
    ```
 
 2. Start the HTTPS server:
-   ```powershell
-   python src/exercises/ex_10_01_https.py serve --host 0.0.0.0 --port 8443
+   ```bash
+   python3 src/exercises/ex_10_01_https.py serve --host 0.0.0.0 --port 8443
    ```
 
 3. In another terminal, interact with the API:
-   ```powershell
+   ```bash
    # List resources (initially empty)
-   curl.exe -k https://localhost:8443/api/resources
+   curl -k https://localhost:8443/api/resources
 
    # Create a resource
-   curl.exe -k -X POST https://localhost:8443/api/resources -H "Content-Type: application/json" -d "{\"name\":\"sensor1\",\"value\":42}"
+   curl -k -X POST https://localhost:8443/api/resources -H "Content-Type: application/json" -d '{"name":"sensor1","value":42}'
 
    # Get the created resource
-   curl.exe -k https://localhost:8443/api/resources/1
+   curl -k https://localhost:8443/api/resources/1
 
    # Update the resource
-   curl.exe -k -X PUT https://localhost:8443/api/resources/1 -H "Content-Type: application/json" -d "{\"name\":\"sensor1-updated\",\"value\":100}"
+   curl -k -X PUT https://localhost:8443/api/resources/1 -H "Content-Type: application/json" -d '{"name":"sensor1-updated","value":100}'
 
    # Delete the resource
-   curl.exe -k -X DELETE https://localhost:8443/api/resources/1
+   curl -k -X DELETE https://localhost:8443/api/resources/1
    ```
 
 4. Run the automated selftest:
-   ```powershell
-   python src/exercises/ex_10_01_https.py selftest
+   ```bash
+   python3 src/exercises/ex_10_01_https.py selftest
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 5
+```bash
+python3 tests/test_exercises.py --exercise 5
 ```
 
 **Expected Observations:**
@@ -285,45 +485,45 @@ python tests/test_exercises.py --exercise 5
 **Steps:**
 
 1. Start the Flask application:
-   ```powershell
-   python src/exercises/ex_10_02_rest_levels.py serve --host 127.0.0.1 --port 5000
+   ```bash
+   python3 src/exercises/ex_10_02_rest_levels.py serve --host 127.0.0.1 --port 5000
    ```
 
 2. Test Level 0 (RPC style):
-   ```powershell
-   curl.exe -X POST http://localhost:5000/level0/service -H "Content-Type: application/json" -d "{\"action\":\"list_users\"}"
-   curl.exe -X POST http://localhost:5000/level0/service -H "Content-Type: application/json" -d "{\"action\":\"get_user\",\"id\":1}"
+   ```bash
+   curl -X POST http://localhost:5000/level0/service -H "Content-Type: application/json" -d '{"action":"list_users"}'
+   curl -X POST http://localhost:5000/level0/service -H "Content-Type: application/json" -d '{"action":"get_user","id":1}'
    ```
 
 3. Test Level 1 (Resource URIs with action endpoints):
-   ```powershell
-   curl.exe http://localhost:5000/level1/users
-   curl.exe http://localhost:5000/level1/users/1
-   curl.exe -X POST http://localhost:5000/level1/users/1/update -H "Content-Type: application/json" -d "{\"name\":\"Updated\"}"
+   ```bash
+   curl http://localhost:5000/level1/users
+   curl http://localhost:5000/level1/users/1
+   curl -X POST http://localhost:5000/level1/users/1/update -H "Content-Type: application/json" -d '{"name":"Updated"}'
    ```
 
 4. Test Level 2 (Proper HTTP verbs):
-   ```powershell
-   curl.exe http://localhost:5000/level2/users
-   curl.exe -X POST http://localhost:5000/level2/users -H "Content-Type: application/json" -d "{\"name\":\"New User\",\"email\":\"new@example.test\"}"
-   curl.exe -X PUT http://localhost:5000/level2/users/3 -H "Content-Type: application/json" -d "{\"name\":\"Modified\"}"
-   curl.exe -X DELETE http://localhost:5000/level2/users/3
+   ```bash
+   curl http://localhost:5000/level2/users
+   curl -X POST http://localhost:5000/level2/users -H "Content-Type: application/json" -d '{"name":"New User","email":"new@example.test"}'
+   curl -X PUT http://localhost:5000/level2/users/3 -H "Content-Type: application/json" -d '{"name":"Modified"}'
+   curl -X DELETE http://localhost:5000/level2/users/3
    ```
 
 5. Test Level 3 (HATEOAS):
-   ```powershell
-   curl.exe http://localhost:5000/level3/users
+   ```bash
+   curl http://localhost:5000/level3/users
    ```
    Note the `_links` section in responses.
 
 6. Run the selftest:
-   ```powershell
-   python src/exercises/ex_10_02_rest_levels.py selftest
+   ```bash
+   python3 src/exercises/ex_10_02_rest_levels.py selftest
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 6
+```bash
+python3 tests/test_exercises.py --exercise 6
 ```
 
 **Expected Observations:**
@@ -338,8 +538,8 @@ python tests/test_exercises.py --exercise 6
 
 Automated demonstration of all Docker services.
 
-```powershell
-python scripts/run_demo.py --demo 1
+```bash
+python3 scripts/run_demo.py --demo 1
 ```
 
 **What to observe:**
@@ -352,8 +552,8 @@ python scripts/run_demo.py --demo 1
 
 Side-by-side comparison of HTTP vs HTTPS traffic visibility.
 
-```powershell
-python scripts/run_demo.py --demo 2
+```bash
+python3 scripts/run_demo.py --demo 2
 ```
 
 **What to observe:**
@@ -365,11 +565,11 @@ python scripts/run_demo.py --demo 2
 
 ### Capturing Traffic
 
-```powershell
-# Start capture (requires elevated privileges)
-python scripts/capture_traffic.py --interface eth0 --output pcap/week10_capture.pcap
+```bash
+# Start capture with helper script
+python3 scripts/capture_traffic.py --interface eth0 --output pcap/week10_capture.pcap
 
-# Or use Wireshark directly on the Docker network
+# Or use Wireshark directly on the WSL network interface
 ```
 
 ### Suggested Wireshark Filters
@@ -396,7 +596,7 @@ ip.addr == 172.20.0.0/24
 
 ### Traffic Analysis with tshark
 
-```powershell
+```bash
 # DNS queries and responses
 tshark -r pcap/week10_capture.pcap -Y "udp.port==5353" -T fields -e dns.qry.name -e dns.flags.rcode
 
@@ -411,9 +611,9 @@ tshark -r pcap/week10_capture.pcap -Y "tcp.flags.syn==1 && tcp.flags.ack==0" -T 
 
 ### End of Session
 
-```powershell
-# Stop all containers (preserves data)
-python scripts/stop_lab.py
+```bash
+# Stop all containers (Portainer stays running!)
+python3 scripts/stop_lab.py
 
 # Verify shutdown
 docker ps
@@ -421,9 +621,9 @@ docker ps
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
+```bash
 # Remove all containers, networks, and volumes for this week
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 
 # Verify cleanup
 docker system df
@@ -450,10 +650,10 @@ Extend the provided Docker Compose configuration to include an additional servic
 ### Common Issues
 
 #### Issue: Docker permission denied
-**Solution:** Ensure Docker Desktop is running and WSL2 integration is enabled. In Docker Desktop settings, verify your WSL distro is enabled under Resources > WSL Integration.
+**Solution:** Ensure Docker is running in WSL and your user is in the docker group. Run `sudo service docker start` and verify with `docker ps`.
 
 #### Issue: Port already in use
-**Solution:** Check with `netstat -ano | findstr :<PORT>` and terminate the conflicting process, or modify the port mapping in docker-compose.yml.
+**Solution:** Check with `sudo netstat -tlnp | grep <PORT>` and terminate the conflicting process, or modify the port mapping in docker-compose.yml.
 
 #### Issue: Certificate validation errors
 **Solution:** Expected for self-signed certificates. Use `curl -k` or configure your client to trust the generated CA. For production, use certificates from a trusted CA.
@@ -514,6 +714,7 @@ The Richardson Maturity Model grades API implementations:
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    WEEK10 Docker Network (172.20.0.0/24)            │
+│              (WSL2 + Ubuntu 22.04 + Docker + Portainer)             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐             │
@@ -533,6 +734,8 @@ The Richardson Maturity Model grades API implementations:
 │  │:30000-30009 │    │             │    │ tcpdump/nmap│             │
 │  └─────────────┘    └─────────────┘    └─────────────┘             │
 │                                                                     │
+│  Portainer: http://localhost:9000 (global service)                  │
+│  Credentials: stud / studstudstud                                   │
 └─────────────────────────────────────────────────────────────────────┘
 
 Host Port Mappings:
@@ -541,8 +744,198 @@ Host Port Mappings:
   • 2222  → ssh-server:22   (SSH)
   • 2121  → ftp-server:2121 (FTP control)
   • 30000-30009 → ftp-server (FTP passive data)
+  • 9000  → Portainer       (RESERVED - Global)
 ```
 
 ---
 
+## 🔧 Extended Troubleshooting
+
+### Docker Issues
+
+**Problem:** "Cannot connect to Docker daemon"
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
+
+**Problem:** Permission denied when running docker
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+# Or logout and login again
+```
+
+**Problem:** Docker service won't start
+```bash
+sudo service docker status  # Check status
+sudo dockerd  # Run manually to see errors
+```
+
+### Portainer Issues
+
+**Problem:** Cannot access http://localhost:9000
+```bash
+# Check if Portainer container exists and is running
+docker ps -a | grep portainer
+
+# If stopped, start it
+docker start portainer
+
+# If doesn't exist, create it
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+**Problem:** Forgot Portainer password
+```bash
+# Reset Portainer (loses settings but not containers)
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+# Recreate with command above, set new password
+```
+
+### WSL Issues
+
+**Problem:** WSL not starting
+```powershell
+# In PowerShell (Administrator)
+wsl --status
+wsl --list --verbose
+```
+
+**Problem:** Cannot access Windows files from WSL
+```bash
+ls /mnt/
+# Should show: c, d, etc.
+```
+
+### Wireshark Issues
+
+**Problem:** No packets captured
+- ✅ Verify correct interface selected (vEthernet WSL)
+- ✅ Ensure traffic is being generated DURING capture
+- ✅ Check display filter isn't hiding packets (clear filter)
+- ✅ Try "Capture → Options" and enable promiscuous mode
+
+**Problem:** "No interfaces found" or permission error
+- Run Wireshark as Administrator (right-click → Run as administrator)
+- Reinstall Npcap with "WinPcap API-compatible Mode" option checked
+
+**Problem:** Can't see Docker container traffic
+- Select `vEthernet (WSL)` interface, not `Ethernet` or `Wi-Fi`
+- Ensure containers are on bridge network, not host network
+
+### Network Issues
+
+**Problem:** Container can't reach internet
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week10_labnet
+
+# Check DNS in container
+docker exec week10_debug cat /etc/resolv.conf
+```
+
+**Problem:** Port already in use
+```bash
+# Find what's using the port
+sudo netstat -tlnp | grep 8000
+# Or
+sudo ss -tlnp | grep 8000
+
+# Kill the process or use different port
+```
+
+### Service-Specific Issues
+
+**Problem:** SSH connection refused
+```bash
+# Check if SSH server is running
+docker ps | grep week10_ssh
+docker logs week10_ssh
+```
+
+**Problem:** FTP passive mode fails
+- Ensure ports 30000-30009 are mapped in docker-compose.yml
+- Check Windows Firewall is not blocking these ports
+
+**Problem:** DNS queries timeout
+```bash
+# Check DNS server is running
+docker logs week10_dns
+# Query with verbose output
+dig @127.0.0.1 -p 5353 web.lab.local +trace
+```
+
+---
+
+## 🧹 Complete Cleanup Procedure
+
+### End of Session (Quick)
+
+```bash
+# Stop lab containers (Portainer stays running!)
+cd /mnt/d/NETWORKING/WEEK10/10enWSL
+docker compose -f docker/docker-compose.yml down
+
+# Verify - should still show portainer
+docker ps
+```
+
+### End of Week (Thorough)
+
+```bash
+# Remove this week's containers and networks
+docker compose -f docker/docker-compose.yml down --volumes
+
+# Remove unused images
+docker image prune -f
+
+# Remove unused networks
+docker network prune -f
+
+# Check disk usage
+docker system df
+```
+
+### Full Reset (Before New Semester)
+
+```bash
+# WARNING: This removes EVERYTHING except Portainer
+docker stop $(docker ps -q | grep -v $(docker ps -q --filter name=portainer)) 2>/dev/null
+docker rm $(docker ps -aq | grep -v $(docker ps -aq --filter name=portainer)) 2>/dev/null
+docker image prune -a -f
+docker network prune -f
+docker volume prune -f
+
+# Verify Portainer still running
+docker ps
+```
+
+**⚠️ NEVER run `docker system prune -a` without excluding Portainer!**
+
+---
+
+## 📊 Week 10 Network Configuration Summary
+
+| Resource | Value | Notes |
+|----------|-------|-------|
+| Network Subnet | 172.20.0.0/24 | week10_labnet |
+| Web Server IP | 172.20.0.10 | HTTP port 8000 |
+| DNS Server IP | 172.20.0.53 | UDP port 5353 |
+| SSH Server IP | 172.20.0.22 | TCP port 2222 (mapped) |
+| FTP Server IP | 172.20.0.21 | TCP port 2121 |
+| FTP Passive Range | 30000-30009 | Data channels |
+| Debug Container | 172.20.0.200 | Network tools |
+| SSH Credentials | labuser / labpass | SSH server |
+| FTP Credentials | labftp / labftp | FTP server |
+| Portainer | 9000 | **RESERVED - Global service** |
+
+---
+
 *NETWORKING class - ASE, Informatics | by Revolvix*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*

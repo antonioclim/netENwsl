@@ -3,6 +3,17 @@
 # =============================================================================
 # NETWORKING class - ASE, Informatics | by Revolvix
 #
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
 # Stack: 1 Nginx Load Balancer + 3 Backend Servers
 #
 # Usage:
@@ -15,6 +26,7 @@
 services:
   # ─────────────────────────────────────────────────────────────────────────
   # Nginx Reverse Proxy / Load Balancer
+  # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
   # ─────────────────────────────────────────────────────────────────────────
   nginx:
     image: nginx:alpine
@@ -23,6 +35,8 @@ services:
       - "8080:80"
     volumes:
       - ./configs/nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      - LAB_WEEK=11
     depends_on:
       - web1
       - web2
@@ -44,6 +58,9 @@ services:
     container_name: s11_backend_1
     volumes:
       - ./web1:/usr/share/nginx/html:ro
+    environment:
+      - LAB_WEEK=11
+      - BACKEND_ID=1
     networks:
       - s11_net
     restart: unless-stopped
@@ -58,6 +75,9 @@ services:
     container_name: s11_backend_2
     volumes:
       - ./web2:/usr/share/nginx/html:ro
+    environment:
+      - LAB_WEEK=11
+      - BACKEND_ID=2
     networks:
       - s11_net
     restart: unless-stopped
@@ -72,6 +92,9 @@ services:
     container_name: s11_backend_3
     volumes:
       - ./web3:/usr/share/nginx/html:ro
+    environment:
+      - LAB_WEEK=11
+      - BACKEND_ID=3
     networks:
       - s11_net
     restart: unless-stopped
@@ -83,6 +106,7 @@ services:
 
 # ─────────────────────────────────────────────────────────────────────────
 # Network Configuration
+# NOTE: Portainer uses its own network, managed globally
 # ─────────────────────────────────────────────────────────────────────────
 networks:
   s11_net:
@@ -93,6 +117,9 @@ networks:
         - subnet: 172.28.0.0/16
 
 # =============================================================================
+# NOTE: Portainer runs globally and is NOT defined here
+# Access Portainer at: http://localhost:9000
+#
 # EXERCISES:
 # 1. Modify nginx.conf to use different load balancing algorithms
 # 2. Add weights to backends (e.g., web1 weight=3, web2 weight=2, web3 weight=1)

@@ -1,6 +1,17 @@
 # Docker Compose - Week 10: Network Services
 # HTTP, DNS, SSH and FTP in orchestrated containers for the Application Layer laboratory.
 # NETWORKING class - ASE, Informatics | by Revolvix
+#
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
 
 networks:
   labnet:
@@ -26,9 +37,12 @@ services:
     command: ["python3", "-m", "http.server", "8000", "--bind", "0.0.0.0", "--directory", "/www"]
     volumes:
       - ./www:/www:ro
+    environment:
+      - LAB_WEEK=10
     networks:
       labnet:
         ipv4_address: 172.20.0.10
+    # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
     ports:
       - "8000:8000"
     healthcheck:
@@ -52,6 +66,8 @@ services:
       context: ./dns-server
       dockerfile: Dockerfile
     container_name: week10_dns
+    environment:
+      - LAB_WEEK=10
     networks:
       labnet:
         ipv4_address: 172.20.0.53
@@ -73,6 +89,8 @@ services:
       context: ./ssh-server
       dockerfile: Dockerfile
     container_name: week10_ssh
+    environment:
+      - LAB_WEEK=10
     networks:
       labnet:
         ipv4_address: 172.20.0.22
@@ -95,6 +113,8 @@ services:
       context: ./ssh-client
       dockerfile: Dockerfile
     container_name: week10_ssh_client
+    environment:
+      - LAB_WEEK=10
     networks:
       labnet:
         ipv4_address: 172.20.0.100
@@ -115,6 +135,8 @@ services:
       context: ./ftp-server
       dockerfile: Dockerfile
     container_name: week10_ftp
+    environment:
+      - LAB_WEEK=10
     networks:
       labnet:
         ipv4_address: 172.20.0.21
@@ -138,6 +160,8 @@ services:
       context: ./debug
       dockerfile: Dockerfile
     container_name: week10_debug
+    environment:
+      - LAB_WEEK=10
     networks:
       labnet:
         ipv4_address: 172.20.0.200
@@ -152,19 +176,7 @@ services:
       - NET_ADMIN
       - NET_RAW
 
-  # ============================================================================
-  # PORTAINER - Web-based Docker management (optional but recommended)
-  # ============================================================================
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: week10_portainer
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    ports:
-      - "9443:9443"
-    restart: unless-stopped
-
-volumes:
-  portainer_data:
-    name: week10_portainer_data
+# =============================================================================
+# NOTE: Portainer runs globally and is NOT defined here
+# Access Portainer at: http://localhost:9000
+# =============================================================================
