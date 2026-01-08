@@ -4,6 +4,195 @@
 > 
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `9enWSL`
+
+| Component | Details |
+|-----------|---------|
+| Windows | Windows 10/11 with WSL2 enabled |
+| Linux Distribution | Ubuntu 22.04 LTS (default WSL distro) |
+| Container Runtime | Docker Engine (in WSL) |
+| Management Interface | Portainer CE on port 9000 (global) |
+| Packet Analysis | Wireshark (native Windows application) |
+
+---
+
+## 📥 Cloning This Week's Laboratory
+
+### Step 1: Open PowerShell (Windows)
+
+Press `Win + X` → Select "Windows Terminal" or "PowerShell"
+
+### Step 2: Navigate and Clone
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone Week 9
+git clone https://github.com/antonioclim/netENwsl.git WEEK9
+cd WEEK9
+```
+
+### Step 3: Verify Clone
+```powershell
+dir
+# You should see: docker/, scripts/, src/, README.md, etc.
+```
+
+### Alternative: Clone Inside WSL
+
+```bash
+# In Ubuntu terminal
+mkdir -p /mnt/d/NETWORKING
+cd /mnt/d/NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK9
+cd WEEK9
+```
+
+---
+
+## 🔧 Initial Environment Setup (First Time Only)
+
+### Step 1: Open Ubuntu Terminal
+
+From Windows:
+- Click "Ubuntu" in Start menu, OR
+- In PowerShell type: `wsl`
+
+You will see the Ubuntu prompt:
+```
+stud@YOURPC:~$
+```
+
+### Step 2: Start Docker Service
+
+```bash
+# Start Docker (required after each Windows restart)
+sudo service docker start
+# Password: stud
+
+# Verify Docker is running
+docker ps
+```
+
+**Expected output:**
+```
+CONTAINER ID   IMAGE                    STATUS          NAMES
+abc123...      portainer/portainer-ce   Up 2 hours      portainer
+```
+
+### Step 3: Verify Portainer Access
+
+Open browser and navigate to: **http://localhost:9000**
+
+**Login credentials:**
+- Username: `stud`
+- Password: `studstudstud`
+
+### Step 4: Navigate to Laboratory Directory
+
+```bash
+cd /mnt/d/NETWORKING/WEEK9/9enWSL
+ls -la
+```
+
+---
+
+## 🖥️ Understanding Portainer Interface
+
+### Dashboard Overview
+
+After login at http://localhost:9000, you will see:
+1. **Home** - List of Docker environments
+2. **local** - Click to manage local Docker
+
+### Viewing Containers
+
+Navigate: **Home → local → Containers**
+
+You will see a table showing all containers with:
+- Name, State, Image, Created, IP Address, Ports
+
+### Container Actions in Portainer
+
+For any container, you can:
+- **Start/Stop/Restart**: Use the action buttons
+- **Logs**: Click container name → "Logs" tab
+- **Console**: Click container name → "Console" tab → "Connect"
+- **Inspect**: View detailed JSON configuration
+- **Stats**: Real-time CPU/Memory/Network usage
+
+### Week 9 Network Configuration
+
+Navigate: **Networks → week9_ftp_network**
+
+Current configuration:
+- Subnet: 172.29.9.0/24
+- FTP Server: 172.29.9.x (dynamic)
+- Client containers: 172.29.9.x (dynamic)
+
+**⚠️ NEVER use port 9000** - reserved for Portainer!
+
+---
+
+## 🦈 Wireshark Setup and Usage
+
+### When to Open Wireshark
+
+Open Wireshark:
+- **BEFORE** generating network traffic you want to capture
+- When exercises mention "capture", "analyse packets", or "observe traffic"
+
+### Step 1: Launch Wireshark
+
+From Windows Start Menu: Search "Wireshark" → Click to open
+
+### Step 2: Select Capture Interface
+
+**CRITICAL:** Select the correct interface for WSL traffic:
+
+| Interface Name | When to Use |
+|----------------|-------------|
+| **vEthernet (WSL)** | ✅ Most common - captures WSL Docker traffic |
+| **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
+| **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
+
+### Essential Wireshark Filters for Week 9
+
+| Filter | Purpose |
+|--------|---------|
+| `tcp.port == 2121` | FTP control channel |
+| `tcp.port >= 60000 && tcp.port <= 60010` | FTP passive data channels |
+| `tcp.port == 2121 \|\| tcp.port >= 60000` | All FTP traffic |
+| `ftp` | FTP commands and responses |
+| `ftp.request.command == "USER"` | Authentication requests |
+| `ftp.request.command == "PASV"` | Passive mode negotiation |
+| `tcp.port == 60100` | Custom pseudo-FTP protocol |
+
+### Analysing FTP Sessions
+
+1. Filter: `tcp.port == 2121`
+2. Find the USER/PASS sequence
+3. Look for 230 response (authentication success)
+4. Find PASV command and response showing port allocation
+5. Follow TCP Stream for complete conversation
+
+### Saving Captures
+
+1. **File → Save As**
+2. Navigate to: `D:\NETWORKING\WEEK9\pcap\`
+3. Filename: `capture_ftp_session.pcap`
+
+---
+
 ## Overview
 
 This laboratory explores the upper layers of the OSI model—specifically Layer 5 (Session) and Layer 6 (Presentation)—which provide the crucial bridge between network transport mechanisms and application-level data handling. While often overlooked in favour of more visible protocols, these layers encapsulate essential abstractions for establishing logical communication channels, managing dialogue control, and ensuring data representation consistency across heterogeneous systems.
@@ -33,7 +222,8 @@ By the end of this laboratory session, you will be able to:
 
 ### Software Requirements
 - Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend)
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
 - Wireshark (native Windows installation)
 - Python 3.11 or later
 - Git (recommended for version control)
@@ -47,32 +237,38 @@ By the end of this laboratory session, you will be able to:
 
 ### First-Time Setup (Run Once)
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK9_WSLkit
+```bash
+# Open Ubuntu terminal (WSL)
+wsl
+
+# Navigate to the kit directory
+cd /mnt/d/NETWORKING/WEEK9/9enWSL
+
+# Start Docker if not running
+sudo service docker start
 
 # Verify prerequisites
-python setup/verify_environment.py
+python3 setup/verify_environment.py
 
 # If any issues, run the installer helper
-python setup/install_prerequisites.py
+python3 setup/install_prerequisites.py
 ```
 
 ### Starting the Laboratory
 
-```powershell
+```bash
 # Start all services
-python scripts/start_lab.py
+python3 scripts/start_lab.py
 
 # Verify everything is running
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 ```
 
 ### Accessing Services
 
 | Service | URL/Port | Credentials |
 |---------|----------|-------------|
-| Portainer | https://localhost:9443 | Set on first access |
+| Portainer | http://localhost:9000 | stud / studstudstud |
 | FTP Server | localhost:2121 | test / 12345 |
 | FTP Passive Ports | 60000-60010 | (Data channel range) |
 
@@ -91,9 +287,9 @@ Multi-byte integers admit two canonical orderings: big-endian (most significant 
 **Steps:**
 
 1. Navigate to the exercises directory and open the endianness demonstration:
-   ```powershell
+   ```bash
    cd src/exercises
-   python ex_9_01_endianness.py
+   python3 ex_9_01_endianness.py
    ```
 
 2. Observe the output comparing big-endian and little-endian representations of the same integer value. Note how the byte sequence differs whilst representing identical numerical quantities.
@@ -115,8 +311,8 @@ Multi-byte integers admit two canonical orderings: big-endian (most significant 
 5. Introduce a deliberate bit-flip in the payload and observe the CRC verification failure.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 1
+```bash
+python3 tests/test_exercises.py --exercise 1
 ```
 
 **Expected Output:**
@@ -148,19 +344,19 @@ FTP exemplifies Session Layer concepts through its dual-channel architecture. Th
 **Steps:**
 
 1. Start the laboratory environment if not already running:
-   ```powershell
-   python scripts/start_lab.py
+   ```bash
+   python3 scripts/start_lab.py
    ```
 
 2. Verify the FTP server is operational:
-   ```powershell
-   python scripts/start_lab.py --status
+   ```bash
+   python3 scripts/start_lab.py --status
    ```
 
 3. Connect to the FTP server using the demonstration client:
-   ```powershell
+   ```bash
    cd src/exercises
-   python ftp_demo_client.py --host localhost --port 2121 --user test --password 12345
+   python3 ftp_demo_client.py --host localhost --port 2121 --user test --password 12345
    ```
 
 4. Execute session commands and observe the protocol exchange:
@@ -177,15 +373,15 @@ FTP exemplifies Session Layer concepts through its dual-channel architecture. Th
    ```
 
 6. Run the multi-client demonstration to observe concurrent session handling:
-   ```powershell
-   python scripts/run_demo.py --demo multi_client
+   ```bash
+   python3 scripts/run_demo.py --demo multi_client
    ```
 
 7. In Wireshark, follow the TCP streams for each client session. Note the independent authentication sequences and how passive mode assigns different ports to each client.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 2
+```bash
+python3 tests/test_exercises.py --exercise 2
 ```
 
 **Expected Observations:**
@@ -204,20 +400,20 @@ python tests/test_exercises.py --exercise 2
 **Steps:**
 
 1. Examine the pseudo-FTP server implementation:
-   ```powershell
+   ```bash
    cd src/exercises
    # Review the code structure
-   type ex_9_02_pseudo_ftp.py
+   cat ex_9_02_pseudo_ftp.py
    ```
 
 2. Start the pseudo-FTP server in one terminal:
-   ```powershell
-   python ex_9_02_pseudo_ftp.py --mode server --port 60100
+   ```bash
+   python3 ex_9_02_pseudo_ftp.py --mode server --port 60100
    ```
 
 3. In a second terminal, connect with the client:
-   ```powershell
-   python ex_9_02_pseudo_ftp.py --mode client --host localhost --port 60100
+   ```bash
+   python3 ex_9_02_pseudo_ftp.py --mode client --host localhost --port 60100
    ```
 
 4. Test the session lifecycle:
@@ -234,8 +430,8 @@ python tests/test_exercises.py --exercise 2
 6. Experiment with session checkpointing by interrupting a transfer (Ctrl+C during a large file PUT) and resuming.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 3
+```bash
+python3 tests/test_exercises.py --exercise 3
 ```
 
 ---
@@ -246,8 +442,8 @@ python tests/test_exercises.py --exercise 3
 
 Automated demonstration showing byte-order differences across architectures:
 
-```powershell
-python scripts/run_demo.py --demo endianness
+```bash
+python3 scripts/run_demo.py --demo endianness
 ```
 
 **What to observe:**
@@ -259,8 +455,8 @@ python scripts/run_demo.py --demo endianness
 
 Complete demonstration of FTP session establishment, command exchange, and teardown:
 
-```powershell
-python scripts/run_demo.py --demo ftp_session
+```bash
+python3 scripts/run_demo.py --demo ftp_session
 ```
 
 **What to observe:**
@@ -274,8 +470,8 @@ python scripts/run_demo.py --demo ftp_session
 
 Concurrent client connections demonstrating session isolation:
 
-```powershell
-python scripts/run_demo.py --demo multi_client
+```bash
+python3 scripts/run_demo.py --demo multi_client
 ```
 
 **What to observe:**
@@ -287,8 +483,8 @@ python scripts/run_demo.py --demo multi_client
 
 Deep inspection of custom binary protocol framing:
 
-```powershell
-python scripts/run_demo.py --demo binary_protocol
+```bash
+python3 scripts/run_demo.py --demo binary_protocol
 ```
 
 **What to observe:**
@@ -302,12 +498,12 @@ python scripts/run_demo.py --demo binary_protocol
 
 ### Capturing Traffic
 
-```powershell
+```bash
 # Start capture with helper script
-python scripts/capture_traffic.py --duration 60 --output pcap/week9_ftp.pcap
+python3 scripts/capture_traffic.py --duration 60 --output pcap/week9_ftp.pcap
 
-# Or use Wireshark directly
-# Open Wireshark > Select "\\.\pipe\docker_engine" or appropriate interface
+# Or use Wireshark directly on Windows
+# Select vEthernet (WSL) interface
 ```
 
 ### Suggested Wireshark Filters
@@ -344,9 +540,9 @@ tcp.port == 60100
 
 ### End of Session
 
-```powershell
-# Stop all containers (preserves data)
-python scripts/stop_lab.py
+```bash
+# Stop all containers (Portainer stays running!)
+python3 scripts/stop_lab.py
 
 # Verify shutdown
 docker ps
@@ -354,9 +550,9 @@ docker ps
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
+```bash
 # Remove all containers, networks, and volumes for this week
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 
 # Verify cleanup
 docker system df
@@ -393,7 +589,7 @@ Implement a checkpoint mechanism for file transfers:
 ### Common Issues
 
 #### Issue: FTP server not responding on port 2121
-**Solution:** Verify Docker containers are running with `python scripts/start_lab.py --status`. If the container shows unhealthy, check logs with `docker logs week9_ftp-server`. Ensure no other service occupies port 2121.
+**Solution:** Verify Docker containers are running with `python3 scripts/start_lab.py --status`. If the container shows unhealthy, check logs with `docker logs s9_ftp_server`. Ensure no other service occupies port 2121.
 
 #### Issue: Passive mode connections fail
 **Solution:** Confirm ports 60000-60010 are exposed and not blocked by Windows Firewall. The Docker Compose configuration binds these ports to localhost.
@@ -402,7 +598,7 @@ Implement a checkpoint mechanism for file transfers:
 **Solution:** Ensure consistent byte ordering when packing and unpacking. The format string must match exactly on both sides. Verify no truncation occurs during transmission.
 
 #### Issue: Wireshark shows no traffic on Docker interface
-**Solution:** Select the correct interface. On Windows with Docker Desktop, try `\\.\pipe\docker_engine` or the vEthernet adapter associated with WSL. You may need to capture on `any` interface.
+**Solution:** Select the correct interface. On Windows with WSL, try `vEthernet (WSL)`. You may need to capture on `any` interface.
 
 See `docs/troubleshooting.md` for additional solutions.
 
@@ -457,6 +653,7 @@ Well-designed binary protocols incorporate:
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         Week 9 Laboratory Network                        │
+│              (WSL2 + Ubuntu 22.04 + Docker + Portainer)                 │
 │                         172.29.9.0/24 (Docker)                          │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
@@ -464,7 +661,7 @@ Well-designed binary protocols incorporate:
 │  │                  │◄────────────────────────────────────┐             │
 │  │   FTP Server     │                                     │             │
 │  │   (pyftpdlib)    │      Passive Data (60000-60010)     │             │
-│  │   172.29.9.10    │◄─────────────────────────┐          │             │
+│  │   172.29.9.x     │◄─────────────────────────┐          │             │
 │  │                  │                          │          │             │
 │  └──────────────────┘                          │          │             │
 │           │                                    │          │             │
@@ -475,16 +672,18 @@ Well-designed binary protocols incorporate:
 │  │   /srv/ftp/      │                 │                │  │             │
 │  │   - test_file.txt│                 │   Client 1     │  │             │
 │  │   - sample_data/ │                 │   (LIST test)  ├──┘             │
-│  └──────────────────┘                 │   172.29.9.20  │                │
+│  └──────────────────┘                 │   172.29.9.x   │                │
 │                                       └────────────────┘                │
 │                                                                         │
 │                                       ┌────────────────┐                │
 │  ┌──────────────────┐                 │                │                │
 │  │  Host Machine    │                 │   Client 2     │                │
 │  │  (Windows/WSL2)  │◄───Wireshark───►│   (GET test)   │                │
-│  │  localhost:2121  │    Capture      │   172.29.9.21  │                │
+│  │  localhost:2121  │    Capture      │   172.29.9.x   │                │
 │  └──────────────────┘                 └────────────────┘                │
 │                                                                         │
+│  Portainer: http://localhost:9000 (global service)                      │
+│  Credentials: stud / studstudstud                                       │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Session Layer Abstraction:
@@ -517,4 +716,177 @@ Session Layer Abstraction:
 
 ---
 
+## 🔧 Extended Troubleshooting
+
+### Docker Issues
+
+**Problem:** "Cannot connect to Docker daemon"
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
+
+**Problem:** Permission denied when running docker
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+# Or logout and login again
+```
+
+**Problem:** Docker service won't start
+```bash
+sudo service docker status  # Check status
+sudo dockerd  # Run manually to see errors
+```
+
+### Portainer Issues
+
+**Problem:** Cannot access http://localhost:9000
+```bash
+# Check if Portainer container exists and is running
+docker ps -a | grep portainer
+
+# If stopped, start it
+docker start portainer
+
+# If doesn't exist, create it
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+**Problem:** Forgot Portainer password
+```bash
+# Reset Portainer (loses settings but not containers)
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+# Recreate with command above, set new password
+```
+
+### WSL Issues
+
+**Problem:** WSL not starting
+```powershell
+# In PowerShell (Administrator)
+wsl --status
+wsl --list --verbose
+```
+
+**Problem:** Cannot access Windows files from WSL
+```bash
+ls /mnt/
+# Should show: c, d, etc.
+```
+
+### Wireshark Issues
+
+**Problem:** No packets captured
+- ✅ Verify correct interface selected (vEthernet WSL)
+- ✅ Ensure traffic is being generated DURING capture
+- ✅ Check display filter isn't hiding packets (clear filter)
+- ✅ Try "Capture → Options" and enable promiscuous mode
+
+**Problem:** "No interfaces found" or permission error
+- Run Wireshark as Administrator (right-click → Run as administrator)
+- Reinstall Npcap with "WinPcap API-compatible Mode" option checked
+
+**Problem:** Can't see Docker container traffic
+- Select `vEthernet (WSL)` interface, not `Ethernet` or `Wi-Fi`
+- Ensure containers are on bridge network, not host network
+
+### Network Issues
+
+**Problem:** Container can't reach internet
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week9_ftp_network
+
+# Check DNS in container
+docker exec s9_ftp_server cat /etc/resolv.conf
+```
+
+**Problem:** Port already in use
+```bash
+# Find what's using the port
+sudo netstat -tlnp | grep 2121
+# Or
+sudo ss -tlnp | grep 2121
+
+# Kill the process or use different port
+```
+
+### FTP-Specific Issues
+
+**Problem:** FTP server returns "530 Login incorrect"
+- Verify credentials: test / 12345
+- Check environment variables in docker-compose.yml
+
+**Problem:** Passive mode shows wrong IP
+- Server may report internal Docker IP; this is normal for localhost connections
+
+---
+
+## 🧹 Complete Cleanup Procedure
+
+### End of Session (Quick)
+
+```bash
+# Stop lab containers (Portainer stays running!)
+cd /mnt/d/NETWORKING/WEEK9/9enWSL
+docker compose -f docker/docker-compose.yml down
+
+# Verify - should still show portainer
+docker ps
+```
+
+### End of Week (Thorough)
+
+```bash
+# Remove this week's containers and networks
+docker compose -f docker/docker-compose.yml down --volumes
+
+# Remove unused images
+docker image prune -f
+
+# Remove unused networks
+docker network prune -f
+
+# Check disk usage
+docker system df
+```
+
+### Full Reset (Before New Semester)
+
+```bash
+# WARNING: This removes EVERYTHING except Portainer
+docker stop $(docker ps -q | grep -v $(docker ps -q --filter name=portainer)) 2>/dev/null
+docker rm $(docker ps -aq | grep -v $(docker ps -aq --filter name=portainer)) 2>/dev/null
+docker image prune -a -f
+docker network prune -f
+docker volume prune -f
+
+# Verify Portainer still running
+docker ps
+```
+
+**⚠️ NEVER run `docker system prune -a` without excluding Portainer!**
+
+---
+
+## 📊 Week 9 Network Configuration Summary
+
+| Resource | Value | Notes |
+|----------|-------|-------|
+| Network Subnet | 172.29.9.0/24 | week9_ftp_network |
+| FTP Control Port | 2121 | Control channel |
+| FTP Passive Range | 60000-60010 | Data channels |
+| FTP Credentials | test / 12345 | Demo account |
+| Pseudo-FTP Port | 60100 | Exercise 3 |
+| Portainer | 9000 | **RESERVED - Global service** |
+
+---
+
 *NETWORKING class - ASE, Informatics | by Revolvix*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*

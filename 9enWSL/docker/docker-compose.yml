@@ -3,6 +3,17 @@
 # NETWORKING class - ASE, Informatics | by Revolvix
 # =============================================================================
 #
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
 # This configuration creates a complete FTP testing environment with:
 # - A Python-based FTP server (pyftpdlib)
 # - Multiple client containers for concurrent testing
@@ -40,6 +51,7 @@ services:
     volumes:
       - ./server-files:/app/server-files
       - ../src/exercises:/app/exercises:ro
+    # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
     ports:
       - "2121:2121"
       - "60000-60010:60000-60010"
@@ -48,6 +60,7 @@ services:
       - FTP_PASS=12345
       - FTP_PORT=2121
       - PYTHONUNBUFFERED=1
+      - LAB_WEEK=9
     command: >
       bash -c "
         pip install -q pyftpdlib &&
@@ -90,6 +103,7 @@ services:
       - FTP_USER=test
       - FTP_PASS=12345
       - PYTHONUNBUFFERED=1
+      - LAB_WEEK=9
     command: >
       bash -c "
         echo '=== Client 1: Executing LIST ===' &&
@@ -126,6 +140,7 @@ services:
       - FTP_USER=test
       - FTP_PASS=12345
       - PYTHONUNBUFFERED=1
+      - LAB_WEEK=9
     command: >
       bash -c "
         echo '=== Client 2: Executing GET ===' &&
@@ -146,6 +161,7 @@ services:
 
 # =============================================================================
 # Networks
+# NOTE: Portainer uses its own network, managed globally
 # =============================================================================
 networks:
   s9_network:
@@ -154,6 +170,12 @@ networks:
     ipam:
       config:
         - subnet: 172.29.9.0/24
+
+# =============================================================================
+# Volumes
+# NOTE: Portainer data volume is managed globally, not here
+# =============================================================================
+volumes: {}
 
 # =============================================================================
 # by Revolvix

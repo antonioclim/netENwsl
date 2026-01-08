@@ -3,193 +3,174 @@
 Week 9 Laboratory Launcher
 NETWORKING class - ASE, Informatics | by Revolvix
 
-This script starts all Docker containers and verifies the laboratory environment
-for the Session Layer (L5) and Presentation Layer (L6) exercises.
+Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
-The laboratory includes:
-- FTP server (pyftpdlib-based) for file transfer exercises
-- Multiple client containers for concurrent testing
-- Network configuration for traffic capture and analysis
+This script starts all Docker containers and verifies the laboratory environment.
 
-Usage:
-    python scripts/start_lab.py              # Start all services
-    python scripts/start_lab.py --status     # Check status only
-    python scripts/start_lab.py --rebuild    # Force rebuild images
+IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+This script will NEVER start or stop Portainer.
 """
 
-from __future__ import annotations
-
 import argparse
+import subprocess
 import sys
 import time
+import os
 from pathlib import Path
 
-# Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.utils.docker_utils import DockerManager, check_docker_running
-from scripts.utils.network_utils import check_port, wait_for_port
-from scripts.utils.logger import setup_logger, print_banner
+from scripts.utils.docker_utils import DockerManager
+from scripts.utils.logger import setup_logger
 
 logger = setup_logger("start_lab")
 
-# =============================================================================
-# Service Configuration
-# =============================================================================
-
+# Service definitions - Portainer is NOT included (runs globally on port 9000)
 SERVICES = {
     "ftp-server": {
         "container": "s9_ftp_server",
-        "port": 2121,
+        "ports": [2121],
         "health_check": None,
-        "startup_time": 5,
-        "description": "FTP server (pyftpdlib)"
+        "startup_time": 10
     },
     "client1": {
         "container": "s9_client1",
-        "port": None,
+        "ports": [],
         "health_check": None,
-        "startup_time": 3,
-        "description": "FTP client 1"
+        "startup_time": 3
     },
     "client2": {
         "container": "s9_client2",
-        "port": None,
+        "ports": [],
         "health_check": None,
-        "startup_time": 3,
-        "description": "FTP client 2"
+        "startup_time": 3
     }
 }
 
-# =============================================================================
-# Main Functions
-# =============================================================================
 
-def verify_prerequisites() -> bool:
-    """Check that all prerequisites are met."""
-    logger.info("Verifying prerequisites...")
-    
-    # Check Docker
-    if not check_docker_running():
-        logger.error("Docker is not running. Please start Docker Desktop.")
-        return False
-    
-    logger.info("Docker is running")
-    
-    # Check compose file exists
-    compose_file = PROJECT_ROOT / "docker" / "docker-compose.yml"
-    if not compose_file.exists():
-        logger.error(f"Docker Compose file not found: {compose_file}")
-        return False
-    
-    logger.info("Docker Compose file found")
-    
-    return True
+def check_running_in_wsl() -> bool:
+    """Check if we're running inside WSL."""
+    if os.path.exists("/proc/sys/fs/binfmt_misc/WSLInterop"):
+        return True
+    if "WSL_DISTRO_NAME" in os.environ:
+        return True
+    try:
+        with open("/proc/version", "r") as f:
+            version = f.read().lower()
+            return "microsoft" in version or "wsl" in version
+    except (FileNotFoundError, IOError):
+        pass
+    return False
 
 
-def create_directories() -> None:
-    """Create necessary directories for the lab."""
-    dirs = [
-        PROJECT_ROOT / "docker" / "server-files",
-        PROJECT_ROOT / "docker" / "client1-files",
-        PROJECT_ROOT / "docker" / "client2-files",
-        PROJECT_ROOT / "pcap",
-        PROJECT_ROOT / "artifacts"
-    ]
-    
-    for d in dirs:
-        d.mkdir(parents=True, exist_ok=True)
-    
-    # Create sample files for transfer testing
-    server_files = PROJECT_ROOT / "docker" / "server-files"
-    
-    hello_file = server_files / "hello.txt"
-    if not hello_file.exists():
-        hello_file.write_text(
-            "Hello from Week 9 FTP Laboratory!\n"
-            "This file demonstrates file transfer protocols.\n"
-            "NETWORKING class - ASE, Informatics\n"
+def check_docker_running() -> bool:
+    """Verify Docker daemon is available."""
+    try:
+        result = subprocess.run(
+            ["docker", "info"],
+            capture_output=True,
+            timeout=10
         )
-        logger.info(f"Created sample file: {hello_file}")
-    
-    binary_file = server_files / "sample.bin"
-    if not binary_file.exists():
-        import os
-        binary_file.write_bytes(os.urandom(1024))
-        logger.info(f"Created binary sample: {binary_file}")
-
-
-def start_services(docker: DockerManager, rebuild: bool = False) -> bool:
-    """Start all Docker services."""
-    logger.info("Starting Docker containers...")
-    
-    if rebuild:
-        logger.info("Rebuilding images (--rebuild flag set)...")
-        if not docker.compose_build():
-            return False
-    
-    if not docker.compose_up(detach=True):
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
         return False
-    
-    logger.info("Waiting for services to initialise...")
-    time.sleep(3)
-    
-    return True
 
 
-def verify_services() -> bool:
-    """Verify all services are healthy."""
-    all_healthy = True
-    
-    for name, svc in SERVICES.items():
-        port = svc.get("port")
-        
-        if port:
-            # Wait for port to be available
-            if wait_for_port("localhost", port, timeout=15):
-                logger.info(f"  [OK] {name} is listening on port {port}")
-            else:
-                logger.error(f"  [FAIL] {name} is not responding on port {port}")
-                all_healthy = False
+def try_start_docker_service() -> bool:
+    """Attempt to start Docker service in WSL."""
+    logger.info("Docker not running. Attempting to start Docker service...")
+    try:
+        result = subprocess.run(
+            ["sudo", "service", "docker", "start"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        if result.returncode == 0:
+            logger.info("Docker service started successfully")
+            time.sleep(2)
+            return check_docker_running()
         else:
-            logger.info(f"  [OK] {name} started (no port check)")
-    
-    return all_healthy
+            logger.error(f"Failed to start Docker: {result.stderr}")
+            return False
+    except subprocess.TimeoutExpired:
+        logger.error("Timeout starting Docker service")
+        return False
+    except FileNotFoundError:
+        logger.error("sudo not found")
+        return False
 
 
-def show_access_info() -> None:
-    """Display access information for the laboratory."""
+def check_portainer_status() -> tuple:
+    """Check Portainer container status."""
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "-a", "--filter", "name=portainer",
+             "--format", "{{.Names}}\t{{.Status}}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.returncode != 0:
+            return False, "Could not check Portainer status"
+        
+        output = result.stdout.strip()
+        if not output:
+            return False, "Portainer container not found"
+        
+        for line in output.split("\n"):
+            if "portainer" in line.lower():
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    status = parts[1].lower()
+                    if "up" in status:
+                        return True, "Portainer is running"
+                    else:
+                        return False, f"Portainer is stopped: {parts[1]}"
+        
+        return False, "Portainer status unknown"
+    except Exception as e:
+        return False, f"Error checking Portainer: {e}"
+
+
+def display_portainer_warning() -> None:
+    """Display warning when Portainer is not running."""
+    logger.warning("")
+    logger.warning("=" * 60)
+    logger.warning("\033[93mWARNING: Portainer is not running!\033[0m")
+    logger.warning("To start Portainer: docker start portainer")
+    logger.warning("=" * 60)
+
+
+def print_banner() -> None:
+    """Print startup banner."""
     print()
-    print("=" * 60)
-    print("Week 9 Laboratory Environment is Ready!")
-    print("=" * 60)
+    print("=" * 65)
+    print("  Week 9: Session Layer and Presentation Layer")
+    print("  FTP Sessions, Binary Encoding, Endianness")
+    print("  NETWORKING class - ASE, Informatics")
+    print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
+    print("=" * 65)
     print()
-    print("Access Points:")
-    print(f"  FTP Server:    localhost:2121")
-    print(f"  FTP User:      test")
-    print(f"  FTP Password:  12345")
-    print()
-    print("Portainer (if installed):")
-    print(f"  URL:           https://localhost:9443")
-    print()
-    print("Quick Commands:")
-    print("  python scripts/run_demo.py          # Run demonstration")
-    print("  python scripts/capture_traffic.py   # Capture traffic")
-    print("  python scripts/stop_lab.py          # Stop environment")
-    print()
-    print("Manual FTP Test:")
-    print("  python src/exercises/ftp_demo_client.py \\")
-    print("      --host localhost --port 2121 \\")
-    print("      --user test --password 12345 list")
-    print()
-    print("=" * 60)
 
 
 def main() -> int:
+    """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Start Week 9 Laboratory Environment",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        description="Start Week 9 Laboratory Environment (WSL2)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 scripts/start_lab.py              # Start all services
+  python3 scripts/start_lab.py --status     # Check status only
+  python3 scripts/start_lab.py --rebuild    # Rebuild images first
+
+Notes:
+  - Portainer runs globally on port 9000 and is NOT managed by this script
+  - Access Portainer at: http://localhost:9000
+  - Credentials: stud / studstudstud
+        """
     )
     parser.add_argument(
         "--status", "-s",
@@ -205,57 +186,118 @@ def main() -> int:
         "--detach", "-d",
         action="store_true",
         default=True,
-        help="Run in detached mode (default: True)"
+        help="Run containers in detached mode (default: True)"
     )
     parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="Enable verbose output"
     )
+    parser.add_argument(
+        "--no-portainer-check",
+        action="store_true",
+        help="Skip Portainer status check"
+    )
     
     args = parser.parse_args()
     
-    # Initialise Docker manager
-    docker = DockerManager(PROJECT_ROOT / "docker")
+    # Check if running in WSL
+    if not check_running_in_wsl():
+        logger.warning("Not running in WSL - some features may not work correctly")
     
-    # Status check only
-    if args.status:
-        print_banner("Week 9 Laboratory Status")
-        docker.show_status(SERVICES)
-        return 0
-    
-    # Full startup
-    print_banner("Week 9 Laboratory Launcher")
+    # Check Docker
+    if not check_docker_running():
+        if not try_start_docker_service():
+            logger.error("")
+            logger.error("Docker is not running and could not be started.")
+            logger.error("Please start Docker manually: sudo service docker start")
+            return 1
     
     try:
-        # Step 1: Verify prerequisites
-        if not verify_prerequisites():
-            return 1
+        docker = DockerManager(PROJECT_ROOT / "docker")
+    except FileNotFoundError as e:
+        logger.error(f"Docker configuration not found: {e}")
+        return 1
+    
+    # Check Portainer status
+    if not args.no_portainer_check:
+        portainer_running, portainer_status = check_portainer_status()
+        if not portainer_running:
+            display_portainer_warning()
+    
+    if args.status:
+        print_banner()
+        logger.info("Checking service status...")
+        docker.show_status(SERVICES)
         
-        # Step 2: Create directories
-        create_directories()
+        # Show Portainer status separately
+        portainer_running, portainer_status = check_portainer_status()
+        status_colour = "\033[92m" if portainer_running else "\033[91m"
+        logger.info(f"  portainer (global): {status_colour}{portainer_status}\033[0m (port 9000)")
+        return 0
+    
+    print_banner()
+    
+    try:
+        # Build images if requested
+        if args.rebuild:
+            logger.info("Rebuilding Docker images...")
+            if not docker.compose_build(no_cache=True):
+                logger.error("Failed to build images")
+                return 1
+            logger.info("Images rebuilt successfully")
         
-        # Step 3: Start services
-        if not start_services(docker, rebuild=args.rebuild):
+        # Start services (NOT Portainer)
+        logger.info("Starting laboratory services...")
+        logger.info("(Portainer runs globally and is not managed here)")
+        
+        if not docker.compose_up(detach=args.detach, build=not args.rebuild):
             logger.error("Failed to start services")
             return 1
         
-        # Step 4: Verify services
-        print()
+        # Wait for services to initialise
+        logger.info("Waiting for services to initialise...")
+        time.sleep(10)
+        
+        # Verify services
         logger.info("Verifying services...")
-        if not verify_services():
-            logger.warning("Some services may not be fully operational")
-            logger.info("Check logs with: docker compose -f docker/docker-compose.yml logs")
+        all_healthy = docker.verify_services(SERVICES)
         
-        # Step 5: Show access information
-        show_access_info()
+        # Re-check Portainer
+        portainer_running, _ = check_portainer_status()
         
-        return 0
-        
-    except KeyboardInterrupt:
-        logger.warning("\nInterrupted by user")
-        return 130
+        if all_healthy:
+            print()
+            print("=" * 65)
+            print("  \033[92mLaboratory environment is ready!\033[0m")
+            print("=" * 65)
+            print()
+            print("  Access points:")
+            if portainer_running:
+                print("    \033[92mPortainer:       http://localhost:9000\033[0m")
+                print("    Credentials:     stud / studstudstud")
+            else:
+                print("    \033[93mPortainer:       NOT RUNNING\033[0m")
+                print("    Start with:      docker start portainer")
+            print()
+            print("    FTP Server:      localhost:2121")
+            print("    FTP Credentials: test / 12345")
+            print("    Passive Ports:   60000-60010")
+            print()
+            print("  Quick start:")
+            print("    python3 src/exercises/ftp_demo_client.py --host localhost --port 2121")
+            print("    python3 scripts/run_demo.py --demo ftp_session")
+            print()
+            print("=" * 65)
+            return 0
+        else:
+            logger.error("Some services failed to start. Check logs:")
+            logger.error("  docker compose -f docker/docker-compose.yml logs")
+            return 1
     
+    except KeyboardInterrupt:
+        logger.info("Startup cancelled by user")
+        return 130
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         if args.verbose:

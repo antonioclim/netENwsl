@@ -4,6 +4,17 @@
 # NETWORKING class - ASE, Informatics | by Revolvix
 # =============================================================================
 #
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
 # Architecture:
 #   nginx (reverse proxy + load balancer) → backend1, backend2, backend3
 #
@@ -16,7 +27,7 @@
 # Ports:
 #   8080  - HTTP (nginx)
 #   8443  - HTTPS (nginx, self-signed)
-#   9443  - Portainer (optional)
+#   9000  - RESERVED for Portainer (global service)
 #
 # =============================================================================
 
@@ -28,6 +39,7 @@ services:
     image: nginx:alpine
     container_name: week8-nginx-proxy
     hostname: nginx-proxy
+    # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
     ports:
       - "8080:80"
       - "8443:443"
@@ -42,6 +54,8 @@ services:
         condition: service_healthy
       backend3:
         condition: service_healthy
+    environment:
+      - LAB_WEEK=8
     networks:
       week8-network:
         ipv4_address: 172.28.8.10
@@ -70,6 +84,7 @@ services:
       - HTTP_PORT=8080
       - BACKEND_ID=1
       - BACKEND_NAME=Backend-Alpha
+      - LAB_WEEK=8
     expose:
       - "8080"
     volumes:
@@ -100,6 +115,7 @@ services:
       - HTTP_PORT=8080
       - BACKEND_ID=2
       - BACKEND_NAME=Backend-Beta
+      - LAB_WEEK=8
     expose:
       - "8080"
     volumes:
@@ -130,6 +146,7 @@ services:
       - HTTP_PORT=8080
       - BACKEND_ID=3
       - BACKEND_NAME=Backend-Gamma
+      - LAB_WEEK=8
     expose:
       - "8080"
     volumes:
@@ -150,29 +167,6 @@ services:
       - "com.ase.role=backend"
       - "com.ase.backend.id=3"
 
-  # ===========================================================================
-  # Portainer CE (Optional Container Management)
-  # ===========================================================================
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: week8-portainer
-    hostname: portainer
-    ports:
-      - "9443:9443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - portainer-data:/data
-    networks:
-      week8-network:
-        ipv4_address: 172.28.8.100
-    restart: unless-stopped
-    profiles:
-      - management
-    labels:
-      - "com.ase.week=8"
-      - "com.ase.project=week8-lab"
-      - "com.ase.role=management"
-
 # =============================================================================
 # Docker Network
 # =============================================================================
@@ -188,8 +182,6 @@ networks:
 
 # =============================================================================
 # Persistent Volumes
+# NOTE: Portainer data volume is managed globally, not here
 # =============================================================================
-volumes:
-  portainer-data:
-    driver: local
-    name: week8-portainer-data
+volumes: {}

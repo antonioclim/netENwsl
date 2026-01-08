@@ -3,78 +3,174 @@
 Week 8 Laboratory Shutdown
 NETWORKING class - ASE, Informatics | by Revolvix
 
-This script gracefully stops all laboratory containers.
+Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+
+This script gracefully stops all laboratory containers while preserving data.
+
+IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+This script will NEVER stop Portainer - it must remain running for all weeks.
 """
 
-import sys
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 
-# Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.utils.docker_utils import DockerManager
-from scripts.utils.logger import setup_logger, print_banner
+from scripts.utils.logger import setup_logger
 
 logger = setup_logger("stop_lab")
 
 
-def main():
+def check_portainer_status() -> tuple:
+    """Check Portainer container status."""
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=portainer",
+             "--format", "{{.Names}}\t{{.Status}}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.returncode != 0:
+            return False, "Could not check status"
+        
+        output = result.stdout.strip()
+        if not output:
+            return False, "Not found"
+        
+        for line in output.split("\n"):
+            if "portainer" in line.lower():
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    return True, parts[1]
+        
+        return False, "Unknown"
+    except Exception as e:
+        return False, f"Error: {e}"
+
+
+def main() -> int:
+    """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Stop Week 8 Laboratory Environment"
+        description="Stop Week 8 Laboratory Environment (WSL2)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 scripts/stop_lab.py           # Stop lab containers
+  python3 scripts/stop_lab.py --force   # Force stop immediately
+
+Notes:
+  - Portainer (port 9000) is NEVER stopped by this script
+  - Portainer is a global service that should remain running
+        """
+    )
+    parser.add_argument(
+        "--force", "-f",
+        action="store_true",
+        help="Force stop containers immediately"
     )
     parser.add_argument(
         "--timeout", "-t",
         type=int,
         default=10,
-        help="Timeout in seconds for container shutdown (default: 10)"
-    )
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Show verbose output"
+        help="Timeout for graceful stop (default: 10s)"
     )
     
     args = parser.parse_args()
     
-    print_banner(
-        "Stopping Week 8 Laboratory",
-        "Transport Layer: HTTP Server and Reverse Proxies"
-    )
+    logger.info("=" * 60)
+    logger.info("Stopping Week 8 Laboratory Environment")
+    logger.info("(Portainer will NOT be stopped - it runs globally)")
+    logger.info("=" * 60)
     
     try:
         docker = DockerManager(PROJECT_ROOT / "docker")
+    except FileNotFoundError:
+        logger.warning("docker-compose.yml not found, attempting direct stop...")
+        containers = ["week8-nginx-proxy", "week8-backend-1", "week8-backend-2", "week8-backend-3"]
+        for container in containers:
+            try:
+                if args.force:
+                    subprocess.run(["docker", "kill", container], capture_output=True)
+                else:
+                    subprocess.run(["docker", "stop", "-t", str(args.timeout), container],
+                                 capture_output=True)
+                logger.info(f"  Stopped {container}")
+            except Exception:
+                pass
+        return 0
+    
+    try:
+        logger.info("Stopping lab containers...")
         
-        # Show current status
-        logger.info("Current container status:")
-        status = docker.get_container_status()
-        
-        if not status:
-            logger.info("  No containers are running.")
-            return 0
-        
-        for name, info in status.items():
-            state = info.get("state", "unknown")
-            logger.info(f"  {name}: {state}")
-        
-        # Stop containers
-        logger.info("\nStopping containers...")
-        
-        if docker.compose_down(volumes=False):
-            logger.info("\n✓ All containers stopped successfully")
-            logger.info("  Data and volumes are preserved.")
-            logger.info("  Run 'python scripts/cleanup.py --full' to remove everything.")
-            return 0
+        if args.force:
+            result = subprocess.run(
+                ["docker", "compose", "-f", str(docker.compose_file), "kill"],
+                cwd=PROJECT_ROOT,
+                capture_output=True,
+                text=True
+            )
         else:
-            logger.error("Failed to stop some containers")
-            return 1
-            
-    except FileNotFoundError as e:
-        logger.error(f"Compose file not found: {e}")
-        return 1
+            result = subprocess.run(
+                ["docker", "compose", "-f", str(docker.compose_file),
+                 "stop", "-t", str(args.timeout)],
+                cwd=PROJECT_ROOT,
+                capture_output=True,
+                text=True
+            )
+        
+        if result.returncode == 0:
+            logger.info("\033[92mLab containers stopped.\033[0m")
+        else:
+            logger.warning(f"Stop command output: {result.stderr}")
+        
+        # Verify shutdown
+        logger.info("")
+        logger.info("Verifying shutdown...")
+        
+        check_result = subprocess.run(
+            ["docker", "ps", "--filter", "name=week8",
+             "--format", "{{.Names}}: {{.Status}}"],
+            capture_output=True,
+            text=True
+        )
+        
+        running = check_result.stdout.strip()
+        if running:
+            logger.warning(f"Still running:\n{running}")
+        else:
+            logger.info("  All week8 containers stopped")
+        
+        # Confirm Portainer is still running
+        portainer_running, portainer_status = check_portainer_status()
+        if portainer_running:
+            logger.info(f"  \033[92mPortainer still running:\033[0m {portainer_status}")
+        else:
+            logger.warning(f"  \033[93mPortainer not running:\033[0m {portainer_status}")
+            logger.info("  To start: docker start portainer")
+        
+        logger.info("")
+        logger.info("=" * 60)
+        logger.info("Shutdown complete.")
+        logger.info("")
+        logger.info("Data preserved in:")
+        logger.info(f"  Artifacts: {PROJECT_ROOT / 'artifacts'}")
+        logger.info(f"  Captures:  {PROJECT_ROOT / 'pcap'}")
+        logger.info(f"  Web files: {PROJECT_ROOT / 'www'}")
+        logger.info("")
+        logger.info("To restart: python3 scripts/start_lab.py")
+        if portainer_running:
+            logger.info("Portainer:  http://localhost:9000 (still available)")
+        logger.info("=" * 60)
+        
+        return 0
+    
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+        logger.error(f"Failed to stop laboratory: {e}")
         return 1
 
 

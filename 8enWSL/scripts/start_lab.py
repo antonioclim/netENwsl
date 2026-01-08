@@ -3,56 +3,75 @@
 Week 8 Laboratory Launcher
 NETWORKING class - ASE, Informatics | by Revolvix
 
+Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+
 This script starts all Docker containers and verifies the laboratory environment.
+
+IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+This script will NEVER start or stop Portainer.
 """
 
+import argparse
 import subprocess
 import sys
 import time
-import argparse
+import os
 from pathlib import Path
 
-# Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.utils.docker_utils import DockerManager
-from scripts.utils.network_utils import check_port_open, wait_for_port, check_http_health
-from scripts.utils.logger import setup_logger, print_banner
+from scripts.utils.logger import setup_logger
 
 logger = setup_logger("start_lab")
 
-# Service configuration
+# Service definitions - Portainer is NOT included (runs globally on port 9000)
 SERVICES = {
     "nginx": {
         "container": "week8-nginx-proxy",
-        "port": 8080,
-        "health_check": "http://localhost:8080/nginx-health",
-        "startup_time": 5,
+        "ports": [8080, 8443],
+        "health_check": None,
+        "startup_time": 5
     },
     "backend1": {
         "container": "week8-backend-1",
-        "port": None,  # Internal only
+        "ports": [],
         "health_check": None,
-        "startup_time": 3,
+        "startup_time": 3
     },
     "backend2": {
         "container": "week8-backend-2",
-        "port": None,
+        "ports": [],
         "health_check": None,
-        "startup_time": 3,
+        "startup_time": 3
     },
     "backend3": {
         "container": "week8-backend-3",
-        "port": None,
+        "ports": [],
         "health_check": None,
-        "startup_time": 3,
-    },
+        "startup_time": 3
+    }
 }
 
 
-def check_docker_available() -> bool:
-    """Check if Docker is available and running."""
+def check_running_in_wsl() -> bool:
+    """Check if we're running inside WSL."""
+    if os.path.exists("/proc/sys/fs/binfmt_misc/WSLInterop"):
+        return True
+    if "WSL_DISTRO_NAME" in os.environ:
+        return True
+    try:
+        with open("/proc/version", "r") as f:
+            version = f.read().lower()
+            return "microsoft" in version or "wsl" in version
+    except (FileNotFoundError, IOError):
+        pass
+    return False
+
+
+def check_docker_running() -> bool:
+    """Verify Docker daemon is available."""
     try:
         result = subprocess.run(
             ["docker", "info"],
@@ -60,50 +79,109 @@ def check_docker_available() -> bool:
             timeout=10
         )
         return result.returncode == 0
-    except Exception:
+    except (subprocess.TimeoutExpired, FileNotFoundError):
         return False
 
 
-def print_access_info():
-    """Print service access information."""
-    print("\n" + "=" * 60)
-    print("Access Points:")
-    print("=" * 60)
-    print(f"""
-  nginx Proxy (HTTP):   http://localhost:8080/
-  nginx Proxy (HTTPS):  https://localhost:8443/ (self-signed)
-  
-  Load Balancing Algorithms:
-    Round-Robin:        http://localhost:8080/
-    Weighted:           http://localhost:8080/weighted/
-    Least Connections:  http://localhost:8080/least-conn/
-    IP Hash (Sticky):   http://localhost:8080/sticky/
-  
-  Health Check:         http://localhost:8080/nginx-health
-  nginx Status:         http://localhost:8080/nginx-status
-  
-  Portainer:            https://localhost:9443/ (if enabled)
-                        Start with: docker compose --profile management up -d
-    """)
-    print("=" * 60)
+def try_start_docker_service() -> bool:
+    """Attempt to start Docker service in WSL."""
+    logger.info("Docker not running. Attempting to start Docker service...")
+    try:
+        result = subprocess.run(
+            ["sudo", "service", "docker", "start"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        if result.returncode == 0:
+            logger.info("Docker service started successfully")
+            time.sleep(2)
+            return check_docker_running()
+        else:
+            logger.error(f"Failed to start Docker: {result.stderr}")
+            return False
+    except subprocess.TimeoutExpired:
+        logger.error("Timeout starting Docker service")
+        return False
+    except FileNotFoundError:
+        logger.error("sudo not found")
+        return False
 
 
-def main():
+def check_portainer_status() -> tuple:
+    """Check Portainer container status."""
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "-a", "--filter", "name=portainer",
+             "--format", "{{.Names}}\t{{.Status}}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.returncode != 0:
+            return False, "Could not check Portainer status"
+        
+        output = result.stdout.strip()
+        if not output:
+            return False, "Portainer container not found"
+        
+        for line in output.split("\n"):
+            if "portainer" in line.lower():
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    status = parts[1].lower()
+                    if "up" in status:
+                        return True, "Portainer is running"
+                    else:
+                        return False, f"Portainer is stopped: {parts[1]}"
+        
+        return False, "Portainer status unknown"
+    except Exception as e:
+        return False, f"Error checking Portainer: {e}"
+
+
+def display_portainer_warning() -> None:
+    """Display warning when Portainer is not running."""
+    logger.warning("")
+    logger.warning("=" * 60)
+    logger.warning("\033[93mWARNING: Portainer is not running!\033[0m")
+    logger.warning("To start Portainer: docker start portainer")
+    logger.warning("=" * 60)
+
+
+def print_banner() -> None:
+    """Print startup banner."""
+    print()
+    print("=" * 65)
+    print("  Week 8: Transport Layer — HTTP Server & Reverse Proxies")
+    print("  nginx Load Balancer, Python Backend Servers")
+    print("  NETWORKING class - ASE, Informatics")
+    print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
+    print("=" * 65)
+    print()
+
+
+def main() -> int:
+    """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Start Week 8 Laboratory Environment",
+        description="Start Week 8 Laboratory Environment (WSL2)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/start_lab.py           # Start all services
-  python scripts/start_lab.py --status  # Check status only
-  python scripts/start_lab.py --rebuild # Rebuild images before starting
-  python scripts/start_lab.py --portainer # Include Portainer
+  python3 scripts/start_lab.py              # Start all services
+  python3 scripts/start_lab.py --status     # Check status only
+  python3 scripts/start_lab.py --rebuild    # Rebuild images first
+
+Notes:
+  - Portainer runs globally on port 9000 and is NOT managed by this script
+  - Access Portainer at: http://localhost:9000
+  - Credentials: stud / studstudstud
         """
     )
     parser.add_argument(
         "--status", "-s",
         action="store_true",
-        help="Check status only, don't start containers"
+        help="Check status only, don't start services"
     )
     parser.add_argument(
         "--rebuild", "-r",
@@ -111,141 +189,128 @@ Examples:
         help="Force rebuild of Docker images"
     )
     parser.add_argument(
-        "--portainer", "-p",
+        "--detach", "-d",
         action="store_true",
-        help="Include Portainer management interface"
+        default=True,
+        help="Run containers in detached mode (default: True)"
     )
     parser.add_argument(
         "--verbose", "-v",
         action="store_true",
-        help="Show verbose output"
+        help="Enable verbose output"
+    )
+    parser.add_argument(
+        "--no-portainer-check",
+        action="store_true",
+        help="Skip Portainer status check"
     )
     
     args = parser.parse_args()
     
-    print_banner(
-        "Week 8 Laboratory Environment",
-        "Transport Layer: HTTP Server and Reverse Proxies"
-    )
+    # Check if running in WSL
+    if not check_running_in_wsl():
+        logger.warning("Not running in WSL - some features may not work correctly")
     
-    # Check Docker availability
-    if not check_docker_available():
-        logger.error("Docker is not running!")
-        logger.error("Please start Docker Desktop and try again.")
+    # Check Docker
+    if not check_docker_running():
+        if not try_start_docker_service():
+            logger.error("")
+            logger.error("Docker is not running and could not be started.")
+            logger.error("Please start Docker manually: sudo service docker start")
+            return 1
+    
+    try:
+        docker = DockerManager(PROJECT_ROOT / "docker")
+    except FileNotFoundError as e:
+        logger.error(f"Docker configuration not found: {e}")
         return 1
     
-    # Initialise Docker manager
-    docker = DockerManager(PROJECT_ROOT / "docker")
+    # Check Portainer status
+    if not args.no_portainer_check:
+        portainer_running, portainer_status = check_portainer_status()
+        if not portainer_running:
+            display_portainer_warning()
     
-    # Status only mode
     if args.status:
+        print_banner()
+        logger.info("Checking service status...")
         docker.show_status(SERVICES)
         
-        # Also check HTTP endpoints
-        print("\nHTTP Health Checks:")
-        print("-" * 40)
-        
-        if check_port_open("localhost", 8080):
-            if check_http_health("http://localhost:8080/nginx-health"):
-                print("  nginx:    \033[92m✓ Healthy\033[0m")
-            else:
-                print("  nginx:    \033[93m! Port open but unhealthy\033[0m")
-        else:
-            print("  nginx:    \033[91m✗ Not reachable\033[0m")
-        
+        # Show Portainer status separately
+        portainer_running, portainer_status = check_portainer_status()
+        status_colour = "\033[92m" if portainer_running else "\033[91m"
+        logger.info(f"  portainer (global): {status_colour}{portainer_status}\033[0m (port 9000)")
         return 0
     
-    # Start containers
-    logger.info("Starting laboratory environment...")
+    print_banner()
     
     try:
         # Build images if requested
         if args.rebuild:
             logger.info("Rebuilding Docker images...")
-            if not docker.compose_build():
+            if not docker.compose_build(no_cache=True):
                 logger.error("Failed to build images")
                 return 1
+            logger.info("Images rebuilt successfully")
         
-        # Start containers
-        logger.info("Starting containers...")
+        # Start services (NOT Portainer)
+        logger.info("Starting laboratory services...")
+        logger.info("(Portainer runs globally and is not managed here)")
         
-        # Prepare compose command
-        compose_args = ["up", "-d"]
-        if args.portainer:
-            compose_args.extend(["--profile", "management"])
-        
-        result = subprocess.run(
-            ["docker", "compose", "-f", str(docker.compose_file)] + compose_args,
-            cwd=docker.compose_dir,
-            capture_output=not args.verbose
-        )
-        
-        if result.returncode != 0:
-            logger.error("Failed to start containers")
-            if not args.verbose:
-                logger.error("Run with --verbose for details")
+        if not docker.compose_up(detach=args.detach, build=not args.rebuild):
+            logger.error("Failed to start services")
             return 1
         
         # Wait for services to initialise
         logger.info("Waiting for services to initialise...")
-        time.sleep(3)
+        time.sleep(8)
         
-        # Wait for nginx to be ready
-        logger.info("Checking nginx availability...")
-        if not wait_for_port("localhost", 8080, timeout=30):
-            logger.error("nginx did not become available within 30 seconds")
-            return 1
+        # Verify services
+        logger.info("Verifying services...")
+        all_healthy = docker.verify_services(SERVICES)
         
-        # Verify health endpoints
-        logger.info("Verifying service health...")
-        time.sleep(2)
-        
-        all_healthy = True
-        for name, svc in SERVICES.items():
-            health_url = svc.get("health_check")
-            if health_url:
-                if check_http_health(health_url):
-                    logger.info(f"  ✓ {name}: healthy")
-                else:
-                    logger.warning(f"  ! {name}: health check failed")
-                    all_healthy = False
-            else:
-                # Check container status for internal services
-                status = docker.get_container_status()
-                container = svc.get("container", name)
-                if container in status:
-                    state = status[container].get("state", "unknown")
-                    if state == "running":
-                        logger.info(f"  ✓ {name}: running")
-                    else:
-                        logger.warning(f"  ! {name}: {state}")
-                        all_healthy = False
+        # Re-check Portainer
+        portainer_running, _ = check_portainer_status()
         
         if all_healthy:
-            logger.info("\n✓ Laboratory environment is ready!")
-            print_access_info()
-            
-            print("\nQuick Test Commands:")
-            print("-" * 40)
-            print("  # Test round-robin distribution")
-            print("  for i in {1..6}; do curl -s http://localhost:8080/ | grep -o 'Backend-[A-Za-z]*'; done")
             print()
-            print("  # Check backend headers")
-            print("  curl -v http://localhost:8080/ 2>&1 | grep -i x-backend")
+            print("=" * 65)
+            print("  \033[92mLaboratory environment is ready!\033[0m")
+            print("=" * 65)
             print()
-            
+            print("  Access points:")
+            if portainer_running:
+                print("    \033[92mPortainer:       http://localhost:9000\033[0m")
+                print("    Credentials:     stud / studstudstud")
+            else:
+                print("    \033[93mPortainer:       NOT RUNNING\033[0m")
+                print("    Start with:      docker start portainer")
+            print()
+            print("    nginx Proxy:     http://localhost:8080")
+            print("    nginx HTTPS:     https://localhost:8443")
+            print("    Backend 1:       Internal (172.28.8.21:8080)")
+            print("    Backend 2:       Internal (172.28.8.22:8080)")
+            print("    Backend 3:       Internal (172.28.8.23:8080)")
+            print()
+            print("  Quick start:")
+            print("    curl http://localhost:8080/")
+            print("    python3 scripts/run_demo.py --demo docker-nginx")
+            print()
+            print("=" * 65)
             return 0
         else:
-            logger.warning("Some services may not be fully healthy")
-            logger.warning("Check logs with: docker compose logs")
-            print_access_info()
+            logger.error("Some services failed to start. Check logs:")
+            logger.error("  docker compose -f docker/docker-compose.yml logs")
             return 1
-            
+    
     except KeyboardInterrupt:
-        logger.info("\nStartup cancelled by user")
+        logger.info("Startup cancelled by user")
         return 130
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
         return 1
 
 

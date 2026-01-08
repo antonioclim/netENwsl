@@ -4,6 +4,196 @@
 > 
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `8enWSL`
+
+| Component | Details |
+|-----------|---------|
+| Windows | Windows 10/11 with WSL2 enabled |
+| Linux Distribution | Ubuntu 22.04 LTS (default WSL distro) |
+| Container Runtime | Docker Engine (in WSL) |
+| Management Interface | Portainer CE on port 9000 (global) |
+| Packet Analysis | Wireshark (native Windows application) |
+
+---
+
+## 📥 Cloning This Week's Laboratory
+
+### Step 1: Open PowerShell (Windows)
+
+Press `Win + X` → Select "Windows Terminal" or "PowerShell"
+
+### Step 2: Navigate and Clone
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone Week 8
+git clone https://github.com/antonioclim/netENwsl.git WEEK8
+cd WEEK8
+```
+
+### Step 3: Verify Clone
+```powershell
+dir
+# You should see: docker/, scripts/, src/, README.md, www/, etc.
+```
+
+### Alternative: Clone Inside WSL
+
+```bash
+# In Ubuntu terminal
+mkdir -p /mnt/d/NETWORKING
+cd /mnt/d/NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK8
+cd WEEK8
+```
+
+---
+
+## 🔧 Initial Environment Setup (First Time Only)
+
+### Step 1: Open Ubuntu Terminal
+
+From Windows:
+- Click "Ubuntu" in Start menu, OR
+- In PowerShell type: `wsl`
+
+You will see the Ubuntu prompt:
+```
+stud@YOURPC:~$
+```
+
+### Step 2: Start Docker Service
+
+```bash
+# Start Docker (required after each Windows restart)
+sudo service docker start
+# Password: stud
+
+# Verify Docker is running
+docker ps
+```
+
+**Expected output:**
+```
+CONTAINER ID   IMAGE                    STATUS          NAMES
+abc123...      portainer/portainer-ce   Up 2 hours      portainer
+```
+
+### Step 3: Verify Portainer Access
+
+Open browser and navigate to: **http://localhost:9000**
+
+**Login credentials:**
+- Username: `stud`
+- Password: `studstudstud`
+
+### Step 4: Navigate to Laboratory Directory
+
+```bash
+cd /mnt/d/NETWORKING/WEEK8/8enWSL
+ls -la
+```
+
+---
+
+## 🖥️ Understanding Portainer Interface
+
+### Dashboard Overview
+
+After login at http://localhost:9000, you will see:
+1. **Home** - List of Docker environments
+2. **local** - Click to manage local Docker
+
+### Viewing Containers
+
+Navigate: **Home → local → Containers**
+
+You will see a table showing all containers with:
+- Name, State, Image, Created, IP Address, Ports
+
+### Container Actions in Portainer
+
+For any container, you can:
+- **Start/Stop/Restart**: Use the action buttons
+- **Logs**: Click container name → "Logs" tab
+- **Console**: Click container name → "Console" tab → "Connect"
+- **Inspect**: View detailed JSON configuration
+- **Stats**: Real-time CPU/Memory/Network usage
+
+### Week 8 Network Configuration
+
+Navigate: **Networks → week8-laboratory-network**
+
+Current configuration:
+- Subnet: 172.28.8.0/24
+- Gateway: 172.28.8.1
+- nginx proxy: 172.28.8.10
+- Backend servers: 172.28.8.21-23
+
+**⚠️ NEVER use port 9000** - reserved for Portainer!
+
+---
+
+## 🦈 Wireshark Setup and Usage
+
+### When to Open Wireshark
+
+Open Wireshark:
+- **BEFORE** generating network traffic you want to capture
+- When exercises mention "capture", "analyse packets", or "observe traffic"
+
+### Step 1: Launch Wireshark
+
+From Windows Start Menu: Search "Wireshark" → Click to open
+
+### Step 2: Select Capture Interface
+
+**CRITICAL:** Select the correct interface for WSL traffic:
+
+| Interface Name | When to Use |
+|----------------|-------------|
+| **vEthernet (WSL)** | ✅ Most common - captures WSL Docker traffic |
+| **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
+| **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
+
+### Essential Wireshark Filters for Week 8
+
+| Filter | Purpose |
+|--------|---------|
+| `http` | All HTTP traffic |
+| `tcp.port == 8080` | nginx proxy traffic |
+| `tcp.port == 8443` | HTTPS traffic |
+| `tcp.flags.syn == 1 && tcp.flags.ack == 0` | TCP SYN packets |
+| `http.request` | HTTP requests only |
+| `http.response.code == 200` | Successful responses |
+| `http.response.code >= 400` | Error responses |
+| `http.response.header matches "X-Backend"` | Backend identification |
+
+### Analysing HTTP Request-Response
+
+1. Filter: `http`
+2. Find request packet (e.g., GET / HTTP/1.1)
+3. Right-click → **Follow → TCP Stream**
+4. View complete HTTP conversation with headers
+
+### Saving Captures
+
+1. **File → Save As**
+2. Navigate to: `D:\NETWORKING\WEEK8\pcap\`
+3. Filename: `capture_http.pcap`
+
+---
+
 ## Overview
 
 The transport layer constitutes the pivotal architectural stratum bridging application-level semantics with network-level packet delivery, providing the fundamental abstractions of process-to-process communication through the port mechanism and enabling multiplexed, reliable data transfer. This laboratory session synthesises theoretical understanding of TCP, UDP, and TLS protocols with practical implementation of HTTP servers and reverse proxy architectures.
@@ -33,7 +223,8 @@ By the end of this laboratory session, you will be able to:
 
 ### Software Requirements
 - Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend) version 4.0+
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
 - Wireshark (native Windows) for packet analysis
 - Python 3.11 or later
 - Git (recommended for version control)
@@ -48,28 +239,34 @@ By the end of this laboratory session, you will be able to:
 
 ### First-Time Setup (Run Once)
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK8_WSLkit
+```bash
+# Open Ubuntu terminal (WSL)
+wsl
+
+# Navigate to the kit directory
+cd /mnt/d/NETWORKING/WEEK8/8enWSL
+
+# Start Docker if not running
+sudo service docker start
 
 # Verify prerequisites
-python setup/verify_environment.py
+python3 setup/verify_environment.py
 
 # If any issues, run the installer helper
-python setup/install_prerequisites.py
+python3 setup/install_prerequisites.py
 
 # Configure Docker for optimal performance
-python setup/configure_docker.py
+python3 setup/configure_docker.py
 ```
 
 ### Starting the Laboratory
 
-```powershell
+```bash
 # Start all services (nginx + 3 backend servers)
-python scripts/start_lab.py
+python3 scripts/start_lab.py
 
 # Verify everything is running
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 
 # View real-time logs
 docker compose -f docker/docker-compose.yml logs -f
@@ -79,7 +276,7 @@ docker compose -f docker/docker-compose.yml logs -f
 
 | Service | URL/Port | Description |
 |---------|----------|-------------|
-| Portainer | https://localhost:9443 | Container management (set credentials on first access) |
+| Portainer | http://localhost:9000 | Container management (stud / studstudstud) |
 | nginx Proxy | http://localhost:8080 | Load-balanced entry point |
 | nginx HTTPS | https://localhost:8443 | TLS-enabled proxy (self-signed) |
 | Backend 1 | Internal only (8080) | Python HTTP server (BACKEND_ID=1) |
@@ -101,10 +298,10 @@ The HTTP/1.1 protocol transmits requests as plaintext over TCP, with a rigidly d
 **Steps:**
 
 1. Navigate to the exercise file and examine the provided skeleton:
-   ```powershell
-   cd WEEK8_WSLkit
+   ```bash
+   cd /mnt/d/NETWORKING/WEEK8/8enWSL
    # View the exercise template
-   python -c "print(open('src/exercises/ex_8_01_http_server.py').read())"
+   python3 -c "print(open('src/exercises/ex_8_01_http_server.py').read())"
    ```
 
 2. Implement the `parse_request()` function:
@@ -124,9 +321,9 @@ The HTTP/1.1 protocol transmits requests as plaintext over TCP, with a rigidly d
    - Return appropriate status codes (200, 403, 404, 405)
 
 5. Test your implementation:
-   ```powershell
+   ```bash
    # Start your server
-   python src/exercises/ex_8_01_http_server.py --port 8081 --docroot www
+   python3 src/exercises/ex_8_01_http_server.py --port 8081 --docroot www
    
    # In another terminal, test with curl
    curl -v http://localhost:8081/
@@ -136,8 +333,8 @@ The HTTP/1.1 protocol transmits requests as plaintext over TCP, with a rigidly d
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 1
+```bash
+python3 tests/test_exercises.py --exercise 1
 ```
 
 **Expected Observations:**
@@ -161,8 +358,8 @@ A reverse proxy operates as an intermediary, accepting client connections and fo
 **Steps:**
 
 1. Examine the exercise template:
-   ```powershell
-   python -c "print(open('src/exercises/ex_8_02_reverse_proxy.py').read())"
+   ```bash
+   python3 -c "print(open('src/exercises/ex_8_02_reverse_proxy.py').read())"
    ```
 
 2. Implement the `RoundRobinBalancer` class:
@@ -177,31 +374,31 @@ A reverse proxy operates as an intermediary, accepting client connections and fo
    - Relay the backend response to the client
 
 4. Launch three backend servers (in separate terminals):
-   ```powershell
+   ```bash
    # Terminal 1
-   python src/apps/backend_server.py --port 9001 --id A
+   python3 src/apps/backend_server.py --port 9001 --id A
    
    # Terminal 2
-   python src/apps/backend_server.py --port 9002 --id B
+   python3 src/apps/backend_server.py --port 9002 --id B
    
    # Terminal 3
-   python src/apps/backend_server.py --port 9003 --id C
+   python3 src/apps/backend_server.py --port 9003 --id C
    ```
 
 5. Start your proxy:
-   ```powershell
+   ```bash
    # Terminal 4
-   python src/exercises/ex_8_02_reverse_proxy.py --port 8888 --backends 127.0.0.1:9001,127.0.0.1:9002,127.0.0.1:9003
+   python3 src/exercises/ex_8_02_reverse_proxy.py --port 8888 --backends 127.0.0.1:9001,127.0.0.1:9002,127.0.0.1:9003
    ```
 
 6. Generate traffic and observe distribution:
-   ```powershell
+   ```bash
    for i in {1..9}; do curl -sS http://localhost:8888/ 2>/dev/null | grep -o 'Backend [A-C]'; done
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 2
+```bash
+python3 tests/test_exercises.py --exercise 2
 ```
 
 **Expected Observations:**
@@ -225,8 +422,8 @@ python tests/test_exercises.py --exercise 2
 4. Implement a simple endpoint that echoes received data
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 3
+```bash
+python3 tests/test_exercises.py --exercise 3
 
 # Manual test
 curl -X POST -d "name=Student&course=Networks" http://localhost:8081/api/echo
@@ -245,8 +442,8 @@ curl -X POST -d "name=Student&course=Networks" http://localhost:8081/api/echo
 The token bucket algorithm maintains a reservoir of tokens that replenish at a fixed rate. Each request consumes one token; if the bucket is empty, the request is rejected (429 Too Many Requests). This provides burst tolerance while enforcing sustained rate limits.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 4
+```bash
+python3 tests/test_exercises.py --exercise 4
 
 # Flood test
 for i in {1..100}; do curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081/; done | sort | uniq -c
@@ -261,8 +458,8 @@ for i in {1..100}; do curl -s -o /dev/null -w "%{http_code}\n" http://localhost:
 **Duration:** 45–55 minutes
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 5
+```bash
+python3 tests/test_exercises.py --exercise 5
 ```
 
 ---
@@ -273,8 +470,8 @@ python tests/test_exercises.py --exercise 5
 
 This demonstration showcases the production-grade nginx reverse proxy configuration with three Python backend servers.
 
-```powershell
-python scripts/run_demo.py --demo docker-nginx
+```bash
+python3 scripts/run_demo.py --demo docker-nginx
 ```
 
 **What to observe:**
@@ -287,8 +484,8 @@ python scripts/run_demo.py --demo docker-nginx
 
 Visualises the request-response cycle with detailed logging.
 
-```powershell
-python scripts/run_demo.py --demo http-server
+```bash
+python3 scripts/run_demo.py --demo http-server
 ```
 
 **What to observe:**
@@ -300,8 +497,8 @@ python scripts/run_demo.py --demo http-server
 
 Captures and analyses TCP connection establishment.
 
-```powershell
-python scripts/run_demo.py --demo handshake
+```bash
+python3 scripts/run_demo.py --demo handshake
 ```
 
 **What to observe:**
@@ -314,12 +511,12 @@ python scripts/run_demo.py --demo handshake
 
 ### Capturing Traffic
 
-```powershell
+```bash
 # Start capture for HTTP traffic
-python scripts/capture_traffic.py --interface lo --filter "tcp port 8080" --output pcap/week8_http.pcap
+python3 scripts/capture_traffic.py --interface lo --filter "tcp port 8080" --output pcap/week8_http.pcap
 
 # Capture proxy-to-backend traffic
-python scripts/capture_traffic.py --interface docker0 --filter "tcp port 8080" --output pcap/week8_proxy.pcap
+python3 scripts/capture_traffic.py --interface docker0 --filter "tcp port 8080" --output pcap/week8_proxy.pcap
 ```
 
 ### Suggested Wireshark Filters
@@ -366,9 +563,9 @@ http.response.header matches "X-Backend"
 
 ### End of Session
 
-```powershell
-# Stop all containers (preserves data and images)
-python scripts/stop_lab.py
+```bash
+# Stop all containers (Portainer stays running!)
+python3 scripts/stop_lab.py
 
 # Verify shutdown
 docker ps
@@ -376,12 +573,12 @@ docker ps
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
+```bash
 # Remove all containers, networks, and volumes for this week
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 
 # Also prune unused Docker resources
-python scripts/cleanup.py --full --prune
+python3 scripts/cleanup.py --full --prune
 
 # Verify cleanup
 docker system df
@@ -407,31 +604,31 @@ Modify the round-robin proxy to support weighted distribution. Backend servers s
 
 #### Issue: "Address already in use" when starting server
 **Solution:** Another process is using the port. Find and terminate it:
-```powershell
+```bash
 # On WSL/Linux
 lsof -i :8080
 kill -9 <PID>
 
 # Or use a different port
-python src/exercises/ex_8_01_http_server.py --port 8082
+python3 src/exercises/ex_8_01_http_server.py --port 8082
 ```
 
 #### Issue: Docker containers fail to start
-**Solution:** Ensure Docker Desktop is running and WSL2 integration is enabled:
-```powershell
+**Solution:** Ensure Docker is running in WSL:
+```bash
+sudo service docker start
 docker info
-# Should show "Operating System: ..." without errors
 ```
 
 #### Issue: curl returns "Connection refused"
 **Solution:** Verify the server is running and listening:
-```powershell
+```bash
 netstat -tlnp | grep 8080
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 ```
 
 #### Issue: Wireshark doesn't show HTTP traffic
-**Solution:** Ensure you're capturing on the correct interface. For Docker traffic, use `docker0` or the bridge network interface. For localhost, use the loopback interface.
+**Solution:** Ensure you're capturing on the correct interface. For Docker traffic, use `vEthernet (WSL)`. For localhost, use the loopback interface.
 
 See `docs/troubleshooting.md` for more solutions.
 
@@ -478,6 +675,7 @@ Benefits: Load distribution, SSL termination, caching, security isolation
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        WEEK 8 WSL Kit Architecture                  │
+│              (WSL2 + Ubuntu 22.04 + Docker + Portainer)            │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │   Windows Host (PowerShell)                                         │
@@ -488,27 +686,26 @@ Benefits: Load distribution, SSL termination, caching, security isolation
 │                 │               │                  │                │
 ├─────────────────┼───────────────┼──────────────────┼────────────────┤
 │                 ▼               ▼                  ▼                │
-│   WSL2 / Docker Desktop                                             │
+│   WSL2 / Docker Engine                                             │
 │   ┌─────────────────────────────────────────────────────────────┐  │
 │   │                    docker-compose                            │  │
 │   │  ┌────────────────────────────────────────────────────────┐ │  │
-│   │  │               seminar8-network (172.28.0.0/16)         │ │  │
+│   │  │               week8-network (172.28.8.0/24)            │ │  │
 │   │  │  ┌─────────────┐                                       │ │  │
 │   │  │  │   nginx     │◀─── Port 8080 (HTTP)                  │ │  │
-│   │  │  │  (s8-nginx) │◀─── Port 8443 (HTTPS)                 │ │  │
+│   │  │  │  (proxy)    │◀─── Port 8443 (HTTPS)                 │ │  │
 │   │  │  └──────┬──────┘                                       │ │  │
 │   │  │         │ Round-Robin                                  │ │  │
 │   │  │    ┌────┼────┬────────────┐                           │ │  │
 │   │  │    ▼    ▼    ▼            │                           │ │  │
 │   │  │  ┌────┐┌────┐┌────┐       │                           │ │  │
 │   │  │  │ B1 ││ B2 ││ B3 │ Python HTTP Servers              │ │  │
-│   │  │  │8080││8080││8080│ (demo_http_server.py)            │ │  │
+│   │  │  │8080││8080││8080│ (backend_server.py)              │ │  │
 │   │  │  └────┘└────┘└────┘                                   │ │  │
 │   │  └────────────────────────────────────────────────────────┘ │  │
 │   │                                                              │  │
-│   │  Volumes:                                                    │  │
-│   │  - ./www → /var/www (static content)                        │  │
-│   │  - ./nginx → /etc/nginx (configuration)                     │  │
+│   │  Portainer: http://localhost:9000 (global service)          │  │
+│   │  Credentials: stud / studstudstud                           │  │
 │   └─────────────────────────────────────────────────────────────┘  │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -527,4 +724,182 @@ Benefits: Load distribution, SSL termination, caching, security isolation
 
 ---
 
+## 🔧 Extended Troubleshooting
+
+### Docker Issues
+
+**Problem:** "Cannot connect to Docker daemon"
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
+
+**Problem:** Permission denied when running docker
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+# Or logout and login again
+```
+
+**Problem:** Docker service won't start
+```bash
+sudo service docker status  # Check status
+sudo dockerd  # Run manually to see errors
+```
+
+### Portainer Issues
+
+**Problem:** Cannot access http://localhost:9000
+```bash
+# Check if Portainer container exists and is running
+docker ps -a | grep portainer
+
+# If stopped, start it
+docker start portainer
+
+# If doesn't exist, create it
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+**Problem:** Forgot Portainer password
+```bash
+# Reset Portainer (loses settings but not containers)
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+# Recreate with command above, set new password
+```
+
+### WSL Issues
+
+**Problem:** WSL not starting
+```powershell
+# In PowerShell (Administrator)
+wsl --status
+wsl --list --verbose
+```
+
+**Problem:** Cannot access Windows files from WSL
+```bash
+ls /mnt/
+# Should show: c, d, etc.
+```
+
+### Wireshark Issues
+
+**Problem:** No packets captured
+- ✅ Verify correct interface selected (vEthernet WSL)
+- ✅ Ensure traffic is being generated DURING capture
+- ✅ Check display filter isn't hiding packets (clear filter)
+- ✅ Try "Capture → Options" and enable promiscuous mode
+
+**Problem:** "No interfaces found" or permission error
+- Run Wireshark as Administrator (right-click → Run as administrator)
+- Reinstall Npcap with "WinPcap API-compatible Mode" option checked
+
+**Problem:** Can't see Docker container traffic
+- Select `vEthernet (WSL)` interface, not `Ethernet` or `Wi-Fi`
+- Ensure containers are on bridge network, not host network
+
+### Network Issues
+
+**Problem:** Container can't reach internet
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week8-laboratory-network
+
+# Check DNS in container
+docker exec week8-nginx-proxy cat /etc/resolv.conf
+```
+
+**Problem:** Port already in use
+```bash
+# Find what's using the port
+sudo netstat -tlnp | grep 8080
+# Or
+sudo ss -tlnp | grep 8080
+
+# Kill the process or use different port
+```
+
+### HTTP-Specific Issues
+
+**Problem:** curl shows "Empty reply from server"
+- Check server logs: `docker compose logs backend1`
+- Verify server is processing requests
+
+**Problem:** nginx returns 502 Bad Gateway
+- Check if backend servers are running
+- Verify nginx upstream configuration
+
+---
+
+## 🧹 Complete Cleanup Procedure
+
+### End of Session (Quick)
+
+```bash
+# Stop lab containers (Portainer stays running!)
+cd /mnt/d/NETWORKING/WEEK8/8enWSL
+docker compose -f docker/docker-compose.yml down
+
+# Verify - should still show portainer
+docker ps
+```
+
+### End of Week (Thorough)
+
+```bash
+# Remove this week's containers and networks
+docker compose -f docker/docker-compose.yml down --volumes
+
+# Remove unused images
+docker image prune -f
+
+# Remove unused networks
+docker network prune -f
+
+# Check disk usage
+docker system df
+```
+
+### Full Reset (Before New Semester)
+
+```bash
+# WARNING: This removes EVERYTHING except Portainer
+docker stop $(docker ps -q | grep -v $(docker ps -q --filter name=portainer)) 2>/dev/null
+docker rm $(docker ps -aq | grep -v $(docker ps -aq --filter name=portainer)) 2>/dev/null
+docker image prune -a -f
+docker network prune -f
+docker volume prune -f
+
+# Verify Portainer still running
+docker ps
+```
+
+**⚠️ NEVER run `docker system prune -a` without excluding Portainer!**
+
+---
+
+## 📊 Week 8 Network Configuration Summary
+
+| Resource | Value | Notes |
+|----------|-------|-------|
+| Network Subnet | 172.28.8.0/24 | week8-laboratory-network |
+| Gateway | 172.28.8.1 | Docker bridge gateway |
+| nginx proxy IP | 172.28.8.10 | Load balancer |
+| Backend 1 IP | 172.28.8.21 | Alpha |
+| Backend 2 IP | 172.28.8.22 | Beta |
+| Backend 3 IP | 172.28.8.23 | Gamma |
+| nginx HTTP | 8080 | Proxy entry point |
+| nginx HTTPS | 8443 | TLS termination |
+| Backend Port | 8080 | Internal only |
+| Portainer | 9000 | **RESERVED - Global service** |
+
+---
+
 *NETWORKING class - ASE, Informatics | by Revolvix*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
