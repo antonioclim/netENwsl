@@ -1,0 +1,14 @@
+# Python dependencies for Week 2 WSL Starter Kit
+# NETWORKING class - ASE, Informatics | by Revolvix
+
+# Docker SDK for Python
+docker>=6.0.0
+
+# HTTP requests library
+requests>=2.28.0
+
+# YAML configuration parsing
+pyyaml>=6.0
+
+# Type checking support (development)
+typing-extensions>=4.5.0

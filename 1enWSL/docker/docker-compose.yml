@@ -1,9 +1,16 @@
 # Week 1 Laboratory - Docker Compose Configuration
 # NETWORKING class - ASE, Informatics | by Revolvix
 #
-# ADAPTED FOR: WSL2 + Ubuntu 22.04 + Docker (in WSL) + Portainer Global
-# NOTE: Portainer is NOT included here - it runs globally on port 9000
-#       Access it at http://localhost:9000 (credentials: stud/studstudstud)
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be started
+# or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
 
 services:
   # Main laboratory container with networking tools
@@ -15,40 +22,60 @@ services:
     hostname: netlab
     working_dir: /work
     volumes:
+      # Mount project directory for access to exercises and scripts
       - ..:/work:rw
+      # Dedicated mounts for output directories
       - ../pcap:/work/pcap:rw
       - ../artifacts:/work/artifacts:rw
     networks:
-      - week1_network
+      week1_network:
+        # Optional: assign a static IP for consistent addressing
+        # ipv4_address: 172.20.1.10
     ports:
-      - "9090:9090"   # TCP test server
-      - "9091:9091"   # UDP test server
-      - "9092:9092"   # Alternative port
+      # TCP test server - used for netcat and socket exercises
+      - "9090:9090"
+      # UDP test server - used for datagram exercises
+      - "9091:9091"
+      # Alternative port for additional testing scenarios
+      - "9092:9092"
+      # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
     environment:
+      # Python environment configuration
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
+      # Terminal settings for interactive sessions
       - TERM=xterm-256color
+      # Laboratory identification
       - LAB_WEEK=1
+    # Network capabilities required for packet capture and analysis
     cap_add:
-      - NET_ADMIN
-      - NET_RAW
+      - NET_ADMIN    # Required for network configuration changes
+      - NET_RAW      # Required for raw socket operations (tcpdump, scapy)
+    # Keep container running for interactive use
     stdin_open: true
     tty: true
+    # Restart policy - container restarts unless explicitly stopped
     restart: unless-stopped
 
-# NOTE: Portainer is NOT defined here!
-# It runs as a global service on port 9000
-# Started separately with: docker start portainer
-# Or deployed fresh with:
-#   docker run -d -p 9000:9000 --name portainer --restart=always \
-#     -v /var/run/docker.sock:/var/run/docker.sock \
-#     -v portainer_data:/data portainer/portainer-ce:latest
-
+# Network Configuration
+# Each week uses a dedicated subnet to avoid conflicts
 networks:
   week1_network:
     name: week1_network
     driver: bridge
     ipam:
+      driver: default
       config:
+        # Week 1 uses 172.20.1.0/24 subnet
+        # Pattern: 172.20.N.0/24 where N = week number
         - subnet: 172.20.1.0/24
           gateway: 172.20.1.1
+
+# Volume definitions for persistent data
+# NOTE: Portainer data volume is managed globally, not here
+volumes:
+  # Add any week-specific volumes here if needed
+  # Example:
+  # week1_data:
+  #   name: week1_data
+  {}
