@@ -6,7 +6,7 @@ NETWORKING class - ASE, Informatics | by Revolvix
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
 Checks that all prerequisites are installed and configured correctly
-for the Week 4 Custom Protocols laboratory.
+for the Week 3 Network Programming laboratory.
 """
 
 import subprocess
@@ -55,7 +55,7 @@ class Checker:
         print()
         
         if self.failed == 0:
-            print("\033[92m✓ Environment is ready for Week 4 laboratory!\033[0m")
+            print("\033[92m✓ Environment is ready for Week 3 laboratory!\033[0m")
             print()
             print("Next steps:")
             print("  1. Start the lab: python3 scripts/start_lab.py")
@@ -63,9 +63,8 @@ class Checker:
             print()
             print("Access points:")
             print("  Portainer:    http://localhost:9000 (stud/studstudstud)")
-            print("  TEXT Server:  localhost:5400")
-            print("  BINARY Server: localhost:5401")
-            print("  UDP Sensor:   localhost:5402")
+            print("  Echo Server:  localhost:8080")
+            print("  TCP Tunnel:   localhost:9090")
             return 0
         else:
             print("\033[91m✗ Please fix the issues above before proceeding.\033[0m")
@@ -232,8 +231,8 @@ def main() -> int:
     """Main verification routine."""
     print()
     print("=" * 60)
-    print("  Environment Verification for Week 4 Laboratory")
-    print("  Physical Layer, Data Link Layer & Custom Protocols")
+    print("  Environment Verification for Week 3 Laboratory")
+    print("  Network Programming: Broadcast, Multicast, Tunnelling")
     print("  NETWORKING class - ASE, Informatics")
     print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
     print("=" * 60)
@@ -360,12 +359,11 @@ def main() -> int:
     
     required_files = [
         "docker/docker-compose.yml",
-        "src/apps/text_proto_server.py",
-        "src/apps/text_proto_client.py",
-        "src/apps/binary_proto_server.py",
-        "src/apps/binary_proto_client.py",
-        "src/apps/udp_sensor_server.py",
-        "src/apps/udp_sensor_client.py",
+        "src/exercises/ex_3_01_udp_broadcast.py",
+        "src/exercises/ex_3_02_udp_multicast.py",
+        "src/exercises/ex_3_03_tcp_tunnel.py",
+        "src/apps/echo_server.py",
+        "src/apps/tcp_tunnel.py",
     ]
     for file_path in required_files:
         full_path = project_root / file_path

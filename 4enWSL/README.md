@@ -4,6 +4,197 @@
 > 
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `4enWSL`
+
+| Component | Details |
+|-----------|---------|
+| Windows | Windows 10/11 with WSL2 enabled |
+| Linux Distribution | Ubuntu 22.04 LTS (default WSL distro) |
+| Container Runtime | Docker Engine (in WSL) |
+| Management Interface | Portainer CE on port 9000 (global) |
+| Packet Analysis | Wireshark (native Windows application) |
+
+---
+
+## 📥 Cloning This Week's Laboratory
+
+### Step 1: Open PowerShell (Windows)
+
+Press `Win + X` → Select "Windows Terminal" or "PowerShell"
+
+### Step 2: Navigate and Clone
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone Week 4
+git clone https://github.com/antonioclim/netENwsl.git WEEK4
+cd WEEK4
+```
+
+### Step 3: Verify Clone
+```powershell
+dir
+# You should see: docker/, scripts/, src/, README.md, etc.
+```
+
+### Alternative: Clone Inside WSL
+
+```bash
+# In Ubuntu terminal
+mkdir -p /mnt/d/NETWORKING
+cd /mnt/d/NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK4
+cd WEEK4
+```
+
+---
+
+## 🔧 Initial Environment Setup (First Time Only)
+
+### Step 1: Open Ubuntu Terminal
+
+From Windows:
+- Click "Ubuntu" in Start menu, OR
+- In PowerShell type: `wsl`
+
+You will see the Ubuntu prompt:
+```
+stud@YOURPC:~$
+```
+
+### Step 2: Start Docker Service
+
+```bash
+# Start Docker (required after each Windows restart)
+sudo service docker start
+# Password: stud
+
+# Verify Docker is running
+docker ps
+```
+
+**Expected output:**
+```
+CONTAINER ID   IMAGE                    STATUS          NAMES
+abc123...      portainer/portainer-ce   Up 2 hours      portainer
+```
+
+### Step 3: Verify Portainer Access
+
+Open browser and navigate to: **http://localhost:9000**
+
+**Login credentials:**
+- Username: `stud`
+- Password: `studstudstud`
+
+### Step 4: Navigate to Laboratory Directory
+
+```bash
+cd /mnt/d/NETWORKING/WEEK4/4enWSL
+ls -la
+```
+
+---
+
+## 🖥️ Understanding Portainer Interface
+
+### Dashboard Overview
+
+After login at http://localhost:9000, you will see:
+1. **Home** - List of Docker environments
+2. **local** - Click to manage local Docker
+
+### Viewing Containers
+
+Navigate: **Home → local → Containers**
+
+You will see a table showing all containers with:
+- Name, State, Image, Created, IP Address, Ports
+
+### Container Actions in Portainer
+
+For any container, you can:
+- **Start/Stop/Restart**: Use the action buttons
+- **Logs**: Click container name → "Logs" tab
+- **Console**: Click container name → "Console" tab → "Connect"
+- **Inspect**: View detailed JSON configuration
+- **Stats**: Real-time CPU/Memory/Network usage
+
+### Modifying Container IP Address
+
+1. Navigate: **Networks → week4_network**
+2. View current IPAM configuration (172.28.0.0/16)
+3. To change:
+   - Stop containers using the network
+   - Edit `docker-compose.yml`
+   - Recreate: `docker compose down && docker compose up -d`
+
+**⚠️ NEVER use port 9000** - reserved for Portainer!
+
+---
+
+## 🦈 Wireshark Setup and Usage
+
+### When to Open Wireshark
+
+Open Wireshark:
+- **BEFORE** generating network traffic you want to capture
+- When exercises mention "capture", "analyse packets", or "observe traffic"
+
+### Step 1: Launch Wireshark
+
+From Windows Start Menu: Search "Wireshark" → Click to open
+
+### Step 2: Select Capture Interface
+
+**CRITICAL:** Select the correct interface for WSL traffic:
+
+| Interface Name | When to Use |
+|----------------|-------------|
+| **vEthernet (WSL)** | ✅ Most common - captures WSL Docker traffic |
+| **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
+| **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
+
+### Essential Wireshark Filters for Week 4
+
+| Filter | Purpose |
+|--------|---------|
+| `tcp.port == 5400` | TEXT protocol traffic |
+| `tcp.port == 5401` | BINARY protocol traffic |
+| `udp.port == 5402` | UDP sensor traffic |
+| `tcp.port == 5400 && tcp.len > 0` | TEXT data packets only |
+| `tcp.payload contains "SET"` | TEXT commands containing SET |
+
+### Following a TCP Conversation
+
+1. Find any packet in the conversation
+2. Right-click → **Follow → TCP Stream**
+3. View complete conversation in readable text
+
+### Viewing Binary Protocol Headers
+
+1. Select a packet on port 5401
+2. View → Bytes to see hex dump
+3. Identify: magic (2B), version (1B), type (1B), length (2B), seq (4B), CRC32 (4B)
+
+### Saving Captures
+
+1. **File → Save As**
+2. Navigate to: `D:\NETWORKING\WEEK4\pcap\`
+3. Filename: `capture_exercise_N.pcap`
+
+---
+
 ## Overview
 
 This laboratory session bridges the theoretical foundations of network communication—the Physical and Data Link layers—with practical protocol implementation skills. The Physical Layer transforms bits into signals that traverse physical media, whilst the Data Link Layer structures these bits into meaningful frames with addressing, error detection, and medium access control.
@@ -33,7 +224,8 @@ By the end of this laboratory session, you will be able to:
 
 ### Software Requirements
 - Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend)
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
 - Wireshark (native Windows installation)
 - Python 3.11 or later
 - Git (recommended)
@@ -47,32 +239,38 @@ By the end of this laboratory session, you will be able to:
 
 ### First-Time Setup (Run Once)
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK4_WSLkit
+```bash
+# Open Ubuntu terminal (WSL)
+wsl
+
+# Navigate to the kit directory
+cd /mnt/d/NETWORKING/WEEK4/4enWSL
+
+# Start Docker if not running
+sudo service docker start
 
 # Verify prerequisites
-python setup/verify_environment.py
+python3 setup/verify_environment.py
 
 # If any issues, run the installer helper
-python setup/install_prerequisites.py
+python3 setup/install_prerequisites.py
 ```
 
 ### Starting the Laboratory
 
-```powershell
+```bash
 # Start all services
-python scripts/start_lab.py
+python3 scripts/start_lab.py
 
 # Verify everything is running
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 ```
 
 ### Accessing Services
 
 | Service | URL/Port | Credentials |
 |---------|----------|-------------|
-| Portainer | https://localhost:9443 | Set on first access |
+| Portainer | http://localhost:9000 | stud / studstudstud |
 | TEXT Protocol Server | localhost:5400 | None |
 | BINARY Protocol Server | localhost:5401 | None |
 | UDP Sensor Server | localhost:5402/udp | None |
@@ -108,26 +306,26 @@ Example: "11 SET name Alice"
 **Steps:**
 
 1. Start the TEXT protocol server:
-   ```powershell
-   python scripts/start_lab.py --service text
+   ```bash
+   python3 scripts/start_lab.py --service text
    ```
 
 2. Connect using the interactive client:
-   ```powershell
-   python src/apps/text_proto_client.py --host localhost --port 5400
+   ```bash
+   python3 src/apps/text_proto_client.py --host localhost --port 5400
    ```
 
 3. Execute a sequence of commands:
-   ```powershell
-   python src/apps/text_proto_client.py --host localhost --port 5400 \
+   ```bash
+   python3 src/apps/text_proto_client.py --host localhost --port 5400 \
        -c "SET name Alice" -c "SET city Bucharest" -c "GET name" -c "COUNT"
    ```
 
 4. Observe the framing mechanism—note how each message includes its length prefix.
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 1
+```bash
+python3 tests/test_exercises.py --exercise 1
 ```
 
 ### Exercise 2: Binary Protocol Implementation
@@ -165,13 +363,13 @@ Fixed header (14 bytes):
 **Steps:**
 
 1. Start the BINARY protocol server:
-   ```powershell
-   python scripts/start_lab.py --service binary
+   ```bash
+   python3 scripts/start_lab.py --service binary
    ```
 
 2. Launch the interactive binary client:
-   ```powershell
-   python src/apps/binary_proto_client.py --host localhost --port 5401
+   ```bash
+   python3 src/apps/binary_proto_client.py --host localhost --port 5401
    ```
 
 3. Available commands in interactive mode: `echo`, `put`, `get`, `count`, `keys`, `quit`
@@ -179,8 +377,8 @@ Fixed header (14 bytes):
 4. Examine the CRC32 verification by intentionally corrupting a packet (use `--corrupt` flag with the client).
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 2
+```bash
+python3 tests/test_exercises.py --exercise 2
 ```
 
 ### Exercise 3: UDP Sensor Protocol
@@ -200,92 +398,73 @@ python tests/test_exercises.py --exercise 2
 **Steps:**
 
 1. Start the UDP sensor server:
-   ```powershell
-   python scripts/start_lab.py --service udp
+   ```bash
+   python3 scripts/start_lab.py --service udp
    ```
 
 2. Simulate a single sensor reading:
-   ```powershell
-   python src/apps/udp_sensor_client.py --host localhost --port 5402 \
+   ```bash
+   python3 src/apps/udp_sensor_client.py --host localhost --port 5402 \
        --sensor-id 1 --temp 23.5 --location "Lab1"
    ```
 
 3. Run continuous sensor simulation:
-   ```powershell
-   python src/apps/udp_sensor_client.py --host localhost --port 5402 \
+   ```bash
+   python3 src/apps/udp_sensor_client.py --host localhost --port 5402 \
        --sensor-id 1 --location "Lab1" --continuous --interval 1.0
    ```
 
 4. Test error detection with corrupted packets:
-   ```powershell
-   python src/apps/udp_sensor_client.py --host localhost --port 5402 \
+   ```bash
+   python3 src/apps/udp_sensor_client.py --host localhost --port 5402 \
        --sensor-id 99 --temp 0.0 --location "Test" --corrupt
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 3
+```bash
+python3 tests/test_exercises.py --exercise 3
 ```
 
 ### Exercise 4: Protocol Overhead Analysis
 
-**Objective:** Compare the efficiency of TEXT versus BINARY protocols for equivalent operations.
+**Objective:** Compare and analyse the overhead characteristics of TEXT vs BINARY protocols.
 
 **Duration:** 30 minutes
 
 **Steps:**
 
-1. Start traffic capture:
-   ```powershell
-   python scripts/capture_traffic.py --interface any --output pcap/overhead_analysis.pcap
-   ```
+1. Generate identical operations using both protocols
+2. Capture traffic for each protocol
+3. Calculate overhead ratios:
+   - TEXT: (total bytes - payload bytes) / total bytes
+   - BINARY: (header bytes) / total bytes
 
-2. Execute identical operations on both servers:
-   ```powershell
-   # TEXT protocol
-   python src/apps/text_proto_client.py --host localhost --port 5400 \
-       -c "SET username administrator" -c "GET username"
-   
-   # BINARY protocol
-   python src/apps/binary_proto_client.py --host localhost --port 5401 \
-       -c "put username administrator" -c "get username"
-   ```
-
-3. Stop capture and analyse:
-   ```powershell
-   # Open in Wireshark
-   wireshark pcap/overhead_analysis.pcap
-   ```
-
-4. Calculate overhead ratios using the analysis guide in `docs/overhead_analysis.md`.
-
-**Verification:**
-```powershell
-python tests/test_exercises.py --exercise 4
-```
+**Analysis Questions:**
+- Which protocol has lower overhead for small payloads?
+- How does overhead scale with payload size?
+- What are the parsing complexity trade-offs?
 
 ## Demonstrations
 
-### Demo 1: Complete Protocol Showcase
+### Demo 1: Protocol Comparison
 
-Automated demonstration of all three protocol implementations:
+Run the automated protocol comparison demonstration:
 
-```powershell
-python scripts/run_demo.py --demo 1
+```bash
+python3 scripts/run_demo.py --demo 1
 ```
 
 **What to observe:**
-- TEXT protocol command-response cycle with length-prefixed framing
-- BINARY protocol header structure and CRC32 validation
-- UDP sensor datagrams with periodic reporting
-- Server logs showing concurrent client handling
+- Same data sent via TEXT and BINARY protocols
+- Overhead differences in packet sizes
+- Timing differences due to parsing complexity
 
-### Demo 2: Error Detection in Action
+### Demo 2: CRC Validation
 
-Demonstrates CRC32 integrity verification:
+Test the integrity verification system:
 
-```powershell
-python scripts/run_demo.py --demo 2
+```bash
+python3 scripts/run_demo.py --demo 2
 ```
 
 **What to observe:**
@@ -297,14 +476,14 @@ python scripts/run_demo.py --demo 2
 
 ### Capturing Traffic
 
-```powershell
+```bash
 # Start capture on all interfaces
-python scripts/capture_traffic.py --interface any --output pcap/week4_capture.pcap
+python3 scripts/capture_traffic.py --interface any --output pcap/week4_capture.pcap
 
 # Capture specific port only
-python scripts/capture_traffic.py --interface any --port 5400 --output pcap/text_proto.pcap
+python3 scripts/capture_traffic.py --interface any --port 5400 --output pcap/text_proto.pcap
 
-# Or use Wireshark directly (run as Administrator)
+# Or use Wireshark directly (run as Administrator on Windows)
 # Open Wireshark > Select appropriate interface > Start capture
 ```
 
@@ -337,9 +516,9 @@ tcp.port == 5400 && tcp.payload contains "SET"
 
 ### End of Session
 
-```powershell
-# Stop all containers (preserves data)
-python scripts/stop_lab.py
+```bash
+# Stop all containers (Portainer stays running!)
+python3 scripts/stop_lab.py
 
 # Verify shutdown
 docker ps
@@ -347,9 +526,9 @@ docker ps
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
+```bash
 # Remove all containers, networks, and volumes for this week
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 
 # Verify cleanup
 docker system df
@@ -384,36 +563,40 @@ Modify the UDP sensor aggregator to:
 #### Issue: Port already in use
 **Symptoms:** "Address already in use" error when starting server
 **Solution:**
-```powershell
-# Find process using port
-netstat -ano | findstr :5400
+```bash
+# Find process using port (in WSL)
+sudo ss -tlnp | grep 5400
 
-# Terminate process (replace PID)
-taskkill /PID <PID> /F
+# Or using lsof
+lsof -i :5400
+
+# Kill the process
+kill <PID>
 
 # Or use cleanup script
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 ```
 
 #### Issue: Docker containers not starting
 **Symptoms:** "Cannot connect to Docker daemon" error
 **Solution:**
-1. Ensure Docker Desktop is running
-2. Check WSL2 integration is enabled in Docker Desktop settings
-3. Restart Docker Desktop if necessary
+```bash
+sudo service docker start
+docker ps
+```
 
 #### Issue: Connection refused from client
 **Symptoms:** Client cannot connect to server
 **Solution:**
-```powershell
+```bash
 # Verify server is running
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 
 # Check Docker container logs
 docker logs week4_demo
 
 # Manual server start with verbose output
-python src/apps/text_proto_server.py --verbose
+python3 src/apps/text_proto_server.py --verbose
 ```
 
 #### Issue: CRC validation failures
@@ -477,6 +660,7 @@ The Data Link Layer (Layer 2) structures bit streams into frames:
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    WEEK 4 Laboratory Architecture                    │
+│               (WSL2 + Ubuntu 22.04 + Docker + Portainer)            │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │   ┌─────────────────────┐     ┌─────────────────────────────────┐   │
@@ -497,10 +681,14 @@ The Data Link Layer (Layer 2) structures bit streams into frames:
 │   │         │           │     │  ┌─────────────────────────────┐│   │
 │   │         └───────────┼─────┼──│  UDP Sensor (UDP:5402)      ││   │
 │   │                     │     │  │   - 23-byte datagrams       ││   │
-│   │  ┌───────────────┐  │     │  │   - Periodic reporting      ││   │
-│   │  │  Portainer    │◄─┼─────┼──└─────────────────────────────┘│   │
-│   │  │  :9443        │  │     │                                  │   │
-│   │  └───────────────┘  │     └─────────────────────────────────┘   │
+│   │                     │     │  │   - Periodic reporting      ││   │
+│   │                     │     │  └─────────────────────────────┘│   │
+│   │                     │     │                                  │   │
+│   │  ┌───────────────┐  │     └─────────────────────────────────┘   │
+│   │  │  Portainer    │  │                                            │
+│   │  │  :9000        │◄─┼──── http://localhost:9000                  │
+│   │  │  (global)     │  │     Credentials: stud / studstudstud       │
+│   │  └───────────────┘  │                                            │
 │   │                     │                                            │
 │   └─────────────────────┘                                            │
 │                                                                      │
@@ -508,11 +696,192 @@ The Data Link Layer (Layer 2) structures bit streams into frames:
 │   • 5400:5400/tcp  → TEXT Protocol Server                           │
 │   • 5401:5401/tcp  → BINARY Protocol Server                         │
 │   • 5402:5402/udp  → UDP Sensor Server                              │
-│   • 9443:9443/tcp  → Portainer Management                           │
+│   • 9000 (global)  → Portainer Management (RESERVED)                │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
+## 🔧 Extended Troubleshooting
+
+### Docker Issues
+
+**Problem:** "Cannot connect to Docker daemon"
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
+
+**Problem:** Permission denied when running docker
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+# Or logout and login again
+```
+
+**Problem:** Docker service won't start
+```bash
+sudo service docker status  # Check status
+sudo dockerd  # Run manually to see errors
+```
+
+### Portainer Issues
+
+**Problem:** Cannot access http://localhost:9000
+```bash
+# Check if Portainer container exists and is running
+docker ps -a | grep portainer
+
+# If stopped, start it
+docker start portainer
+
+# If doesn't exist, create it
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+**Problem:** Forgot Portainer password
+```bash
+# Reset Portainer (loses settings but not containers)
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+# Recreate with command above, set new password
+```
+
+### WSL Issues
+
+**Problem:** WSL not starting
+```powershell
+# In PowerShell (Administrator)
+wsl --status
+wsl --list --verbose
+```
+
+**Problem:** Cannot access Windows files from WSL
+```bash
+ls /mnt/
+# Should show: c, d, etc.
+```
+
+### Wireshark Issues
+
+**Problem:** No packets captured
+- ✅ Verify correct interface selected (vEthernet WSL)
+- ✅ Ensure traffic is being generated DURING capture
+- ✅ Check display filter isn't hiding packets (clear filter)
+- ✅ Try "Capture → Options" and enable promiscuous mode
+
+**Problem:** "No interfaces found" or permission error
+- Run Wireshark as Administrator (right-click → Run as administrator)
+- Reinstall Npcap with "WinPcap API-compatible Mode" option checked
+
+**Problem:** Can't see Docker container traffic
+- Select `vEthernet (WSL)` interface, not `Ethernet` or `Wi-Fi`
+- Ensure containers are on bridge network, not host network
+
+### Network Issues
+
+**Problem:** Container can't reach internet
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week4_network
+
+# Check DNS in container
+docker exec week4_demo cat /etc/resolv.conf
+```
+
+**Problem:** Port already in use
+```bash
+# Find what's using the port
+sudo netstat -tlnp | grep 5400
+# Or
+sudo ss -tlnp | grep 5400
+
+# Kill the process or use different port
+```
+
+### Protocol-Specific Issues
+
+**Problem:** TEXT protocol parsing errors
+```bash
+# Enable verbose mode
+python3 src/apps/text_proto_server.py --verbose
+
+# Check frame format
+# Expected: "<LENGTH> <PAYLOAD>"
+```
+
+**Problem:** CRC32 mismatch in BINARY protocol
+```bash
+# Verify byte order
+python3 -c "import struct; print(struct.pack('>I', 12345).hex())"
+# Should be big-endian
+```
+
+---
+
+## 🧹 Complete Cleanup Procedure
+
+### End of Session (Quick)
+
+```bash
+# Stop lab containers (Portainer stays running!)
+cd /mnt/d/NETWORKING/WEEK4/4enWSL
+docker compose -f docker/docker-compose.yml down
+
+# Verify - should still show portainer
+docker ps
+```
+
+### End of Week (Thorough)
+
+```bash
+# Remove this week's containers and networks
+docker compose -f docker/docker-compose.yml down --volumes
+
+# Remove unused images
+docker image prune -f
+
+# Remove unused networks
+docker network prune -f
+
+# Check disk usage
+docker system df
+```
+
+### Full Reset (Before New Semester)
+
+```bash
+# WARNING: This removes EVERYTHING except Portainer
+docker stop $(docker ps -q | grep -v $(docker ps -q --filter name=portainer)) 2>/dev/null
+docker rm $(docker ps -aq | grep -v $(docker ps -aq --filter name=portainer)) 2>/dev/null
+docker image prune -a -f
+docker network prune -f
+docker volume prune -f
+
+# Verify Portainer still running
+docker ps
+```
+
+**⚠️ NEVER run `docker system prune -a` without excluding Portainer!**
+
+---
+
+## 📊 Week 4 Network Configuration Summary
+
+| Resource | Value | Notes |
+|----------|-------|-------|
+| Subnet | 172.28.0.0/16 | Week 4 dedicated subnet |
+| TEXT Protocol Port | 5400/tcp | Length-prefix framing |
+| BINARY Protocol Port | 5401/tcp | Fixed header with CRC32 |
+| UDP Sensor Port | 5402/udp | 23-byte datagrams |
+| Portainer | 9000 | **RESERVED - Global service** |
+
+---
+
 *NETWORKING class - ASE, Informatics | by Revolvix*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*

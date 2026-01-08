@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Week 4 Laboratory Launcher
+Week 3 Laboratory Launcher
 NETWORKING class - ASE, Informatics | by Revolvix
 
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
@@ -29,11 +29,23 @@ logger = setup_logger("start_lab")
 
 # Service definitions - Portainer is NOT included (runs globally on port 9000)
 SERVICES = {
-    "week4-lab": {
-        "container": "week4_demo",
-        "ports": [5400, 5401, 5402],
+    "server": {
+        "container": "week3_server",
+        "port": 8080,
         "health_check": None,
         "startup_time": 5
+    },
+    "router": {
+        "container": "week3_router",
+        "port": 9090,
+        "health_check": None,
+        "startup_time": 5
+    },
+    "client": {
+        "container": "week3_client",
+        "port": None,
+        "health_check": None,
+        "startup_time": 3
     }
 }
 
@@ -136,8 +148,8 @@ def print_banner() -> None:
     """Print startup banner."""
     print()
     print("=" * 60)
-    print("  Week 4: Physical Layer, Data Link Layer & Custom Protocols")
-    print("  TEXT, BINARY, and UDP Sensor Protocols")
+    print("  Week 3: Introduction to Network Programming")
+    print("  UDP Broadcast, Multicast, and TCP Tunnelling")
     print("  NETWORKING class - ASE, Informatics")
     print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
     print("=" * 60)
@@ -147,14 +159,14 @@ def print_banner() -> None:
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Start Week 4 Laboratory Environment (WSL2)",
+        description="Start Week 3 Laboratory Environment (WSL2)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python3 scripts/start_lab.py              # Start all services
   python3 scripts/start_lab.py --status     # Check status only
   python3 scripts/start_lab.py --rebuild    # Rebuild images first
-  python3 scripts/start_lab.py --service text   # Start TEXT server only
+  python3 scripts/start_lab.py --broadcast  # Include broadcast receiver
 
 Notes:
   - Portainer runs globally on port 9000 and is NOT managed by this script
@@ -179,10 +191,9 @@ Notes:
         help="Run containers in detached mode (default: True)"
     )
     parser.add_argument(
-        "--service",
-        choices=["text", "binary", "udp", "all"],
-        default="all",
-        help="Which service to start (default: all)"
+        "--broadcast",
+        action="store_true",
+        help="Start with broadcast receiver profile"
     )
     parser.add_argument(
         "--verbose", "-v",
@@ -247,7 +258,11 @@ Notes:
         logger.info("Starting laboratory services...")
         logger.info("(Portainer runs globally and is not managed here)")
         
-        if not docker.compose_up(detach=args.detach, build=not args.rebuild):
+        # Build compose command
+        compose_args = ["--profile", "broadcast"] if args.broadcast else []
+        
+        if not docker.compose_up(detach=args.detach, build=not args.rebuild, 
+                                  extra_args=compose_args):
             logger.error("Failed to start services")
             return 1
         
@@ -276,14 +291,18 @@ Notes:
                 print("    \033[93mPortainer:    NOT RUNNING\033[0m")
                 print("    Start with:   docker start portainer")
             print()
-            print("    TEXT Protocol:   localhost:5400 (TCP)")
-            print("    BINARY Protocol: localhost:5401 (TCP)")
-            print("    UDP Sensor:      localhost:5402 (UDP)")
+            print("    Echo Server:  localhost:8080 (TCP echo)")
+            print("    TCP Tunnel:   localhost:9090 → server:8080")
             print()
             print("  Quick start:")
-            print("    python3 src/apps/text_proto_client.py --host localhost --port 5400")
-            print("    python3 src/apps/binary_proto_client.py --host localhost --port 5401")
-            print("    python3 src/apps/udp_sensor_client.py --host localhost --port 5402")
+            print("    docker exec -it week3_client bash")
+            print("    echo 'HELLO' | nc server 8080")
+            print("    echo 'TUNNEL' | nc router 9090")
+            print()
+            print("  Exercises:")
+            print("    python3 /app/src/exercises/ex_3_01_udp_broadcast.py")
+            print("    python3 /app/src/exercises/ex_3_02_udp_multicast.py")
+            print("    python3 /app/src/exercises/ex_3_03_tcp_tunnel.py")
             print()
             print("=" * 60)
             return 0

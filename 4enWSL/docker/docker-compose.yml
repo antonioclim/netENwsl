@@ -1,8 +1,23 @@
-# Week 4 Laboratory - Docker Compose Configuration
+# ============================================================================
+# docker-compose.yml — Week 4 Laboratory Environment
 # NETWORKING class - ASE, Informatics | by Revolvix
+# ============================================================================
+#
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
 #
 # This configuration provides a containerised environment for
 # custom TCP/UDP protocol development and testing.
+#
+# ============================================================================
 
 services:
   # Main laboratory container with all protocol servers
@@ -14,15 +29,13 @@ services:
     hostname: week4-lab
     working_dir: /app
     
-    # Run as host user to preserve file ownership
-    user: "${UID:-1000}:${GID:-1000}"
-    
     # Environment variables
     environment:
       - PYTHONUNBUFFERED=1
       - TEXT_PORT=5400
       - BINARY_PORT=5401
       - UDP_PORT=5402
+      - LAB_WEEK=4
     
     # Volume mounts for persistence and development
     volumes:
@@ -31,6 +44,7 @@ services:
       - ../pcap:/app/pcap
     
     # Port mappings
+    # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
     ports:
       - "5400:5400"      # TEXT protocol server
       - "5401:5401"      # BINARY protocol server
@@ -54,28 +68,8 @@ services:
     # Restart policy
     restart: unless-stopped
 
-  # Portainer for container management
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: week4_portainer
-    restart: unless-stopped
-    
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    
-    ports:
-      - "9443:9443"
-    
-    networks:
-      - week4_network
+# ─── NETWORKS ─────────────────────────────────────────────────────────────
 
-# Named volumes
-volumes:
-  portainer_data:
-    name: week4_portainer_data
-
-# Custom network
 networks:
   week4_network:
     name: week4_network
@@ -83,3 +77,8 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
+
+# ─── VOLUMES ──────────────────────────────────────────────────────────────
+# NOTE: Portainer data volume is managed globally, not here
+
+volumes: {}

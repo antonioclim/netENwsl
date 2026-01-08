@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Week 4 Laboratory Cleanup
+Week 3 Laboratory Cleanup
 NETWORKING class - ASE, Informatics | by Revolvix
 
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
@@ -25,7 +25,7 @@ from scripts.utils.logger import setup_logger
 
 logger = setup_logger("cleanup")
 
-WEEK_PREFIX = "week4"
+WEEK_PREFIX = "week3"
 PROTECTED_CONTAINERS = ["portainer"]
 
 
@@ -71,7 +71,7 @@ def check_portainer_status() -> tuple:
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Cleanup Week 4 Laboratory Environment (WSL2)",
+        description="Cleanup Week 3 Laboratory Environment (WSL2)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -109,7 +109,7 @@ Notes:
     
     print()
     print("=" * 60)
-    print("  Cleaning up Week 4 Laboratory Environment")
+    print("  Cleaning up Week 3 Laboratory Environment")
     print("  (Portainer will NOT be removed - it runs globally)")
     print("=" * 60)
     print()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Week 4 Laboratory Shutdown
+Week 3 Laboratory Shutdown
 NETWORKING class - ASE, Informatics | by Revolvix
 
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
@@ -56,7 +56,7 @@ def check_portainer_status() -> tuple:
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Stop Week 4 Laboratory Environment (WSL2)",
+        description="Stop Week 3 Laboratory Environment (WSL2)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -83,7 +83,7 @@ Notes:
     args = parser.parse_args()
     
     logger.info("=" * 60)
-    logger.info("Stopping Week 4 Laboratory Environment")
+    logger.info("Stopping Week 3 Laboratory Environment")
     logger.info("(Portainer will NOT be stopped - it runs globally)")
     logger.info("=" * 60)
     
@@ -91,7 +91,7 @@ Notes:
         docker = DockerManager(PROJECT_ROOT / "docker")
     except FileNotFoundError:
         logger.warning("docker-compose.yml not found, attempting direct stop...")
-        containers = ["week4_demo"]
+        containers = ["week3_client", "week3_router", "week3_server", "week3_receiver"]
         for container in containers:
             try:
                 if args.force:
@@ -133,7 +133,7 @@ Notes:
         logger.info("Verifying shutdown...")
         
         check_result = subprocess.run(
-            ["docker", "ps", "--filter", "name=week4_",
+            ["docker", "ps", "--filter", "name=week3_",
              "--format", "{{.Names}}: {{.Status}}"],
             capture_output=True,
             text=True
@@ -143,7 +143,7 @@ Notes:
         if running:
             logger.warning(f"Still running:\n{running}")
         else:
-            logger.info("  All week4 containers stopped")
+            logger.info("  All week3 containers stopped")
         
         # Confirm Portainer is still running
         portainer_running, portainer_status = check_portainer_status()
