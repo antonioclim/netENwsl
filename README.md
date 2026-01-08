@@ -1,6 +1,6 @@
 # 🖧 Computer Networks – Laboratory Kits for WSL (WEEKS 1–14)
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
 [![Docker](https://img.shields.io/badge/Docker-28.2.2+-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04_LTS-E95420?style=flat&logo=ubuntu&logoColor=white)](https://ubuntu.com)
 [![WSL](https://img.shields.io/badge/WSL-2.0-0078D6?style=flat&logo=windows&logoColor=white)](https://docs.microsoft.com/en-us/windows/wsl/)
@@ -25,16 +25,31 @@
 - [Overview](#overview)
 - [System Architecture](#system-architecture)
 - [Standard Credentials](#standard-credentials)
+- [Critical Port Reservation](#critical-port-reservation)
 - [Features and Capabilities](#features-and-capabilities)
 - [Repository Architecture](#repository-architecture)
 - [Detailed Weekly Curriculum](#detailed-weekly-curriculum)
+  - [Week 1: Computer Network Fundamentals](#week-1-computer-network-fundamentals)
+  - [Week 2: Architectural Models and Socket Programming](#week-2-architectural-models-and-socket-programming)
+  - [Week 3: Broadcast, Multicast and TCP Tunnelling](#week-3-broadcast-multicast-and-tcp-tunnelling)
+  - [Week 4: Physical Layer, Data Link Layer and Custom Protocols](#week-4-physical-layer-data-link-layer-and-custom-protocols)
+  - [Week 5: Network Layer – IPv4/IPv6 Addressing and Subnetting](#week-5-network-layer--ipv4ipv6-addressing-and-subnetting)
+  - [Week 6: NAT/PAT, Support Protocols and SDN](#week-6-natpat-support-protocols-and-sdn)
+  - [Week 7: Packet Capture and Filtering](#week-7-packet-capture-and-filtering)
+  - [Week 8: Transport Layer – HTTP Server and Reverse Proxy](#week-8-transport-layer--http-server-and-reverse-proxy)
+  - [Week 9: Session and Presentation Layers](#week-9-session-and-presentation-layers)
+  - [Week 10: Application Layer – HTTPS, REST and Network Services](#week-10-application-layer--https-rest-and-network-services)
+  - [Week 11: Application Protocols and Load Balancing](#week-11-application-protocols-and-load-balancing)
+  - [Week 12: Email Protocols and Remote Procedure Call](#week-12-email-protocols-and-remote-procedure-call)
+  - [Week 13: IoT and Network Security](#week-13-iot-and-network-security)
+  - [Week 14: Integrated Review and Project Evaluation](#week-14-integrated-review-and-project-evaluation)
 - [Standard Weekly Kit Structure](#standard-weekly-kit-structure)
 - [System Requirements](#system-requirements)
 - [Complete Installation Guide](#complete-installation-guide)
   - [Step 1: Enable WSL2](#step-1-enable-wsl2)
   - [Step 2: Install Ubuntu 22.04](#step-2-install-ubuntu-2204)
   - [Step 3: Install Docker in WSL](#step-3-install-docker-in-wsl)
-  - [Step 4: Deploy Portainer CE](#step-4-deploy-portainer-ce)
+  - [Step 4: Deploy Portainer CE (Global Service)](#step-4-deploy-portainer-ce-global-service)
   - [Step 5: Install Wireshark](#step-5-install-wireshark)
   - [Step 6: Install Python Packages](#step-6-install-python-packages)
   - [Step 7: Configure Auto-start](#step-7-configure-auto-start)
@@ -61,35 +76,36 @@ This repository contains **complete laboratory kits** for the **Computer Network
 
 By completing the setup and using these materials, you will have a fully functional containerised environment capable of:
 
-- **Running isolated network experiments** using Docker containers
-- **Capturing and analysing network traffic** with Wireshark on Windows
+- **Running isolated network experiments** using Docker containers with consistent IP addressing
+- **Capturing and analysing network traffic** with Wireshark on Windows via the `vEthernet (WSL)` interface
 - **Managing containers visually** through Portainer's web interface at `http://localhost:9000`
-- **Scripting network interactions** using Python with docker, scapy and dpkt libraries
+- **Scripting network interactions** using Python with docker, scapy and requests libraries
 - **Simulating complex network topologies** without affecting your host system
 
-### Why WSL2 + Docker (Not Docker Desktop)?
+### Why WSL2 + Docker Engine (Not Docker Desktop)?
 
-We use **WSL2 + Docker inside Ubuntu** rather than Docker Desktop for several compelling reasons:
+We use **WSL2 + Docker Engine inside Ubuntu** rather than Docker Desktop for several compelling reasons:
 
-| Aspect | WSL2 + Docker | Docker Desktop |
-|--------|---------------|----------------|
+| Aspect | WSL2 + Docker Engine | Docker Desktop |
+|--------|----------------------|----------------|
 | **Performance** | Native Linux kernel, faster I/O | Virtualisation overhead |
 | **Resource Usage** | Lighter memory footprint | Higher RAM consumption |
 | **Network Access** | Full Linux networking stack | Abstracted networking |
 | **Learning Value** | Real Linux environment | Windows abstraction |
 | **Cost** | Completely free | Licensing for enterprises |
 | **Wireshark Integration** | Direct capture on vEthernet (WSL) | Complex configuration |
+| **Portainer Control** | Full container management | Limited in some cases |
 
 ### Pedagogical Philosophy
 
 The kits follow a **progressive and integrated approach** to teaching computer networks:
 
 1. **Learning through discovery** – each exercise guides students towards understanding through direct experimentation
-2. **Transversal consistency** – all weeks utilise common conventions for IP addressing, ports and naming
+2. **Transversal consistency** – all weeks utilise common conventions for IP addressing (10.0.N.0/24), ports and naming
 3. **Complete automation** – Python scripts for setup, demonstration execution and automated testing
 4. **Containerisation** – reproducible Docker environments that eliminate configuration issues
 5. **Rich documentation** – theory, practical exercises, command cheat sheets and troubleshooting guides
-6. **Visual management** – Portainer provides an intuitive web interface for container operations
+6. **Visual management** – Portainer provides an intuitive web interface for container operations (global service on port 9000)
 
 ### Thematic Progression
 
@@ -142,8 +158,9 @@ Understanding how the components interact is essential for effective troubleshoo
 │  │  │  │  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌─────────────┐  │  │  ││
 │  │  │  │  │ Container │ │ Container │ │ Container │ │  Portainer  │  │  │  ││
 │  │  │  │  │  Server   │ │  Client   │ │  Router   │ │   :9000     │  │  │  ││
+│  │  │  │  │10.0.N.x   │ │10.0.N.x   │ │10.0.N.1   │ │  (GLOBAL)   │  │  │  ││
 │  │  │  │  └───────────┘ └───────────┘ └───────────┘ └─────────────┘  │  │  ││
-│  │  │  │              Docker Networks (bridge, custom)                │  │  ││
+│  │  │  │              Docker Networks (weekN_net: 10.0.N.0/24)       │  │  ││
 │  │  │  └─────────────────────────────────────────────────────────────┘  │  ││
 │  │  └───────────────────────────────────────────────────────────────────┘  ││
 │  └─────────────────────────────────────────────────────────────────────────┘│
@@ -152,7 +169,7 @@ Understanding how the components interact is essential for effective troubleshoo
 
 ### Network Flow Explanation
 
-1. **Docker containers** communicate through Docker's internal bridge network or custom networks
+1. **Docker containers** communicate through Docker's internal bridge network or custom networks (10.0.N.0/24 per week)
 2. **Traffic exits** through the WSL2 virtual network interface (`vEthernet (WSL)`)
 3. **Wireshark on Windows** captures all traffic on the `vEthernet (WSL)` interface
 4. **Portainer** provides a web-based GUI accessible via `http://localhost:9000` from any Windows browser
@@ -160,13 +177,12 @@ Understanding how the components interact is essential for effective troubleshoo
 
 ### Port Mapping Reference
 
-| Service | Container Port | Host Port | Access URL |
-|---------|---------------|-----------|------------|
-| Portainer HTTP | 9000 | 9000 | http://localhost:9000 |
-| Portainer HTTPS | 9443 | 9443 | https://localhost:9443 |
-| Portainer Edge Agent | 8000 | 8000 | (Internal communication) |
-| Lab Web Servers | 80, 443 | 8080, 8443 | http://localhost:8080 |
-| Lab Custom Services | 5000-5099 | 5000-5099 | Varies by exercise |
+| Service | Container Port | Host Port | Access URL | Notes |
+|---------|---------------|-----------|------------|-------|
+| **Portainer HTTP** | 9000 | **9000** | http://localhost:9000 | **⚠️ RESERVED - Global service** |
+| Lab Web Servers | 80, 443 | 8080, 8443 | http://localhost:8080 | Per-week services |
+| Lab Custom Services | Various | 9001-9099 | Varies by exercise | Available range |
+| TCP Echo (Week 14) | 9090 | 9090 | nc localhost 9090 | Moved from 9000 |
 
 ---
 
@@ -201,6 +217,48 @@ Understanding how the components interact is essential for effective troubleshoo
 
 ---
 
+## Critical Port Reservation
+
+> ⚠️ **EXTREMELY IMPORTANT: Port 9000 is ALWAYS RESERVED for Portainer**
+
+### Why Port 9000 is Reserved
+
+Portainer is deployed as a **global service** that runs independently of any weekly laboratory. It provides:
+
+- Visual container management for all weeks
+- Log viewing and debugging capabilities
+- Network inspection tools
+- Container statistics and monitoring
+
+### Port Allocation Rules
+
+| Port Range | Purpose | Notes |
+|------------|---------|-------|
+| **9000** | **Portainer (GLOBAL)** | **⚠️ NEVER use in docker-compose files** |
+| 9001-9099 | Available for lab services | Safe to use in any week |
+| 8080-8089 | HTTP services | Common for web servers |
+| 1883, 8883 | MQTT (Week 13) | Plaintext and TLS |
+| 9090 | TCP Echo (Week 14) | **Moved from 9000** |
+
+### What Happens If Port 9000 Is Used?
+
+If any laboratory service attempts to bind to port 9000:
+- Portainer becomes inaccessible
+- Students lose visual container management
+- Troubleshooting becomes significantly harder
+- The docker-compose stack may fail to start
+
+### Weekly Scripts and Portainer
+
+All weekly scripts (`start_lab.py`, `stop_lab.py`, `cleanup.py`) follow these rules:
+
+- **NEVER** start Portainer (it runs globally)
+- **NEVER** stop Portainer (it must remain available)
+- **NEVER** remove the Portainer container or volume
+- **ALWAYS** check Portainer status and display warnings if not running
+
+---
+
 ## Features and Capabilities
 
 ### For Students
@@ -214,55 +272,67 @@ Understanding how the components interact is essential for effective troubleshoo
 | **Structured homework** | Exercises with reference solutions for self-assessment |
 | **Packet captures** | Pre-generated PCAP files for analysis |
 | **Rich documentation** | Theory, command cheat sheets and troubleshooting guides |
-| **Visual container management** | Portainer web interface for easy container operations |
-| **Traffic analysis** | Wireshark integration for packet inspection |
+| **Visual container management** | Portainer web interface at http://localhost:9000 |
+| **Traffic analysis** | Wireshark integration via vEthernet (WSL) interface |
+| **Consistent IP addressing** | 10.0.N.0/24 pattern makes learning intuitive |
 
 ### For Teaching Staff
 
 | Feature | Description |
 |---------|-------------|
-| **Reproducible demonstrations** | `ruleaza_demo.py` script for classroom presentation |
+| **Reproducible demonstrations** | `run_demo.py` script for classroom presentation |
 | **Assessment flexibility** | Modular exercises adaptable to group level |
 | **Complete theoretical materials** | Theoretical summaries and supplementary readings |
 | **Progress monitoring** | Automated tests for competency verification |
 | **Consistent environment** | All students have identical setups |
+| **Global Portainer** | Always available for live demonstrations |
 
 ---
 
 ## Repository Architecture
 
 ```
-netROwsl/
+netENwsl/
 │
-├── 00INAINTEdeORICEaltceva/        # Prerequisites and environment setup
-│   ├── PrerequisitesRO.md          # Romanian installation guide
+├── 00_Prerequisites/               # Prerequisites and environment setup
 │   ├── PrerequisitesEN.md          # English installation guide
-│   ├── PREREQUISITES_RO.html       # Interactive HTML version (Romanian)
+│   ├── PREREQUISITES_EN.html       # Interactive HTML version
 │   └── wireshark_capture_example.png
 │
-├── 01roWSL/                        # Week 1: Network Fundamentals
-├── 02roWSL/                        # Week 2: OSI/TCP-IP Models and Sockets
-├── 03roWSL/                        # Week 3: Broadcast, Multicast, Tunnelling
-├── 04roWSL/                        # Week 4: Physical/Data Link Layers
-├── 05roWSL/                        # Week 5: IP Addressing, VLSM Subnetting
-├── 06roWSL/                        # Week 6: NAT/PAT, ARP, DHCP, SDN
-├── 07roWSL/                        # Week 7: Packet Capture and Filtering
-├── 08roWSL/                        # Week 8: HTTP, Reverse Proxy, Load Balancing
-├── 09roWSL/                        # Week 9: Session/Presentation Layers, FTP
-├── 10roWSL/                        # Week 10: HTTPS, REST, DNS, SSH
-├── 11roWSL/                        # Week 11: Advanced Application Protocols
-├── 12roWSL/                        # Week 12: Email (SMTP) and RPC
-├── 13roWSL/                        # Week 13: IoT (MQTT) and Security
-├── 14roWSL/                        # Week 14: Integrated Review and Final Project
+├── 1enWSL/                         # Week 1: Network Fundamentals
+├── 2enWSL/                         # Week 2: OSI/TCP-IP Models and Sockets
+├── 3enWSL/                         # Week 3: Broadcast, Multicast, Tunnelling
+├── 4enWSL/                         # Week 4: Physical/Data Link Layers
+├── 5enWSL/                         # Week 5: IP Addressing, VLSM Subnetting
+├── 6enWSL/                         # Week 6: NAT/PAT, ARP, DHCP, SDN
+├── 7enWSL/                         # Week 7: Packet Capture and Filtering
+├── 8enWSL/                         # Week 8: HTTP, Reverse Proxy, Load Balancing
+├── 9enWSL/                         # Week 9: Session/Presentation Layers, FTP
+├── 10enWSL/                        # Week 10: HTTPS, REST, DNS, SSH
+├── 11enWSL/                        # Week 11: Advanced Application Protocols
+├── 12enWSL/                        # Week 12: Email (SMTP) and RPC
+├── 13enWSL/                        # Week 13: IoT (MQTT) and Security
+├── 14enWSL/                        # Week 14: Integrated Review and Final Project
 │
-└── README.md                       # This file
+└── READMEen.md                     # This file
 ```
+
+### Naming Convention
+
+| Pattern | Example | Description |
+|---------|---------|-------------|
+| `<N>enWSL/` | `7enWSL/` | Week N laboratory kit (English) |
+| `WEEK<N>/` | `WEEK7/` | Local clone directory on Windows |
+| `week<N>_net` | `week7_net` | Docker network for week N |
+| `week<N>_*` | `week7_lab` | Docker container names |
 
 ---
 
 ## Detailed Weekly Curriculum
 
 ### Week 1: Computer Network Fundamentals
+
+**Network:** `10.0.1.0/24` | **Folder:** `1enWSL`
 
 **Learning Objectives:**
 - Identify network interfaces, IP addresses and routing tables using Linux utilities
@@ -287,6 +357,8 @@ The laboratory session introduces fundamental computer networking concepts, focu
 
 ### Week 2: Architectural Models and Socket Programming
 
+**Network:** `10.0.2.0/24` | **Folder:** `2enWSL`
+
 **Learning Objectives:**
 - Identify and enumerate the 7 layers of the OSI model and the 4 layers of the TCP/IP model
 - Explain fundamental differences between TCP (connection-oriented, reliable) and UDP (connectionless, best-effort)
@@ -296,7 +368,7 @@ The laboratory session introduces fundamental computer networking concepts, focu
 **Key Concepts:**
 This week explores the architectural foundations of computer networks, focusing on two essential models: the **OSI model** (Open Systems Interconnection) with its 7 layers and the **TCP/IP model** with 4 layers, which represents the practical foundation of the contemporary Internet. The practical component introduces **socket programming**, the fundamental mechanism through which applications communicate over networks.
 
-**Technologies:** Python TCP/UDP sockets, `scapy`, `dpkt`, multi-client servers, threading
+**Technologies:** Python TCP/UDP sockets, `scapy`, multi-client servers, threading
 
 **Practical Exercises:**
 1. OSI vs TCP/IP layer mapping demonstration
@@ -308,7 +380,9 @@ This week explores the architectural foundations of computer networks, focusing 
 
 ---
 
-### Week 3: Network Programming – Broadcast, Multicast and TCP Tunnelling
+### Week 3: Broadcast, Multicast and TCP Tunnelling
+
+**Network:** `10.0.3.0/24` | **Folder:** `3enWSL`
 
 **Learning Objectives:**
 - Identify differences between unicast, broadcast and multicast communication at conceptual and practical levels
@@ -333,6 +407,8 @@ This laboratory session explores fundamental network communication mechanisms th
 
 ### Week 4: Physical Layer, Data Link Layer and Custom Protocols
 
+**Network:** `10.0.4.0/24` | **Folder:** `4enWSL`
+
 **Learning Objectives:**
 - Understand data transmission and signal encoding at the physical layer
 - Implement error detection and correction at the frame level
@@ -340,7 +416,7 @@ This laboratory session explores fundamental network communication mechanisms th
 - Utilise `struct` for binary serialisation and CRC32 for integrity verification
 
 **Key Concepts:**
-This week explores the fundamentals of data transmission through the **Physical Layer** and **Data Link Layer** of the OSI model. Students understand how data is transformed into signals for transmission and how errors are detected and corrected at the frame level. The practical component focuses on **designing and implementing custom protocols** using TCP and UDP, demonstrating message framing, data serialisation and error detection.
+This session explores the lowest layers of the network stack. The **Physical Layer (L1)** handles signal transmission. The **Data Link Layer (L2)** provides framing, addressing and error detection. Students implement custom protocols demonstrating framing strategies and integrity verification.
 
 **Technologies:** Binary protocols, Python `struct` module, CRC32, Ethernet frames, integrity validation
 
@@ -355,6 +431,8 @@ This week explores the fundamentals of data transmission through the **Physical 
 ---
 
 ### Week 5: Network Layer – IPv4/IPv6 Addressing and Subnetting
+
+**Network:** `10.0.5.0/24` | **Folder:** `5enWSL`
 
 **Learning Objectives:**
 - Identify the role and functions of the Network Layer in OSI and TCP/IP architectures
@@ -377,7 +455,9 @@ This laboratory session explores the **Network Layer** of the TCP/IP model, focu
 
 ---
 
-### Week 6: NAT/PAT, Support Protocols and Software-Defined Networking
+### Week 6: NAT/PAT, Support Protocols and SDN
+
+**Network:** `10.0.6.0/24` | **Folder:** `6enWSL`
 
 **Learning Objectives:**
 - Recall the purpose and classification of NAT variants (static, dynamic, PAT) and auxiliary protocols (ARP, DHCP, ICMP, NDP)
@@ -402,6 +482,8 @@ This laboratory session integrates two complementary domains: address translatio
 
 ### Week 7: Packet Capture and Filtering
 
+**Network:** `10.0.7.0/24` | **Folder:** `7enWSL`
+
 **Learning Objectives:**
 - Identify key packet fields and their significance in TCP/UDP traffic captures
 - Explain observable differences between REJECT and DROP behaviour in packet captures
@@ -424,6 +506,8 @@ This laboratory session explores mechanisms for observing and controlling networ
 ---
 
 ### Week 8: Transport Layer – HTTP Server and Reverse Proxy
+
+**Network:** `10.0.8.0/24` | **Folder:** `8enWSL`
 
 **Learning Objectives:**
 - Identify key components of TCP and UDP protocols and their roles in network communication
@@ -448,6 +532,8 @@ The transport layer represents the foundation of reliable communication between 
 
 ### Week 9: Session and Presentation Layers
 
+**Network:** `10.0.9.0/24` | **Folder:** `9enWSL`
+
 **Learning Objectives:**
 - Identify conceptual differences between TCP connection and application session
 - Explain the role of L5 and L6 layers in the OSI protocol stack
@@ -469,7 +555,9 @@ Week 9 explores the intermediate layers of the OSI model that bridge the transpo
 
 ---
 
-### Week 10: Application Layer – HTTP/S, REST and Network Services
+### Week 10: Application Layer – HTTPS, REST and Network Services
+
+**Network:** `10.0.10.0/24` | **Folder:** `10enWSL`
 
 **Learning Objectives:**
 - Identify main components of HTTP request and response, including methods, headers and status codes
@@ -494,6 +582,8 @@ This laboratory session explores the **application layer** of the TCP/IP stack, 
 
 ### Week 11: Application Protocols and Load Balancing
 
+**Network:** `10.0.11.0/24` | **Folder:** `11enWSL`
+
 **Learning Objectives:**
 - Understand FTP dual-connection architecture and passive mode for NAT traversal
 - Explain DNS hierarchical architecture including resolvers and authoritative servers
@@ -515,7 +605,9 @@ This laboratory explores application protocols and load balancing techniques. **
 
 ---
 
-### Week 12: Email Protocols (SMTP) and Remote Procedure Call (RPC)
+### Week 12: Email Protocols and Remote Procedure Call
+
+**Network:** `10.0.12.0/24` (172.28.12.0/24 for internal services) | **Folder:** `12enWSL`
 
 **Learning Objectives:**
 - Identify components of SMTP transaction and recognise standard protocol commands
@@ -524,21 +616,23 @@ This laboratory explores application protocols and load balancing techniques. **
 - Design RPC services using multiple paradigms
 
 **Key Concepts:**
-This session explores email protocols and RPC mechanisms. **SMTP** enables message transfer between mail servers. **RPC** allows programmes to invoke functions on remote systems. We examine JSON-RPC 2.0, XML-RPC and gRPC (using Protocol Buffers for binary serialisation).
+This session explores email protocols and RPC mechanisms. **SMTP** enables message transfer between mail servers using a command-response dialogue (EHLO, MAIL FROM, RCPT TO, DATA, QUIT). **RPC** allows programmes to invoke functions on remote systems. We examine JSON-RPC 2.0, XML-RPC and gRPC (using Protocol Buffers for binary serialisation).
 
-**Technologies:** SMTP, POP3, IMAP, JSON-RPC 2.0, XML-RPC, gRPC, `protobuf`
+**Technologies:** SMTP (port 1025), JSON-RPC 2.0 (port 6200), XML-RPC (port 6201), gRPC (port 6251), `protobuf`
 
 **Practical Exercises:**
-1. SMTP dialogue implementation for email sending
-2. JSON-RPC calculator service
+1. SMTP dialogue implementation with manual netcat session
+2. JSON-RPC calculator service with batch operations
 3. gRPC service with Protocol Buffers
-4. Email retrieval with POP3/IMAP
+4. RPC performance comparison (JSON vs XML vs gRPC)
 
-**Wireshark Focus:** SMTP commands (HELO, MAIL FROM, RCPT TO), filter: `smtp`
+**Wireshark Focus:** SMTP commands and three-digit status codes, RPC payload comparison, filter: `tcp.port == 1025` for SMTP, `tcp.port == 6200 && http` for JSON-RPC
 
 ---
 
 ### Week 13: IoT and Network Security
+
+**Network:** `10.0.13.0/24` | **Folder:** `13enWSL`
 
 **Learning Objectives:**
 - Identify IoT architecture components and associated communication protocols
@@ -549,19 +643,23 @@ This session explores email protocols and RPC mechanisms. **SMTP** enables messa
 **Key Concepts:**
 This session explores the intersection of **IoT technologies** and **network security**. Students examine MQTT (Message Queuing Telemetry Transport) and understand device vulnerabilities. The lab includes intentionally vulnerable services (DVWA, vsftpd simulation) for safe security exploration.
 
-**Technologies:** MQTT (`paho-mqtt`), Mosquitto broker, `nmap`, port scanning, DVWA, security assessment
+**⚠️ Security Warning:** This week contains intentionally vulnerable services. Never expose to public networks.
+
+**Technologies:** MQTT (`paho-mqtt`), Mosquitto broker (ports 1883/8883), `nmap`, port scanning, DVWA (port 8080), vsftpd (port 2121), backdoor stub (port 6200)
 
 **Practical Exercises:**
-1. MQTT publish/subscribe implementation
+1. MQTT publish/subscribe with plaintext and TLS transport
 2. IoT sensor data aggregation system
 3. Port scanning and service enumeration
 4. Vulnerability assessment in controlled environment
 
-**Wireshark Focus:** MQTT packets, vulnerability scan patterns, filter: `mqtt`
+**Wireshark Focus:** MQTT packets, TLS encrypted vs plaintext comparison, filter: `mqtt` or `tcp.port == 1883`
 
 ---
 
 ### Week 14: Integrated Review and Project Evaluation
+
+**Networks:** `172.20.0.0/24` (backend), `172.21.0.0/24` (frontend) | **Folder:** `14enWSL`
 
 **Learning Objectives:**
 - Identify components of a load-balanced web architecture
@@ -574,41 +672,56 @@ This session explores the intersection of **IoT technologies** and **network sec
 **Key Concepts:**
 This session represents the culmination of the course, integrating concepts from all previous weeks. Students analyse, troubleshoot and optimise a complete distributed system with load balancing.
 
+**⚠️ Important Port Change:** TCP Echo server runs on **port 9090** (not 9000, which is reserved for Portainer).
+
 **Technologies:** Full-stack integration, multi-service Docker Compose, performance metrics, systematic troubleshooting
+
+**Services:**
+| Service | IP Address | Host Port |
+|---------|------------|-----------|
+| Load Balancer | 172.21.0.10 / 172.20.0.10 | 8080 |
+| Backend 1 | 172.20.0.2 | 8001 |
+| Backend 2 | 172.20.0.3 | 8002 |
+| TCP Echo | 172.20.0.20 | **9090** |
+| Client | 172.21.0.2 | - |
 
 **Practical Exercises:**
 1. Complete system deployment and verification
-2. End-to-end traffic analysis
-3. Performance benchmarking
-4. Troubleshooting methodology application
+2. Load balancer behaviour analysis (round-robin)
+3. TCP echo protocol testing
+4. End-to-end traffic analysis with Wireshark
+
+**Wireshark Focus:** HTTP with X-Backend header, TCP conversations, filter: `http contains "X-Backend"` or `tcp.port == 9090`
 
 ---
 
 ## Standard Weekly Kit Structure
 
-Each `<NN>roWSL/` directory follows a consistent and predictable organisation:
+Each `<N>enWSL/` directory follows a consistent and predictable organisation:
 
 ```
-<NN>roWSL/
+<N>enWSL/
 │
 ├── README.md                 # Overview, objectives and quick start instructions
 ├── CHANGELOG.md              # Modification history
 ├── LICENSE                   # MIT Licence
 │
 ├── docs/                     # Theoretical documentation and references
-│   ├── rezumat_teoretic.md   # Core concepts for the current week
-│   ├── fisa_comenzi.md       # Command and syntax quick reference
-│   ├── depanare.md           # Troubleshooting guide
-│   └── lecturi_suplimentare.md # Resources for further study
+│   ├── theory_summary.md     # Core concepts for the current week
+│   ├── commands_cheatsheet.md # Command and syntax quick reference
+│   ├── troubleshooting.md    # Troubleshooting guide
+│   └── further_reading.md    # Resources for further study
 │
 ├── src/                      # Python source code
 │   ├── exercises/            # Laboratory exercise implementations
-│   │   ├── ex01_*.py         # Exercise 1
-│   │   ├── ex02_*.py         # Exercise 2
+│   │   ├── ex_01_*.py        # Exercise 1
+│   │   ├── ex_02_*.py        # Exercise 2
 │   │   └── ...
+│   ├── apps/                 # Application implementations
+│   │   └── *.py
 │   └── utils/                # Shared utility modules
 │       ├── __init__.py
-│       └── helpers.py
+│       └── net_utils.py
 │
 ├── homework/                 # Individual work assignments
 │   ├── README.md             # Assignment descriptions and requirements
@@ -616,30 +729,30 @@ Each `<NN>roWSL/` directory follows a consistent and predictable organisation:
 │   └── solutions/            # Reference solutions (optional)
 │
 ├── docker/                   # Containerisation and orchestration
-│   ├── Dockerfile.lab        # Docker image for laboratory environment
-│   ├── docker-compose.yml    # Multi-container orchestration
+│   ├── Dockerfile            # Docker image for laboratory environment
+│   ├── docker-compose.yml    # Multi-container orchestration (NO Portainer!)
 │   ├── configs/              # Service configuration files
 │   └── volumes/              # Persistent data volumes
 │
 ├── scripts/                  # Automation scripts (Python)
-│   ├── porneste_lab.py       # Start laboratory environment
-│   ├── opreste_lab.py        # Stop laboratory environment
-│   ├── ruleaza_demo.py       # Execute all demonstrations
-│   ├── captura_trafic.py     # Traffic capture automation
-│   ├── curatare.py           # Clean generated files
+│   ├── start_lab.py          # Start laboratory environment
+│   ├── stop_lab.py           # Stop laboratory environment
+│   ├── run_demo.py           # Execute all demonstrations
+│   ├── capture_traffic.py    # Traffic capture automation
+│   ├── cleanup.py            # Clean generated files
 │   └── utils/                # Script utilities
 │
 ├── setup/                    # Environment configuration
-│   ├── instaleaza_prerequisite.py  # Prerequisite installation
-│   ├── configureaza_docker.py      # Docker configuration
-│   ├── verifica_mediu.py           # Environment verification
-│   └── requirements.txt            # Python dependencies
+│   ├── install_prerequisites.py  # Prerequisite installation
+│   ├── configure_docker.py       # Docker configuration
+│   ├── verify_environment.py     # Environment verification
+│   └── requirements.txt          # Python dependencies
 │
 ├── tests/                    # Automated testing
-│   ├── test_mediu.py         # Environment tests
-│   ├── test_exercitii.py     # Exercise tests
-│   ├── test_rapid.py         # Quick smoke tests
-│   └── iesiri_asteptate.md   # Expected output reference
+│   ├── test_environment.py   # Environment tests
+│   ├── test_exercises.py     # Exercise tests
+│   ├── smoke_test.py         # Quick smoke tests
+│   └── expected_outputs.md   # Expected output reference
 │
 ├── pcap/                     # Packet capture files
 │   ├── README.md             # Capture descriptions
@@ -656,12 +769,21 @@ Each `<NN>roWSL/` directory follows a consistent and predictable organisation:
 | `docs/` | All theoretical and reference materials for the week |
 | `src/` | Production-quality Python implementations |
 | `homework/` | Student assignments with optional solutions |
-| `docker/` | Complete containerised environment |
+| `docker/` | Complete containerised environment (**excludes Portainer**) |
 | `scripts/` | Automation for setup, execution and cleanup |
 | `setup/` | One-time environment configuration |
 | `tests/` | Automated verification of exercises |
 | `pcap/` | Pre-captured network traffic for Wireshark analysis |
 | `artifacts/` | Runtime-generated files (excluded from git) |
+
+### Important: docker-compose.yml Rules
+
+Every `docker-compose.yml` in this repository follows these rules:
+
+1. **NO Portainer service definition** – Portainer runs globally
+2. **NO port 9000 usage** – Reserved for Portainer
+3. **Comments explaining** that Portainer runs separately
+4. **Week-specific networks** using `10.0.N.0/24` pattern
 
 ---
 
@@ -683,11 +805,11 @@ Each `<NN>roWSL/` directory follows a consistent and predictable organisation:
 | **Windows** | 10 (Build 2004+) or 11 | Host operating system |
 | **WSL** | 2.x | Windows Subsystem for Linux |
 | **Ubuntu** | 22.04 LTS | Linux distribution |
-| **Docker** | 28.2.2+ | Container runtime |
-| **Docker Compose** | 1.29.x+ | Multi-container orchestration |
-| **Portainer CE** | 2.33.6 LTS | Web-based container management |
+| **Docker Engine** | 28.2.2+ | Container runtime (in WSL) |
+| **Docker Compose** | 2.x+ | Multi-container orchestration |
+| **Portainer CE** | 2.33.6 LTS | Web-based container management (port 9000) |
 | **Wireshark** | 4.4.x | Network protocol analyser |
-| **Python** | 3.10+ | Programming language |
+| **Python** | 3.11+ | Programming language |
 
 ### Component Versions Summary
 
@@ -696,12 +818,10 @@ Each `<NN>roWSL/` directory follows a consistent and predictable organisation:
 | WSL2 | 2.x | `wsl --status` |
 | Ubuntu | 22.04 LTS | `lsb_release -a` |
 | Docker | 28.2.2 | `docker --version` |
-| Docker Compose | 1.29.x | `docker-compose --version` |
+| Docker Compose | 2.x | `docker compose version` |
 | Portainer | 2.33.6 LTS | http://localhost:9000 |
 | Wireshark | 4.4.x | Windows application |
-| Python docker | 7.1.0 | `pip show docker` |
-| Python scapy | 2.7.0 | `pip show scapy` |
-| Python dpkt | 1.9.8 | `pip show dpkt` |
+| Python | 3.11+ | `python3 --version` |
 
 ### Time Estimate for Setup
 
@@ -862,7 +982,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docke
 
 ```bash
 sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 ```
 
 #### Step 3.5: Configure Docker for Non-Root Usage
@@ -892,9 +1012,11 @@ docker run hello-world
 
 ---
 
-### Step 4: Deploy Portainer CE
+### Step 4: Deploy Portainer CE (Global Service)
 
 Portainer provides a web-based GUI for managing Docker containers, making it easier to visualise and control your laboratory environment.
+
+> ⚠️ **Critical:** Portainer is deployed ONCE and runs GLOBALLY on port 9000. It is NOT included in any weekly docker-compose files.
 
 #### Step 4.1: Create Portainer Volume
 
@@ -907,8 +1029,6 @@ docker volume create portainer_data
 ```bash
 docker run -d \
     -p 9000:9000 \
-    -p 9443:9443 \
-    -p 8000:8000 \
     --name portainer \
     --restart=always \
     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -938,7 +1058,16 @@ docker run -d \
 docker ps | grep portainer
 ```
 
-**Expected:** Portainer container running with ports 8000, 9000, 9443 exposed.
+**Expected:** Portainer container running with port 9000 exposed.
+
+#### Why Portainer is Global
+
+| Aspect | Explanation |
+|--------|-------------|
+| **Single instance** | One Portainer manages all weeks' containers |
+| **Persistent** | Survives weekly lab restarts |
+| **Port 9000** | Always available at http://localhost:9000 |
+| **Never stopped** | Weekly scripts never touch Portainer |
 
 ---
 
@@ -988,36 +1117,20 @@ When the Npcap installer appears, select:
 
 ### Step 6: Install Python Packages
 
-Python packages are needed for scripting network interactions from Windows.
+Python packages are installed in WSL for scripting network interactions.
 
-#### Step 6.1: Install Python on Windows
+#### Step 6.1: Install Required Packages
 
-1. Download from: https://www.python.org/downloads/
-2. During installation, check: ☑️ **Add Python to PATH**
+In Ubuntu terminal:
 
-#### Step 6.2: Install Required Packages
-
-Open PowerShell (regular, not admin) and run:
-
-```powershell
-pip install docker scapy dpkt requests flask paramiko pyftpdlib paho-mqtt dnspython grpcio grpcio-tools protobuf colorama psutil netifaces pyyaml
+```bash
+pip install docker requests flask paramiko pyftpdlib paho-mqtt dnspython grpcio grpcio-tools protobuf colorama psutil pyyaml --break-system-packages
 ```
 
-#### Step 6.3: Configure Docker SDK for Windows
+#### Step 6.2: Verify Python Integration
 
-The Python `docker` package needs to connect to Docker running in WSL:
-
-```powershell
-# Set environment variable for Docker host
-$env:DOCKER_HOST = "tcp://localhost:2375"
-```
-
-For permanent configuration, add to your PowerShell profile or system environment variables.
-
-#### Step 6.4: Verify Python Integration
-
-```powershell
-python -c "import docker; c = docker.from_env(); print(f'Containers: {len(c.containers.list())}')"
+```bash
+python3 -c "import docker; c = docker.from_env(); print(f'Containers: {len(c.containers.list())}')"
 ```
 
 **Expected:** `Containers: 1` (or more, depending on running containers)
@@ -1072,164 +1185,155 @@ docker ps
 
 ## Repository Cloning
 
-### Complete Repository Clone
+### Student's Local Directory Structure
 
-To clone the entire repository with all 14 weeks:
+Students should organise their work in a dedicated directory on Windows:
 
-```bash
-cd ~
-git clone https://github.com/antonioclim/netROwsl.git
-cd netROwsl
+```
+D:\NETWORKING\
+├── WEEK1\          ← Contains cloned 1enWSL content
+├── WEEK2\          ← Contains cloned 2enWSL content
+├── WEEK3\          ← Contains cloned 3enWSL content
+...
+└── WEEK14\         ← Contains cloned 14enWSL content
 ```
 
-### Individual Week Cloning
+### Cloning Individual Weeks (Recommended)
 
-For students who want to clone only a specific week to save disc space, use the following commands. Replace `<NN>` with the week number (01-14).
+For each week N, run in PowerShell:
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone specific week
+git clone https://github.com/antonioclim/netENwsl.git WEEK<N>
+cd WEEK<N>
+```
+
+### Specific Week Cloning Commands
 
 #### Week 1
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week01 \
-  && cd week01 && git sparse-checkout set 01roWSL \
-  && shopt -s dotglob && mv 01roWSL/* . && rmdir 01roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK1
+cd WEEK1\1enWSL
 ```
 
 #### Week 2
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week02 \
-  && cd week02 && git sparse-checkout set 02roWSL \
-  && shopt -s dotglob && mv 02roWSL/* . && rmdir 02roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK2
+cd WEEK2\2enWSL
 ```
 
 #### Week 3
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week03 \
-  && cd week03 && git sparse-checkout set 03roWSL \
-  && shopt -s dotglob && mv 03roWSL/* . && rmdir 03roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK3
+cd WEEK3\3enWSL
 ```
 
 #### Week 4
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week04 \
-  && cd week04 && git sparse-checkout set 04roWSL \
-  && shopt -s dotglob && mv 04roWSL/* . && rmdir 04roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK4
+cd WEEK4\4enWSL
 ```
 
 #### Week 5
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week05 \
-  && cd week05 && git sparse-checkout set 05roWSL \
-  && shopt -s dotglob && mv 05roWSL/* . && rmdir 05roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK5
+cd WEEK5\5enWSL
 ```
 
 #### Week 6
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week06 \
-  && cd week06 && git sparse-checkout set 06roWSL \
-  && shopt -s dotglob && mv 06roWSL/* . && rmdir 06roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK6
+cd WEEK6\6enWSL
 ```
 
 #### Week 7
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week07 \
-  && cd week07 && git sparse-checkout set 07roWSL \
-  && shopt -s dotglob && mv 07roWSL/* . && rmdir 07roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK7
+cd WEEK7\7enWSL
 ```
 
 #### Week 8
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week08 \
-  && cd week08 && git sparse-checkout set 08roWSL \
-  && shopt -s dotglob && mv 08roWSL/* . && rmdir 08roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK8
+cd WEEK8\8enWSL
 ```
 
 #### Week 9
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week09 \
-  && cd week09 && git sparse-checkout set 09roWSL \
-  && shopt -s dotglob && mv 09roWSL/* . && rmdir 09roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK9
+cd WEEK9\9enWSL
 ```
 
 #### Week 10
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week10 \
-  && cd week10 && git sparse-checkout set 10roWSL \
-  && shopt -s dotglob && mv 10roWSL/* . && rmdir 10roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK10
+cd WEEK10\10enWSL
 ```
 
 #### Week 11
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week11 \
-  && cd week11 && git sparse-checkout set 11roWSL \
-  && shopt -s dotglob && mv 11roWSL/* . && rmdir 11roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK11
+cd WEEK11\11enWSL
 ```
 
 #### Week 12
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week12 \
-  && cd week12 && git sparse-checkout set 12roWSL \
-  && shopt -s dotglob && mv 12roWSL/* . && rmdir 12roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK12
+cd WEEK12\12enWSL
 ```
 
 #### Week 13
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week13 \
-  && cd week13 && git sparse-checkout set 13roWSL \
-  && shopt -s dotglob && mv 13roWSL/* . && rmdir 13roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK13
+cd WEEK13\13enWSL
 ```
 
 #### Week 14
-
-```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git week14 \
-  && cd week14 && git sparse-checkout set 14roWSL \
-  && shopt -s dotglob && mv 14roWSL/* . && rmdir 14roWSL \
-  && find . -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
+```powershell
+cd D:\NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK14
+cd WEEK14\14enWSL
 ```
 
-### Prerequisites Folder Only
+### Accessing from WSL
+
+After cloning, access the week's directory from WSL:
 
 ```bash
-cd ~ && git clone --filter=blob:none --sparse https://github.com/antonioclim/netROwsl.git prerequisites \
-  && cd prerequisites && git sparse-checkout set 00INAINTEdeORICEaltceva \
-  && shopt -s dotglob && mv 00INAINTEdeORICEaltceva/* . && rmdir 00INAINTEdeORICEaltceva
+cd /mnt/d/NETWORKING/WEEK<N>/<N>enWSL
+```
+
+For example, Week 7:
+```bash
+cd /mnt/d/NETWORKING/WEEK7/7enWSL
 ```
 
 ---
 
 ## Running Your First Laboratory
 
-### Step 1: Navigate to Week 1
+### Step 1: Navigate to Week Directory
 
 ```bash
-cd ~/netROwsl/01roWSL
-# Or if you cloned individually:
-cd ~/week01
+# In Ubuntu terminal
+cd /mnt/d/NETWORKING/WEEK1/1enWSL
 ```
 
 ### Step 2: Install Python Dependencies
@@ -1241,19 +1345,32 @@ pip install -r setup/requirements.txt --break-system-packages
 ### Step 3: Verify Environment
 
 ```bash
-python3 setup/verifica_mediu.py
+python3 setup/verify_environment.py
 ```
+
+This checks:
+- WSL2 is running
+- Docker is available
+- Portainer is running on port 9000
+- Wireshark is installed
+- Required Python packages are present
 
 ### Step 4: Start Laboratory
 
 ```bash
-python3 scripts/porneste_lab.py
+python3 scripts/start_lab.py
 ```
+
+This:
+- Starts Docker if not running
+- Checks Portainer status (but never starts it)
+- Builds and starts week-specific containers
+- Displays access URLs
 
 ### Step 5: Run Demonstrations
 
 ```bash
-python3 scripts/ruleaza_demo.py
+python3 scripts/run_demo.py
 ```
 
 ### Step 6: Capture Traffic in Wireshark
@@ -1266,14 +1383,24 @@ python3 scripts/ruleaza_demo.py
 ### Step 7: Stop Laboratory
 
 ```bash
-python3 scripts/opreste_lab.py
+python3 scripts/stop_lab.py
 ```
+
+This:
+- Stops week-specific containers
+- **Never** stops Portainer
+- Confirms Portainer is still running
 
 ### Step 8: Clean Up
 
 ```bash
-python3 scripts/curatare.py
+python3 scripts/cleanup.py --full
 ```
+
+This:
+- Removes week-specific containers and networks
+- Cleans artifact files
+- **Never** removes Portainer
 
 ---
 
@@ -1281,42 +1408,49 @@ python3 scripts/curatare.py
 
 All weekly kits follow a consistent IP addressing scheme to facilitate learning and troubleshooting:
 
-### Docker Network Ranges
+### Per-Week Network Ranges
 
-| Network | CIDR | Purpose |
-|---------|------|---------|
-| `lab_network` | `172.20.0.0/16` | Primary laboratory network |
-| `backend_network` | `172.21.0.0/16` | Backend services |
-| `dmz_network` | `172.22.0.0/16` | DMZ segment |
-| `external_network` | `172.23.0.0/16` | Simulated external network |
+| Week | Network CIDR | Docker Network Name |
+|------|--------------|---------------------|
+| 1 | `10.0.1.0/24` | `week1_net` |
+| 2 | `10.0.2.0/24` | `week2_net` |
+| 3 | `10.0.3.0/24` | `week3_net` |
+| 4 | `10.0.4.0/24` | `week4_net` |
+| 5 | `10.0.5.0/24` | `week5_net` |
+| 6 | `10.0.6.0/24` | `week6_net` |
+| 7 | `10.0.7.0/24` | `week7_net` |
+| 8 | `10.0.8.0/24` | `week8_net` |
+| 9 | `10.0.9.0/24` | `week9_net` |
+| 10 | `10.0.10.0/24` | `week10_net` |
+| 11 | `10.0.11.0/24` | `week11_net` |
+| 12 | `10.0.12.0/24` / `172.28.12.0/24` | `week12_net` |
+| 13 | `10.0.13.0/24` | `week13net` |
+| 14 | `172.20.0.0/24` + `172.21.0.0/24` | `week14_backend_net` + `week14_frontend_net` |
 
-### Standard Container Addressing
+### Standard Container Addressing Pattern
 
-| Container Role | IP Address | Ports |
-|----------------|------------|-------|
-| Router/Gateway | `172.20.0.1` | - |
-| DNS Server | `172.20.0.10` | 53/udp, 53/tcp |
-| Web Server 1 | `172.20.0.11` | 80, 443 |
-| Web Server 2 | `172.20.0.12` | 80, 443 |
-| Web Server 3 | `172.20.0.13` | 80, 443 |
-| Load Balancer | `172.20.0.20` | 80, 443 |
-| FTP Server | `172.20.0.21` | 21, 20, 30000-30100 |
-| Mail Server | `172.20.0.25` | 25, 110, 143 |
-| MQTT Broker | `172.20.0.30` | 1883, 8883 |
-| Client 1 | `172.20.0.100` | - |
-| Client 2 | `172.20.0.101` | - |
-| Attacker | `172.20.0.200` | - |
+Within each week's `10.0.N.0/24` network:
+
+| Container Role | IP Address Pattern | Example (Week 7) |
+|----------------|-------------------|------------------|
+| Gateway | `10.0.N.1` | `10.0.7.1` |
+| Primary Server | `10.0.N.10` | `10.0.7.10` |
+| Secondary Server | `10.0.N.11` | `10.0.7.11` |
+| Client | `10.0.N.100` | `10.0.7.100` |
+| Special Service | `10.0.N.20+` | `10.0.7.20` |
 
 ### Port Allocation Conventions
 
-| Port Range | Service Category |
-|------------|------------------|
-| 8000-8099 | HTTP application servers |
-| 8100-8199 | REST API services |
-| 8200-8299 | WebSocket services |
-| 9000-9099 | Administrative interfaces (Portainer) |
-| 5000-5099 | Custom TCP protocols |
-| 6000-6099 | Custom UDP protocols |
+| Port Range | Service Category | Notes |
+|------------|------------------|-------|
+| **9000** | **Portainer (GLOBAL)** | **⚠️ NEVER use in labs** |
+| 8080-8089 | HTTP application servers | Common for web servers |
+| 8001-8002 | Backend services | Week 14 backends |
+| 9001-9099 | Available lab services | Safe to use |
+| 9090 | TCP Echo (Week 14) | Moved from 9000 |
+| 1883, 8883 | MQTT | Week 13 |
+| 1025 | SMTP | Week 12 |
+| 6200-6251 | RPC services | Week 12 |
 
 ---
 
@@ -1328,8 +1462,8 @@ All weekly kits follow a consistent IP addressing scheme to facilitate learning 
 |-----------|---------|---------|
 | **WSL2** | 2.x | Windows Subsystem for Linux |
 | **Ubuntu** | 22.04 LTS | Linux distribution |
-| **Docker** | 28.2.2 | Container runtime |
-| **Docker Compose** | 1.29.x | Multi-container orchestration |
+| **Docker Engine** | 28.2.2 | Container runtime |
+| **Docker Compose** | 2.x | Multi-container orchestration |
 | **Portainer CE** | 2.33.6 LTS | Web-based container management |
 | **Wireshark** | 4.4.x | Network protocol analyser |
 
@@ -1337,7 +1471,7 @@ All weekly kits follow a consistent IP addressing scheme to facilitate learning 
 
 | Language | Usage |
 |----------|-------|
-| **Python 3.10+** | Primary implementation language |
+| **Python 3.11+** | Primary implementation language |
 | **Bash** | System automation |
 | **YAML** | Docker Compose configuration |
 | **Protocol Buffers** | gRPC service definitions (Week 12) |
@@ -1351,17 +1485,14 @@ All weekly kits follow a consistent IP addressing scheme to facilitate learning 
 | **tshark** | Ubuntu/WSL | Terminal-based Wireshark |
 | **nmap** | Ubuntu/WSL | Port scanning |
 | **netcat** | Ubuntu/WSL | TCP/UDP utility |
-| **iperf3** | Ubuntu/WSL | Performance testing |
 
 ### Python Libraries
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| **docker** | 7.1.0 | Docker API |
-| **scapy** | 2.7.0 | Packet manipulation |
-| **dpkt** | 1.9.8 | Packet parsing |
-| **flask** | Latest | Web framework |
+| **docker** | 7.1.0+ | Docker API |
 | **requests** | Latest | HTTP client |
+| **flask** | Latest | Web framework |
 | **paramiko** | Latest | SSH client |
 | **pyftpdlib** | Latest | FTP server |
 | **paho-mqtt** | Latest | MQTT client |
@@ -1374,23 +1505,21 @@ All weekly kits follow a consistent IP addressing scheme to facilitate learning 
 
 | Metric | Value |
 |--------|-------|
-| **Total Files** | 640+ |
-| **Python Files** | 392 |
-| **Markdown Files** | 110 |
-| **Python Lines of Code** | ~76,000 |
-| **Documentation Lines** | ~28,000 |
-| **Docker Compose Files** | 14 |
 | **Weekly Kits** | 14 |
+| **Total ZIP Size** | ~1.2 MB |
+| **Docker Compose Files** | 14 |
+| **Python Exercise Files** | 50+ |
+| **Documentation Pages** | 70+ |
 
 ### Per-Week Statistics (Average)
 
 | Metric | Value |
 |--------|-------|
-| Python exercises | 4-6 |
+| Python exercises | 3-5 |
 | Documentation pages | 4-5 |
-| Docker services | 3-5 |
+| Docker services | 2-5 |
 | Test files | 3-4 |
-| Total size | ~300 KB |
+| ZIP size | ~85-130 KB |
 
 ---
 
@@ -1400,11 +1529,11 @@ All weekly kits follow a consistent IP addressing scheme to facilitate learning 
 
 ```python
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Module description.
 
 Course: Computer Networks - ASE, Economic Informatics
+Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 """
 
 import standard_library
@@ -1412,8 +1541,8 @@ import third_party_library
 import local_module
 
 # Constants in UPPER_SNAKE_CASE
-DEFAULT_PORT = 8000
-MAX_CONNECTIONS = 100
+DEFAULT_PORT = 8080
+PORTAINER_PORT = 9000  # RESERVED - never use
 
 def function_name(parameter: str, optional: int = 10) -> bool:
     """
@@ -1441,11 +1570,12 @@ class ClassName:
 
 | Element | Convention | Example |
 |---------|------------|---------|
-| Weekly directories | `<NN>roWSL/` | `03roWSL/` |
-| Exercise files | `ex<NN>_<topic>.py` | `ex01_broadcast.py` |
-| Test files | `test_<module>.py` | `test_exercitii.py` |
-| Docker services | `<service>-<role>` | `web-server-1` |
-| Networks | `<purpose>_network` | `backend_network` |
+| Weekly directories | `<N>enWSL/` | `7enWSL/` |
+| Exercise files | `ex_<NN>_<topic>.py` | `ex_01_broadcast.py` |
+| Test files | `test_<module>.py` | `test_exercises.py` |
+| Docker services | `week<N>_<role>` | `week7_server` |
+| Networks | `week<N>_net` | `week7_net` |
+| Scripts | `<action>_lab.py` | `start_lab.py` |
 
 ---
 
@@ -1476,7 +1606,7 @@ wsl
 
 #### WSL is very slow
 
-Store projects in `/home/stud/`, not `/mnt/c/`. The Windows filesystem in WSL has significant overhead.
+Store projects in `/mnt/d/NETWORKING/`, not `/mnt/c/Users/...`. The Windows filesystem through WSL has overhead, but D: drive is typically faster than user folders.
 
 ---
 
@@ -1502,14 +1632,6 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-#### "docker: command not found" in PowerShell
-
-This is expected. Docker is installed in WSL, not Windows. Use:
-
-```powershell
-wsl docker ps
-```
-
 #### Container not starting
 
 ```bash
@@ -1518,16 +1640,6 @@ docker logs <container_name>
 
 # Check if port is already in use
 sudo ss -tulpn | grep <port>
-```
-
-#### Image build failed
-
-```bash
-# Check internet connectivity
-ping 8.8.8.8
-
-# Clear Docker cache
-docker system prune -a
 ```
 
 ---
@@ -1541,14 +1653,16 @@ docker system prune -a
    docker ps | grep portainer
    ```
 
-2. If not running, check logs:
+2. If not running, start it:
    ```bash
-   docker logs portainer
+   docker start portainer
    ```
 
-3. Restart Portainer:
+3. If doesn't exist, create it:
    ```bash
-   docker restart portainer
+   docker run -d -p 9000:9000 --name portainer --restart=always \
+       -v /var/run/docker.sock:/var/run/docker.sock \
+       -v portainer_data:/data portainer/portainer-ce:latest
    ```
 
 #### "Portainer has been initialised already" (missed 5-minute window)
@@ -1561,14 +1675,12 @@ docker volume rm portainer_data
 
 # Redeploy
 docker volume create portainer_data
-docker run -d -p 9000:9000 -p 9443:9443 -p 8000:8000 \
-    --name portainer --restart=always \
+docker run -d -p 9000:9000 --name portainer --restart=always \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v portainer_data:/data \
-    portainer/portainer-ce:latest
+    -v portainer_data:/data portainer/portainer-ce:latest
 ```
 
-Then access http://localhost:9000 and create admin account (stud/studstudstud) within 5 minutes.
+Then access http://localhost:9000 and create admin account (`stud`/`studstudstud`) within 5 minutes.
 
 ---
 
@@ -1601,16 +1713,6 @@ Then access http://localhost:9000 and create admin account (stud/studstudstud) w
 pip install <module> --break-system-packages
 ```
 
-#### Permission denied for raw sockets
-
-```bash
-# Run with sudo
-sudo python3 script.py
-
-# Or set capabilities
-sudo setcap cap_net_raw+ep /usr/bin/python3
-```
-
 ---
 
 ### Network Issues
@@ -1626,16 +1728,6 @@ docker inspect <container> | grep IPAddress
 
 # Verify network exists
 docker network ls
-```
-
-#### DNS resolution failed
-
-```bash
-# Check resolv.conf
-cat /etc/resolv.conf
-
-# Use IP directly as workaround
-ping 8.8.8.8
 ```
 
 ---
@@ -1656,6 +1748,7 @@ wsl -l -v                 # List distributions with versions
 # ═══════════════════════════════════════════════════════════
 # Docker (Ubuntu Terminal)
 # ═══════════════════════════════════════════════════════════
+sudo service docker start # Start Docker daemon
 docker ps                 # List running containers
 docker ps -a              # List all containers
 docker images             # List images
@@ -1667,20 +1760,20 @@ docker network ls         # List networks
 docker volume ls          # List volumes
 
 # ═══════════════════════════════════════════════════════════
-# Service Management (Ubuntu Terminal)
+# Laboratory Scripts (in week directory)
 # ═══════════════════════════════════════════════════════════
-sudo service docker start   # Start Docker
-sudo service docker status  # Check Docker status
-sudo service docker stop    # Stop Docker
+python3 scripts/start_lab.py        # Start lab environment
+python3 scripts/stop_lab.py         # Stop lab environment
+python3 scripts/run_demo.py         # Run demonstrations
+python3 scripts/cleanup.py          # Clean up files
+python3 setup/verify_environment.py # Verify environment
 
 # ═══════════════════════════════════════════════════════════
-# Laboratory Scripts
+# Portainer (Global - Never touch in lab scripts!)
 # ═══════════════════════════════════════════════════════════
-python3 scripts/porneste_lab.py   # Start lab environment
-python3 scripts/opreste_lab.py    # Stop lab environment
-python3 scripts/ruleaza_demo.py   # Run demonstrations
-python3 scripts/curatare.py       # Clean up files
-python3 setup/verifica_mediu.py   # Verify environment
+docker start portainer    # Start Portainer if stopped
+# Access: http://localhost:9000
+# Credentials: stud / studstudstud
 ```
 
 ### Important URLs
@@ -1688,7 +1781,7 @@ python3 setup/verifica_mediu.py   # Verify environment
 | Service | URL |
 |---------|-----|
 | Portainer | http://localhost:9000 |
-| Repository | https://github.com/antonioclim/netROwsl |
+| Repository | https://github.com/antonioclim/netENwsl |
 | Docker Docs | https://docs.docker.com/ |
 | Wireshark Docs | https://www.wireshark.org/docs/ |
 | WSL Docs | https://learn.microsoft.com/en-us/windows/wsl/ |
@@ -1710,11 +1803,12 @@ python3 setup/verifica_mediu.py   # Verify environment
 | `http` | HTTP traffic |
 | `tls` | TLS/SSL traffic |
 | `dns` | DNS queries |
-| `tcp.port==80` | HTTP port |
-| `ip.addr==172.20.0.11` | Specific IP |
+| `tcp.port==8080` | HTTP port |
+| `ip.addr==10.0.7.10` | Specific IP |
 | `tcp.flags.syn==1` | TCP SYN packets |
 | `mqtt` | MQTT protocol |
 | `ftp or ftp-data` | FTP traffic |
+| `tcp.port==9090` | TCP Echo (Week 14) |
 
 ---
 
@@ -1726,7 +1820,6 @@ python3 setup/verifica_mediu.py   # Verify environment
 |----------|-----|
 | Python Documentation | https://docs.python.org/3/ |
 | Docker Documentation | https://docs.docker.com/ |
-| Scapy Documentation | https://scapy.readthedocs.io/ |
 | Wireshark User Guide | https://www.wireshark.org/docs/ |
 | RFC Repository | https://www.rfc-editor.org/ |
 
@@ -1735,9 +1828,9 @@ python3 setup/verifica_mediu.py   # Verify environment
 | Topic | Resource |
 |-------|----------|
 | TCP/IP Fundamentals | *TCP/IP Illustrated* by W. Richard Stevens |
-| Network Programming | *Unix Network Programming* by W. Richard Stevens |
-| Computer Networks | *Computer Networks* by Andrew S. Tanenbaum |
-| Network Security | *Network Security Essentials* by William Stallings |
+| Network Programming | *Foundations of Python Network Programming* by Rhodes & Goetzen |
+| Computer Networks | *Computer Networking: A Top-Down Approach* by Kurose & Ross |
+| Network Security | *Cryptography and Network Security* by William Stallings |
 | Protocol Analysis | *Practical Packet Analysis* by Chris Sanders |
 
 ### Practice Platforms
@@ -1747,7 +1840,6 @@ python3 setup/verifica_mediu.py   # Verify environment
 | HackTheBox | Security and networking challenges |
 | TryHackMe | Guided cybersecurity learning |
 | OverTheWire | Command-line and networking wargames |
-| PentesterLab | Web and network security exercises |
 
 ---
 
@@ -1764,16 +1856,17 @@ Run through this checklist to confirm your environment is properly configured:
 ### Docker
 
 - [ ] `docker --version` shows 28.2.2 or higher
-- [ ] `docker-compose --version` shows 1.29.x or higher
+- [ ] `docker compose version` shows 2.x or higher
 - [ ] `docker ps` works without sudo
 - [ ] `docker run hello-world` succeeds
 
-### Portainer
+### Portainer (Global Service)
 
 - [ ] Container running: `docker ps | grep portainer`
 - [ ] Accessible at http://localhost:9000
 - [ ] Can login with `stud` / `studstudstud`
 - [ ] Local Docker environment visible
+- [ ] **Port 9000 is NOT used by any lab service**
 
 ### Wireshark
 
@@ -1784,17 +1877,16 @@ Run through this checklist to confirm your environment is properly configured:
 
 ### Python
 
-- [ ] `python --version` shows 3.10 or higher
+- [ ] `python3 --version` shows 3.11 or higher
 - [ ] `pip show docker` shows version 7.1.0+
-- [ ] `pip show scapy` shows version 2.7.0+
-- [ ] Docker SDK works: `python -c "import docker; print(docker.from_env().info())"`
+- [ ] Docker SDK works: `python3 -c "import docker; print(docker.from_env().info()['ServerVersion'])"`
 
 ### Repository
 
 - [ ] Repository cloned successfully
 - [ ] Can navigate to week folders
 - [ ] Scripts are executable
-- [ ] Environment verification passes: `python3 setup/verifica_mediu.py`
+- [ ] Environment verification passes: `python3 setup/verify_environment.py`
 
 ---
 
@@ -1859,10 +1951,18 @@ Your laboratory environment is fully configured. You can now:
 - ✅ Work through all 14 weeks of laboratory exercises
 
 **Next Steps:**
-1. Clone Week 1 and run the first laboratory
-2. Explore Portainer's interface
-3. Practice Wireshark filtering on Docker traffic
-4. Read the theoretical documentation for each week
+1. Clone Week 1 to `D:\NETWORKING\WEEK1\`
+2. Navigate to the kit: `cd /mnt/d/NETWORKING/WEEK1/1enWSL`
+3. Verify environment: `python3 setup/verify_environment.py`
+4. Start the laboratory: `python3 scripts/start_lab.py`
+5. Explore Portainer at http://localhost:9000
+6. Practice Wireshark filtering on Docker traffic
+
+**Remember:**
+- Port 9000 is **ALWAYS** reserved for Portainer
+- Weekly scripts **NEVER** start, stop or remove Portainer
+- Each week uses the `10.0.N.0/24` network pattern
+- Week 14 TCP Echo uses port **9090** (not 9000)
 
 ---
 
@@ -1870,4 +1970,4 @@ Your laboratory environment is fully configured. You can now:
 *by Revolvix*  
 *Documentation version: January 2025*
 
-**Repository:** https://github.com/antonioclim/netROwsl
+**Repository:** https://github.com/antonioclim/netENwsl
