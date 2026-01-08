@@ -4,6 +4,198 @@
 > 
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `13enWSL`
+
+| Component | Details |
+|-----------|---------|
+| Windows | Windows 10/11 with WSL2 enabled |
+| Linux Distribution | Ubuntu 22.04 LTS (default WSL distro) |
+| Container Runtime | Docker Engine (in WSL) |
+| Management Interface | Portainer CE on port 9000 (global) |
+| Packet Analysis | Wireshark (native Windows application) |
+
+**SECURITY WARNING:** This kit includes intentionally vulnerable services for educational purposes. Do not expose to public networks!
+
+---
+
+## 📥 Cloning This Week's Laboratory
+
+### Step 1: Open PowerShell (Windows)
+
+Press `Win + X` → Select "Windows Terminal" or "PowerShell"
+
+### Step 2: Navigate and Clone
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone Week 13
+git clone https://github.com/antonioclim/netENwsl.git WEEK13
+cd WEEK13
+```
+
+### Step 3: Verify Clone
+```powershell
+dir
+# You should see: docker/, scripts/, src/, README.md, etc.
+```
+
+### Alternative: Clone Inside WSL
+
+```bash
+# In Ubuntu terminal
+mkdir -p /mnt/d/NETWORKING
+cd /mnt/d/NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK13
+cd WEEK13
+```
+
+---
+
+## 🔧 Initial Environment Setup (First Time Only)
+
+### Step 1: Open Ubuntu Terminal
+
+From Windows:
+- Click "Ubuntu" in Start menu, OR
+- In PowerShell type: `wsl`
+
+You will see the Ubuntu prompt:
+```
+stud@YOURPC:~$
+```
+
+### Step 2: Start Docker Service
+
+```bash
+# Start Docker (required after each Windows restart)
+sudo service docker start
+# Password: stud
+
+# Verify Docker is running
+docker ps
+```
+
+**Expected output:**
+```
+CONTAINER ID   IMAGE                    STATUS          NAMES
+abc123...      portainer/portainer-ce   Up 2 hours      portainer
+```
+
+### Step 3: Verify Portainer Access
+
+Open browser and navigate to: **http://localhost:9000**
+
+**Login credentials:**
+- Username: `stud`
+- Password: `studstudstud`
+
+### Step 4: Navigate to Laboratory Directory
+
+```bash
+cd /mnt/d/NETWORKING/WEEK13/13enWSL
+ls -la
+```
+
+---
+
+## 🖥️ Understanding Portainer Interface
+
+### Dashboard Overview
+
+After login at http://localhost:9000, you will see:
+1. **Home** - List of Docker environments
+2. **local** - Click to manage local Docker
+
+### Viewing Containers
+
+Navigate: **Home → local → Containers**
+
+You will see a table showing all containers with:
+- Name, State, Image, Created, IP Address, Ports
+
+### Container Actions in Portainer
+
+For any container, you can:
+- **Start/Stop/Restart**: Use the action buttons
+- **Logs**: Click container name → "Logs" tab
+- **Console**: Click container name → "Console" tab → "Connect"
+- **Inspect**: View detailed JSON configuration
+- **Stats**: Real-time CPU/Memory/Network usage
+
+### Week 13 Network Configuration
+
+Navigate: **Networks → week13net**
+
+Current configuration:
+- Subnet: 10.0.13.0/24
+- Gateway: 10.0.13.1
+- Mosquitto MQTT: 10.0.13.100
+- DVWA: 10.0.13.11
+- vsftpd: 10.0.13.12
+
+**⚠️ NEVER use port 9000** - reserved for Portainer!
+
+---
+
+## 🦈 Wireshark Setup and Usage
+
+### When to Open Wireshark
+
+Open Wireshark:
+- **BEFORE** generating network traffic you want to capture
+- When exercises mention "capture", "analyse packets", or "observe traffic"
+
+### Step 1: Launch Wireshark
+
+From Windows Start Menu: Search "Wireshark" → Click to open
+
+### Step 2: Select Capture Interface
+
+**CRITICAL:** Select the correct interface for WSL traffic:
+
+| Interface Name | When to Use |
+|----------------|-------------|
+| **vEthernet (WSL)** | ✅ Most common - captures WSL Docker traffic |
+| **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
+| **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
+
+### Essential Wireshark Filters for Week 13
+
+| Filter | Purpose |
+|--------|---------|
+| `tcp.port == 1883` | MQTT plaintext traffic |
+| `tcp.port == 8883 and tls` | MQTT over TLS |
+| `tcp.port == 2121` | FTP control channel |
+| `tcp.port == 8080` | HTTP to DVWA |
+| `tcp.port == 6200` | Backdoor stub port |
+| `tcp.port in {1883, 2121, 6200, 8080, 8883}` | All Week 13 traffic |
+| `mqtt.msgtype == 3` | MQTT PUBLISH packets (plaintext only) |
+| `tls.handshake` | TLS handshake packets |
+
+### Analysing IoT Security Traffic
+
+1. **Plaintext MQTT**: Filter `tcp.port == 1883`, follow TCP stream to see topics and payloads
+2. **TLS MQTT**: Filter `tcp.port == 8883`, observe encrypted Application Data records
+3. **Vulnerability Scanning**: Filter by target port to see connection attempts
+
+### Saving Captures
+
+1. **File → Save As**
+2. Navigate to: `D:\NETWORKING\WEEK13\pcap\`
+3. Filename: `capture_mqtt.pcap` or `capture_scan.pcap`
+
+---
+
 ## Overview
 
 This laboratory session explores the intersection of Internet of Things (IoT) technologies and network security fundamentals. The proliferation of IoT devices in enterprise and consumer environments has introduced novel attack surfaces that demand systematic understanding of both offensive reconnaissance techniques and defensive countermeasures.
@@ -34,7 +226,8 @@ By the end of this laboratory session, you will be able to:
 
 ### Software Requirements
 - Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend)
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
 - Wireshark (native Windows installation)
 - Python 3.11 or later
 - Git (recommended)
@@ -48,32 +241,38 @@ By the end of this laboratory session, you will be able to:
 
 ### First-Time Setup (Run Once)
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK13_WSLkit
+```bash
+# Open Ubuntu terminal (WSL)
+wsl
+
+# Navigate to the kit directory
+cd /mnt/d/NETWORKING/WEEK13/13enWSL
+
+# Start Docker if not running
+sudo service docker start
 
 # Verify prerequisites
-python setup/verify_environment.py
+python3 setup/verify_environment.py
 
 # If any issues, run the installer helper
-python setup/install_prerequisites.py
+python3 setup/install_prerequisites.py
 ```
 
 ### Starting the Laboratory
 
-```powershell
+```bash
 # Start all services
-python scripts/start_lab.py
+python3 scripts/start_lab.py
 
 # Verify everything is running
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 ```
 
 ### Accessing Services
 
 | Service | URL/Port | Credentials |
 |---------|----------|-------------|
-| Portainer | https://localhost:9443 | Set on first access |
+| Portainer | http://localhost:9000 | stud / studstudstud |
 | DVWA | http://localhost:8080 | admin / password (after setup) |
 | MQTT Broker (plain) | localhost:1883 | None required |
 | MQTT Broker (TLS) | localhost:8883 | Requires CA certificate |
@@ -92,23 +291,23 @@ python scripts/start_lab.py --status
 
 1. Review the port scanner implementation in `src/exercises/ex_13_01_port_scanner.py`
 2. Start the laboratory environment if not already running:
-   ```powershell
-   python scripts/start_lab.py
+   ```bash
+   python3 scripts/start_lab.py
    ```
 3. Execute a scan against the laboratory network:
-   ```powershell
-   python src/exercises/ex_13_01_port_scanner.py --target 127.0.0.1 --ports 1-1024
+   ```bash
+   python3 src/exercises/ex_13_01_port_scanner.py --target 127.0.0.1 --ports 1-1024
    ```
 4. Perform a targeted scan of known service ports:
-   ```powershell
-   python src/exercises/ex_13_01_port_scanner.py --target 127.0.0.1 --ports 21,80,1883,2121,6200,8080,8883 --json-out artifacts/scan_results.json
+   ```bash
+   python3 src/exercises/ex_13_01_port_scanner.py --target 127.0.0.1 --ports 21,80,1883,2121,6200,8080,8883 --json-out artifacts/scan_results.json
    ```
 5. Analyse the JSON output and correlate discovered ports with expected services
 6. Experiment with different timeout and worker configurations to observe performance trade-offs
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 1
+```bash
+python3 tests/test_exercises.py --exercise 1
 ```
 
 **Expected Observations:**
@@ -128,23 +327,23 @@ python tests/test_exercises.py --exercise 1
 
 1. Open two terminal windows for publisher and subscriber operations
 2. In Terminal 1, start an MQTT subscriber (plaintext):
-   ```powershell
-   python src/exercises/ex_13_02_mqtt_client.py --broker 127.0.0.1 --port 1883 --mode subscribe --topic "iot/sensors/#" --timeout 60
+   ```bash
+   python3 src/exercises/ex_13_02_mqtt_client.py --broker 127.0.0.1 --port 1883 --mode subscribe --topic "iot/sensors/#" --timeout 60
    ```
 3. In Terminal 2, publish messages:
-   ```powershell
-   python src/exercises/ex_13_02_mqtt_client.py --broker 127.0.0.1 --port 1883 --mode publish --topic "iot/sensors/temperature" --message '{"sensor":"temp01","value":23.5,"unit":"C"}' --count 5
+   ```bash
+   python3 src/exercises/ex_13_02_mqtt_client.py --broker 127.0.0.1 --port 1883 --mode publish --topic "iot/sensors/temperature" --message '{"sensor":"temp01","value":23.5,"unit":"C"}' --count 5
    ```
 4. Observe the subscriber receiving the published messages
 5. Repeat the exercise using TLS transport (port 8883 with CA certificate):
-   ```powershell
-   python src/exercises/ex_13_02_mqtt_client.py --broker 127.0.0.1 --port 8883 --mode subscribe --topic "iot/sensors/#" --timeout 60 --tls --cafile docker/configs/certs/ca.crt
+   ```bash
+   python3 src/exercises/ex_13_02_mqtt_client.py --broker 127.0.0.1 --port 8883 --mode subscribe --topic "iot/sensors/#" --timeout 60 --tls --cafile docker/configs/certs/ca.crt
    ```
 6. Capture network traffic during both plaintext and TLS sessions for comparison in Exercise 3
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 2
+```bash
+python3 tests/test_exercises.py --exercise 2
 ```
 
 **Expected Observations:**
@@ -163,8 +362,8 @@ python tests/test_exercises.py --exercise 2
 **Steps:**
 
 1. Start a packet capture targeting laboratory ports:
-   ```powershell
-   python scripts/capture_traffic.py --interface any --output pcap/mqtt_comparison.pcap --duration 120
+   ```bash
+   python3 scripts/capture_traffic.py --interface any --output pcap/mqtt_comparison.pcap --duration 120
    ```
 2. In parallel terminals, generate both plaintext and TLS MQTT traffic as per Exercise 2
 3. Stop the capture after generating sufficient traffic
@@ -179,8 +378,8 @@ python tests/test_exercises.py --exercise 2
    - The TLS handshake sequence and cipher negotiation
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 3
+```bash
+python3 tests/test_exercises.py --exercise 3
 ```
 
 **Expected Observations:**
@@ -199,27 +398,27 @@ python tests/test_exercises.py --exercise 3
 **Steps:**
 
 1. Run the vulnerability checker against DVWA:
-   ```powershell
-   python src/exercises/ex_13_04_vuln_checker.py --target 127.0.0.1 --port 8080 --service http --json-out artifacts/vuln_dvwa.json
+   ```bash
+   python3 src/exercises/ex_13_04_vuln_checker.py --target 127.0.0.1 --port 8080 --service http --json-out artifacts/vuln_dvwa.json
    ```
 2. Run the checker against the FTP service:
-   ```powershell
-   python src/exercises/ex_13_04_vuln_checker.py --target 127.0.0.1 --port 2121 --service ftp --json-out artifacts/vuln_ftp.json
+   ```bash
+   python3 src/exercises/ex_13_04_vuln_checker.py --target 127.0.0.1 --port 2121 --service ftp --json-out artifacts/vuln_ftp.json
    ```
 3. Run the checker against the MQTT broker:
-   ```powershell
-   python src/exercises/ex_13_04_vuln_checker.py --target 127.0.0.1 --port 1883 --service mqtt --json-out artifacts/vuln_mqtt.json
+   ```bash
+   python3 src/exercises/ex_13_04_vuln_checker.py --target 127.0.0.1 --port 1883 --service mqtt --json-out artifacts/vuln_mqtt.json
    ```
 4. Review the JSON reports and interpret the severity ratings
 5. Execute the educational FTP backdoor detection script:
-   ```powershell
-   python src/apps/ftp_backdoor_check.py --target 127.0.0.1 --ftp-port 2121 --backdoor-port 6200
+   ```bash
+   python3 src/apps/ftp_backdoor_check.py --target 127.0.0.1 --ftp-port 2121 --backdoor-port 6200
    ```
 6. Document findings and discuss the implications of each discovered issue
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 4
+```bash
+python3 tests/test_exercises.py --exercise 4
 ```
 
 **Expected Observations:**
@@ -233,8 +432,8 @@ python tests/test_exercises.py --exercise 4
 
 This demonstration executes the complete laboratory workflow in automated fashion, suitable for projector display.
 
-```powershell
-python scripts/run_demo.py --demo 1
+```bash
+python3 scripts/run_demo.py --demo 1
 ```
 
 **What to observe:**
@@ -247,8 +446,8 @@ python scripts/run_demo.py --demo 1
 
 Side-by-side demonstration of observable differences between encrypted and unencrypted communications.
 
-```powershell
-python scripts/run_demo.py --demo 2
+```bash
+python3 scripts/run_demo.py --demo 2
 ```
 
 **What to observe:**
@@ -260,8 +459,8 @@ python scripts/run_demo.py --demo 2
 
 Demonstration of a systematic reconnaissance workflow from discovery to vulnerability assessment.
 
-```powershell
-python scripts/run_demo.py --demo 3
+```bash
+python3 scripts/run_demo.py --demo 3
 ```
 
 **What to observe:**
@@ -274,12 +473,12 @@ python scripts/run_demo.py --demo 3
 
 ### Capturing Traffic
 
-```powershell
+```bash
 # Start capture with Python helper
-python scripts/capture_traffic.py --interface any --output pcap/week13_capture.pcap --duration 60
+python3 scripts/capture_traffic.py --interface any --output pcap/week13_capture.pcap --duration 60
 
 # Alternative: use Wireshark directly
-# Open Wireshark > Select appropriate interface > Start capture
+# Open Wireshark > Select vEthernet (WSL) interface > Start capture
 ```
 
 ### Suggested Wireshark Filters
@@ -311,9 +510,9 @@ tls.handshake
 
 ### End of Session
 
-```powershell
-# Stop all containers (preserves data)
-python scripts/stop_lab.py
+```bash
+# Stop all containers (Portainer stays running!)
+python3 scripts/stop_lab.py
 
 # Verify shutdown
 docker ps
@@ -321,9 +520,9 @@ docker ps
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
+```bash
 # Remove all containers, networks and volumes for this week
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 
 # Verify cleanup
 docker system df
@@ -344,16 +543,16 @@ Write a brief report (500-750 words) analysing the security implications of runn
 ### Common Issues
 
 #### Issue: Docker containers fail to start
-**Solution:** Ensure Docker Desktop is running and WSL2 integration is enabled. Try `docker info` to verify connectivity. If permission errors occur, run PowerShell as Administrator.
+**Solution:** Ensure Docker is running in WSL. Try `docker info` to verify connectivity. If permission errors occur, check group membership with `groups` command.
 
 #### Issue: MQTT TLS connection fails with certificate error
-**Solution:** Verify that certificates were generated during setup. Run `python setup/configure_docker.py --regenerate-certs` to create new certificates. Ensure the CA certificate path in commands matches `docker/configs/certs/ca.crt`.
+**Solution:** Verify that certificates were generated during setup. Run `python3 setup/configure_docker.py --regenerate-certs` to create new certificates. Ensure the CA certificate path in commands matches `docker/configs/certs/ca.crt`.
 
 #### Issue: Port scanner reports all ports as filtered
 **Solution:** This typically indicates a firewall blocking connections. Ensure Docker network is configured correctly and containers are running. Verify with `docker ps` and check container health.
 
 #### Issue: Wireshark cannot capture Docker traffic
-**Solution:** On Windows, capture on the `vEthernet (WSL)` adapter or use the `any` pseudo-interface within WSL. Alternatively, capture from within containers using tcpdump.
+**Solution:** On Windows, capture on the `vEthernet (WSL)` adapter. Alternatively, capture from within containers using tcpdump.
 
 See `docs/troubleshooting.md` for additional solutions.
 
@@ -410,6 +609,7 @@ Ethical considerations require explicit authorisation before scanning systems ou
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    WEEK 13 Laboratory Network                        │
+│              (WSL2 + Ubuntu 22.04 + Docker + Portainer)             │
 │                        10.0.13.0/24                                  │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
@@ -438,11 +638,192 @@ Ethical considerations require explicit authorisation before scanning systems ou
 │   localhost:8080 ──────────────── DVWA HTTP                         │
 │   localhost:2121 ──────────────── vsftpd FTP                        │
 │   localhost:6200 ──────────────── Backdoor Stub                     │
-│   localhost:9443 ──────────────── Portainer (optional)              │
+│   localhost:9000 ──────────────── Portainer (global service)        │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
+## 🔧 Extended Troubleshooting
+
+### Docker Issues
+
+**Problem:** "Cannot connect to Docker daemon"
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
+
+**Problem:** Permission denied when running docker
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+# Or logout and login again
+```
+
+**Problem:** Docker service won't start
+```bash
+sudo service docker status  # Check status
+sudo dockerd  # Run manually to see errors
+```
+
+### Portainer Issues
+
+**Problem:** Cannot access http://localhost:9000
+```bash
+# Check if Portainer container exists and is running
+docker ps -a | grep portainer
+
+# If stopped, start it
+docker start portainer
+
+# If doesn't exist, create it
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+**Problem:** Forgot Portainer password
+```bash
+# Reset Portainer (loses settings but not containers)
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+# Recreate with command above, set new password
+```
+
+### WSL Issues
+
+**Problem:** WSL not starting
+```powershell
+# In PowerShell (Administrator)
+wsl --status
+wsl --list --verbose
+```
+
+**Problem:** Cannot access Windows files from WSL
+```bash
+ls /mnt/
+# Should show: c, d, etc.
+```
+
+### Wireshark Issues
+
+**Problem:** No packets captured
+- ✅ Verify correct interface selected (vEthernet WSL)
+- ✅ Ensure traffic is being generated DURING capture
+- ✅ Check display filter isn't hiding packets (clear filter)
+- ✅ Try "Capture → Options" and enable promiscuous mode
+
+**Problem:** "No interfaces found" or permission error
+- Run Wireshark as Administrator (right-click → Run as administrator)
+- Reinstall Npcap with "WinPcap API-compatible Mode" option checked
+
+**Problem:** Can't see Docker container traffic
+- Select `vEthernet (WSL)` interface, not `Ethernet` or `Wi-Fi`
+- Ensure containers are on bridge network, not host network
+
+### Network Issues
+
+**Problem:** Container can't reach internet
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week13net
+
+# Check DNS in container
+docker exec week13_mosquitto cat /etc/resolv.conf
+```
+
+**Problem:** Port already in use
+```bash
+# Find what's using the port
+sudo netstat -tlnp | grep 1883
+# Or
+sudo ss -tlnp | grep 1883
+
+# Kill the process or use different port
+```
+
+### Security Lab-Specific Issues
+
+**Problem:** DVWA not loading after container start
+```bash
+# Check container logs
+docker logs week13_dvwa
+# May need to wait for database initialisation
+```
+
+**Problem:** MQTT client can't connect with TLS
+```bash
+# Verify certificate exists
+ls -la docker/configs/certs/
+# Regenerate if missing
+python3 setup/configure_docker.py --regenerate-certs
+```
+
+---
+
+## 🧹 Complete Cleanup Procedure
+
+### End of Session (Quick)
+
+```bash
+# Stop lab containers (Portainer stays running!)
+cd /mnt/d/NETWORKING/WEEK13/13enWSL
+docker compose -f docker/docker-compose.yml down
+
+# Verify - should still show portainer
+docker ps
+```
+
+### End of Week (Thorough)
+
+```bash
+# Remove this week's containers and networks
+docker compose -f docker/docker-compose.yml down --volumes
+
+# Remove unused images
+docker image prune -f
+
+# Remove unused networks
+docker network prune -f
+
+# Check disk usage
+docker system df
+```
+
+### Full Reset (Before New Semester)
+
+```bash
+# WARNING: This removes EVERYTHING except Portainer
+docker stop $(docker ps -q | grep -v $(docker ps -q --filter name=portainer)) 2>/dev/null
+docker rm $(docker ps -aq | grep -v $(docker ps -aq --filter name=portainer)) 2>/dev/null
+docker image prune -a -f
+docker network prune -f
+docker volume prune -f
+
+# Verify Portainer still running
+docker ps
+```
+
+**⚠️ NEVER run `docker system prune -a` without excluding Portainer!**
+
+---
+
+## 📊 Week 13 Network Configuration Summary
+
+| Resource | Value | Notes |
+|----------|-------|-------|
+| Network Subnet | 10.0.13.0/24 | week13net |
+| Gateway | 10.0.13.1 | Docker bridge |
+| Mosquitto MQTT | 10.0.13.100 | Ports 1883 (plain), 8883 (TLS) |
+| DVWA | 10.0.13.11 | Port 8080 (HTTP) |
+| vsftpd | 10.0.13.12 | Ports 2121 (FTP), 6200 (stub) |
+| Portainer | 9000 | **RESERVED - Global service** |
+
+---
+
 *NETWORKING class - ASE, Informatics | by Revolvix*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*

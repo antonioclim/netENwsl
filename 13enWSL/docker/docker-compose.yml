@@ -2,6 +2,17 @@
 # Docker Compose Configuration
 # NETWORKING class - ASE, Informatics | by Revolvix
 #
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
 # SECURITY WARNING:
 # This configuration includes intentionally vulnerable services
 # for educational purposes only. Do not expose to public networks.
@@ -13,10 +24,13 @@ services:
   # Mosquitto MQTT Broker
   # ============================================================================
   # Provides both plaintext (1883) and TLS (8883) endpoints
+  # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
   mosquitto:
     image: eclipse-mosquitto:2
     container_name: week13_mosquitto
     restart: unless-stopped
+    environment:
+      - LAB_WEEK=13
     ports:
       - "${MQTT_PLAIN_PORT:-1883}:1883"
       - "${MQTT_TLS_PORT:-8883}:8883"
@@ -42,13 +56,14 @@ services:
     image: vulnerables/web-dvwa
     container_name: week13_dvwa
     restart: unless-stopped
-    ports:
-      - "${DVWA_HOST_PORT:-8080}:80"
     environment:
+      - LAB_WEEK=13
       - RECAPTCHA_PRIV_KEY=
       - RECAPTCHA_PUB_KEY=
       - SECURITY_LEVEL=low
       - PHPIDS_ENABLED=0
+    ports:
+      - "${DVWA_HOST_PORT:-8080}:80"
     networks:
       week13net:
         ipv4_address: 10.0.13.11
@@ -69,6 +84,8 @@ services:
       dockerfile: Dockerfile.vulnerable
     container_name: week13_vsftpd
     restart: unless-stopped
+    environment:
+      - LAB_WEEK=13
     ports:
       - "${VSFTPD_HOST_PORT:-2121}:21"
       - "${VSFTPD_BACKDOOR_HOST_PORT:-6200}:6200"
@@ -86,6 +103,7 @@ services:
 
 # ==============================================================================
 # Network Configuration
+# NOTE: Portainer uses its own network, managed globally
 # ==============================================================================
 networks:
   week13net:
@@ -99,9 +117,15 @@ networks:
 
 # ==============================================================================
 # Volume Definitions
+# NOTE: Portainer data is managed globally, not defined here
 # ==============================================================================
 volumes:
   mosquitto_data:
     name: week13_mosquitto_data
   ftp_data:
     name: week13_ftp_data
+
+# ==============================================================================
+# NOTE: Portainer runs globally and is NOT defined here
+# Access Portainer at: http://localhost:9000
+# ==============================================================================

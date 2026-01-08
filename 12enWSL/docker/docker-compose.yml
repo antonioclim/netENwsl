@@ -3,6 +3,17 @@
 # NETWORKING class - ASE, Informatics | by Revolvix
 # =============================================================================
 #
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
 # This configuration provides an isolated laboratory environment for exploring
 # SMTP and RPC protocols. All services are containerised for reproducibility.
 #
@@ -17,6 +28,7 @@ services:
   # ---------------------------------------------------------------------------
   # Main laboratory container
   # Contains Python environment and all protocol implementations
+  # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
   # ---------------------------------------------------------------------------
   lab:
     container_name: week12_lab
@@ -26,6 +38,7 @@ services:
     working_dir: /app
     environment:
       - PYTHONUNBUFFERED=1
+      - LAB_WEEK=12
       - SMTP_HOST=0.0.0.0
       - SMTP_PORT=1025
       - JSONRPC_HOST=0.0.0.0
@@ -62,24 +75,9 @@ services:
         tail -f /dev/null
       "
 
-  # ---------------------------------------------------------------------------
-  # Portainer CE - Docker Management UI
-  # Access at https://localhost:9443
-  # ---------------------------------------------------------------------------
-  portainer:
-    container_name: week12_portainer
-    image: portainer/portainer-ce:latest
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    ports:
-      - "${PORTAINER_PORT:-9443}:9443"
-    networks:
-      - week12_net
-
 # =============================================================================
 # Networks
+# NOTE: Portainer uses its own network, managed globally
 # =============================================================================
 networks:
   week12_net:
@@ -91,9 +89,13 @@ networks:
 
 # =============================================================================
 # Volumes
+# NOTE: Portainer data is managed globally, not defined here
 # =============================================================================
 volumes:
   spool_data:
     name: week12_spool
-  portainer_data:
-    name: week12_portainer_data
+
+# =============================================================================
+# NOTE: Portainer runs globally and is NOT defined here
+# Access Portainer at: http://localhost:9000
+# =============================================================================

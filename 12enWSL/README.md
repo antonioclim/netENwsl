@@ -4,6 +4,194 @@
 > 
 > by Revolvix
 
+---
+
+## ⚠️ Environment Notice
+
+This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
+
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `12enWSL`
+
+| Component | Details |
+|-----------|---------|
+| Windows | Windows 10/11 with WSL2 enabled |
+| Linux Distribution | Ubuntu 22.04 LTS (default WSL distro) |
+| Container Runtime | Docker Engine (in WSL) |
+| Management Interface | Portainer CE on port 9000 (global) |
+| Packet Analysis | Wireshark (native Windows application) |
+
+---
+
+## 📥 Cloning This Week's Laboratory
+
+### Step 1: Open PowerShell (Windows)
+
+Press `Win + X` → Select "Windows Terminal" or "PowerShell"
+
+### Step 2: Navigate and Clone
+
+```powershell
+# Create networking folder if it doesn't exist
+mkdir D:\NETWORKING -ErrorAction SilentlyContinue
+cd D:\NETWORKING
+
+# Clone Week 12
+git clone https://github.com/antonioclim/netENwsl.git WEEK12
+cd WEEK12
+```
+
+### Step 3: Verify Clone
+```powershell
+dir
+# You should see: docker/, scripts/, src/, README.md, etc.
+```
+
+### Alternative: Clone Inside WSL
+
+```bash
+# In Ubuntu terminal
+mkdir -p /mnt/d/NETWORKING
+cd /mnt/d/NETWORKING
+git clone https://github.com/antonioclim/netENwsl.git WEEK12
+cd WEEK12
+```
+
+---
+
+## 🔧 Initial Environment Setup (First Time Only)
+
+### Step 1: Open Ubuntu Terminal
+
+From Windows:
+- Click "Ubuntu" in Start menu, OR
+- In PowerShell type: `wsl`
+
+You will see the Ubuntu prompt:
+```
+stud@YOURPC:~$
+```
+
+### Step 2: Start Docker Service
+
+```bash
+# Start Docker (required after each Windows restart)
+sudo service docker start
+# Password: stud
+
+# Verify Docker is running
+docker ps
+```
+
+**Expected output:**
+```
+CONTAINER ID   IMAGE                    STATUS          NAMES
+abc123...      portainer/portainer-ce   Up 2 hours      portainer
+```
+
+### Step 3: Verify Portainer Access
+
+Open browser and navigate to: **http://localhost:9000**
+
+**Login credentials:**
+- Username: `stud`
+- Password: `studstudstud`
+
+### Step 4: Navigate to Laboratory Directory
+
+```bash
+cd /mnt/d/NETWORKING/WEEK12/12enWSL
+ls -la
+```
+
+---
+
+## 🖥️ Understanding Portainer Interface
+
+### Dashboard Overview
+
+After login at http://localhost:9000, you will see:
+1. **Home** - List of Docker environments
+2. **local** - Click to manage local Docker
+
+### Viewing Containers
+
+Navigate: **Home → local → Containers**
+
+You will see a table showing all containers with:
+- Name, State, Image, Created, IP Address, Ports
+
+### Container Actions in Portainer
+
+For any container, you can:
+- **Start/Stop/Restart**: Use the action buttons
+- **Logs**: Click container name → "Logs" tab
+- **Console**: Click container name → "Console" tab → "Connect"
+- **Inspect**: View detailed JSON configuration
+- **Stats**: Real-time CPU/Memory/Network usage
+
+### Week 12 Network Configuration
+
+Navigate: **Networks → week12_net**
+
+Current configuration:
+- Subnet: 172.28.12.0/24
+- Lab container: week12_lab
+- Services: SMTP (1025), JSON-RPC (6200), XML-RPC (6201), gRPC (6251)
+
+**⚠️ NEVER use port 9000** - reserved for Portainer!
+
+---
+
+## 🦈 Wireshark Setup and Usage
+
+### When to Open Wireshark
+
+Open Wireshark:
+- **BEFORE** generating network traffic you want to capture
+- When exercises mention "capture", "analyse packets", or "observe traffic"
+
+### Step 1: Launch Wireshark
+
+From Windows Start Menu: Search "Wireshark" → Click to open
+
+### Step 2: Select Capture Interface
+
+**CRITICAL:** Select the correct interface for WSL traffic:
+
+| Interface Name | When to Use |
+|----------------|-------------|
+| **vEthernet (WSL)** | ✅ Most common - captures WSL Docker traffic |
+| **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
+| **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
+
+### Essential Wireshark Filters for Week 12
+
+| Filter | Purpose |
+|--------|---------|
+| `tcp.port == 1025` | SMTP traffic |
+| `tcp.port == 6200 && http` | JSON-RPC traffic |
+| `tcp.port == 6201 && http` | XML-RPC traffic |
+| `tcp.port == 6251` | gRPC (HTTP/2) traffic |
+| `tcp.port in {1025, 6200, 6201, 6251}` | All Week 12 traffic |
+| `http.request.method == "POST"` | RPC calls only |
+| `http contains "jsonrpc"` | JSON-RPC content |
+| `http contains "methodCall"` | XML-RPC content |
+
+### Analysing Protocol Traffic
+
+1. **SMTP Analysis**: Filter `tcp.port == 1025`, follow TCP stream
+2. **RPC Comparison**: Compare payload sizes between ports 6200 and 6201
+3. **gRPC Analysis**: Filter `tcp.port == 6251`, observe HTTP/2 frames
+
+### Saving Captures
+
+1. **File → Save As**
+2. Navigate to: `D:\NETWORKING\WEEK12\pcap\`
+3. Filename: `capture_smtp.pcap` or `capture_rpc.pcap`
+
+---
+
 ## Overview
 
 Week 12 bridges two essential pillars of application-layer networking: electronic mail protocols and remote procedure call paradigms. The email component explores SMTP (Simple Mail Transfer Protocol) as a canonical example of a text-based, stateful application protocol, demonstrating how commands, responses, and multi-line data transfers operate at the TCP level. Students will observe the elegance of human-readable protocol dialogues whilst appreciating the precision required for reliable message delivery.
@@ -36,7 +224,8 @@ By the end of this laboratory session, you will be able to:
 
 ### Software Requirements
 - Windows 10/11 with WSL2 enabled
-- Docker Desktop (WSL2 backend)
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
 - Wireshark (native Windows)
 - Python 3.11 or later
 - Git
@@ -51,32 +240,38 @@ By the end of this laboratory session, you will be able to:
 
 ### First-Time Setup (Run Once)
 
-```powershell
-# Open PowerShell as Administrator
-cd WEEK12_WSLkit
+```bash
+# Open Ubuntu terminal (WSL)
+wsl
+
+# Navigate to the kit directory
+cd /mnt/d/NETWORKING/WEEK12/12enWSL
+
+# Start Docker if not running
+sudo service docker start
 
 # Verify prerequisites
-python setup/verify_environment.py
+python3 setup/verify_environment.py
 
 # If any issues, run the installer helper
-python setup/install_prerequisites.py
+python3 setup/install_prerequisites.py
 ```
 
 ### Starting the Laboratory
 
-```powershell
+```bash
 # Start all services
-python scripts/start_lab.py
+python3 scripts/start_lab.py
 
 # Verify everything is running
-python scripts/start_lab.py --status
+python3 scripts/start_lab.py --status
 ```
 
 ### Accessing Services
 
 | Service | URL/Port | Description |
 |---------|----------|-------------|
-| Portainer | https://localhost:9443 | Docker management interface |
+| Portainer | http://localhost:9000 | Docker management interface (stud/studstudstud) |
 | SMTP Server | localhost:1025 | Educational SMTP server |
 | JSON-RPC | http://localhost:6200 | JSON-RPC 2.0 calculator API |
 | XML-RPC | http://localhost:6201 | XML-RPC calculator API |
@@ -96,12 +291,12 @@ SMTP is a text-based protocol operating over TCP port 25 (or 587 for submission,
 **Steps:**
 
 1. Start the SMTP server in one terminal:
-   ```powershell
-   python scripts/start_lab.py --service smtp
+   ```bash
+   python3 scripts/start_lab.py --service smtp
    ```
 
 2. Open a manual SMTP session using netcat:
-   ```powershell
+   ```bash
    # In WSL terminal
    nc localhost 1025
    ```
@@ -129,14 +324,14 @@ SMTP is a text-based protocol operating over TCP port 25 (or 587 for submission,
    - 221: Service closing
 
 5. Inspect the stored message:
-   ```powershell
-   dir docker/volumes/spool/*.eml
-   type docker/volumes/spool/*.eml
+   ```bash
+   ls docker/volumes/spool/*.eml
+   cat docker/volumes/spool/*.eml
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 1
+```bash
+python3 tests/test_exercises.py --exercise 1
 ```
 
 **Expected Observations:**
@@ -154,39 +349,39 @@ python tests/test_exercises.py --exercise 1
 **Steps:**
 
 1. Start the JSON-RPC server:
-   ```powershell
-   python scripts/start_lab.py --service jsonrpc
+   ```bash
+   python3 scripts/start_lab.py --service jsonrpc
    ```
 
 2. Test with curl (single request):
-   ```powershell
-   curl -s -X POST "http://localhost:6200" `
-     -H "Content-Type: application/json" `
+   ```bash
+   curl -s -X POST "http://localhost:6200" \
+     -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","id":1,"method":"add","params":[10,32]}'
    ```
 
 3. Test batch requests:
-   ```powershell
-   curl -s -X POST "http://localhost:6200" `
-     -H "Content-Type: application/json" `
+   ```bash
+   curl -s -X POST "http://localhost:6200" \
+     -H "Content-Type: application/json" \
      -d '[{"jsonrpc":"2.0","id":1,"method":"add","params":[1,2]},{"jsonrpc":"2.0","id":2,"method":"multiply","params":[3,4]}]'
    ```
 
 4. Test error handling:
-   ```powershell
-   curl -s -X POST "http://localhost:6200" `
-     -H "Content-Type: application/json" `
+   ```bash
+   curl -s -X POST "http://localhost:6200" \
+     -H "Content-Type: application/json" \
      -d '{"jsonrpc":"2.0","id":1,"method":"divide","params":[10,0]}'
    ```
 
 5. Run the Python client demonstration:
-   ```powershell
-   python src/apps/rpc/jsonrpc/jsonrpc_client.py --demo
+   ```bash
+   python3 src/apps/rpc/jsonrpc/jsonrpc_client.py --demo
    ```
 
 **Verification:**
-```powershell
-python tests/test_exercises.py --exercise 2
+```bash
+python3 tests/test_exercises.py --exercise 2
 ```
 
 ### Exercise 3: XML-RPC Comparison
@@ -198,8 +393,8 @@ python tests/test_exercises.py --exercise 2
 **Steps:**
 
 1. Start the XML-RPC server:
-   ```powershell
-   python scripts/start_lab.py --service xmlrpc
+   ```bash
+   python3 scripts/start_lab.py --service xmlrpc
    ```
 
 2. Use Python's built-in client:
@@ -211,8 +406,8 @@ python tests/test_exercises.py --exercise 2
    ```
 
 3. Compare payload sizes by capturing both protocols:
-   ```powershell
-   python scripts/capture_traffic.py --duration 30 --ports 6200,6201
+   ```bash
+   python3 scripts/capture_traffic.py --duration 30 --ports 6200,6201
    ```
 
 4. In parallel, run equivalent operations on both servers
@@ -231,18 +426,18 @@ python tests/test_exercises.py --exercise 2
 **Steps:**
 
 1. Examine the Protocol Buffer definition:
-   ```powershell
-   type src/apps/rpc/grpc/calculator.proto
+   ```bash
+   cat src/apps/rpc/grpc/calculator.proto
    ```
 
 2. Start the gRPC server:
-   ```powershell
-   python scripts/start_lab.py --service grpc
+   ```bash
+   python3 scripts/start_lab.py --service grpc
    ```
 
 3. Run the gRPC client:
-   ```powershell
-   python src/apps/rpc/grpc/grpc_client.py --demo
+   ```bash
+   python3 src/apps/rpc/grpc/grpc_client.py --demo
    ```
 
 4. Observe error handling with division by zero
@@ -261,8 +456,8 @@ python tests/test_exercises.py --exercise 2
 **Steps:**
 
 1. Run the automated benchmark:
-   ```powershell
-   python scripts/run_demo.py --demo benchmark
+   ```bash
+   python3 scripts/run_demo.py --demo benchmark
    ```
 
 2. Analyse the results for:
@@ -281,8 +476,8 @@ python tests/test_exercises.py --exercise 2
 
 Demonstrates SMTP message submission with packet capture.
 
-```powershell
-python scripts/run_demo.py --demo smtp
+```bash
+python3 scripts/run_demo.py --demo smtp
 ```
 
 **What to observe:**
@@ -294,8 +489,8 @@ python scripts/run_demo.py --demo smtp
 
 Side-by-side demonstration of JSON-RPC, XML-RPC, and gRPC.
 
-```powershell
-python scripts/run_demo.py --demo rpc-compare
+```bash
+python3 scripts/run_demo.py --demo rpc-compare
 ```
 
 **What to observe:**
@@ -307,20 +502,20 @@ python scripts/run_demo.py --demo rpc-compare
 
 Demonstrates the efficiency gains from JSON-RPC batch requests.
 
-```powershell
-python scripts/run_demo.py --demo batch
+```bash
+python3 scripts/run_demo.py --demo batch
 ```
 
 ## Packet Capture and Analysis
 
 ### Capturing Traffic
 
-```powershell
+```bash
 # Start capture for all Week 12 ports
-python scripts/capture_traffic.py --interface any --output pcap/week12_capture.pcap
+python3 scripts/capture_traffic.py --interface any --output pcap/week12_capture.pcap
 
 # Or use Wireshark directly on Windows
-# Interface: \Device\NPF_Loopback (for localhost traffic)
+# Interface: vEthernet (WSL) for WSL Docker traffic
 ```
 
 ### Suggested Wireshark Filters
@@ -367,9 +562,9 @@ http contains "methodCall"
 
 ### End of Session
 
-```powershell
-# Stop all containers (preserves data)
-python scripts/stop_lab.py
+```bash
+# Stop all containers (Portainer stays running!)
+python3 scripts/stop_lab.py
 
 # Verify shutdown
 docker ps
@@ -377,9 +572,9 @@ docker ps
 
 ### Full Cleanup (Before Next Week)
 
-```powershell
+```bash
 # Remove all containers, networks, and volumes for this week
-python scripts/cleanup.py --full
+python3 scripts/cleanup.py --full
 
 # Verify cleanup
 docker system df
@@ -407,22 +602,22 @@ Capture traffic for identical operations across all three RPC protocols. Prepare
 
 #### Issue: Port already in use
 **Solution:** Check for existing processes and either stop them or use alternative ports:
-```powershell
-netstat -ano | findstr ":1025"
-python scripts/start_lab.py --smtp-port 2025
+```bash
+sudo netstat -tlnp | grep 1025
+python3 scripts/start_lab.py --smtp-port 2025
 ```
 
 #### Issue: Docker containers fail to start
-**Solution:** Ensure Docker Desktop is running with WSL2 backend:
-```powershell
-docker info | findstr "Operating System"
-# Should show: Operating System: Docker Desktop
+**Solution:** Ensure Docker is running in WSL:
+```bash
+sudo service docker start
+docker info
 ```
 
 #### Issue: gRPC import errors
 **Solution:** Regenerate Protocol Buffer stubs:
-```powershell
-python -m grpc_tools.protoc -I src/apps/rpc/grpc --python_out=src/apps/rpc/grpc --grpc_python_out=src/apps/rpc/grpc src/apps/rpc/grpc/calculator.proto
+```bash
+python3 -m grpc_tools.protoc -I src/apps/rpc/grpc --python_out=src/apps/rpc/grpc --grpc_python_out=src/apps/rpc/grpc src/apps/rpc/grpc/calculator.proto
 ```
 
 #### Issue: Permission denied for packet capture
@@ -471,6 +666,7 @@ Remote Procedure Call abstracts network communication, presenting remote functio
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        WEEK 12 LABORATORY                           │
+│              (WSL2 + Ubuntu 22.04 + Docker + Portainer)             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐          │
@@ -483,13 +679,14 @@ Remote Procedure Call abstracts network communication, presenting remote functio
 │   ┌──────┴───────────────────┴───────────────────┴──────┐          │
 │   │                   Docker Network                     │          │
 │   │                   (week12_net)                       │          │
+│   │                   172.28.12.0/24                     │          │
 │   └──────┬───────────────────┬───────────────────┬──────┘          │
 │          │                   │                   │                  │
 │   ┌──────┴──────┐     ┌──────┴──────┐     ┌──────┴──────┐          │
 │   │   gRPC      │     │  Wireshark  │     │  Portainer  │          │
 │   │   Server    │     │  Capture    │     │    CE       │          │
-│   │   :6251     │     │  Interface  │     │   :9443     │          │
-│   │  (HTTP/2)   │     │             │     │  (HTTPS)    │          │
+│   │   :6251     │     │  Interface  │     │   :9000     │          │
+│   │  (HTTP/2)   │     │             │     │  (Global)   │          │
 │   └─────────────┘     └─────────────┘     └─────────────┘          │
 │                                                                     │
 │   Data Flow:                                                        │
@@ -497,9 +694,193 @@ Remote Procedure Call abstracts network communication, presenting remote functio
 │   Client ──▶ [Serialisation] ──▶ TCP/HTTP ──▶ Server                │
 │          ◀── [Deserialisation] ◀── TCP/HTTP ◀──                     │
 │                                                                     │
+│   Portainer: http://localhost:9000 (global service)                 │
+│   Credentials: stud / studstudstud                                  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
+## 🔧 Extended Troubleshooting
+
+### Docker Issues
+
+**Problem:** "Cannot connect to Docker daemon"
+```bash
+sudo service docker start
+docker ps  # Verify it works
+```
+
+**Problem:** Permission denied when running docker
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+# Or logout and login again
+```
+
+**Problem:** Docker service won't start
+```bash
+sudo service docker status  # Check status
+sudo dockerd  # Run manually to see errors
+```
+
+### Portainer Issues
+
+**Problem:** Cannot access http://localhost:9000
+```bash
+# Check if Portainer container exists and is running
+docker ps -a | grep portainer
+
+# If stopped, start it
+docker start portainer
+
+# If doesn't exist, create it
+docker run -d -p 9000:9000 --name portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data portainer/portainer-ce:latest
+```
+
+**Problem:** Forgot Portainer password
+```bash
+# Reset Portainer (loses settings but not containers)
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+# Recreate with command above, set new password
+```
+
+### WSL Issues
+
+**Problem:** WSL not starting
+```powershell
+# In PowerShell (Administrator)
+wsl --status
+wsl --list --verbose
+```
+
+**Problem:** Cannot access Windows files from WSL
+```bash
+ls /mnt/
+# Should show: c, d, etc.
+```
+
+### Wireshark Issues
+
+**Problem:** No packets captured
+- ✅ Verify correct interface selected (vEthernet WSL)
+- ✅ Ensure traffic is being generated DURING capture
+- ✅ Check display filter isn't hiding packets (clear filter)
+- ✅ Try "Capture → Options" and enable promiscuous mode
+
+**Problem:** "No interfaces found" or permission error
+- Run Wireshark as Administrator (right-click → Run as administrator)
+- Reinstall Npcap with "WinPcap API-compatible Mode" option checked
+
+**Problem:** Can't see Docker container traffic
+- Select `vEthernet (WSL)` interface, not `Ethernet` or `Wi-Fi`
+- Ensure containers are on bridge network, not host network
+
+### Network Issues
+
+**Problem:** Container can't reach internet
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week12_net
+
+# Check DNS in container
+docker exec week12_lab cat /etc/resolv.conf
+```
+
+**Problem:** Port already in use
+```bash
+# Find what's using the port
+sudo netstat -tlnp | grep 1025
+# Or
+sudo ss -tlnp | grep 1025
+
+# Kill the process or use different port
+```
+
+### Service-Specific Issues
+
+**Problem:** SMTP server not accepting connections
+```bash
+# Check if server is running inside container
+docker exec week12_lab ps aux | grep smtp
+docker logs week12_lab
+```
+
+**Problem:** gRPC import errors
+```bash
+# Reinstall grpc tools
+pip install grpcio grpcio-tools --break-system-packages
+# Regenerate stubs
+python3 -m grpc_tools.protoc -I src/apps/rpc/grpc --python_out=src/apps/rpc/grpc --grpc_python_out=src/apps/rpc/grpc src/apps/rpc/grpc/calculator.proto
+```
+
+---
+
+## 🧹 Complete Cleanup Procedure
+
+### End of Session (Quick)
+
+```bash
+# Stop lab containers (Portainer stays running!)
+cd /mnt/d/NETWORKING/WEEK12/12enWSL
+docker compose -f docker/docker-compose.yml down
+
+# Verify - should still show portainer
+docker ps
+```
+
+### End of Week (Thorough)
+
+```bash
+# Remove this week's containers and networks
+docker compose -f docker/docker-compose.yml down --volumes
+
+# Remove unused images
+docker image prune -f
+
+# Remove unused networks
+docker network prune -f
+
+# Check disk usage
+docker system df
+```
+
+### Full Reset (Before New Semester)
+
+```bash
+# WARNING: This removes EVERYTHING except Portainer
+docker stop $(docker ps -q | grep -v $(docker ps -q --filter name=portainer)) 2>/dev/null
+docker rm $(docker ps -aq | grep -v $(docker ps -aq --filter name=portainer)) 2>/dev/null
+docker image prune -a -f
+docker network prune -f
+docker volume prune -f
+
+# Verify Portainer still running
+docker ps
+```
+
+**⚠️ NEVER run `docker system prune -a` without excluding Portainer!**
+
+---
+
+## 📊 Week 12 Network Configuration Summary
+
+| Resource | Value | Notes |
+|----------|-------|-------|
+| Network Subnet | 172.28.12.0/24 | week12_net |
+| Lab Container | week12_lab | Main laboratory container |
+| SMTP Server | localhost:1025 | Educational mail server |
+| JSON-RPC Server | localhost:6200 | Calculator API |
+| XML-RPC Server | localhost:6201 | Calculator API |
+| gRPC Server | localhost:6251 | Calculator service (HTTP/2) |
+| Portainer | 9000 | **RESERVED - Global service** |
+
+---
+
 *NETWORKING class - ASE, Informatics | by Revolvix*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
