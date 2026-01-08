@@ -3,269 +3,381 @@
 Environment Verification Script
 NETWORKING class - ASE, Informatics | by Revolvix
 
-Checks that all prerequisites are installed and configured correctly
-for the Week 7 laboratory environment.
-"""
+Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
-from __future__ import annotations
+Checks that all prerequisites are installed and configured correctly
+for the Week 7 Packet Interception, Filtering and Port Probing laboratory.
+"""
 
 import subprocess
 import sys
 import shutil
-import platform
+import os
 from pathlib import Path
 from typing import Tuple
 
 
 class Checker:
-    """Tracks verification results with pass/fail/warning states."""
+    """Verification result collector with formatted output."""
     
-    def __init__(self) -> None:
+    def __init__(self):
         self.passed = 0
         self.failed = 0
         self.warnings = 0
-
+    
     def check(self, name: str, condition: bool, fix_hint: str = "") -> bool:
         """Record a check result."""
         if condition:
-            print(f"  [PASS] {name}")
+            print(f"  [\033[92mPASS\033[0m] {name}")
             self.passed += 1
-            return True
         else:
-            print(f"  [FAIL] {name}")
+            print(f"  [\033[91mFAIL\033[0m] {name}")
             if fix_hint:
-                print(f"         Fix: {fix_hint}")
+                print(f"         \033[93mFix:\033[0m {fix_hint}")
             self.failed += 1
-            return False
-
+        return condition
+    
     def warn(self, name: str, message: str) -> None:
-        """Record a warning (non-critical issue)."""
-        print(f"  [WARN] {name}: {message}")
+        """Record a warning."""
+        print(f"  [\033[93mWARN\033[0m] {name}: {message}")
         self.warnings += 1
-
+    
+    def info(self, name: str, message: str) -> None:
+        """Display informational message."""
+        print(f"  [\033[94mINFO\033[0m] {name}: {message}")
+    
     def summary(self) -> int:
         """Print summary and return exit code."""
         print()
         print("=" * 60)
-        print(f"Results: {self.passed} passed, {self.failed} failed, {self.warnings} warnings")
-        print("=" * 60)
+        total = self.passed + self.failed
+        print(f"Results: {self.passed}/{total} passed, {self.failed} failed, {self.warnings} warnings")
+        print()
+        
         if self.failed == 0:
-            print("Environment is ready for Week 7 laboratory!")
+            print("\033[92m✓ Environment is ready for Week 7 laboratory!\033[0m")
+            print()
+            print("Next steps:")
+            print("  1. Start the lab: python3 scripts/start_lab.py")
+            print("  2. Run baseline:  python3 scripts/run_demo.py --demo baseline")
+            print("  3. Try filtering: python3 src/apps/firewallctl.py --profile block_tcp_9090")
+            print()
+            print("Access points:")
+            print("  Portainer:       http://localhost:9000 (stud/studstudstud)")
+            print("  TCP Echo Server: localhost:9090")
+            print("  UDP Receiver:    localhost:9091")
             return 0
         else:
-            print("Please fix the issues above before proceeding.")
+            print("\033[91m✗ Please fix the issues above before proceeding.\033[0m")
+            print()
+            print("For automated fixes, try: python3 setup/install_prerequisites.py")
             return 1
 
 
-def check_command(cmd: str) -> bool:
-    """Check if a command is available in PATH."""
-    return shutil.which(cmd) is not None
-
-
-def run_silent(args: list[str], timeout: int = 10) -> Tuple[int, str, str]:
-    """Run a command silently and return (returncode, stdout, stderr)."""
+def check_running_in_wsl() -> bool:
+    """Check if we're running inside WSL."""
+    if os.path.exists("/proc/sys/fs/binfmt_misc/WSLInterop"):
+        return True
+    if "WSL_DISTRO_NAME" in os.environ:
+        return True
     try:
-        result = subprocess.run(
-            args,
-            capture_output=True,
-            text=True,
-            timeout=timeout
-        )
-        return result.returncode, result.stdout, result.stderr
-    except subprocess.TimeoutExpired:
-        return -1, "", "timeout"
-    except FileNotFoundError:
-        return -1, "", "not found"
-    except Exception as e:
-        return -1, "", str(e)
-
-
-def check_docker_running() -> bool:
-    """Check if Docker daemon is running and accessible."""
-    rc, stdout, stderr = run_silent(["docker", "info"])
-    return rc == 0
-
-
-def check_docker_compose() -> bool:
-    """Check if Docker Compose (V2) is available."""
-    rc, stdout, stderr = run_silent(["docker", "compose", "version"])
-    return rc == 0
-
-
-def check_wsl2() -> bool:
-    """Check if running in WSL2 or if WSL2 is available on Windows."""
-    if platform.system() == "Linux":
-        # Check if we're inside WSL
-        try:
-            with open("/proc/version", "r") as f:
-                version = f.read().lower()
-                return "microsoft" in version or "wsl" in version
-        except Exception:
-            return False
-    elif platform.system() == "Windows":
-        rc, stdout, stderr = run_silent(["wsl", "--status"])
-        output = stdout + stderr
-        return "WSL 2" in output or "Default Version: 2" in output
+        with open("/proc/version", "r") as f:
+            version = f.read().lower()
+            return "microsoft" in version or "wsl" in version
+    except (FileNotFoundError, IOError):
+        pass
     return False
 
 
-def check_python_package(package: str) -> bool:
-    """Check if a Python package is importable."""
+def get_wsl_distro_info() -> Tuple[str, str]:
+    """Get WSL distribution name and version."""
+    distro_name = os.environ.get("WSL_DISTRO_NAME", "Unknown")
+    version = "Unknown"
     try:
-        __import__(package)
+        result = subprocess.run(
+            ["lsb_release", "-rs"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            version = result.stdout.strip()
+    except Exception:
+        try:
+            with open("/etc/os-release", "r") as f:
+                for line in f:
+                    if line.startswith("VERSION_ID="):
+                        version = line.split("=")[1].strip().strip('"')
+                        break
+        except Exception:
+            pass
+    return distro_name, version
+
+
+def get_command_output(cmd: list, timeout: int = 10) -> Tuple[bool, str]:
+    """Execute command and return success status with output."""
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            timeout=timeout,
+            text=True
+        )
+        output = result.stdout.strip() or result.stderr.strip()
+        return result.returncode == 0, output
+    except FileNotFoundError:
+        return False, "Command not found"
+    except subprocess.TimeoutExpired:
+        return False, "Command timed out"
+    except Exception as e:
+        return False, str(e)
+
+
+def check_command_exists(cmd: str) -> bool:
+    """Check if command is available in PATH."""
+    return shutil.which(cmd) is not None
+
+
+def check_python_version() -> Tuple[bool, str]:
+    """Verify Python version meets requirements."""
+    version = sys.version_info
+    version_str = f"{version.major}.{version.minor}.{version.micro}"
+    meets_req = version >= (3, 11)
+    return meets_req, version_str
+
+
+def check_python_package(package: str) -> bool:
+    """Check if Python package is installed."""
+    try:
+        __import__(package.replace("-", "_"))
         return True
     except ImportError:
         return False
 
 
-def get_wireshark_path() -> Path | None:
-    """Find Wireshark installation on Windows."""
-    possible_paths = [
-        Path(r"C:\Program Files\Wireshark\Wireshark.exe"),
-        Path(r"C:\Program Files (x86)\Wireshark\Wireshark.exe"),
+def check_docker_running() -> Tuple[bool, str]:
+    """Verify Docker daemon is running."""
+    success, output = get_command_output(["docker", "info"])
+    if success:
+        return True, "Docker daemon is running"
+    return False, output
+
+
+def check_docker_compose() -> Tuple[bool, str]:
+    """Verify Docker Compose is available."""
+    success, output = get_command_output(["docker", "compose", "version"])
+    if success:
+        return True, output.split('\n')[0] if output else "Available"
+    return False, "Docker Compose not found"
+
+
+def check_portainer_running() -> Tuple[bool, str]:
+    """Check if Portainer is running on port 9000."""
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=portainer",
+             "--format", "{{.Status}}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            if "up" in result.stdout.lower():
+                return True, result.stdout.strip()
+        return False, "Not running"
+    except Exception as e:
+        return False, str(e)
+
+
+def check_wireshark() -> Tuple[bool, str]:
+    """Check for Wireshark installation."""
+    windows_paths = [
+        Path("/mnt/c/Program Files/Wireshark/Wireshark.exe"),
+        Path("/mnt/c/Program Files (x86)/Wireshark/Wireshark.exe"),
     ]
-    for p in possible_paths:
-        if p.exists():
-            return p
-    return None
+    
+    for path in windows_paths:
+        if path.exists():
+            return True, str(path)
+    
+    if check_command_exists("wireshark"):
+        return True, "Available in PATH"
+    
+    if check_command_exists("tshark"):
+        return True, "tshark available (CLI mode)"
+    
+    return False, "Not found"
+
+
+def try_start_docker() -> bool:
+    """Attempt to start Docker service."""
+    print("         \033[93mAttempting to start Docker...\033[0m")
+    try:
+        result = subprocess.run(
+            ["sudo", "service", "docker", "start"],
+            capture_output=True,
+            timeout=30
+        )
+        if result.returncode == 0:
+            import time
+            time.sleep(2)
+            success, _ = check_docker_running()
+            return success
+    except Exception:
+        pass
+    return False
 
 
 def main() -> int:
-    """Run all environment checks."""
+    """Main verification routine."""
+    print()
     print("=" * 60)
-    print("Environment Verification for Week 7 Laboratory")
-    print("NETWORKING class - ASE, Informatics | by Revolvix")
+    print("  Environment Verification for Week 7 Laboratory")
+    print("  Packet Interception, Filtering & Port Probing")
+    print("  NETWORKING class - ASE, Informatics")
+    print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
     print("=" * 60)
     print()
-
+    
     c = Checker()
-    system = platform.system()
-
+    
+    # WSL2 Environment
+    print("\033[1mWSL2 Environment:\033[0m")
+    is_wsl = check_running_in_wsl()
+    c.check(
+        "Running in WSL",
+        is_wsl,
+        "Run this script from WSL Ubuntu terminal"
+    )
+    
+    if is_wsl:
+        distro_name, distro_version = get_wsl_distro_info()
+        c.info("WSL Distribution", distro_name)
+        is_ubuntu_22 = distro_version.startswith("22.")
+        c.check(
+            f"Ubuntu version {distro_version}",
+            is_ubuntu_22,
+            "Recommended: Ubuntu 22.04 LTS"
+        )
+    
+    print()
+    
     # Python Environment
-    print("Python Environment:")
-    py_version = sys.version_info
+    print("\033[1mPython Environment:\033[0m")
+    py_ok, py_version = check_python_version()
     c.check(
-        f"Python {py_version.major}.{py_version.minor}.{py_version.micro}",
-        py_version >= (3, 11),
-        "Install Python 3.11 or later from python.org"
+        f"Python {py_version}",
+        py_ok,
+        "Install Python 3.11+: sudo apt install python3.11"
     )
-
-    # Required Python packages
-    required_packages = [
-        ("yaml", "pyyaml"),
-        ("requests", "requests"),
-    ]
-    for import_name, pip_name in required_packages:
-        if check_python_package(import_name):
-            c.check(f"Python package: {pip_name}", True)
-        else:
-            c.check(f"Python package: {pip_name}", False, f"pip install {pip_name}")
-
-    # Optional packages
-    optional_packages = ["docker", "colorama"]
-    for pkg in optional_packages:
+    
+    optional_packages = {
+        "docker": "pip install docker --break-system-packages",
+        "requests": "pip install requests --break-system-packages",
+    }
+    
+    for pkg, install_cmd in optional_packages.items():
         if check_python_package(pkg):
-            c.check(f"Optional package: {pkg}", True)
+            c.check(f"Python package: {pkg}", True)
         else:
-            c.warn(pkg, f"Not installed. Run: pip install {pkg}")
-
-    print()
-    print("Docker Environment:")
-    c.check(
-        "Docker installed",
-        check_command("docker"),
-        "Install Docker Desktop from docker.com"
-    )
-    c.check(
-        "Docker Compose V2 installed",
-        check_docker_compose(),
-        "Docker Compose should come with Docker Desktop"
-    )
-    c.check(
-        "Docker daemon running",
-        check_docker_running(),
-        "Start Docker Desktop application"
-    )
-
-    # Check Docker version
-    if check_command("docker"):
-        rc, stdout, stderr = run_silent(["docker", "version", "--format", "{{.Server.Version}}"])
-        if rc == 0 and stdout.strip():
-            print(f"         Docker version: {stdout.strip()}")
-
-    print()
-    print("WSL2 Environment:")
-    if system == "Windows":
-        c.check(
-            "WSL2 available",
-            check_wsl2(),
-            "Enable WSL2: wsl --install"
-        )
-    elif system == "Linux":
-        is_wsl = check_wsl2()
-        if is_wsl:
-            c.check("Running inside WSL2", True)
-        else:
-            c.warn("WSL2", "Not running in WSL2 (native Linux detected)")
-
-    print()
-    print("Network Tools:")
+            c.check(f"Python package: {pkg}", False, install_cmd)
     
-    # Wireshark
-    if system == "Windows":
-        wireshark_path = get_wireshark_path()
-        c.check(
-            "Wireshark installed",
-            wireshark_path is not None,
-            "Install Wireshark from wireshark.org"
-        )
-        if wireshark_path:
-            print(f"         Found at: {wireshark_path}")
-    else:
-        # In WSL/Linux, check for tshark
-        has_wireshark = check_command("wireshark") or check_command("tshark")
-        c.check(
-            "Wireshark/tshark installed",
-            has_wireshark,
-            "sudo apt install wireshark tshark"
-        )
-
-    # tcpdump (useful in WSL)
-    if system == "Linux" or check_wsl2():
-        if check_command("tcpdump"):
-            c.check("tcpdump installed", True)
-        else:
-            c.warn("tcpdump", "Not installed. Run: sudo apt install tcpdump")
-
     print()
-    print("Optional Tools:")
     
-    # Git
-    if check_command("git"):
-        c.check("Git installed", True)
-        rc, stdout, stderr = run_silent(["git", "--version"])
-        if rc == 0:
-            print(f"         {stdout.strip()}")
-    else:
-        c.warn("Git", "Recommended for version control")
-
-    # netcat
-    if check_command("nc") or check_command("netcat"):
-        c.check("netcat installed", True)
-    else:
-        c.warn("netcat", "Useful for debugging. Run: sudo apt install netcat-openbsd")
-
+    # Docker Environment
+    print("\033[1mDocker Environment:\033[0m")
+    c.check(
+        "Docker CLI installed",
+        check_command_exists("docker"),
+        "Install Docker: sudo apt install docker.io"
+    )
+    
+    docker_ok, docker_msg = check_docker_running()
+    if not docker_ok:
+        docker_ok = try_start_docker()
+        docker_msg = "Started successfully" if docker_ok else "Failed to start"
+    
+    c.check(
+        f"Docker daemon: {docker_msg[:40]}",
+        docker_ok,
+        "Start Docker: sudo service docker start"
+    )
+    
+    compose_ok, compose_msg = check_docker_compose()
+    c.check(
+        f"Docker Compose: {compose_msg[:40]}",
+        compose_ok,
+        "Included with docker.io package"
+    )
+    
     print()
-    print("Directory Structure:")
-    script_dir = Path(__file__).resolve().parent.parent
-    required_dirs = ["docker", "scripts", "src", "tests", "docs", "pcap", "artifacts"]
-    for d in required_dirs:
-        dir_path = script_dir / d
-        if dir_path.exists():
-            c.check(f"Directory: {d}/", True)
-        else:
-            c.check(f"Directory: {d}/", False, f"Missing directory structure")
-
+    
+    # Portainer (Global Service)
+    print("\033[1mPortainer (Global Service - Port 9000):\033[0m")
+    portainer_ok, portainer_msg = check_portainer_running()
+    c.check(
+        f"Portainer: {portainer_msg}",
+        portainer_ok,
+        "Start: docker start portainer"
+    )
+    
+    if portainer_ok:
+        c.info("Portainer URL", "http://localhost:9000")
+        c.info("Credentials", "stud / studstudstud")
+    
+    print()
+    
+    # Network Tools
+    print("\033[1mNetwork Analysis Tools:\033[0m")
+    ws_ok, ws_msg = check_wireshark()
+    c.check(
+        f"Wireshark: {ws_msg[:40]}",
+        ws_ok,
+        "Install on Windows from wireshark.org"
+    )
+    
+    if check_command_exists("tcpdump"):
+        c.check("tcpdump: Available", True)
+    else:
+        c.warn("tcpdump", "Install: sudo apt install tcpdump")
+    
+    if check_command_exists("tshark"):
+        c.check("tshark: Available", True)
+    else:
+        c.warn("tshark", "Install: sudo apt install tshark")
+    
+    # Check iptables
+    if check_command_exists("iptables"):
+        c.check("iptables: Available", True)
+    else:
+        c.warn("iptables", "Install: sudo apt install iptables")
+    
+    print()
+    
+    # Project Structure
+    print("\033[1mProject Structure:\033[0m")
+    project_root = Path(__file__).parent.parent
+    
+    required_dirs = ["docker", "src", "scripts", "tests"]
+    for dir_name in required_dirs:
+        dir_path = project_root / dir_name
+        c.check(f"Directory: {dir_name}/", dir_path.is_dir())
+    
+    required_files = [
+        "docker/docker-compose.yml",
+        "src/apps/tcp_server.py",
+        "src/apps/tcp_client.py",
+        "src/apps/udp_sender.py",
+        "src/apps/udp_receiver.py",
+        "src/apps/firewallctl.py",
+        "src/apps/packet_filter.py",
+        "src/apps/port_probe.py",
+        "docker/configs/firewall_profiles.json",
+    ]
+    for file_path in required_files:
+        full_path = project_root / file_path
+        c.check(f"File: {file_path}", full_path.is_file())
+    
     return c.summary()
 
 
