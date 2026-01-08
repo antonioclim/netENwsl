@@ -7,7 +7,9 @@ Features:
   - Logging with timestamp
 
 Usage:
-  python3 tcp_echo_server.py --host 0.0.0.0 --port 9000
+  python3 tcp_echo_server.py --host 0.0.0.0 --port 9090
+
+NOTE: Port 9090 is used for TCP Echo (port 9000 is reserved for Portainer)
 """
 
 from __future__ import annotations
@@ -48,7 +50,7 @@ def handle_client(client_socket: socket.socket, client_addr: tuple) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="TCP Echo Server")
     parser.add_argument("--host", default="0.0.0.0", help="Bind address")
-    parser.add_argument("--port", type=int, default=9000, help="Listening port")
+    parser.add_argument("--port", type=int, default=9090, help="Listening port (default: 9090)")
     return parser.parse_args()
 
 

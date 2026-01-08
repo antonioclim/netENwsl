@@ -1,330 +1,397 @@
 #!/usr/bin/env python3
 """
-verify_environment.py - Environment Verification Script
-Week 14 - Integrated Recap
+Environment Verification Script
 NETWORKING class - ASE, Informatics | by Revolvix
 
+Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+
 Checks that all prerequisites are installed and configured correctly
-for the Week 14 laboratory session.
-
-Usage:
-    python setup/verify_environment.py
-    python setup/verify_environment.py --verbose
+for the Week 14 Integrated Recap laboratory.
 """
-
-from __future__ import annotations
 
 import subprocess
 import sys
 import shutil
-import platform
-import socket
+import os
 from pathlib import Path
-from typing import Optional, Tuple
-
-
-class Colours:
-    """ANSI colour codes for terminal output."""
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
+from typing import Tuple
 
 
 class Checker:
-    """Verification result tracker."""
-
-    def __init__(self, verbose: bool = False):
+    """Verification result collector with formatted output."""
+    
+    def __init__(self):
         self.passed = 0
         self.failed = 0
         self.warnings = 0
-        self.verbose = verbose
-
+    
     def check(self, name: str, condition: bool, fix_hint: str = "") -> bool:
         """Record a check result."""
         if condition:
-            print(f"  {Colours.GREEN}[PASS]{Colours.RESET} {name}")
+            print(f"  [\033[92mPASS\033[0m] {name}")
             self.passed += 1
         else:
-            print(f"  {Colours.RED}[FAIL]{Colours.RESET} {name}")
+            print(f"  [\033[91mFAIL\033[0m] {name}")
             if fix_hint:
-                print(f"         {Colours.YELLOW}Fix:{Colours.RESET} {fix_hint}")
+                print(f"         \033[93mFix:\033[0m {fix_hint}")
             self.failed += 1
         return condition
-
+    
     def warn(self, name: str, message: str) -> None:
         """Record a warning."""
-        print(f"  {Colours.YELLOW}[WARN]{Colours.RESET} {name}: {message}")
+        print(f"  [\033[93mWARN\033[0m] {name}: {message}")
         self.warnings += 1
-
-    def info(self, message: str) -> None:
-        """Print informational message."""
-        if self.verbose:
-            print(f"  {Colours.BLUE}[INFO]{Colours.RESET} {message}")
-
+    
+    def info(self, name: str, message: str) -> None:
+        """Display informational message."""
+        print(f"  [\033[94mINFO\033[0m] {name}: {message}")
+    
     def summary(self) -> int:
         """Print summary and return exit code."""
         print()
         print("=" * 60)
         total = self.passed + self.failed
-        print(f"  Results: {Colours.GREEN}{self.passed} passed{Colours.RESET}, "
-              f"{Colours.RED}{self.failed} failed{Colours.RESET}, "
-              f"{Colours.YELLOW}{self.warnings} warnings{Colours.RESET}")
-        print("=" * 60)
-
+        print(f"Results: {self.passed}/{total} passed, {self.failed} failed, {self.warnings} warnings")
+        print()
+        
         if self.failed == 0:
-            print(f"\n{Colours.GREEN}{Colours.BOLD}Environment is ready for Week 14!{Colours.RESET}\n")
+            print("\033[92m✓ Environment is ready for Week 14 laboratory!\033[0m")
+            print()
+            print("Next steps:")
+            print("  1. Start the lab: python3 scripts/start_lab.py")
+            print("  2. Test LB:       curl http://localhost:8080/")
+            print("  3. Test Echo:     nc localhost 9090")
+            print()
+            print("Access points:")
+            print("  Portainer:       http://localhost:9000 (stud/studstudstud)")
+            print("  Load Balancer:   http://localhost:8080")
+            print("  Backend 1:       http://localhost:8001")
+            print("  Backend 2:       http://localhost:8002")
+            print("  TCP Echo:        localhost:9090")
             return 0
         else:
-            print(f"\n{Colours.RED}Please fix the issues above before proceeding.{Colours.RESET}\n")
+            print("\033[91m✗ Please fix the issues above before proceeding.\033[0m")
+            print()
+            print("For automated fixes, try: python3 setup/install_prerequisites.py")
             return 1
 
 
-def check_command_exists(cmd: str) -> bool:
-    """Check if a command exists in PATH."""
-    return shutil.which(cmd) is not None
+def check_running_in_wsl() -> bool:
+    """Check if we're running inside WSL."""
+    if os.path.exists("/proc/sys/fs/binfmt_misc/WSLInterop"):
+        return True
+    if "WSL_DISTRO_NAME" in os.environ:
+        return True
+    try:
+        with open("/proc/version", "r") as f:
+            version = f.read().lower()
+            return "microsoft" in version or "wsl" in version
+    except (FileNotFoundError, IOError):
+        pass
+    return False
 
 
-def run_command(cmd: list, timeout: int = 10) -> Tuple[int, str, str]:
-    """Run a command and return (returncode, stdout, stderr)."""
+def get_wsl_distro_info() -> Tuple[str, str]:
+    """Get WSL distribution name and version."""
+    distro_name = os.environ.get("WSL_DISTRO_NAME", "Unknown")
+    version = "Unknown"
+    try:
+        result = subprocess.run(
+            ["lsb_release", "-rs"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            version = result.stdout.strip()
+    except Exception:
+        try:
+            with open("/etc/os-release", "r") as f:
+                for line in f:
+                    if line.startswith("VERSION_ID="):
+                        version = line.split("=")[1].strip().strip('"')
+                        break
+        except Exception:
+            pass
+    return distro_name, version
+
+
+def get_command_output(cmd: list, timeout: int = 10) -> Tuple[bool, str]:
+    """Execute command and return success status with output."""
     try:
         result = subprocess.run(
             cmd,
             capture_output=True,
-            text=True,
-            timeout=timeout
+            timeout=timeout,
+            text=True
         )
-        return result.returncode, result.stdout, result.stderr
-    except subprocess.TimeoutExpired:
-        return -1, "", "Command timed out"
+        output = result.stdout.strip() or result.stderr.strip()
+        return result.returncode == 0, output
     except FileNotFoundError:
-        return -1, "", f"Command not found: {cmd[0]}"
+        return False, "Command not found"
+    except subprocess.TimeoutExpired:
+        return False, "Command timed out"
     except Exception as e:
-        return -1, "", str(e)
+        return False, str(e)
 
 
-def check_docker_running() -> bool:
-    """Check if Docker daemon is running."""
-    code, _, _ = run_command(["docker", "info"], timeout=15)
-    return code == 0
+def check_command_exists(cmd: str) -> bool:
+    """Check if command is available in PATH."""
+    return shutil.which(cmd) is not None
 
 
-def check_docker_compose() -> bool:
-    """Check if Docker Compose is available."""
-    code, _, _ = run_command(["docker", "compose", "version"], timeout=10)
-    return code == 0
-
-
-def check_wsl2() -> bool:
-    """Check if WSL2 is available (Windows only)."""
-    if platform.system() != "Windows":
-        return True  # Not applicable on Linux/Mac
-
-    try:
-        code, stdout, stderr = run_command(["wsl", "--status"], timeout=10)
-        output = stdout + stderr
-        return "WSL 2" in output or "Default Version: 2" in output
-    except Exception:
-        return False
-
-
-def check_port_available(port: int) -> bool:
-    """Check if a port is available for binding."""
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex(("127.0.0.1", port))
-        sock.close()
-        # If connect fails (result != 0), port is available
-        return result != 0
-    except Exception:
-        return True  # Assume available on error
+def check_python_version() -> Tuple[bool, str]:
+    """Verify Python version meets requirements."""
+    version = sys.version_info
+    version_str = f"{version.major}.{version.minor}.{version.micro}"
+    meets_req = version >= (3, 11)
+    return meets_req, version_str
 
 
 def check_python_package(package: str) -> bool:
-    """Check if a Python package is installed."""
+    """Check if Python package is installed."""
     try:
-        __import__(package)
+        __import__(package.replace("-", "_"))
         return True
     except ImportError:
         return False
 
 
-def get_wireshark_path() -> Optional[Path]:
-    """Get Wireshark installation path."""
-    common_paths = [
-        Path(r"C:\Program Files\Wireshark\Wireshark.exe"),
-        Path(r"C:\Program Files (x86)\Wireshark\Wireshark.exe"),
+def check_docker_running() -> Tuple[bool, str]:
+    """Verify Docker daemon is running."""
+    success, output = get_command_output(["docker", "info"])
+    if success:
+        return True, "Docker daemon is running"
+    return False, output
+
+
+def check_docker_compose() -> Tuple[bool, str]:
+    """Verify Docker Compose is available."""
+    success, output = get_command_output(["docker", "compose", "version"])
+    if success:
+        return True, output.split('\n')[0] if output else "Available"
+    return False, "Docker Compose not found"
+
+
+def check_portainer_running() -> Tuple[bool, str]:
+    """Check if Portainer is running on port 9000."""
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=portainer",
+             "--format", "{{.Status}}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            if "up" in result.stdout.lower():
+                return True, result.stdout.strip()
+        return False, "Not running"
+    except Exception as e:
+        return False, str(e)
+
+
+def check_wireshark() -> Tuple[bool, str]:
+    """Check for Wireshark installation."""
+    windows_paths = [
+        Path("/mnt/c/Program Files/Wireshark/Wireshark.exe"),
+        Path("/mnt/c/Program Files (x86)/Wireshark/Wireshark.exe"),
     ]
-    for path in common_paths:
+    
+    for path in windows_paths:
         if path.exists():
-            return path
-
-    # Check if wireshark is in PATH
+            return True, str(path)
+    
     if check_command_exists("wireshark"):
-        return Path(shutil.which("wireshark"))
+        return True, "Available in PATH"
+    
+    if check_command_exists("tshark"):
+        return True, "tshark available (CLI mode)"
+    
+    return False, "Not found"
 
-    return None
+
+def check_curl() -> Tuple[bool, str]:
+    """Check for curl installation."""
+    success, output = get_command_output(["curl", "--version"])
+    if success:
+        return True, output.split('\n')[0] if output else "Available"
+    return False, "Not found"
+
+
+def check_netcat() -> Tuple[bool, str]:
+    """Check for netcat installation."""
+    if check_command_exists("nc"):
+        return True, "nc available"
+    if check_command_exists("netcat"):
+        return True, "netcat available"
+    return False, "Not found (install netcat-openbsd)"
+
+
+def try_start_docker() -> bool:
+    """Attempt to start Docker service."""
+    print("         \033[93mAttempting to start Docker...\033[0m")
+    try:
+        result = subprocess.run(
+            ["sudo", "service", "docker", "start"],
+            capture_output=True,
+            timeout=30
+        )
+        if result.returncode == 0:
+            import time
+            time.sleep(2)
+            success, _ = check_docker_running()
+            return success
+    except Exception:
+        pass
+    return False
 
 
 def main() -> int:
-    """Run all environment checks."""
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Verify Week 14 environment")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
-    args = parser.parse_args()
-
+    """Main verification routine."""
     print()
     print("=" * 60)
-    print(f"  {Colours.BOLD}Environment Verification - Week 14 Laboratory{Colours.RESET}")
+    print("  Environment Verification for Week 14 Laboratory")
+    print("  Integrated Recap and Project Evaluation")
     print("  NETWORKING class - ASE, Informatics")
+    print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
     print("=" * 60)
     print()
-
-    c = Checker(verbose=args.verbose)
-
-    # =========================================================================
-    # Python Environment
-    # =========================================================================
-    print(f"{Colours.BOLD}Python Environment:{Colours.RESET}")
-
-    py_version = sys.version_info
+    
+    c = Checker()
+    
+    # WSL2 Environment
+    print("\033[1mWSL2 Environment:\033[0m")
+    is_wsl = check_running_in_wsl()
     c.check(
-        f"Python {py_version.major}.{py_version.minor}.{py_version.micro}",
-        py_version >= (3, 10),
-        "Install Python 3.10 or later from python.org"
+        "Running in WSL",
+        is_wsl,
+        "Run this script from WSL Ubuntu terminal"
     )
-
-    # Check required packages
-    required_packages = ["requests", "pyyaml"]
-    for pkg in required_packages:
+    
+    if is_wsl:
+        distro_name, distro_version = get_wsl_distro_info()
+        c.info("WSL Distribution", distro_name)
+        is_ubuntu_22 = distro_version.startswith("22.")
         c.check(
-            f"Python package: {pkg}",
-            check_python_package(pkg),
-            f"pip install {pkg}"
+            f"Ubuntu version {distro_version}",
+            is_ubuntu_22,
+            "Recommended: Ubuntu 22.04 LTS"
         )
-
-    # Optional packages
-    optional_packages = ["docker"]
-    for pkg in optional_packages:
-        if not check_python_package(pkg):
-            c.warn(f"Python package: {pkg}", f"Optional but recommended. Install with: pip install {pkg}")
-
+    
     print()
-
-    # =========================================================================
+    
+    # Python Environment
+    print("\033[1mPython Environment:\033[0m")
+    py_ok, py_version = check_python_version()
+    c.check(
+        f"Python {py_version}",
+        py_ok,
+        "Install Python 3.11+: sudo apt install python3.11"
+    )
+    
+    optional_packages = {
+        "docker": "pip install docker --break-system-packages",
+        "requests": "pip install requests --break-system-packages",
+    }
+    
+    for pkg, install_cmd in optional_packages.items():
+        if check_python_package(pkg):
+            c.check(f"Python package: {pkg}", True)
+        else:
+            c.warn(f"Python package: {pkg}", f"Install: {install_cmd}")
+    
+    print()
+    
     # Docker Environment
-    # =========================================================================
-    print(f"{Colours.BOLD}Docker Environment:{Colours.RESET}")
-
+    print("\033[1mDocker Environment:\033[0m")
     c.check(
         "Docker CLI installed",
         check_command_exists("docker"),
-        "Install Docker Desktop from https://www.docker.com/products/docker-desktop"
+        "Install Docker: sudo apt install docker.io"
     )
-
+    
+    docker_ok, docker_msg = check_docker_running()
+    if not docker_ok:
+        docker_ok = try_start_docker()
+        docker_msg = "Started successfully" if docker_ok else "Failed to start"
+    
     c.check(
-        "Docker Compose available",
-        check_docker_compose(),
-        "Docker Compose should be included with Docker Desktop"
+        f"Docker daemon: {docker_msg[:40]}",
+        docker_ok,
+        "Start Docker: sudo service docker start"
     )
-
-    docker_running = check_docker_running()
+    
+    compose_ok, compose_msg = check_docker_compose()
     c.check(
-        "Docker daemon running",
-        docker_running,
-        "Start Docker Desktop application"
+        f"Docker Compose: {compose_msg[:40]}",
+        compose_ok,
+        "Included with docker.io package"
     )
-
-    if docker_running:
-        # Check Docker version
-        code, stdout, _ = run_command(["docker", "version", "--format", "{{.Server.Version}}"])
-        if code == 0:
-            c.info(f"Docker version: {stdout.strip()}")
-
+    
     print()
-
-    # =========================================================================
-    # WSL2 Environment (Windows only)
-    # =========================================================================
-    if platform.system() == "Windows":
-        print(f"{Colours.BOLD}WSL2 Environment:{Colours.RESET}")
-
-        c.check(
-            "WSL2 available",
-            check_wsl2(),
-            "Enable WSL2: wsl --install (requires restart)"
-        )
-
-        print()
-
-    # =========================================================================
+    
+    # Portainer (Global Service)
+    print("\033[1mPortainer (Global Service - Port 9000):\033[0m")
+    portainer_ok, portainer_msg = check_portainer_running()
+    c.check(
+        f"Portainer: {portainer_msg}",
+        portainer_ok,
+        "Start: docker start portainer"
+    )
+    
+    if portainer_ok:
+        c.info("Portainer URL", "http://localhost:9000")
+        c.info("Credentials", "stud / studstudstud")
+    
+    print()
+    
     # Network Tools
-    # =========================================================================
-    print(f"{Colours.BOLD}Network Analysis Tools:{Colours.RESET}")
-
-    wireshark_path = get_wireshark_path()
+    print("\033[1mNetwork Tools:\033[0m")
+    curl_ok, curl_msg = check_curl()
     c.check(
-        "Wireshark installed",
-        wireshark_path is not None,
-        "Install from https://www.wireshark.org/download.html"
+        f"curl: {curl_msg[:40]}",
+        curl_ok,
+        "Install: sudo apt install curl"
     )
-    if wireshark_path:
-        c.info(f"Wireshark path: {wireshark_path}")
-
-    # Check tshark
-    if check_command_exists("tshark"):
-        c.check("tshark available", True)
-    else:
-        c.warn("tshark", "Install Wireshark with command-line tools for tshark")
-
+    
+    nc_ok, nc_msg = check_netcat()
+    c.check(
+        f"netcat: {nc_msg[:30]}",
+        nc_ok,
+        "Install: sudo apt install netcat-openbsd"
+    )
+    
+    ws_ok, ws_msg = check_wireshark()
+    c.check(
+        f"Wireshark: {ws_msg[:40]}",
+        ws_ok,
+        "Install on Windows from wireshark.org"
+    )
+    
     print()
-
-    # =========================================================================
-    # Port Availability
-    # =========================================================================
-    print(f"{Colours.BOLD}Port Availability:{Colours.RESET}")
-
-    ports_to_check = [
-        (8080, "Load Balancer"),
-        (8001, "Backend 1"),
-        (8002, "Backend 2"),
-        (9000, "TCP Echo Server"),
-        (9443, "Portainer (optional)"),
+    
+    # Project Structure
+    print("\033[1mProject Structure:\033[0m")
+    project_root = Path(__file__).parent.parent
+    
+    required_dirs = ["docker", "src", "scripts", "tests", "artifacts", "pcap"]
+    for dir_name in required_dirs:
+        dir_path = project_root / dir_name
+        c.check(f"Directory: {dir_name}/", dir_path.is_dir())
+    
+    required_files = [
+        "docker/docker-compose.yml",
+        "docker/Dockerfile",
+        "src/apps/backend_server.py",
+        "src/apps/lb_proxy.py",
+        "src/apps/tcp_echo_server.py",
+        "src/apps/tcp_echo_client.py",
     ]
-
-    for port, service in ports_to_check:
-        available = check_port_available(port)
-        if not available:
-            c.warn(f"Port {port} ({service})", "Port may be in use by another application")
-        else:
-            c.check(f"Port {port} ({service}) available", True)
-
-    print()
-
-    # =========================================================================
-    # Optional Tools
-    # =========================================================================
-    print(f"{Colours.BOLD}Optional Tools:{Colours.RESET}")
-
-    if check_command_exists("git"):
-        c.check("Git installed", True)
-    else:
-        c.warn("Git", "Recommended for version control")
-
-    if check_command_exists("curl"):
-        c.check("curl installed", True)
-    else:
-        c.warn("curl", "Recommended for HTTP testing")
-
-    print()
-
-    # =========================================================================
-    # Summary
-    # =========================================================================
+    for file_path in required_files:
+        full_path = project_root / file_path
+        c.check(f"File: {file_path}", full_path.is_file())
+    
     return c.summary()
 
 

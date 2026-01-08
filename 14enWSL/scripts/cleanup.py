@@ -1,307 +1,191 @@
 #!/usr/bin/env python3
 """
-cleanup.py - Week 14 Laboratory Cleanup
+Week 14 Laboratory Cleanup
 NETWORKING class - ASE, Informatics | by Revolvix
 
-Removes all containers, networks, and optionally volumes to prepare
-the system for the next laboratory session.
+Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
-Usage:
-    python scripts/cleanup.py              # Stop and remove containers
-    python scripts/cleanup.py --full       # Also remove volumes and artifacts
-    python scripts/cleanup.py --prune      # Also prune unused Docker resources
-    python scripts/cleanup.py --dry-run    # Show what would be removed
+This script removes all containers, networks, and optionally volumes
+to prepare the system for the next laboratory session.
+
+IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+This script will NEVER remove Portainer - it must remain running for all weeks.
 """
 
-from __future__ import annotations
-
+import argparse
 import subprocess
 import sys
-import argparse
-import shutil
 from pathlib import Path
-from datetime import datetime
-
 
 PROJECT_ROOT = Path(__file__).parent.parent
-DOCKER_DIR = PROJECT_ROOT / "docker"
-COMPOSE_FILE = DOCKER_DIR / "docker-compose.yml"
-ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"
-PCAP_DIR = PROJECT_ROOT / "pcap"
+sys.path.insert(0, str(PROJECT_ROOT))
 
-WEEK_PREFIX = "week14"
+from scripts.utils.docker_utils import DockerManager
+from scripts.utils.logger import setup_logger
 
+logger = setup_logger("cleanup")
 
-class Colours:
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
+WEEK_PREFIX = "week14_"
+PROTECTED_CONTAINERS = ["portainer"]
 
 
-def log(level: str, message: str) -> None:
-    """Print timestamped log message."""
-    ts = datetime.now().strftime("%H:%M:%S")
-    colours = {
-        "INFO": Colours.BLUE,
-        "OK": Colours.GREEN,
-        "WARN": Colours.YELLOW,
-        "ERROR": Colours.RED,
-        "DRY": Colours.YELLOW,
-    }
-    colour = colours.get(level, Colours.RESET)
-    print(f"[{ts}] {colour}[{level}]{Colours.RESET} {message}")
+def is_protected(name: str) -> bool:
+    """Check if a resource name is protected."""
+    name_lower = name.lower()
+    return any(protected in name_lower for protected in PROTECTED_CONTAINERS)
 
 
-def run_command(cmd: list, timeout: int = 120, dry_run: bool = False) -> tuple:
-    """Run a command and return (success, stdout, stderr)."""
-    if dry_run:
-        log("DRY", f"Would run: {' '.join(cmd)}")
-        return True, "", ""
-
-    try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=PROJECT_ROOT
-        )
-        return result.returncode == 0, result.stdout, result.stderr
-    except subprocess.TimeoutExpired:
-        return False, "", "Command timed out"
-    except Exception as e:
-        return False, "", str(e)
-
-
-def docker_compose(*args, dry_run: bool = False) -> tuple:
-    """Run docker compose command."""
-    cmd = ["docker", "compose", "-f", str(COMPOSE_FILE)] + list(args)
-    return run_command(cmd, dry_run=dry_run)
-
-
-def remove_containers_by_label(label: str, dry_run: bool = False) -> bool:
-    """Remove all containers with a specific label."""
-    # Get container IDs
-    success, stdout, _ = run_command([
-        "docker", "ps", "-aq", "--filter", f"label={label}"
-    ])
-
-    if not stdout.strip():
-        log("INFO", "No containers found with label")
-        return True
-
-    container_ids = stdout.strip().split("\n")
-    log("INFO", f"Found {len(container_ids)} container(s) to remove")
-
-    if dry_run:
-        for cid in container_ids:
-            log("DRY", f"Would remove container: {cid[:12]}")
-        return True
-
-    # Stop containers first
-    run_command(["docker", "stop"] + container_ids, timeout=60)
-
-    # Remove containers
-    success, _, stderr = run_command(["docker", "rm", "-f"] + container_ids)
-    return success
-
-
-def remove_networks_by_label(label: str, dry_run: bool = False) -> bool:
-    """Remove all networks with a specific label."""
-    success, stdout, _ = run_command([
-        "docker", "network", "ls", "-q", "--filter", f"label={label}"
-    ])
-
-    if not stdout.strip():
-        log("INFO", "No networks found with label")
-        return True
-
-    network_ids = stdout.strip().split("\n")
-    log("INFO", f"Found {len(network_ids)} network(s) to remove")
-
-    if dry_run:
-        for nid in network_ids:
-            log("DRY", f"Would remove network: {nid[:12]}")
-        return True
-
-    success, _, stderr = run_command(["docker", "network", "rm"] + network_ids)
-    return success
-
-
-def remove_volumes_by_prefix(prefix: str, dry_run: bool = False) -> bool:
-    """Remove all volumes with a specific prefix."""
-    success, stdout, _ = run_command([
-        "docker", "volume", "ls", "-q", "--filter", f"name={prefix}"
-    ])
-
-    if not stdout.strip():
-        log("INFO", "No volumes found with prefix")
-        return True
-
-    volume_names = stdout.strip().split("\n")
-    log("INFO", f"Found {len(volume_names)} volume(s) to remove")
-
-    if dry_run:
-        for vname in volume_names:
-            log("DRY", f"Would remove volume: {vname}")
-        return True
-
-    success, _, stderr = run_command(["docker", "volume", "rm"] + volume_names)
-    return success
-
-
-def clean_directory(directory: Path, keep_gitkeep: bool = True, dry_run: bool = False) -> int:
-    """Clean all files in a directory. Returns number of files removed."""
+def clean_directory(directory: Path, pattern: str = "*", keep: list = None) -> int:
+    """Clean files from a directory."""
+    keep = keep or [".gitkeep", "README.md"]
+    count = 0
+    
     if not directory.exists():
         return 0
-
-    count = 0
-    for item in directory.iterdir():
-        if keep_gitkeep and item.name == ".gitkeep":
-            continue
-        if item.name == "README.md":
-            continue
-
-        if dry_run:
-            log("DRY", f"Would remove: {item}")
-        else:
-            if item.is_file():
-                item.unlink()
-            elif item.is_dir():
-                shutil.rmtree(item)
-        count += 1
-
+    
+    for item in directory.glob(pattern):
+        if item.name not in keep and item.is_file():
+            item.unlink()
+            count += 1
+    
     return count
 
 
+def check_portainer_status() -> tuple:
+    """Check Portainer container status."""
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=portainer",
+             "--format", "{{.Status}}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.stdout.strip() and "up" in result.stdout.lower():
+            return True, result.stdout.strip()
+        return False, "Not running"
+    except Exception:
+        return False, "Unknown"
+
+
 def main() -> int:
-    """Run cleanup operations."""
-    parser = argparse.ArgumentParser(description="Cleanup Week 14 Laboratory")
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description="Cleanup Week 14 Laboratory Environment (WSL2)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 scripts/cleanup.py              # Basic cleanup
+  python3 scripts/cleanup.py --full       # Full cleanup including volumes
+  python3 scripts/cleanup.py --dry-run    # Show what would be removed
+
+Notes:
+  - Portainer is NEVER removed (global service on port 9000)
+  - Use 'docker stop portainer' only if you specifically need to stop it
+        """
+    )
     parser.add_argument(
         "--full",
         action="store_true",
-        help="Remove volumes and all data (use before next week)"
+        help="Remove volumes and all data"
     )
     parser.add_argument(
         "--prune",
         action="store_true",
-        help="Also prune unused Docker resources system-wide"
+        help="Also prune unused Docker resources"
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would be removed without removing"
     )
-
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Enable verbose output"
+    )
+    
     args = parser.parse_args()
-
+    
     print()
     print("=" * 60)
-    print(f"  {Colours.BOLD}Cleaning up Week 14 Laboratory{Colours.RESET}")
+    print("  Cleaning up Week 14 Laboratory Environment")
+    print("  (Portainer will NOT be removed - it runs globally)")
     print("=" * 60)
     print()
-
+    
     if args.dry_run:
-        log("INFO", "DRY RUN - No changes will be made")
+        logger.info("[DRY RUN] No changes will be made")
         print()
-
-    errors = 0
-
-    # =========================================================================
-    # Stop and remove containers via compose
-    # =========================================================================
-    if COMPOSE_FILE.exists():
-        log("INFO", "Stopping containers via docker compose...")
+    
+    try:
+        docker = DockerManager(PROJECT_ROOT / "docker")
+    except FileNotFoundError as e:
+        logger.error(f"Docker configuration not found: {e}")
+        return 1
+    
+    try:
+        # Stop and remove containers (NOT Portainer)
+        logger.info("Stopping and removing lab containers...")
+        logger.info("(Portainer is preserved)")
+        docker.compose_down(volumes=args.full, dry_run=args.dry_run)
+        
+        # Remove week-specific resources
+        logger.info(f"Removing {WEEK_PREFIX}* resources...")
+        docker.remove_by_prefix(WEEK_PREFIX, dry_run=args.dry_run)
+        
+        # Clean local directories
+        if args.full and not args.dry_run:
+            logger.info("Cleaning artifacts directory...")
+            count = clean_directory(PROJECT_ROOT / "artifacts", "*.json")
+            count += clean_directory(PROJECT_ROOT / "artifacts", "*.log")
+            count += clean_directory(PROJECT_ROOT / "artifacts", "*.txt")
+            if count > 0:
+                logger.info(f"  Removed {count} artifact files")
+            
+            logger.info("Cleaning pcap directory...")
+            count = clean_directory(PROJECT_ROOT / "pcap", "*.pcap")
+            count += clean_directory(PROJECT_ROOT / "pcap", "*.pcapng")
+            if count > 0:
+                logger.info(f"  Removed {count} capture files")
+        elif args.full and args.dry_run:
+            logger.info("[DRY RUN] Would clean artifacts and pcap directories")
+        
+        # Optional system prune
+        if args.prune and not args.dry_run:
+            logger.info("Pruning unused Docker resources...")
+            docker.system_prune()
+        elif args.prune and args.dry_run:
+            logger.info("[DRY RUN] Would prune Docker system")
+        
+        print()
+        print("=" * 60)
+        print("  \033[92mCleanup complete!\033[0m")
         if args.full:
-            success, _, stderr = docker_compose("down", "-v", "--remove-orphans", dry_run=args.dry_run)
+            print("  System is ready for the next laboratory session.")
+        
+        # Confirm Portainer status
+        portainer_running, portainer_status = check_portainer_status()
+        if portainer_running:
+            print(f"\n  \033[92mPortainer still running:\033[0m http://localhost:9000")
         else:
-            success, _, stderr = docker_compose("down", "--remove-orphans", dry_run=args.dry_run)
-
-        if success:
-            log("OK", "Docker compose cleanup complete")
-        else:
-            log("WARN", f"Docker compose cleanup had issues: {stderr}")
-            errors += 1
-
-    # =========================================================================
-    # Remove any remaining containers by label
-    # =========================================================================
-    log("INFO", f"Removing {WEEK_PREFIX}_* containers...")
-    if not remove_containers_by_label(f"week=14", dry_run=args.dry_run):
-        errors += 1
-
-    # =========================================================================
-    # Remove networks by label
-    # =========================================================================
-    log("INFO", f"Removing {WEEK_PREFIX}_* networks...")
-    if not remove_networks_by_label(f"week=14", dry_run=args.dry_run):
-        errors += 1
-
-    # =========================================================================
-    # Remove volumes (if --full)
-    # =========================================================================
-    if args.full:
-        log("INFO", f"Removing {WEEK_PREFIX}_* volumes...")
-        if not remove_volumes_by_prefix(WEEK_PREFIX, dry_run=args.dry_run):
-            errors += 1
-
-    # =========================================================================
-    # Clean artifacts and pcap directories (if --full)
-    # =========================================================================
-    if args.full:
-        log("INFO", "Cleaning artifacts directory...")
-        count = clean_directory(ARTIFACTS_DIR, dry_run=args.dry_run)
-        if count > 0:
-            log("OK", f"Removed {count} file(s) from artifacts/")
-
-        log("INFO", "Cleaning pcap directory...")
-        count = clean_directory(PCAP_DIR, dry_run=args.dry_run)
-        if count > 0:
-            log("OK", f"Removed {count} file(s) from pcap/")
-
-    # =========================================================================
-    # System prune (if --prune)
-    # =========================================================================
-    if args.prune and not args.dry_run:
-        log("INFO", "Pruning unused Docker resources...")
-        success, stdout, _ = run_command([
-            "docker", "system", "prune", "-f"
-        ])
-        if success:
-            log("OK", "Docker system prune complete")
-            # Parse and display space reclaimed
-            if "reclaimed" in stdout.lower():
-                for line in stdout.split("\n"):
-                    if "reclaimed" in line.lower():
-                        log("INFO", line.strip())
-    elif args.prune and args.dry_run:
-        log("DRY", "Would run: docker system prune -f")
-
-    # =========================================================================
-    # Summary
-    # =========================================================================
-    print()
-    print("=" * 60)
-
-    if errors == 0:
-        print(f"  {Colours.GREEN}{Colours.BOLD}Cleanup complete!{Colours.RESET}")
-        if args.full:
-            print(f"  System is ready for the next laboratory session.")
-    else:
-        print(f"  {Colours.YELLOW}{Colours.BOLD}Cleanup completed with {errors} warning(s){Colours.RESET}")
-
-    print("=" * 60)
-    print()
-
-    if not args.dry_run:
-        # Show current Docker disk usage
-        log("INFO", "Current Docker disk usage:")
-        run_command(["docker", "system", "df"])
-
-    return 0 if errors == 0 else 1
+            print(f"\n  \033[93mPortainer is not running.\033[0m")
+            print("  Start with: docker start portainer")
+        
+        print("=" * 60)
+        print()
+        
+        return 0
+    
+    except KeyboardInterrupt:
+        logger.info("Cleanup cancelled by user")
+        return 130
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        return 1
 
 
 if __name__ == "__main__":

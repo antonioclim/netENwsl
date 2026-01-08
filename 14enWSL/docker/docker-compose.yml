@@ -3,11 +3,23 @@
 # NETWORKING class - ASE, Informatics | by Revolvix
 # =============================================================================
 #
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+# (TCP Echo has been moved to port 9090)
+#
 # This configuration creates a complete network laboratory environment:
 #   - 2 backend HTTP servers (app1, app2)
 #   - 1 load balancer / reverse proxy (lb)
 #   - 1 client container for testing
-#   - 1 TCP echo server
+#   - 1 TCP echo server (port 9090)
 #
 # Network topology:
 #   frontend_net: client <-> lb
@@ -20,6 +32,7 @@ name: week14
 services:
   # ===========================================================================
   # Backend Server 1
+  # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
   # ===========================================================================
   app1:
     build:
@@ -27,6 +40,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: week14_app1
     hostname: app1
+    environment:
+      - LAB_WEEK=14
     command: >
       python3 /app/src/apps/backend_server.py 
       --id app1 
@@ -57,6 +72,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: week14_app2
     hostname: app2
+    environment:
+      - LAB_WEEK=14
     command: >
       python3 /app/src/apps/backend_server.py 
       --id app2 
@@ -87,6 +104,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: week14_lb
     hostname: lb
+    environment:
+      - LAB_WEEK=14
     command: >
       python3 /app/src/apps/lb_proxy.py
       --listen-host 0.0.0.0
@@ -127,6 +146,8 @@ services:
     hostname: client
     stdin_open: true
     tty: true
+    environment:
+      - LAB_WEEK=14
     networks:
       frontend_net:
         ipv4_address: 172.21.0.2
@@ -143,6 +164,7 @@ services:
 
   # ===========================================================================
   # TCP Echo Server
+  # NOTE: Port changed from 9000 to 9090 - Port 9000 is RESERVED for Portainer!
   # ===========================================================================
   echo:
     build:
@@ -150,17 +172,19 @@ services:
       dockerfile: docker/Dockerfile
     container_name: week14_echo
     hostname: echo
+    environment:
+      - LAB_WEEK=14
     command: >
       python3 /app/src/apps/tcp_echo_server.py 
       --host 0.0.0.0 
-      --port 9000
+      --port 9090
     ports:
-      - "9000:9000"
+      - "9090:9090"
     networks:
       backend_net:
         ipv4_address: 172.20.0.20
     healthcheck:
-      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost',9000)); s.close()"]
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost',9090)); s.close()"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -172,6 +196,7 @@ services:
 
 # =============================================================================
 # NETWORKS
+# NOTE: Portainer uses its own network, managed globally
 # =============================================================================
 networks:
   # Backend network (servers + LB internal interface)
@@ -199,6 +224,11 @@ networks:
       - "purpose=frontend"
 
 # =============================================================================
+# NOTE: Portainer runs globally and is NOT defined here
+# Access Portainer at: http://localhost:9000
+# =============================================================================
+
+# =============================================================================
 # USAGE REFERENCE
 # =============================================================================
 #
@@ -218,10 +248,11 @@ networks:
 #   curl http://app1:8001/info
 #   curl http://app2:8001/info
 #
-# Test from host (Windows):
+# Test from host (Windows/WSL):
 #   curl http://localhost:8080/
 #   curl http://localhost:8001/info
 #   curl http://localhost:8002/info
+#   nc localhost 9090  # TCP echo (NOT 9000 - that's Portainer!)
 #
 # Stop services:
 #   docker compose down
