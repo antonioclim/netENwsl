@@ -1,0 +1,486 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORMATIVE QUIZ TEMPLATE — Computer Networks Projects
+# ═══════════════════════════════════════════════════════════════════════════════
+# 
+# Purpose: Master template for project self-assessment quizzes
+# Format: YAML (runnable with run_quiz.py) + exportable to LMS JSON
+# Version: 1.0
+# 
+# Usage:
+#   python run_quiz.py --quiz quiz_p01.yaml
+#   python export_lms.py --quiz quiz_p01.yaml --format moodle
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  version: "1.0"
+  course: "Computer Networks"
+  course_code: "RC-2026"
+  institution: "ASE Bucharest - CSIE"
+  programme: "Economic Informatics, Year 3, Semester 2"
+  language: "en-GB"
+  passing_score: 70
+  time_limit_minutes: 15
+  shuffle_questions: true
+  shuffle_options: true
+  show_feedback: true
+  allow_retry: true
+  max_attempts: 3
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTION TYPE DEFINITIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Supported types:
+#   - multiple_choice: Single correct answer from options
+#   - multiple_select: Multiple correct answers (partial credit)
+#   - fill_blank: Text input with accepted answers list
+#   - code_trace: Analyse code and predict output
+#   - scenario: Real-world problem-solving
+#   - ordering: Arrange items in correct sequence
+#   - matching: Match items from two columns
+#
+# Bloom taxonomy levels:
+#   - remember: Recall facts and basic concepts
+#   - understand: Explain ideas or concepts
+#   - apply: Use information in new situations
+#   - analyse: Draw connections among ideas
+#   - evaluate: Justify a decision or course of action
+#   - create: Produce new or original work
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXAMPLE PROJECT QUIZ: P01 SDN Firewall
+# ═══════════════════════════════════════════════════════════════════════════════
+
+project:
+  id: "P01"
+  title: "SDN Firewall with Mininet"
+  description: "Self-assessment quiz for SDN firewall implementation project"
+  
+  learning_objectives:
+    - id: LO1
+      description: "Explain SDN architecture and control/data plane separation"
+      bloom_level: understand
+      lab_week: 6
+      
+    - id: LO2
+      description: "Implement OpenFlow flow rules for packet filtering"
+      bloom_level: apply
+      lab_week: 6
+      
+    - id: LO3
+      description: "Configure virtual network topologies in Mininet"
+      bloom_level: apply
+      lab_week: 6
+      
+    - id: LO4
+      description: "Analyse flow table behaviour and packet traces"
+      bloom_level: analyse
+      lab_week: 7
+      
+    - id: LO5
+      description: "Design security rules for SDN environments"
+      bloom_level: create
+      lab_week: 13
+
+  # Coverage requirements: each LO should have 2-3 questions
+  questions:
+  
+    # ─────────────────────────────────────────────────────────────────────────
+    # LO1: Understanding SDN Architecture
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    - id: p01_q01
+      type: multiple_choice
+      lo_ref: LO1
+      bloom_level: understand
+      difficulty: basic
+      points: 1
+      stem: |
+        In Software-Defined Networking (SDN), which component is responsible 
+        for making routing decisions?
+      options:
+        a: "The OpenFlow switch"
+        b: "The SDN controller"
+        c: "The source host"
+        d: "The TCP/IP protocol stack"
+      correct: b
+      feedback:
+        correct: "Correct! The SDN controller centralises all control logic."
+        incorrect: "The controller makes decisions; switches only execute them."
+      explanation: |
+        In SDN architecture, the control plane (decision-making) is separated 
+        from the data plane (packet forwarding). The controller holds the 
+        network intelligence, whilst switches simply follow instructions.
+      misconception: "Confusing data plane (switches) with control plane (controller)"
+      references:
+        - "docs/theory_summary.md#sdn-architecture"
+        - "Kreutz et al. (2015) Section 2.1"
+      
+    - id: p01_q02
+      type: multiple_choice
+      lo_ref: LO1
+      bloom_level: understand
+      difficulty: intermediate
+      points: 1
+      stem: |
+        What happens when an OpenFlow switch receives a packet that does NOT 
+        match any existing flow rule?
+      options:
+        a: "The packet is dropped silently"
+        b: "The packet is flooded to all ports"
+        c: "The packet is sent to the controller (PacketIn)"
+        d: "The switch generates an ICMP error"
+      correct: c
+      feedback:
+        correct: "Correct! Unknown packets trigger a PacketIn message to the controller."
+        incorrect: "By default, unmatched packets are sent to the controller for decision."
+      explanation: |
+        This is the reactive flow installation model. The controller receives 
+        the packet, decides what to do, and may install a flow rule for 
+        future similar packets.
+      misconception: "Assuming switches can make independent forwarding decisions"
+      
+    - id: p01_q03
+      type: matching
+      lo_ref: LO1
+      bloom_level: remember
+      difficulty: basic
+      points: 2
+      stem: "Match each SDN component with its primary function:"
+      pairs:
+        - left: "Controller"
+          right: "Centralised network intelligence"
+        - left: "OpenFlow Switch"
+          right: "Packet forwarding based on flow rules"
+        - left: "Flow Table"
+          right: "Stores match-action rules"
+        - left: "PacketIn Message"
+          right: "Notifies controller of unknown packets"
+      distractors:
+        - "Generates routing protocols"
+        - "Encrypts network traffic"
+      
+    # ─────────────────────────────────────────────────────────────────────────
+    # LO2: Implementing OpenFlow Rules
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    - id: p01_q04
+      type: multiple_choice
+      lo_ref: LO2
+      bloom_level: apply
+      difficulty: intermediate
+      points: 1
+      stem: |
+        To block all ICMP traffic between hosts h1 (10.0.0.1) and h2 (10.0.0.2), 
+        what action should be specified in the OpenFlow flow rule?
+      options:
+        a: "output:FLOOD"
+        b: "output:CONTROLLER"
+        c: "No actions (empty action list)"
+        d: "output:DROP"
+      correct: c
+      feedback:
+        correct: "Correct! In OpenFlow, an empty action list means drop the packet."
+        incorrect: "OpenFlow uses empty actions for drop; there is no explicit DROP action."
+      explanation: |
+        OpenFlow 1.0 does not have an explicit DROP action. Instead, a flow 
+        rule with no actions causes matching packets to be dropped. This is 
+        a common source of confusion for beginners.
+      code_reference: "src/controller/firewall.py::_install_drop_rule()"
+      misconception: "Expecting an explicit DROP action like in iptables"
+      
+    - id: p01_q05
+      type: code_trace
+      lo_ref: LO2
+      bloom_level: analyse
+      difficulty: advanced
+      points: 2
+      stem: |
+        Analyse the following POX controller code. What happens when host 
+        10.0.0.1 sends a packet to 10.0.0.2?
+        
+        ```python
+        BLOCKED_PAIRS = [("10.0.0.1", "10.0.0.2")]
+        
+        def _should_block(self, ip_packet):
+            src = str(ip_packet.srcip)
+            dst = str(ip_packet.dstip)
+            for blocked_src, blocked_dst in BLOCKED_PAIRS:
+                if src == blocked_src and dst == blocked_dst:
+                    return True
+            return False
+        ```
+      options:
+        a: "The packet is forwarded normally"
+        b: "The packet is blocked (dropped)"
+        c: "The packet triggers an exception"
+        d: "The packet is sent back to the source"
+      correct: b
+      feedback:
+        correct: "Correct! The source-destination pair matches BLOCKED_PAIRS."
+        incorrect: "Check the tuple matching logic carefully."
+      explanation: |
+        The function iterates through BLOCKED_PAIRS and returns True when 
+        both source AND destination match. Since ("10.0.0.1", "10.0.0.2") 
+        is in the list, packets from h1 to h2 will be blocked.
+        
+    - id: p01_q06
+      type: fill_blank
+      lo_ref: LO2
+      bloom_level: apply
+      difficulty: intermediate
+      points: 1
+      stem: |
+        Complete the POX code to set a flow rule timeout of 60 seconds:
+        
+        ```python
+        msg = of.ofp_flow_mod()
+        msg.match.dl_type = ethernet.IP_TYPE
+        msg._______________ = 60
+        ```
+      correct:
+        - "idle_timeout"
+        - "idle_timeout "
+      hint: "This timeout triggers when no matching packets arrive."
+      feedback:
+        correct: "Correct! idle_timeout removes the rule after inactivity."
+        incorrect: "The idle_timeout field sets the inactivity timeout."
+        
+    # ─────────────────────────────────────────────────────────────────────────
+    # LO3: Mininet Configuration
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    - id: p01_q07
+      type: multiple_choice
+      lo_ref: LO3
+      bloom_level: apply
+      difficulty: basic
+      points: 1
+      stem: |
+        Which Mininet command creates a topology with one switch and three 
+        hosts, connected to a remote controller?
+      options:
+        a: "mn --topo single,3 --controller local"
+        b: "mn --topo single,3 --controller remote"
+        c: "mn --topo tree,3 --controller remote"
+        d: "mn --topo linear,3 --controller remote"
+      correct: b
+      feedback:
+        correct: "Correct! 'single,3' creates one switch with three hosts."
+        incorrect: "Review Mininet topology types: single, linear, tree."
+      explanation: |
+        - single,N: One switch with N hosts
+        - linear,N: N switches in a line, each with one host
+        - tree,depth,fanout: Tree topology
+        
+        Remote controller connects to an external controller (like POX).
+        
+    - id: p01_q08
+      type: ordering
+      lo_ref: LO3
+      bloom_level: apply
+      difficulty: intermediate
+      points: 2
+      stem: |
+        Arrange these steps in the correct order to start an SDN lab with 
+        a custom firewall controller:
+      items:
+        - id: 1
+          text: "Start the POX controller with firewall module"
+        - id: 2
+          text: "Start Mininet with remote controller option"
+        - id: 3
+          text: "Verify switch-controller connection with 'dpctl show'"
+        - id: 4
+          text: "Test connectivity with 'pingall' command"
+        - id: 5
+          text: "Check flow rules with 'ovs-ofctl dump-flows s1'"
+      correct_order: [1, 2, 3, 4, 5]
+      feedback:
+        correct: "Correct sequence! Controller must start before Mininet."
+        incorrect: "Remember: controller first, then Mininet connects to it."
+        
+    - id: p01_q09
+      type: fill_blank
+      lo_ref: LO3
+      bloom_level: apply
+      difficulty: basic
+      points: 1
+      stem: |
+        In the Mininet CLI, the command to test connectivity from host h1 
+        to host h3 is: ______ ping -c 3 h3
+      correct:
+        - "h1"
+        - "mininet> h1"
+      hint: "Use the source host name as command prefix."
+      
+    # ─────────────────────────────────────────────────────────────────────────
+    # LO4: Analysis and Troubleshooting
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    - id: p01_q10
+      type: scenario
+      lo_ref: LO4
+      bloom_level: analyse
+      difficulty: advanced
+      points: 2
+      stem: |
+        You have implemented an SDN firewall and observe the following:
+        - First ping from h1 to h2: 50ms latency
+        - Subsequent pings from h1 to h2: 2ms latency
+        
+        What explains this behaviour?
+      options:
+        a: "Network congestion on the first packet"
+        b: "Reactive flow installation: first packet goes to controller"
+        c: "ARP resolution delay"
+        d: "Switch warm-up time"
+      correct: b
+      feedback:
+        correct: "Correct! Reactive installation causes first-packet delay."
+        incorrect: "Consider the SDN control flow for unknown packets."
+      explanation: |
+        In reactive flow installation:
+        1. First packet has no matching flow rule
+        2. Switch sends PacketIn to controller
+        3. Controller decides action and installs flow rule
+        4. Subsequent packets match the installed rule directly
+        
+        The controller round-trip adds ~50ms delay to the first packet.
+        
+    - id: p01_q11
+      type: multiple_select
+      lo_ref: LO4
+      bloom_level: analyse
+      difficulty: intermediate
+      points: 2
+      stem: |
+        Which commands would help diagnose why traffic between h1 and h2 
+        is being blocked? (Select ALL that apply)
+      options:
+        a: "ovs-ofctl dump-flows s1"
+        b: "h1 ping h2"
+        c: "tcpdump -i s1-eth1"
+        d: "cat /var/log/syslog"
+        e: "Check controller logs for DROP messages"
+      correct: [a, c, e]
+      partial_credit: true
+      feedback:
+        correct: "Correct! Flow rules, packet capture and logs are key."
+        incorrect: "Focus on SDN-specific diagnostic tools."
+      explanation: |
+        - dump-flows: Shows installed flow rules (check for drop rules)
+        - tcpdump: Captures actual packets on interface
+        - Controller logs: Shows firewall decisions
+        
+        Simple ping only shows result, not cause. syslog is not SDN-specific.
+        
+    # ─────────────────────────────────────────────────────────────────────────
+    # LO5: Security Design
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    - id: p01_q12
+      type: scenario
+      lo_ref: LO5
+      bloom_level: evaluate
+      difficulty: advanced
+      points: 2
+      stem: |
+        Your SDN firewall currently blocks specific IP pairs. The security 
+        team requests the ability to block entire subnets. Which approach 
+        is most appropriate?
+      options:
+        a: "Add every IP in the subnet to BLOCKED_PAIRS"
+        b: "Use wildcard matching with network masks in flow rules"
+        c: "Create a separate controller for each subnet"
+        d: "Block at the physical switch level instead"
+      correct: b
+      feedback:
+        correct: "Correct! Wildcard matching scales efficiently."
+        incorrect: "Consider scalability and OpenFlow capabilities."
+      explanation: |
+        OpenFlow supports wildcard matching using network masks (CIDR notation). 
+        This allows a single flow rule to match an entire subnet, rather than 
+        creating thousands of individual rules.
+        
+        Example: Match 10.0.0.0/24 instead of 10.0.0.1, 10.0.0.2, etc.
+        
+    - id: p01_q13
+      type: multiple_choice
+      lo_ref: LO5
+      bloom_level: create
+      difficulty: advanced
+      points: 2
+      stem: |
+        You need to implement rate limiting for a specific host (max 100 
+        packets/second). Which OpenFlow feature would you use?
+      options:
+        a: "Multiple flow rules with different priorities"
+        b: "Meters with drop band"
+        c: "Group tables with select type"
+        d: "Flow rule timeouts"
+      correct: b
+      feedback:
+        correct: "Correct! Meters with drop bands implement rate limiting."
+        incorrect: "Review OpenFlow 1.3+ metering capabilities."
+      explanation: |
+        OpenFlow 1.3 introduced meters for QoS and rate limiting:
+        - Meter with DROP band: Drops packets exceeding the rate
+        - Meter with DSCP_REMARK band: Marks excess packets
+        
+        This is more efficient than using multiple flow rules.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LMS EXPORT CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+lms_export:
+  moodle:
+    format: "xml"
+    category: "Computer Networks/Projects/P01"
+    question_numbering: true
+    feedback_enabled: true
+    
+  canvas:
+    format: "qti"
+    bank_title: "P01 SDN Firewall Quiz"
+    
+  common:
+    include_explanations: true
+    include_references: false
+    randomise_options: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GRADING CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+grading:
+  total_points: 20
+  passing_threshold: 70
+  
+  grade_bands:
+    - range: [90, 100]
+      label: "Excellent"
+      feedback: "Outstanding understanding of SDN concepts!"
+    - range: [80, 89]
+      label: "Very Good"
+      feedback: "Strong grasp of core concepts with minor gaps."
+    - range: [70, 79]
+      label: "Satisfactory"
+      feedback: "Adequate understanding. Review weak areas."
+    - range: [60, 69]
+      label: "Needs Improvement"
+      feedback: "Significant gaps. Re-study theory materials."
+    - range: [0, 59]
+      label: "Unsatisfactory"
+      feedback: "Major review needed before proceeding."
+      
+  lo_weights:
+    LO1: 0.20
+    LO2: 0.25
+    LO3: 0.15
+    LO4: 0.20
+    LO5: 0.20

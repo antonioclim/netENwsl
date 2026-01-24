@@ -1,0 +1,495 @@
+{
+  "metadata": {
+    "format_version": "1.0",
+    "title": "Parsons Problems — Computer Networks Projects",
+    "description": "Code ordering exercises with distractors for network programming concepts",
+    "institution": "ASE Bucharest - CSIE",
+    "course": "Computer Networks",
+    "language": "en-GB"
+  },
+  
+  "problems": [
+    {
+      "id": "parsons_001_sdn_flow_rule",
+      "project_ref": "P01",
+      "lo_ref": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "title": "Install OpenFlow Drop Rule",
+      "instructions": "Arrange the code lines in the correct order to install a flow rule that blocks (drops) packets from a specific source IP to a destination IP in a POX controller.",
+      "language": "python",
+      "estimated_time_minutes": 5,
+      
+      "blocks": [
+        {
+          "id": 1,
+          "code": "msg = of.ofp_flow_mod()",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 2,
+          "code": "msg.match.dl_type = ethernet.IP_TYPE",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 3,
+          "code": "msg.match.nw_src = ip_packet.srcip",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 4,
+          "code": "msg.match.nw_dst = ip_packet.dstip",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 5,
+          "code": "msg.idle_timeout = 60",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 6,
+          "code": "# No actions = drop packet",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 7,
+          "code": "self.connection.send(msg)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 8,
+          "code": "msg.actions.append(of.ofp_action_output(port=of.OFPP_DROP))",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "OpenFlow does not have an OFPP_DROP constant; dropping is achieved by having no actions."
+        },
+        {
+          "id": 9,
+          "code": "msg.action = 'DROP'",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "This is not valid OpenFlow syntax; flow_mod messages use an actions list, not a string action."
+        },
+        {
+          "id": 10,
+          "code": "self.connection.drop(msg)",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "There is no drop() method on the connection object; use send() to send the flow_mod."
+        }
+      ],
+      
+      "correct_order": [1, 2, 3, 4, 5, 6, 7],
+      
+      "explanation": "To install a drop rule in OpenFlow:\n1. Create a flow_mod message\n2. Set the match fields (Ethernet type, source IP, destination IP)\n3. Set timeouts for rule expiration\n4. Leave actions empty (no actions = drop)\n5. Send the message to the switch\n\nCommon mistake: Trying to use an explicit DROP action, which does not exist in OpenFlow 1.0.",
+      
+      "hints": [
+        "The message object must be created first",
+        "Match fields define which packets the rule applies to",
+        "In OpenFlow, an empty action list means DROP"
+      ],
+      
+      "references": [
+        "src/controller/firewall.py::_install_drop_rule()",
+        "OpenFlow 1.0 Specification Section 5.2"
+      ]
+    },
+    
+    {
+      "id": "parsons_002_tcp_server",
+      "project_ref": "P08",
+      "lo_ref": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "title": "Create TCP Server Socket",
+      "instructions": "Arrange the code lines to create a properly configured TCP server socket that listens for connections.",
+      "language": "python",
+      "estimated_time_minutes": 4,
+      
+      "blocks": [
+        {
+          "id": 1,
+          "code": "server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 2,
+          "code": "server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 3,
+          "code": "server.bind((host, port))",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 4,
+          "code": "server.listen(5)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 5,
+          "code": "client, addr = server.accept()",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 6,
+          "code": "server.connect((host, port))",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "connect() is for clients, not servers. Servers use bind() and listen()."
+        },
+        {
+          "id": 7,
+          "code": "server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "SOCK_DGRAM creates a UDP socket, not TCP. Use SOCK_STREAM for TCP."
+        },
+        {
+          "id": 8,
+          "code": "server.listen()",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "listen() requires a backlog argument specifying the queue size."
+        }
+      ],
+      
+      "correct_order": [1, 2, 3, 4, 5],
+      
+      "explanation": "TCP server socket setup sequence:\n1. Create socket with AF_INET (IPv4) and SOCK_STREAM (TCP)\n2. Set SO_REUSEADDR to allow quick restart after crash\n3. Bind to address and port\n4. Start listening with a backlog queue size\n5. Accept incoming connections\n\nThe order matters: you cannot listen before binding, and you cannot accept before listening.",
+      
+      "hints": [
+        "Socket creation always comes first",
+        "Socket options should be set before bind()",
+        "The sequence is: create → configure → bind → listen → accept"
+      ]
+    },
+    
+    {
+      "id": "parsons_003_docker_compose",
+      "project_ref": "P10",
+      "lo_ref": "LO1",
+      "bloom_level": "apply",
+      "difficulty": "basic",
+      "title": "Docker Compose Service Definition",
+      "instructions": "Arrange the YAML lines to create a valid Docker Compose service definition for a web application with port mapping and network configuration.",
+      "language": "yaml",
+      "estimated_time_minutes": 4,
+      
+      "blocks": [
+        {
+          "id": 1,
+          "code": "services:",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 2,
+          "code": "  web:",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 3,
+          "code": "    image: nginx:latest",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 4,
+          "code": "    ports:",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 5,
+          "code": "      - \"8080:80\"",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 6,
+          "code": "    networks:",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 7,
+          "code": "      - app-network",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 8,
+          "code": "containers:",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "Docker Compose uses 'services:' not 'containers:' as the top-level key."
+        },
+        {
+          "id": 9,
+          "code": "    port: 8080:80",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "Port mappings use 'ports:' (plural) with a list, not 'port:' (singular)."
+        },
+        {
+          "id": 10,
+          "code": "      - 8080:80",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "Port mappings should be quoted strings to prevent YAML parsing issues (e.g., \"8080:80\")."
+        }
+      ],
+      
+      "correct_order": [1, 2, 3, 4, 5, 6, 7],
+      
+      "explanation": "Docker Compose structure:\n- 'services:' is the top-level key for defining containers\n- Each service has a name (web) indented under services\n- Service properties (image, ports, networks) are indented under the service name\n- Lists (ports, networks) use dash syntax\n- Port mappings should be quoted to avoid YAML interpretation of colons",
+      
+      "hints": [
+        "YAML uses indentation for structure (2 spaces per level)",
+        "Service properties are children of the service name",
+        "Lists use '- ' prefix for each item"
+      ]
+    },
+    
+    {
+      "id": "parsons_004_grpc_service",
+      "project_ref": "P13",
+      "lo_ref": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "advanced",
+      "title": "gRPC Server Implementation",
+      "instructions": "Arrange the code lines to implement a gRPC server that serves a Calculator service with an Add method.",
+      "language": "python",
+      "estimated_time_minutes": 6,
+      
+      "blocks": [
+        {
+          "id": 1,
+          "code": "import grpc",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 2,
+          "code": "from concurrent import futures",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 3,
+          "code": "class CalculatorServicer(calculator_pb2_grpc.CalculatorServicer):",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 4,
+          "code": "    def Add(self, request, context):",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 5,
+          "code": "        result = request.a + request.b",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 6,
+          "code": "        return calculator_pb2.AddResponse(result=result)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 7,
+          "code": "server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 8,
+          "code": "calculator_pb2_grpc.add_CalculatorServicer_to_server(CalculatorServicer(), server)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 9,
+          "code": "server.add_insecure_port('[::]:50051')",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 10,
+          "code": "server.start()",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 11,
+          "code": "server = grpc.Server()",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "gRPC servers are created with grpc.server() function (lowercase), not grpc.Server() class."
+        },
+        {
+          "id": 12,
+          "code": "server.listen(50051)",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "gRPC uses add_insecure_port() or add_secure_port(), not listen()."
+        },
+        {
+          "id": 13,
+          "code": "return {'result': result}",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "gRPC methods must return protobuf message objects, not dictionaries."
+        }
+      ],
+      
+      "correct_order": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      
+      "explanation": "gRPC server implementation:\n1. Import grpc and futures for thread pool\n2. Define servicer class inheriting from generated base class\n3. Implement RPC methods (Add) that return protobuf responses\n4. Create server with thread pool executor\n5. Register servicer with the server\n6. Add port for listening\n7. Start the server\n\nNote: Generated code (calculator_pb2, calculator_pb2_grpc) comes from protoc compiler.",
+      
+      "hints": [
+        "Imports come first",
+        "Class definition must come before instantiation",
+        "Server must be created before adding services to it"
+      ]
+    },
+    
+    {
+      "id": "parsons_005_mqtt_publish",
+      "project_ref": "P15",
+      "lo_ref": "LO1",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "title": "MQTT Client Publish with QoS",
+      "instructions": "Arrange the code lines to create an MQTT client that connects to a broker and publishes a message with QoS 1 (at least once delivery).",
+      "language": "python",
+      "estimated_time_minutes": 5,
+      
+      "blocks": [
+        {
+          "id": 1,
+          "code": "import paho.mqtt.client as mqtt",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 2,
+          "code": "def on_connect(client, userdata, flags, rc):",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 3,
+          "code": "    print(f'Connected with result code {rc}')",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 4,
+          "code": "client = mqtt.Client()",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 5,
+          "code": "client.on_connect = on_connect",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 6,
+          "code": "client.connect('localhost', 1883, 60)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 7,
+          "code": "client.publish('sensors/temperature', '25.5', qos=1)",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 8,
+          "code": "client.loop_start()",
+          "indent": 0,
+          "is_distractor": false
+        },
+        {
+          "id": 9,
+          "code": "client.publish('sensors/temperature', '25.5', qos=3)",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "MQTT only supports QoS levels 0, 1 and 2. QoS 3 does not exist."
+        },
+        {
+          "id": 10,
+          "code": "client.send('sensors/temperature', '25.5')",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "MQTT uses publish() for sending messages, not send()."
+        },
+        {
+          "id": 11,
+          "code": "client = mqtt.connect('localhost')",
+          "indent": 0,
+          "is_distractor": true,
+          "distractor_explanation": "Must create Client() object first, then call connect() method on it."
+        }
+      ],
+      
+      "correct_order": [1, 2, 3, 4, 5, 6, 7, 8],
+      
+      "explanation": "MQTT client publish sequence:\n1. Import the paho-mqtt library\n2. Define callback functions (on_connect, etc.)\n3. Create client instance\n4. Assign callback handlers\n5. Connect to broker (host, port, keepalive)\n6. Publish message with topic and QoS\n7. Start the network loop for async processing\n\nQoS levels:\n- 0: At most once (fire and forget)\n- 1: At least once (acknowledged delivery)\n- 2: Exactly once (assured delivery)",
+      
+      "hints": [
+        "Client must be created before connecting",
+        "Callbacks should be assigned before connect",
+        "Valid QoS values are 0, 1 or 2"
+      ]
+    }
+  ],
+  
+  "grading": {
+    "full_credit": "All blocks in correct order with no distractors",
+    "partial_credit": {
+      "wrong_order": "-20% per misplaced block",
+      "included_distractor": "-30% per distractor included",
+      "missing_block": "-15% per missing required block"
+    },
+    "minimum_passing": "60%"
+  },
+  
+  "usage_instructions": {
+    "for_students": [
+      "Read the problem description carefully",
+      "Identify which blocks are likely distractors (incorrect code)",
+      "Focus on the logical sequence of operations",
+      "Use hints if stuck",
+      "Review the explanation after completing"
+    ],
+    "for_instructors": [
+      "Problems can be used in lab sessions or as homework",
+      "Distractors are designed around common misconceptions",
+      "Time estimates assume intermediate programming skills",
+      "Consider allowing one retry with different block ordering"
+    ]
+  }
+}

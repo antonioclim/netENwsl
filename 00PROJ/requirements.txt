@@ -1,0 +1,59 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Python Dependencies — Computer Networks Projects
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Install with: pip install -r requirements.txt
+#
+# For development tools: pip install -r requirements-dev.txt
+# Or: pip install -e ".[dev]"
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Core dependencies (required for all projects)
+# ─────────────────────────────────────────────────────────────────────────────────
+
+# YAML parsing for configuration files and quizzes
+PyYAML>=6.0.1
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Optional: Commonly used in projects
+# ─────────────────────────────────────────────────────────────────────────────────
+
+# HTTP client (uncomment if needed)
+# requests>=2.31.0
+
+# Packet manipulation (uncomment for P07, P14)
+# scapy>=2.5.0
+
+# MQTT client (uncomment for P15, P20)
+# paho-mqtt>=1.6.1
+
+# gRPC (uncomment for P13)
+# grpcio>=1.60.0
+# grpcio-tools>=1.60.0
+# protobuf>=4.25.0
+
+# Async support (uncomment if using asyncio)
+# aiohttp>=3.9.0
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Testing (uncomment for test suite)
+# ─────────────────────────────────────────────────────────────────────────────────
+
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.2.0
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Development tools (see requirements-dev.txt for full list)
+# ─────────────────────────────────────────────────────────────────────────────────
+
+# Linting and formatting
+ruff>=0.1.9
+
+# Type checking
+mypy>=1.8.0
+
+# Security scanning
+bandit>=1.7.7

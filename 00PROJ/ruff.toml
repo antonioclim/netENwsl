@@ -1,0 +1,163 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Ruff Configuration — Computer Networks Projects
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Ruff is an extremely fast Python linter and formatter written in Rust.
+# Documentation: https://docs.astral.sh/ruff/
+#
+# Usage:
+#   ruff check src/ tests/           # Lint
+#   ruff check src/ tests/ --fix     # Lint with auto-fix
+#   ruff format src/ tests/          # Format
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Target Python version
+target-version = "py310"
+
+# Line length (PEP 8 recommends 79, but 100 is more practical)
+line-length = 100
+
+# Exclude directories
+exclude = [
+    ".git",
+    ".github",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    "node_modules",
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LINTING RULES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint]
+# Enable these rule categories
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming
+    "D",      # pydocstyle (docstrings)
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "S",      # flake8-bandit (security)
+    "T20",    # flake8-print (no print statements)
+    "RET",    # flake8-return
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate (commented-out code)
+    "PL",     # Pylint
+    "RUF",    # Ruff-specific rules
+]
+
+# Ignore these specific rules
+ignore = [
+    # Line length - handled by formatter
+    "E501",
+    
+    # Missing docstrings (too strict for student projects)
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D105",   # Missing docstring in magic method
+    "D107",   # Missing docstring in __init__
+    
+    # Docstring formatting (allow flexibility)
+    "D203",   # 1 blank line before class docstring (conflicts with D211)
+    "D213",   # Multi-line docstring summary on second line (conflicts with D212)
+    
+    # Allow print statements in main modules (common in network programming)
+    "T201",
+    
+    # Pylint rules that are too strict
+    "PLR0913",  # Too many arguments
+    "PLR2004",  # Magic value comparison
+    "PLR0911",  # Too many return statements
+    "PLR0912",  # Too many branches
+    "PLR0915",  # Too many statements
+    
+    # Security rules with false positives
+    "S101",   # Assert usage (fine in tests)
+    "S104",   # Binding to all interfaces (common in network code)
+    "S311",   # Pseudo-random generators (fine for non-crypto)
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PER-FILE IGNORES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint.per-file-ignores]
+# Tests can use assert, have long functions and skip docstrings
+"tests/*" = [
+    "S101",    # assert is fine in tests
+    "D103",    # Missing function docstring
+    "PLR2004", # Magic values in tests are normal
+]
+
+# Scripts can use print
+"scripts/*" = ["T201"]
+
+# __init__.py files don't need docstrings
+"__init__.py" = ["D104"]
+
+# Main entry points can be simpler
+"__main__.py" = ["D100", "D103"]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DOCSTRING STYLE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint.pydocstyle]
+# Use Google-style docstrings
+convention = "google"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPORT SORTING (isort)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint.isort]
+# Group imports into sections
+known-first-party = ["src"]
+force-single-line = false
+force-sort-within-sections = true
+lines-after-imports = 2
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORMATTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+# Unix line endings
+line-ending = "lf"
+
+# Enable auto-formatting of docstrings
+docstring-code-format = true
+
+# Docstring line length
+docstring-code-line-length = 80
