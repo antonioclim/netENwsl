@@ -1,0 +1,289 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORMATIVE QUIZ — Week 6: NAT/PAT & SDN
+# ═══════════════════════════════════════════════════════════════════════════════
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Usage: python formative/run_quiz.py
+#        python formative/run_quiz.py --random --limit 5
+#
+# This quiz is designed for SELF-ASSESSMENT before the laboratory session.
+# Target: 70% passing score indicates readiness for lab exercises.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  week: 6
+  topic: "NAT/PAT, Network Support Protocols & Software-Defined Networking"
+  version: "1.0.0"
+  estimated_time: "12-15 minutes"
+  passing_score: 70
+  total_questions: 12
+  lo_coverage: [LO1, LO2, LO3, LO4, LO5, LO6, LO7]
+  difficulty_distribution:
+    basic: 4
+    intermediate: 5
+    advanced: 3
+  bloom_levels: ["Remember", "Understand", "Apply", "Analyse"]
+
+questions:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO1: Recall NAT variants and supporting protocols
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q01
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: Remember
+    difficulty: basic
+    stem: "Which NAT variant allows multiple internal hosts to share a single public IP address by also translating port numbers?"
+    options:
+      a: "Static NAT"
+      b: "Dynamic NAT"
+      c: "PAT (Port Address Translation)"
+      d: "Proxy ARP"
+    correct: c
+    explanation: "PAT (also called NAPT or NAT Overload) multiplexes connections through unique port numbers, enabling many-to-one address mapping."
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+
+  - id: q02
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: Remember
+    difficulty: basic
+    stem: "Which protocol resolves IPv4 addresses to MAC addresses within a local network segment?"
+    options:
+      a: "DHCP"
+      b: "ARP"
+      c: "ICMP"
+      d: "NDP"
+    correct: b
+    explanation: "ARP (Address Resolution Protocol) broadcasts a request asking 'Who has IP X?' and the host with that IP responds with its MAC address."
+    misconception_ref: null
+
+  - id: q03
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: Remember
+    difficulty: basic
+    stem: "What does the acronym DORA represent in DHCP?"
+    options:
+      a: "Data, Operation, Request, Acknowledge"
+      b: "Discover, Offer, Request, Acknowledge"
+      c: "Destination, Origin, Route, Address"
+      d: "Dynamic, Obtain, Renew, Assign"
+    correct: b
+    explanation: "DORA describes the four-step DHCP handshake: client Discovers servers, servers Offer configurations, client Requests one, server Acknowledges."
+    misconception_ref: null
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO2: Explain PAT translation tables
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q04
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: Understand
+    difficulty: intermediate
+    stem: |
+      Host h1 (192.168.1.10:45678) connects to server 8.8.8.8:443 through a NAT router 
+      with public IP 203.0.113.1. The NAT assigns external port 50001.
+      
+      What 5-tuple does the conntrack table store for this connection?
+    options:
+      a: "src=192.168.1.10, dst=8.8.8.8, sport=45678, dport=443"
+      b: "src=203.0.113.1, dst=8.8.8.8, sport=50001, dport=443"
+      c: "Both the original tuple AND the translated tuple"
+      d: "Only the translated tuple with a timestamp"
+    correct: c
+    explanation: "Conntrack stores BOTH tuples: the original (internal) and the translated (external) to enable bidirectional reverse translation."
+    misconception_ref: "docs/misconceptions.md#misconception-4"
+
+  - id: q05
+    type: fill_blank
+    lo_ref: LO2
+    bloom_level: Understand
+    difficulty: intermediate
+    stem: "When two internal hosts both use local port 12345 to connect to the same external server, the NAT router assigns them different ___ ports to distinguish return traffic."
+    correct: ["external", "translated", "public", "source"]
+    hint: "The NAT must uniquely identify each connection from its public interface."
+    explanation: "PAT assigns unique external/translated ports even when internal ports are identical, enabling connection multiplexing."
+    misconception_ref: "docs/misconceptions.md#misconception-2"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO3: Implement NAT/MASQUERADE
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q06
+    type: multiple_choice
+    lo_ref: LO3
+    bloom_level: Apply
+    difficulty: intermediate
+    stem: |
+      You need to configure NAT on a Linux router with:
+      - eth0: connected to private network 192.168.1.0/24
+      - eth1: connected to public network (has public IP)
+      
+      Which iptables command correctly enables MASQUERADE?
+    options:
+      a: "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
+      b: "iptables -t nat -A POSTROUTING -o eth1 -s 192.168.1.0/24 -j MASQUERADE"
+      c: "iptables -t nat -A PREROUTING -i eth1 -j MASQUERADE"
+      d: "iptables -A FORWARD -o eth1 -j MASQUERADE"
+    correct: b
+    explanation: "MASQUERADE goes in POSTROUTING chain, on the outbound public interface (-o eth1), for traffic from the private subnet (-s 192.168.1.0/24)."
+    misconception_ref: null
+
+  - id: q07
+    type: fill_blank
+    lo_ref: LO3
+    bloom_level: Apply
+    difficulty: basic
+    stem: "Before configuring NAT rules, you must enable IP forwarding with the command: sysctl -w net.ipv4.ip_forward=___"
+    correct: ["1"]
+    hint: "IP forwarding is a boolean setting."
+    explanation: "Setting ip_forward=1 enables the kernel to forward packets between interfaces, which is required for routing and NAT."
+    misconception_ref: null
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO4: Demonstrate SDN flow installation
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q08
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: Apply
+    difficulty: intermediate
+    stem: |
+      You want to install a flow rule on switch s1 that forwards all ICMP traffic 
+      from 10.0.6.11 to 10.0.6.12 out port 2, with priority 100.
+      
+      Which ovs-ofctl command is correct?
+    options:
+      a: 'ovs-ofctl add-flow s1 "priority=100,icmp,nw_src=10.0.6.11,nw_dst=10.0.6.12,actions=output:2"'
+      b: 'ovs-ofctl add-flow s1 "priority=100,ip,actions=output:2"'
+      c: 'ovs-ofctl -O OpenFlow13 add-flow s1 "priority=100,icmp,nw_src=10.0.6.11,nw_dst=10.0.6.12,actions=output:2"'
+      d: 'ovs-ofctl del-flows s1 "priority=100,icmp"'
+    correct: c
+    explanation: "The -O OpenFlow13 flag specifies the protocol version. The match includes icmp, source and destination IPs, and action outputs to port 2."
+    misconception_ref: null
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO5: Analyse permitted/blocked traffic
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q09
+    type: multiple_choice
+    lo_ref: LO5
+    bloom_level: Analyse
+    difficulty: advanced
+    stem: |
+      An SDN switch has these flow rules:
+        priority=10,  ip, nw_dst=10.0.6.13, actions=drop
+        priority=100, icmp, nw_src=10.0.6.11, nw_dst=10.0.6.13, actions=output:3
+      
+      What happens when h1 (10.0.6.11) sends an ICMP ping to h3 (10.0.6.13)?
+    options:
+      a: "Dropped — the drop rule was installed first"
+      b: "Dropped — priority 10 is higher than priority 100"
+      c: "Forwarded to port 3 — priority 100 is higher than priority 10"
+      d: "Sent to controller — no matching rule"
+    correct: c
+    explanation: "In OpenFlow, HIGHER priority number = HIGHER importance. Priority 100 beats priority 10, so the ICMP packet is forwarded."
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+
+  - id: q10
+    type: multiple_choice
+    lo_ref: LO5
+    bloom_level: Analyse
+    difficulty: advanced
+    stem: |
+      Using the same flow rules as above, what happens when h1 sends a TCP packet to h3?
+    options:
+      a: "Forwarded to port 3 — matches the priority 100 rule"
+      b: "Dropped — matches the priority 10 rule (TCP is IP but not ICMP)"
+      c: "Sent to controller — TCP doesn't match any rule"
+      d: "Error — conflicting rules"
+    correct: b
+    explanation: "TCP packets match 'ip, nw_dst=10.0.6.13' (priority 10) but NOT 'icmp' (priority 100). The drop rule applies."
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO6: Compare traditional vs SDN
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q11
+    type: multiple_choice
+    lo_ref: LO6
+    bloom_level: Understand
+    difficulty: intermediate
+    stem: "What is the PRIMARY architectural difference between traditional networking and SDN?"
+    options:
+      a: "SDN uses faster hardware for packet forwarding"
+      b: "SDN separates the control plane from the data plane"
+      c: "SDN encrypts all traffic by default"
+      d: "SDN eliminates the need for IP addresses"
+    correct: b
+    explanation: "SDN's key innovation is decoupling control logic (centralised controller) from forwarding hardware (distributed switches)."
+    misconception_ref: "docs/misconceptions.md#misconception-5"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO7: Design OpenFlow policies
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q12
+    type: multiple_choice
+    lo_ref: LO7
+    bloom_level: Analyse
+    difficulty: advanced
+    stem: |
+      You need to design an SDN policy that:
+      1. Allows HTTP (port 80) to server h2 (10.0.6.12)
+      2. Blocks all other traffic to h2
+      3. Allows all traffic between other hosts
+      
+      What priority ordering ensures correct behaviour?
+    options:
+      a: "HTTP allow: priority=50, Block h2: priority=100, Default allow: priority=10"
+      b: "HTTP allow: priority=100, Block h2: priority=50, Default allow: priority=10"
+      c: "Block h2: priority=100, HTTP allow: priority=50, Default allow: priority=10"
+      d: "Default allow: priority=100, Block h2: priority=50, HTTP allow: priority=10"
+    correct: b
+    explanation: "Specific permit rules (HTTP to h2) need highest priority (100) to override the block rule (50). Default allow has lowest priority (10)."
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANSWER KEY (for instructor reference)
+# ═══════════════════════════════════════════════════════════════════════════════
+answer_key:
+  q01: c
+  q02: b
+  q03: b
+  q04: c
+  q05: ["external", "translated", "public", "source"]
+  q06: b
+  q07: ["1"]
+  q08: c
+  q09: c
+  q10: b
+  q11: b
+  q12: b
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCORING RUBRIC
+# ═══════════════════════════════════════════════════════════════════════════════
+scoring:
+  points_per_question: 1
+  total_points: 12
+  passing_threshold: 70  # percent
+  grade_boundaries:
+    excellent: 90   # 11-12 correct
+    good: 80        # 10 correct
+    satisfactory: 70  # 8-9 correct
+    needs_review: 0   # <8 correct
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# POST-QUIZ GUIDANCE
+# ═══════════════════════════════════════════════════════════════════════════════
+post_quiz:
+  if_below_passing: |
+    Review the following before the laboratory session:
+    - docs/theory_summary.md for conceptual understanding
+    - docs/misconceptions.md for common errors
+    - docs/glossary.md for terminology
+  if_above_passing: |
+    You're ready for the laboratory! Focus on:
+    - Prediction prompts (💭) in exercises
+    - Hands-on verification of concepts
+    - Troubleshooting scenarios

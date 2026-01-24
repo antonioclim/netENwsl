@@ -1,0 +1,6 @@
+384781c67ac37bb4563a14f5b61f8179048fb706622786fa645ef6ff93883477  ./formative/run_quiz.py
+a1b2b5a6e2bb4476638178a4f497f1fb104b5764d0e998cbeba7ec53dad45c7e  ./homework/exercises/hw_6_01_nat_analysis.py
+c9bd4f5ada3217bc1aba40f72b0afd83370820bd6a38d99ffa6450876e4a4307  ./homework/exercises/hw_6_02_arp_investigation.py
+eb09fb06c547127b996fc16b6c52ba8f27f640c48c730dc9042944359931150e  ./scripts/utils/__init__.py
+0849a6d21e983811e395140d2b08a11d4d661b7be73b3ccbd310525a297dedb6  ./scripts/utils/docker_utils.py
+54929b29aad017096da00353ddf36976c42a65cc89a9ed433ddcf4b8822a9300  ./scripts/utils/logger.py

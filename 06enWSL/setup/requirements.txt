@@ -1,16 +1,79 @@
-# Python dependencies for Week 6 setup scripts
-# NETWORKING class - ASE, Informatics | by Revolvix
+# ═══════════════════════════════════════════════════════════════════════════════
+# Python Dependencies — Week 6: NAT/PAT & SDN Laboratory
+# ═══════════════════════════════════════════════════════════════════════════════
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 #
 # Install: pip install -r requirements.txt --break-system-packages
+#
+# Version pinning policy:
+#   - Major.minor pinned for stability
+#   - Patch version flexible for security updates
+#   - Hashes omitted for educational simplicity (add --require-hashes for production)
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Docker API client
-docker>=6.0.0
+# ─────────────────────────────────────────────────────────────────────────────
+# CORE DEPENDENCIES (Required)
+# ─────────────────────────────────────────────────────────────────────────────
 
-# HTTP client for health checks
-requests>=2.28.0
+# Docker API client for container management
+docker>=6.0.0,<8.0.0
 
-# YAML parsing for configuration
-pyyaml>=6.0
+# HTTP client for health checks and API calls
+requests>=2.28.0,<3.0.0
 
-# Type hints backport (for older Python versions)
-typing-extensions>=4.0.0
+# YAML parsing for configuration and quiz files
+pyyaml>=6.0,<7.0
+
+# Type hints backport for Python 3.10 compatibility
+typing-extensions>=4.0.0,<5.0.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SDN DEPENDENCIES (Optional — for controller exercises)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# OS-Ken SDN framework (successor to Ryu)
+# Note: Version 4.0+ removed CLI tools; use <4.0.0 if you need osken-manager
+# os-ken>=2.0.0,<4.0.0
+
+# Packet manipulation for network analysis
+# scapy>=2.5.0,<3.0.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEVELOPMENT DEPENDENCIES (Optional — for code quality)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Linter and formatter
+# ruff>=0.1.0
+
+# Type checker
+# mypy>=1.0.0
+
+# Testing framework
+# pytest>=7.0.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INSTALLATION NOTES
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# For WSL2/Ubuntu systems:
+#   pip install -r requirements.txt --break-system-packages
+#
+# For virtual environment (recommended for development):
+#   python -m venv .venv
+#   source .venv/bin/activate
+#   pip install -r requirements.txt
+#
+# For SDN exercises (optional):
+#   pip install os-ken scapy --break-system-packages
+#
+# For development tools:
+#   pip install ruff mypy pytest --break-system-packages
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# VERIFICATION
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Verify installation with:
+#   python -c "import docker; import requests; import yaml; print('OK')"
+#
+# ═══════════════════════════════════════════════════════════════════════════════
