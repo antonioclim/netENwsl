@@ -1,0 +1,367 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Formative Quiz — Week 9: Session Layer (L5) and Presentation Layer (L6)
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Usage:
+#   python formative/run_quiz.py                    # Run full quiz
+#   python formative/run_quiz.py --random --limit 5 # Random 5 questions
+#   python formative/run_quiz.py --lo LO2           # Filter by Learning Objective
+#
+# Format validated by: yamllint + custom schema
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  week: 9
+  title: "Session Layer and Presentation Layer"
+  version: "1.0.0"
+  author: "ing. dr. Antonio Clim"
+  estimated_time_minutes: 15
+  passing_score_percent: 70
+  total_questions: 12
+  bloom_levels_covered:
+    - remember
+    - understand
+    - apply
+    - analyse
+  learning_objectives_covered:
+    - LO1  # Identify connection vs session
+    - LO2  # Explain endianness
+    - LO3  # Implement binary framing
+    - LO4  # Demonstrate FTP sessions
+    - LO5  # Analyse packet captures
+    - LO6  # Design checkpoint-recovery
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+questions:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO1: Identify connection vs session (Remember/Understand)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q01
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    type: multiple_choice
+    stem: |
+      Which layer of the OSI model is responsible for managing dialogue control,
+      authentication state and session checkpoints?
+    options:
+      a: "Layer 4 (Transport)"
+      b: "Layer 5 (Session)"
+      c: "Layer 6 (Presentation)"
+      d: "Layer 7 (Application)"
+    correct: b
+    explanation: |
+      The Session Layer (L5) manages logical dialogues between applications,
+      including authentication, checkpointing and dialogue control (half/full-duplex).
+      Transport (L4) handles reliable delivery; Presentation (L6) handles encoding.
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    time_seconds: 45
+
+  - id: q02
+    lo_ref: LO1
+    bloom_level: understand
+    difficulty: intermediate
+    type: multiple_choice
+    stem: |
+      A user is logged into an FTP server. The network cable is unplugged for
+      30 seconds, causing the TCP connection to drop. When reconnected, what
+      happens to the FTP session state?
+    options:
+      a: "Session is preserved — TCP handles reconnection transparently"
+      b: "Session is lost — user must re-authenticate with USER/PASS"
+      c: "Session is cached — server remembers for 5 minutes by default"
+      d: "Session is partially preserved — authentication kept, directory reset"
+    correct: b
+    explanation: |
+      FTP session state (authentication, current directory) is tied to the TCP
+      connection. When TCP drops, the session is lost entirely. Unlike HTTP with
+      cookies, standard FTP has no session persistence mechanism.
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    time_seconds: 60
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO2: Explain endianness (Understand/Apply)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q03
+    lo_ref: LO2
+    bloom_level: remember
+    difficulty: basic
+    type: multiple_choice
+    stem: |
+      In network byte order (big-endian), how is the 32-bit integer 0x12345678
+      stored in memory, starting from the lowest address?
+    options:
+      a: "78 56 34 12 (LSB first)"
+      b: "12 34 56 78 (MSB first)"
+      c: "21 43 65 87 (nibble-swapped)"
+      d: "87 65 43 21 (fully reversed)"
+    correct: b
+    explanation: |
+      Big-endian (network byte order) stores the Most Significant Byte (MSB) at
+      the lowest address. 0x12 is the MSB, so it comes first. Little-endian (x86)
+      would store 78 56 34 12.
+    misconception_ref: "docs/misconceptions.md#misconception-5"
+    time_seconds: 45
+
+  - id: q04
+    lo_ref: LO2
+    bloom_level: apply
+    difficulty: intermediate
+    type: fill_blank
+    stem: |
+      Complete the Python struct format string to pack a 32-bit unsigned integer
+      in network byte order: struct.pack("___", value)
+    correct:
+      - ">I"
+      - "!I"
+    hint: "Use '>' or '!' for big-endian, 'I' for unsigned 32-bit integer"
+    explanation: |
+      The format string ">I" or "!I" specifies big-endian (network) byte order
+      with an unsigned 32-bit integer. The '!' is explicitly "network byte order"
+      while '>' is "big-endian" — they are equivalent for standard sizes.
+    time_seconds: 30
+
+  - id: q05
+    lo_ref: LO2
+    bloom_level: apply
+    difficulty: advanced
+    type: code_trace
+    stem: |
+      What is the output of this code?
+      
+      ```python
+      import struct
+      data = struct.pack("<H", 0x1234)
+      print(" ".join(f"{b:02x}" for b in data))
+      ```
+    options:
+      a: "12 34"
+      b: "34 12"
+      c: "00 12 34"
+      d: "34 12 00 00"
+    correct: b
+    explanation: |
+      The format "<H" means little-endian unsigned short (2 bytes). In little-endian,
+      the LSB (0x34) comes first, so the output is "34 12". The value 0x1234 is
+      stored as bytes [0x34, 0x12] in memory.
+    time_seconds: 60
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO3: Implement binary framing (Apply)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q06
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    type: multiple_choice
+    stem: |
+      A binary protocol header contains: magic (4B), type (1B), flags (1B),
+      length (4B), CRC (4B). What is struct.calcsize(">4sBBII")?
+    options:
+      a: "12 bytes"
+      b: "14 bytes"
+      c: "16 bytes"
+      d: "18 bytes"
+    correct: b
+    explanation: |
+      The format ">4sBBII" breaks down as:
+      - 4s = 4 bytes (magic)
+      - B = 1 byte (type)
+      - B = 1 byte (flags)
+      - I = 4 bytes (length)
+      - I = 4 bytes (CRC)
+      Total: 4 + 1 + 1 + 4 + 4 = 14 bytes
+    time_seconds: 45
+
+  - id: q07
+    lo_ref: LO3
+    bloom_level: understand
+    difficulty: intermediate
+    type: multiple_choice
+    stem: |
+      Why do binary protocols typically include a "magic number" at the start
+      of each message?
+    options:
+      a: "To encrypt the message header"
+      b: "To identify protocol type and enable resynchronisation"
+      c: "To compress the payload data"
+      d: "To calculate the checksum seed"
+    correct: b
+    explanation: |
+      Magic numbers serve two purposes: (1) identify the protocol type so
+      receivers can reject misrouted data and (2) enable resynchronisation
+      after corruption by scanning for the known byte sequence.
+    time_seconds: 45
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO4: Demonstrate FTP sessions (Understand/Analyse)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q08
+    lo_ref: LO4
+    bloom_level: understand
+    difficulty: basic
+    type: multiple_choice
+    stem: |
+      How many TCP connections does FTP use to download a single file?
+    options:
+      a: "1 — commands and data share one connection"
+      b: "2 — one control channel, one data channel"
+      c: "3 — authentication, commands, and data"
+      d: "4 — one per FTP command issued"
+    correct: b
+    explanation: |
+      FTP uses exactly two TCP connections: a persistent control channel (port 21)
+      for commands and responses, and a temporary data channel (dynamic port) for
+      file transfers. This dual-channel architecture is unique to FTP.
+    misconception_ref: "docs/misconceptions.md#misconception-2"
+    time_seconds: 45
+
+  - id: q09
+    lo_ref: LO4
+    bloom_level: understand
+    difficulty: intermediate
+    type: multiple_choice
+    stem: |
+      In FTP passive mode (PASV), who initiates the data connection?
+    options:
+      a: "Server connects to client on port 20"
+      b: "Client connects to server on a dynamic port"
+      c: "Both sides open connections simultaneously"
+      d: "The firewall establishes the connection"
+    correct: b
+    explanation: |
+      In passive mode, the server responds with a port number (e.g., "227 Entering
+      Passive Mode (192,168,1,5,234,100)") and the CLIENT initiates an outbound
+      connection to that port. This works through NAT because outbound connections
+      are typically allowed.
+    misconception_ref: "docs/misconceptions.md#misconception-3"
+    time_seconds: 45
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO5: Analyse packet captures (Analyse)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q10
+    lo_ref: LO5
+    bloom_level: analyse
+    difficulty: advanced
+    type: multiple_choice
+    stem: |
+      A Wireshark capture shows: "227 Entering Passive Mode (192,168,1,5,234,100)".
+      What port should the client connect to for data transfer?
+    options:
+      a: "234"
+      b: "100"
+      c: "60004"
+      d: "23410"
+    correct: c
+    explanation: |
+      The PASV response encodes the port as two numbers: p1 and p2.
+      Port = (p1 × 256) + p2 = (234 × 256) + 100 = 59904 + 100 = 60004.
+      The IP address (192.168.1.5) is the server's address for the data connection.
+    misconception_ref: "docs/misconceptions.md#misconception-8"
+    time_seconds: 60
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO6: Design checkpoint-recovery (Understand/Apply)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q11
+    lo_ref: LO6
+    bloom_level: understand
+    difficulty: intermediate
+    type: multiple_choice
+    stem: |
+      A 100MB file transfer is interrupted at 35MB. With session-layer checkpointing,
+      what happens when the connection is re-established?
+    options:
+      a: "Transfer restarts from 0MB"
+      b: "Transfer resumes from the last checkpoint (e.g., 30MB)"
+      c: "Transfer continues from exactly 35MB"
+      d: "Transfer fails permanently"
+    correct: b
+    explanation: |
+      Session-layer checkpointing saves progress at defined intervals (e.g., every
+      10MB). On reconnection, the transfer resumes from the last confirmed checkpoint,
+      not from the exact interruption point. Some data may be re-transferred.
+    time_seconds: 45
+
+  - id: q12
+    lo_ref: LO6
+    bloom_level: apply
+    difficulty: advanced
+    type: multiple_choice
+    stem: |
+      Which Session Layer concept allows a sender to ensure the receiver has
+      successfully processed data before continuing?
+    options:
+      a: "Flow control"
+      b: "Synchronisation points (checkpoints)"
+      c: "Error correction"
+      d: "Multiplexing"
+    correct: b
+    explanation: |
+      Synchronisation points (or checkpoints) are Session Layer mechanisms that
+      mark confirmed progress. The sender waits for acknowledgement before
+      continuing, enabling recovery without full retransmission. Flow control
+      is Transport Layer; error correction is Data Link/Transport.
+    time_seconds: 45
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCORING CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+scoring:
+  basic_questions_weight: 1.0
+  intermediate_questions_weight: 1.5
+  advanced_questions_weight: 2.0
+  
+  # Partial credit for fill_blank questions
+  partial_credit_enabled: false
+  
+  # Time bonus (disabled by default)
+  time_bonus_enabled: false
+  time_bonus_threshold_percent: 50  # Must answer in <50% of allotted time
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FEEDBACK CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+feedback:
+  show_correct_answer: true
+  show_explanation: true
+  show_misconception_ref: true
+  show_lo_coverage_summary: true
+  
+  # Score thresholds for feedback messages
+  thresholds:
+    excellent: 90
+    good: 70
+    needs_improvement: 50
+    
+  messages:
+    excellent: |
+      🌟 Excellent! You have a strong understanding of Session and Presentation
+      Layer concepts. Consider exploring the advanced homework assignments.
+    good: |
+      ✅ Good work! Review the explanations for missed questions and revisit
+      the relevant sections in docs/theory_summary.md.
+    needs_improvement: |
+      📚 More practice needed. Focus on the misconceptions document
+      (docs/misconceptions.md) and re-run the quiz after reviewing.
+    below_threshold: |
+      ⚠️ Please review the laboratory materials before proceeding.
+      Start with docs/theory_summary.md and docs/misconceptions.md.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END OF QUIZ
+# ═══════════════════════════════════════════════════════════════════════════════
