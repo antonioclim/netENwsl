@@ -1446,7 +1446,7 @@ ss -tan                            # All TCP connections
 
 ### 31.1 EVALUATE Level Exercises
 
-> 💭 **PREDICTION:** What do you think are the most important criteria for choosing a load balancing algorithm?
+>  **PREDICTION:** What do you think are the most important criteria for choosing a load balancing algorithm?
 
 #### E1. Security Audit (Weeks 7, 13)
 
