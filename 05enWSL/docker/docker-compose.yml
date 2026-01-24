@@ -1,0 +1,115 @@
+# ============================================================================
+# docker-compose.yml — Week 5 Laboratory Environment
+# NETWORKING class - ASE, Informatics | by Revolvix
+# ============================================================================
+#
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
+# Container orchestration for IP addressing laboratory
+#
+# Usage:
+#   docker compose up -d              # Start services
+#   docker compose exec python bash   # Shell in container
+#   docker compose down               # Stop services
+#
+# ============================================================================
+
+services:
+  # Main container for Python exercises
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: week5_python
+    hostname: python-node
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../src:/app/src:ro
+      - ../docs:/app/docs:ro
+      - ../pcap:/app/pcap
+      - ../artifacts:/app/artifacts
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=5
+    networks:
+      labnet:
+        ipv4_address: 10.5.0.10
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: bash
+
+  # UDP Echo server for demonstration
+  udp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: week5_udp-server
+    hostname: udp-server
+    volumes:
+      - ../src:/app/src:ro
+      - ../pcap:/app/pcap
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=5
+    networks:
+      labnet:
+        ipv4_address: 10.5.0.20
+    # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
+    ports:
+      - "9999:9999/udp"
+    command: python3 /app/src/apps/udp_echo.py server --port 9999 --verbose
+
+  # UDP Echo client for demonstration
+  udp-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: week5_udp-client
+    hostname: udp-client
+    volumes:
+      - ../src:/app/src:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=5
+    networks:
+      labnet:
+        ipv4_address: 10.5.0.30
+    depends_on:
+      - udp-server
+    # Send test messages to server after startup
+    command: >
+      bash -c "sleep 3 && python3 /app/src/apps/udp_echo.py client 
+        --host 10.5.0.20 --port 9999 --count 5 --message 'Hello from Week 5 WSL Kit!'"
+
+# ─── NETWORKS ─────────────────────────────────────────────────────────────
+# Custom network for laboratory demonstrations
+# Subnet: 10.5.0.0/24 (Week 5 specific)
+
+networks:
+  labnet:
+    name: week5_labnet
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/24
+          gateway: 10.5.0.1
+
+# ─── VOLUMES ──────────────────────────────────────────────────────────────
+# NOTE: Portainer data volume is managed globally, not here
+
+volumes: {}
+
+# Note: For pcap captures from containers
+# docker exec week5_python tcpdump -i eth0 -w /app/pcap/capture.pcap
