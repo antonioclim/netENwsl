@@ -293,6 +293,8 @@ Before starting the exercises, review these materials:
 
 | Resource | Purpose |
 |----------|---------|
+| [docs/learning_objectives.md](docs/learning_objectives.md) | **NEW** LO → artefact traceability matrix |
+| [docs/formative_assessment.md](docs/formative_assessment.md) | **NEW** Guide to self-assessment tools |
 | [docs/glossary.md](docs/glossary.md) | Key terms and definitions for Week 8 |
 | [docs/misconceptions.md](docs/misconceptions.md) | Common mistakes and how to avoid them |
 | [docs/concept_analogies.md](docs/concept_analogies.md) | Real-world analogies for abstract concepts |
@@ -300,6 +302,25 @@ Before starting the exercises, review these materials:
 | [docs/pair_programming_guide.md](docs/pair_programming_guide.md) | How to work effectively in pairs |
 | [docs/code_tracing.md](docs/code_tracing.md) | Practice tracing code execution |
 | [docs/parsons_problems.md](docs/parsons_problems.md) | Code reordering exercises |
+
+### 📊 Formative Assessment (Self-Check)
+
+Test your understanding before and after exercises:
+
+```bash
+# Using Makefile (recommended)
+make quiz              # Full 15-question quiz
+make quiz-lo LO=3      # Quiz specific Learning Objective
+make quiz-basic        # Basic difficulty only
+make quiz-review       # Study mode — see all answers
+
+# Or directly with Python
+python formative/run_quiz.py --help
+```
+
+The quiz provides immediate feedback linked to misconceptions and LO tracking.
+See [ACKNOWLEDGMENTS.md](ACKNOWLEDGMENTS.md) for credits to Andrei T. and the
+pedagogical framework from DPPD module, Universitatea Politehnica București.
 
 ---
 
