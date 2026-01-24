@@ -1,0 +1,394 @@
+{
+  "metadata": {
+    "title": "Week 1: Network Fundamentals - Formative Assessment",
+    "description": "Computer Networks formative quiz covering network fundamentals, TCP/IP, Docker and Wireshark",
+    "course": "Computer Networks",
+    "institution": "ASE Bucharest, CSIE",
+    "author": "ing. dr. Antonio Clim",
+    "version": "1.1.0",
+    "week": 1,
+    "topic": "Network Fundamentals",
+    "time_limit_minutes": 25,
+    "passing_score": 70,
+    "total_points": 25,
+    "question_count": 22,
+    "lms_format": {
+      "moodle_compatible": true,
+      "canvas_compatible": true,
+      "blackboard_compatible": true
+    },
+    "learning_objectives": [
+      {"id": "LO1", "description": "Measure and interpret network latency using ICMP ping", "questions": ["q01", "q06", "q11"]},
+      {"id": "LO2", "description": "Implement basic TCP socket communication", "questions": ["q03", "q07", "q08", "q12", "q14"]},
+      {"id": "LO3", "description": "Parse and process network data from various formats", "questions": ["q16", "q17"]},
+      {"id": "LO4", "description": "Capture and analyse network traffic using standard tools", "questions": ["q22"]},
+      {"id": "LO5", "description": "Calculate transmission delays for different network scenarios", "questions": ["q18", "q19"]},
+      {"id": "LO6", "description": "Configure and manage Docker containers for network labs", "questions": ["q02", "q04", "q05", "q09", "q10", "q13"]},
+      {"id": "LO7", "description": "Use Wireshark to capture and filter network traffic", "questions": ["q15", "q20", "q21"]}
+    ]
+  },
+  "question_banks": [
+    {
+      "id": "pre_lab",
+      "name": "Pre-Lab Quick Check",
+      "description": "Answer these BEFORE starting the laboratory exercises",
+      "time_limit_minutes": 5,
+      "questions": ["q01", "q02", "q03", "q04", "q05"]
+    },
+    {
+      "id": "during_lab",
+      "name": "During-Lab Checkpoints",
+      "description": "Verify understanding at key points during the lab",
+      "questions": ["q06", "q07", "q08", "q09", "q10"]
+    },
+    {
+      "id": "exit_ticket",
+      "name": "Exit Ticket",
+      "description": "Complete BEFORE leaving the laboratory",
+      "time_limit_minutes": 10,
+      "questions": ["q11", "q12", "q13", "q14", "q15"]
+    },
+    {
+      "id": "comprehensive_review",
+      "name": "Comprehensive Review",
+      "description": "Additional questions covering all learning objectives",
+      "time_limit_minutes": 15,
+      "questions": ["q16", "q17", "q18", "q19", "q20", "q21", "q22"]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q01",
+      "type": "multiple_choice",
+      "lo_ref": "LO1",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "What is the difference between latency and bandwidth?",
+      "options": [
+        {"key": "a", "text": "Latency = data volume; Bandwidth = time delay"},
+        {"key": "b", "text": "Latency = time delay; Bandwidth = data volume per second"},
+        {"key": "c", "text": "They are the same thing measured differently"},
+        {"key": "d", "text": "Latency is for TCP; Bandwidth is for UDP"}
+      ],
+      "correct_answer": "b",
+      "explanation": "Latency measures TIME (milliseconds) - how long a packet takes to travel. Bandwidth measures THROUGHPUT (Mbps) - how much data flows per second."
+    },
+    {
+      "id": "q02",
+      "type": "fill_blank",
+      "lo_ref": "LO6",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "The command to show IP addresses in Linux is: ip ___",
+      "correct_answers": ["addr", "addr show", "a", "address"],
+      "case_sensitive": false,
+      "explanation": "'ip addr' or 'ip a' displays all network interfaces with their IP addresses"
+    },
+    {
+      "id": "q03",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "What does the LISTEN socket state mean?",
+      "options": [
+        {"key": "a", "text": "The socket is actively transferring data"},
+        {"key": "b", "text": "The socket is waiting for incoming connections"},
+        {"key": "c", "text": "The socket has encountered an error"},
+        {"key": "d", "text": "The socket is in the process of closing"}
+      ],
+      "correct_answer": "b",
+      "explanation": "LISTEN means a server socket is ready and waiting for clients to connect."
+    },
+    {
+      "id": "q04",
+      "type": "multiple_choice",
+      "lo_ref": "LO6",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "In Docker, what is the difference between an image and a container?",
+      "options": [
+        {"key": "a", "text": "Image = running instance; Container = read-only template"},
+        {"key": "b", "text": "Image = read-only template; Container = running instance"},
+        {"key": "c", "text": "They are the same thing with different names"},
+        {"key": "d", "text": "Images are for Windows; Containers are for Linux"}
+      ],
+      "correct_answer": "b",
+      "explanation": "Image = Read-only template (like a class in programming). Container = Running instance of an image (like an object)."
+    },
+    {
+      "id": "q05",
+      "type": "numeric",
+      "lo_ref": "LO6",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "What port does Portainer use by default in our lab environment?",
+      "correct_answer": 9000,
+      "tolerance": 0,
+      "explanation": "Portainer runs on port 9000 (http://localhost:9000). This port is RESERVED!"
+    },
+    {
+      "id": "q06",
+      "type": "true_false",
+      "lo_ref": "LO1",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "A ping to localhost (127.0.0.1) travels through the physical network interface.",
+      "correct_answer": false,
+      "explanation": "Loopback traffic (127.0.0.1) never leaves the machine. It uses the virtual loopback interface (lo)."
+    },
+    {
+      "id": "q07",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "In the TCP three-way handshake, what flag combination does the server send in response to a SYN?",
+      "options": [
+        {"key": "a", "text": "ACK only"},
+        {"key": "b", "text": "SYN only"},
+        {"key": "c", "text": "SYN and ACK (SYN-ACK)"},
+        {"key": "d", "text": "FIN and ACK"}
+      ],
+      "correct_answer": "c",
+      "explanation": "The three-way handshake sequence: 1. Client sends SYN, 2. Server responds with SYN-ACK, 3. Client sends ACK."
+    },
+    {
+      "id": "q08",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "Why does TCP use sequence numbers?",
+      "options": [
+        {"key": "a", "text": "To encrypt the data"},
+        {"key": "b", "text": "To identify the sender"},
+        {"key": "c", "text": "To ensure ordered delivery and detect missing segments"},
+        {"key": "d", "text": "To compress the payload"}
+      ],
+      "correct_answer": "c",
+      "explanation": "Sequence numbers allow TCP to reassemble segments in correct order, detect missing segments and calculate round-trip time."
+    },
+    {
+      "id": "q09",
+      "type": "fill_blank",
+      "lo_ref": "LO6",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "To see ALL containers (including stopped ones), use: docker ps ___",
+      "correct_answers": ["-a", "--all"],
+      "case_sensitive": false,
+      "explanation": "'docker ps' shows only running containers. 'docker ps -a' shows all containers including stopped ones."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "lo_ref": "LO6",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "If a process inside a Docker container connects to 'localhost', where does it connect?",
+      "options": [
+        {"key": "a", "text": "The Windows host machine"},
+        {"key": "b", "text": "The WSL2 virtual machine"},
+        {"key": "c", "text": "The container's own loopback interface"},
+        {"key": "d", "text": "The Docker host network"}
+      ],
+      "correct_answer": "c",
+      "explanation": "Each container has its own network namespace with its own loopback interface."
+    },
+    {
+      "id": "q11",
+      "type": "fill_blank",
+      "lo_ref": "LO1",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "To ping google.com exactly 4 times in Linux, the command is: ping ___ 4 google.com",
+      "correct_answers": ["-c"],
+      "case_sensitive": true,
+      "explanation": "The -c flag specifies the count of ICMP echo requests to send."
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "You see 'Connection refused' when trying to connect to a server. What is the most likely cause?",
+      "options": [
+        {"key": "a", "text": "The network cable is unplugged"},
+        {"key": "b", "text": "The firewall is blocking the connection"},
+        {"key": "c", "text": "No process is listening on that port"},
+        {"key": "d", "text": "The server is too busy to accept connections"}
+      ],
+      "correct_answer": "c",
+      "explanation": "'Connection refused' means the TCP stack received the SYN packet and responded with RST because nothing is listening."
+    },
+    {
+      "id": "q13",
+      "type": "ordering",
+      "lo_ref": "LO6",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "Order these commands to correctly start a lab environment:",
+      "items": [
+        {"id": "a", "text": "docker compose up -d"},
+        {"id": "b", "text": "cd /mnt/d/NETWORKING/WEEK1"},
+        {"id": "c", "text": "docker ps"},
+        {"id": "d", "text": "sudo service docker start"}
+      ],
+      "correct_order": ["d", "b", "a", "c"],
+      "explanation": "1. Start Docker service, 2. Navigate to lab directory, 3. Start containers, 4. Verify containers running"
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "advanced",
+      "points": 2,
+      "stem": "A TCP connection shows state TIME_WAIT. What does this indicate?",
+      "options": [
+        {"key": "a", "text": "The connection is waiting for the initial handshake"},
+        {"key": "b", "text": "The connection is waiting for data from the peer"},
+        {"key": "c", "text": "The connection was closed and is waiting before reusing the port"},
+        {"key": "d", "text": "The connection has timed out due to network issues"}
+      ],
+      "correct_answer": "c",
+      "explanation": "TIME_WAIT occurs after a connection is closed. The socket remains in this state for 2*MSL."
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "lo_ref": "LO7",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "In Wireshark, which filter shows only TCP packets with the SYN flag set?",
+      "options": [
+        {"key": "a", "text": "tcp.syn"},
+        {"key": "b", "text": "tcp.flags.syn == 1"},
+        {"key": "c", "text": "tcp contains SYN"},
+        {"key": "d", "text": "filter.tcp.syn"}
+      ],
+      "correct_answer": "b",
+      "explanation": "tcp.flags.syn == 1 filters packets where the SYN flag is set (value 1)."
+    },
+    {
+      "id": "q16",
+      "type": "multiple_choice",
+      "lo_ref": "LO3",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "When parsing a CSV file with network data, which Python module is most appropriate for handling comma-separated values with proper quoting?",
+      "options": [
+        {"key": "a", "text": "The re module with regex patterns"},
+        {"key": "b", "text": "The csv module from the standard library"},
+        {"key": "c", "text": "The json module with custom parsing"},
+        {"key": "d", "text": "The str.split(',') method directly"}
+      ],
+      "correct_answer": "b",
+      "explanation": "The csv module handles edge cases like quoted fields containing commas and escaped quotes."
+    },
+    {
+      "id": "q17",
+      "type": "fill_blank",
+      "lo_ref": "LO3",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "To extract an IP address from a string using Python regex, each octet pattern is: \\d{1,_}",
+      "correct_answers": ["3"],
+      "case_sensitive": false,
+      "explanation": "Each octet of an IPv4 address is 1-3 digits (0-255). The pattern \\d{1,3} matches this."
+    },
+    {
+      "id": "q18",
+      "type": "numeric",
+      "lo_ref": "LO5",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "Calculate the transmission delay (in milliseconds) for sending a 1500-byte packet over a 100 Mbps link. Round to 2 decimal places.",
+      "correct_answer": 0.12,
+      "tolerance": 0.01,
+      "explanation": "Transmission delay = (1500 bytes x 8 bits/byte) / (100 x 10^6 bits/second) = 0.12 ms"
+    },
+    {
+      "id": "q19",
+      "type": "multiple_choice",
+      "lo_ref": "LO5",
+      "bloom_level": "understand",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "Which component of end-to-end delay is affected by the LENGTH of the physical link?",
+      "options": [
+        {"key": "a", "text": "Transmission delay"},
+        {"key": "b", "text": "Propagation delay"},
+        {"key": "c", "text": "Processing delay"},
+        {"key": "d", "text": "Queuing delay"}
+      ],
+      "correct_answer": "b",
+      "explanation": "Propagation delay = Distance / Speed of light in medium. Longer links increase propagation delay."
+    },
+    {
+      "id": "q20",
+      "type": "multiple_choice",
+      "lo_ref": "LO7",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "In Wireshark, which interface should you select to capture traffic from Docker containers running in WSL2?",
+      "options": [
+        {"key": "a", "text": "Ethernet (physical adapter)"},
+        {"key": "b", "text": "Wi-Fi (wireless adapter)"},
+        {"key": "c", "text": "vEthernet (WSL)"},
+        {"key": "d", "text": "Loopback Adapter"}
+      ],
+      "correct_answer": "c",
+      "explanation": "Docker containers in WSL2 communicate through the virtual Ethernet adapter vEthernet (WSL)."
+    },
+    {
+      "id": "q21",
+      "type": "fill_blank",
+      "lo_ref": "LO7",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "To filter Wireshark display to show only TCP packets on port 9090, you would type: tcp.port == _____",
+      "correct_answers": ["9090"],
+      "case_sensitive": false,
+      "explanation": "tcp.port matches both source and destination port."
+    },
+    {
+      "id": "q22",
+      "type": "multiple_choice",
+      "lo_ref": "LO4",
+      "bloom_level": "analyse",
+      "difficulty": "advanced",
+      "points": 2,
+      "stem": "When analysing a PCAP file, you see a packet sequence: SYN, SYN-ACK, RST. What does this indicate?",
+      "options": [
+        {"key": "a", "text": "Successful connection followed by graceful close"},
+        {"key": "b", "text": "Connection refused - server rejected the connection"},
+        {"key": "c", "text": "Connection timeout - no response from server"},
+        {"key": "d", "text": "Packet corruption - invalid checksum detected"}
+      ],
+      "correct_answer": "b",
+      "explanation": "RST (Reset) after SYN-ACK typically indicates the destination port is closed or a firewall is blocking the connection."
+    }
+  ]
+}

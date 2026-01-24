@@ -1,17 +1,19 @@
 # Python dependencies for Week 1 Laboratory
-# NETWORKING class - ASE, Informatics | by Revolvix
+# NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim
+# Install: pip install -r setup/requirements.txt --break-system-packages
 
-# Core dependencies
-docker>=6.0.0
-requests>=2.28.0
-PyYAML>=6.0
+# Core
+docker>=6.0.0,<8.0.0
+requests>=2.28.0,<3.0.0
+PyYAML>=6.0,<7.0
 
-# Network analysis (optional but recommended)
-scapy>=2.5.0
-dpkt>=1.9.8
+# Network analysis
+scapy>=2.5.0,<3.0.0
+dpkt>=1.9.8,<2.0.0
 
-# Document generation (for reports)
-python-docx>=0.8.11
+# Document generation
+python-docx>=0.8.11,<1.0.0
 
-# Development/testing
-pytest>=7.0.0
+# Testing
+pytest>=7.0.0,<9.0.0
+pytest-cov>=4.0.0,<6.0.0

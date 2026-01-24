@@ -1,628 +1,538 @@
 #!/usr/bin/env python3
 """
-Formative Quiz Runner — Week 1
-==============================
+Quiz Runner — Week 1 Formative Assessment
+==========================================
 Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
-Interactive quiz runner that loads questions from YAML and provides
-immediate feedback with scoring and recommendations.
+A standalone quiz runner that works with both YAML and JSON formats.
+Supports interactive mode and LMS export (Moodle/Canvas compatible).
 
 Usage:
-    python formative/run_quiz.py                    # Full quiz
-    python formative/run_quiz.py --section pre_lab  # Specific section
-    python formative/run_quiz.py --random --limit 5 # Random 5 questions
-    python formative/run_quiz.py --review           # Review mode (show answers)
-    python formative/run_quiz.py --list-sections    # Show available sections
+    python run_quiz.py                      # Interactive quiz (all questions)
+    python run_quiz.py --section pre_lab    # Run specific section
+    python run_quiz.py --list-sections      # Show available sections
+    python run_quiz.py --validate           # Validate quiz file
+    python run_quiz.py --export-json        # Export to LMS-compatible JSON
+    python run_quiz.py --export-moodle      # Export to Moodle XML
+    python run_quiz.py --stats              # Show quiz statistics
 
-Exit Codes:
-    0: Quiz passed (score >= passing threshold)
-    1: Quiz failed or error occurred
+Requirements:
+    - Python 3.8+
+    - PyYAML (pip install pyyaml)
 """
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SETUP_ENVIRONMENT
-# ═══════════════════════════════════════════════════════════════════════════════
 from __future__ import annotations
 
 import argparse
+import json
 import random
-import re
 import sys
-import time
-from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 try:
     import yaml
+    YAML_AVAILABLE = True
 except ImportError:
-    print("❌ PyYAML not installed.")
-    print("   Run: pip install pyyaml --break-system-packages")
-    sys.exit(1)
+    YAML_AVAILABLE = False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# DATA_STRUCTURES
+# CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
-@dataclass
-class QuizResult:
-    """Container for quiz attempt results."""
-    total_questions: int = 0
-    correct_answers: int = 0
-    total_points: int = 0
-    earned_points: int = 0
-    score_percentage: float = 0.0
-    time_taken_seconds: float = 0.0
-    section_scores: dict = field(default_factory=dict)
-    lo_coverage: dict = field(default_factory=dict)
-    lo_total: dict = field(default_factory=dict)
-    weak_areas: list = field(default_factory=list)
-    question_results: list = field(default_factory=list)
+
+QUIZ_DIR = Path(__file__).parent
+DEFAULT_QUIZ_YAML = QUIZ_DIR / "quiz.yaml"
+DEFAULT_QUIZ_JSON = QUIZ_DIR / "quiz.json"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUIZ_LOADER
+# QUIZ LOADER
 # ═══════════════════════════════════════════════════════════════════════════════
-def load_quiz(path: Path) -> dict:
-    """
-    Load quiz from YAML file with validation.
-    
-    Args:
-        path: Path to quiz YAML file
-        
-    Returns:
-        Parsed quiz dictionary
-        
-    Raises:
-        FileNotFoundError: If quiz file doesn't exist
-        ValueError: If quiz is missing required keys
-    """
-    if not path.exists():
-        raise FileNotFoundError(f"Quiz file not found: {path}")
-    
+
+def load_quiz(path: Path | None = None) -> dict[str, Any]:
+    """Load quiz from YAML or JSON file."""
+    if path is None:
+        if DEFAULT_QUIZ_YAML.exists() and YAML_AVAILABLE:
+            path = DEFAULT_QUIZ_YAML
+        elif DEFAULT_QUIZ_JSON.exists():
+            path = DEFAULT_QUIZ_JSON
+        else:
+            raise FileNotFoundError("No quiz file found. Expected quiz.yaml or quiz.json")
+
     with open(path, encoding="utf-8") as f:
-        quiz = yaml.safe_load(f)
-    
-    # Basic validation
+        if path.suffix in (".yaml", ".yml"):
+            if not YAML_AVAILABLE:
+                raise ImportError("PyYAML required. Install: pip install pyyaml")
+            return yaml.safe_load(f)
+        return json.load(f)
+
+
+def save_quiz_json(quiz: dict[str, Any], path: Path) -> None:
+    """Save quiz to JSON format."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(quiz, f, indent=2, ensure_ascii=False)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUIZ VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def validate_quiz(quiz: dict[str, Any]) -> tuple[bool, list[str]]:
+    """Validate quiz structure and content."""
+    errors = []
+
     required_keys = ["metadata", "questions"]
     for key in required_keys:
         if key not in quiz:
-            raise ValueError(f"Quiz missing required key: {key}")
-    
-    # Validate questions have required fields
-    for q in quiz["questions"]:
-        if "id" not in q or "type" not in q or "stem" not in q:
-            raise ValueError(f"Question missing required fields: {q.get('id', 'unknown')}")
-    
-    return quiz
+            errors.append(f"Missing required key: {key}")
+
+    if errors:
+        return False, errors
+
+    meta = quiz.get("metadata", {})
+    for key in ["week", "topic", "total_questions"]:
+        if key not in meta:
+            errors.append(f"Metadata missing: {key}")
+
+    questions = quiz.get("questions", [])
+    question_ids = set()
+
+    for i, q in enumerate(questions):
+        q_id = q.get("id", f"question_{i}")
+
+        if q_id in question_ids:
+            errors.append(f"Duplicate question ID: {q_id}")
+        question_ids.add(q_id)
+
+        for field in ["id", "type", "stem"]:
+            if field not in q:
+                errors.append(f"Question {q_id} missing field: {field}")
+
+        if "correct" not in q and "correct_answer" not in q and "correct_answers" not in q:
+            errors.append(f"Question {q_id} missing correct answer")
+
+    for section in quiz.get("sections", []):
+        for qid in section.get("questions", []):
+            if qid not in question_ids:
+                errors.append(f"Section '{section.get('id')}' references unknown question: {qid}")
+
+    declared_count = meta.get("total_questions", 0)
+    actual_count = len(questions)
+    if declared_count != actual_count:
+        errors.append(f"Metadata declares {declared_count} questions but found {actual_count}")
+
+    return len(errors) == 0, errors
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUESTION_HANDLERS
+# INTERACTIVE QUIZ RUNNER
 # ═══════════════════════════════════════════════════════════════════════════════
-def ask_multiple_choice(q: dict) -> tuple[bool, str]:
-    """Handle multiple choice question."""
-    print(f"\n{q['stem']}\n")
-    for key, val in q["options"].items():
-        print(f"  {key}) {val}")
-    
-    while True:
-        answer = input("\nYour answer (a/b/c/d): ").strip().lower()
-        if answer in q["options"]:
-            break
-        print("  ⚠️ Please enter a, b, c, or d")
-    
-    correct = answer == q["correct"].lower()
-    return correct, answer
 
+def run_interactive_quiz(
+    quiz: dict[str, Any],
+    section_id: str | None = None,
+    randomise: bool = False,
+    limit: int | None = None
+) -> float:
+    """Run interactive quiz in terminal."""
+    questions = quiz.get("questions", [])
 
-def ask_fill_blank(q: dict) -> tuple[bool, str]:
-    """Handle fill-in-the-blank question."""
-    print(f"\n{q['stem']}\n")
-    
-    if q.get("hint"):
-        print(f"💡 Hint: {q['hint']}")
-    
-    answer = input("\nYour answer: ").strip()
-    
-    # Check against all valid answers
-    correct_answers = q["correct"]
-    case_sensitive = q.get("case_sensitive", False)
-    
-    check_answer = answer if case_sensitive else answer.lower()
-    check_correct = correct_answers if case_sensitive else [a.lower() for a in correct_answers]
-    
-    correct = check_answer in check_correct
-    return correct, answer
+    if section_id:
+        section = next((s for s in quiz.get("sections", []) if s["id"] == section_id), None)
+        if not section:
+            print(f"Error: Section '{section_id}' not found")
+            return 0.0
+        section_qids = set(section.get("questions", []))
+        questions = [q for q in questions if q["id"] in section_qids]
 
+    if not questions:
+        print("No questions to run")
+        return 0.0
 
-def ask_true_false(q: dict) -> tuple[bool, str]:
-    """Handle true/false question."""
-    print(f"\n{q['stem']}\n")
-    
-    while True:
-        answer = input("Your answer (true/false or t/f): ").strip().lower()
-        if answer in ["true", "false", "t", "f", "yes", "no", "y", "n", "1", "0"]:
-            break
-        print("  ⚠️ Please enter true/false or t/f")
-    
-    user_answer = answer in ["true", "t", "yes", "y", "1"]
-    correct = user_answer == q["correct"]
-    return correct, str(user_answer)
-
-
-def ask_numeric(q: dict) -> tuple[bool, str]:
-    """Handle numeric question."""
-    print(f"\n{q['stem']}\n")
-    
-    if q.get("hint"):
-        print(f"💡 Hint: {q['hint']}")
-    
-    while True:
-        try:
-            answer_str = input("\nYour answer: ").strip()
-            answer = float(answer_str)
-            break
-        except ValueError:
-            print("  ⚠️ Please enter a number")
-    
-    tolerance = q.get("tolerance", 0)
-    correct = abs(answer - q["correct"]) <= tolerance
-    return correct, answer_str
-
-
-def ask_command(q: dict) -> tuple[bool, str]:
-    """Handle command/code question."""
-    print(f"\n{q['stem']}\n")
-    
-    answer = input("Your command: ").strip()
-    
-    # Check against valid answers or regex
-    correct = False
-    if "validation_regex" in q:
-        correct = bool(re.match(q["validation_regex"], answer, re.IGNORECASE))
-    else:
-        correct = answer.lower() in [a.lower() for a in q["correct"]]
-    
-    return correct, answer
-
-
-def ask_code_trace(q: dict) -> tuple[bool, str]:
-    """Handle code tracing question."""
-    print(f"\n{q['stem']}")
-    
-    answer = input("\nWhat will be printed? ").strip()
-    correct = answer.upper() in [a.upper() for a in q["correct"]]
-    return correct, answer
-
-
-def ask_matching(q: dict) -> tuple[bool, str]:
-    """Handle matching question (simplified for CLI)."""
-    print(f"\n{q['stem']}\n")
-    
-    # Display left items with numbers
-    print("Items to match:")
-    for i, pair in enumerate(q["pairs"], 1):
-        print(f"  {i}. {pair['left']}")
-    
-    print("\nOptions:")
-    rights = [p["right"] for p in q["pairs"]]
-    shuffled_indices = list(range(len(rights)))
-    random.shuffle(shuffled_indices)
-    
-    letter_map = {}
-    for i, idx in enumerate(shuffled_indices):
-        letter = chr(65 + i)  # A, B, C, D...
-        letter_map[letter] = rights[idx]
-        print(f"  {letter}. {rights[idx]}")
-    
-    print("\n(Enter your matches as: 1A 2B 3C 4D)")
-    answer = input("Your matches: ").strip().upper()
-    
-    # Parse and check matches
-    correct_count = 0
-    for pair_match in answer.split():
-        if len(pair_match) >= 2:
-            try:
-                num = int(pair_match[0]) - 1
-                letter = pair_match[1]
-                if 0 <= num < len(q["pairs"]) and letter in letter_map:
-                    expected_right = q["pairs"][num]["right"]
-                    if letter_map[letter] == expected_right:
-                        correct_count += 1
-            except (ValueError, IndexError):
-                continue
-    
-    correct = correct_count == len(q["pairs"])
-    return correct, answer
-
-
-def ask_short_answer(q: dict) -> tuple[bool, str]:
-    """Handle short answer question with keyword checking."""
-    print(f"\n{q['stem']}\n")
-    
-    answer = input("Your answer: ").strip()
-    
-    keywords_found = sum(1 for kw in q["keywords"] if kw.lower() in answer.lower())
-    min_required = q.get("min_keywords", 1)
-    correct = keywords_found >= min_required
-    
-    return correct, answer
-
-
-# Question type dispatcher
-QUESTION_HANDLERS: dict[str, Callable[[dict], tuple[bool, str]]] = {
-    "multiple_choice": ask_multiple_choice,
-    "fill_blank": ask_fill_blank,
-    "true_false": ask_true_false,
-    "numeric": ask_numeric,
-    "command": ask_command,
-    "code_trace": ask_code_trace,
-    "matching": ask_matching,
-    "short_answer": ask_short_answer,
-}
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# FEEDBACK_DISPLAY
-# ═══════════════════════════════════════════════════════════════════════════════
-def show_feedback(q: dict, correct: bool, user_answer: str) -> None:
-    """Display feedback after answering a question."""
-    if correct:
-        feedback = q.get("feedback", {}).get("correct", "✅ Correct!")
-        print(f"\n{feedback}")
-    else:
-        feedback = q.get("feedback", {}).get("incorrect", "❌ Incorrect.")
-        print(f"\n{feedback}")
-        
-        # Show correct answer
-        if q["type"] == "multiple_choice":
-            correct_opt = q["correct"]
-            print(f"   Correct answer: {correct_opt}) {q['options'][correct_opt]}")
-        elif q["type"] == "true_false":
-            print(f"   Correct answer: {q['correct']}")
-        elif q["type"] in ["fill_blank", "command", "code_trace"]:
-            if isinstance(q["correct"], list):
-                print(f"   Accepted answers: {', '.join(q['correct'][:3])}")
-            else:
-                print(f"   Correct answer: {q['correct']}")
-        
-        # Show explanation
-        if q.get("explanation"):
-            explanation = q["explanation"].strip()
-            if len(explanation) > 200:
-                explanation = explanation[:200] + "..."
-            print(f"   📖 {explanation}")
-        
-        # Reference to misconception
-        if q.get("misconception_ref"):
-            print(f"   📚 See: {q['misconception_ref']}")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# QUIZ_RUNNER
-# ═══════════════════════════════════════════════════════════════════════════════
-def run_quiz(
-    quiz: dict,
-    section: Optional[str] = None,
-    randomize: bool = False,
-    limit: Optional[int] = None,
-    review_mode: bool = False
-) -> QuizResult:
-    """
-    Run interactive quiz session.
-    
-    Args:
-        quiz: Loaded quiz dictionary
-        section: Specific section to run (None = all)
-        randomize: Shuffle question order
-        limit: Maximum number of questions
-        review_mode: Show answers without asking
-    
-    Returns:
-        QuizResult with scores and analysis
-    """
-    result = QuizResult()
-    start_time = time.time()
-    
-    # Build question list
-    questions = []
-    question_map = {q["id"]: q for q in quiz["questions"]}
-    
-    if section:
-        # Find section and get its questions
-        for sec in quiz.get("sections", []):
-            if sec["id"] == section:
-                questions = [question_map[qid] for qid in sec["questions"] if qid in question_map]
-                break
-        if not questions:
-            print(f"⚠️ Section '{section}' not found or empty")
-            return result
-    else:
-        questions = quiz["questions"]
-    
-    if randomize:
-        questions = questions.copy()
+    if randomise:
         random.shuffle(questions)
-    
     if limit:
         questions = questions[:limit]
-    
-    # Print header
-    meta = quiz["metadata"]
+
+    meta = quiz.get("metadata", {})
     print("\n" + "=" * 70)
-    print(f"📝 QUIZ: {meta['topic']} — Week {meta['week']}")
-    print(f"   Questions: {len(questions)} | Passing: {meta['passing_score']}%")
-    if section:
-        for sec in quiz.get("sections", []):
-            if sec["id"] == section:
-                print(f"   Section: {sec['name']}")
-                break
+    print(f"  QUIZ: {meta.get('topic', 'Unknown Topic')}")
+    print(f"  Week {meta.get('week', '?')} | Questions: {len(questions)}")
+    print(f"  Passing Score: {meta.get('passing_score', 70)}%")
     print("=" * 70)
-    
-    if review_mode:
-        print("\n📖 REVIEW MODE — Answers will be shown\n")
-    
-    # Ask each question
+
+    correct = 0
+    total_points = 0
+    earned_points = 0
+
     for i, q in enumerate(questions, 1):
         points = q.get("points", 1)
-        result.total_questions += 1
-        result.total_points += points
-        
-        # Track LO
-        lo = q.get("lo_ref", "Unknown")
-        result.lo_total[lo] = result.lo_total.get(lo, 0) + 1
-        
-        print(f"\n{'─' * 60}")
-        difficulty_emoji = {"basic": "🟢", "intermediate": "🟡", "advanced": "🔴"}.get(
-            q.get("difficulty", ""), "⚪"
-        )
-        print(f"Question {i}/{len(questions)} {difficulty_emoji} [{q.get('difficulty', '?')}] "
-              f"[{lo}] [{points}pt{'s' if points > 1 else ''}]")
-        
-        if review_mode:
-            # Review mode - just show question and answer
-            print(f"\n{q['stem']}")
-            if q["type"] == "multiple_choice":
-                for key, val in q["options"].items():
-                    marker = "✓" if key == q["correct"] else " "
-                    print(f"  [{marker}] {key}) {val}")
-            elif q["type"] == "true_false":
-                print(f"  Answer: {q['correct']}")
-            elif q["type"] in ["fill_blank", "command", "code_trace"]:
-                answers = q["correct"] if isinstance(q["correct"], list) else [q["correct"]]
-                print(f"  Answer: {answers[0]}")
-            elif q["type"] == "matching":
-                print("  Correct matches:")
-                for pair in q["pairs"]:
-                    print(f"    {pair['left']} → {pair['right']}")
-            
-            if q.get("explanation"):
-                print(f"\n  📖 Explanation: {q['explanation'][:300]}...")
-            
-            input("\nPress Enter for next question...")
-            continue
-        
-        # Interactive mode - ask question
-        handler = QUESTION_HANDLERS.get(q["type"])
-        if handler:
-            try:
-                correct, user_answer = handler(q)
-            except KeyboardInterrupt:
-                print("\n\n⚠️ Quiz interrupted by user")
-                break
-            
-            if correct:
-                result.correct_answers += 1
-                result.earned_points += points
-                result.lo_coverage[lo] = result.lo_coverage.get(lo, 0) + 1
-            
-            result.question_results.append({
-                "id": q["id"],
-                "correct": correct,
-                "user_answer": user_answer,
-                "lo": lo
-            })
-            
-            show_feedback(q, correct, user_answer)
+        total_points += points
+
+        print(f"\n{'─' * 70}")
+        print(f"Q{i}/{len(questions)} [{q.get('lo_ref', '?')}] [{q.get('difficulty', '?')}] ({points} pts)")
+        print(f"\n{q['stem']}\n")
+
+        q_type = q.get("type", "multiple_choice")
+        user_correct = False
+
+        if q_type == "multiple_choice":
+            user_correct = _ask_multiple_choice(q)
+        elif q_type == "fill_blank":
+            user_correct = _ask_fill_blank(q)
+        elif q_type == "true_false":
+            user_correct = _ask_true_false(q)
+        elif q_type == "numeric":
+            user_correct = _ask_numeric(q)
+        elif q_type == "ordering":
+            user_correct = _ask_ordering(q)
         else:
-            print(f"⚠️ Unknown question type: {q['type']}")
-    
-    # Calculate results
-    result.time_taken_seconds = time.time() - start_time
-    if result.total_points > 0:
-        result.score_percentage = (result.earned_points / result.total_points) * 100
-    
-    # Calculate LO coverage percentages and identify weak areas
-    for lo in result.lo_total:
-        correct_count = result.lo_coverage.get(lo, 0)
-        total_count = result.lo_total[lo]
-        pct = (correct_count / total_count) * 100 if total_count > 0 else 0
-        result.lo_coverage[lo] = pct
-        if pct < 70:
-            result.weak_areas.append(lo)
-    
-    return result
+            print(f"  [Skipped: Unsupported question type '{q_type}']")
+            continue
 
+        if user_correct:
+            correct += 1
+            earned_points += points
+            print("  ✅ Correct!")
+        else:
+            correct_answer = q.get("correct", q.get("correct_answer", "?"))
+            print(f"  ❌ Incorrect. Answer: {correct_answer}")
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# OUTPUT_RESULTS
-# ═══════════════════════════════════════════════════════════════════════════════
-def display_results(result: QuizResult, quiz: dict) -> None:
-    """Display quiz results with recommendations."""
+        if "explanation" in q:
+            explanation = q["explanation"]
+            if isinstance(explanation, str):
+                print(f"\n  📖 {explanation[:200]}...")
+
+    score = (earned_points / total_points * 100) if total_points > 0 else 0
+    passed = score >= meta.get("passing_score", 70)
+
     print("\n" + "=" * 70)
-    print("📊 QUIZ RESULTS")
-    print("=" * 70)
-    
-    # Score summary
-    print(f"\n  Questions: {result.correct_answers}/{result.total_questions} correct")
-    print(f"  Points:    {result.earned_points}/{result.total_points} ({result.score_percentage:.1f}%)")
-    print(f"  Time:      {result.time_taken_seconds:.0f} seconds")
-    
-    # Determine grade
-    grading = quiz.get("grading_scale", [])
-    grade_info = None
-    for gi in grading:
-        low, high = gi["range"]
-        if low <= result.score_percentage <= high:
-            grade_info = gi
-            break
-    
-    if grade_info:
-        print(f"\n  {grade_info['emoji']} Grade: {grade_info['grade']}")
-        print(f"     {grade_info['message']}")
-        if grade_info.get("recommendation"):
-            print(f"     💡 {grade_info['recommendation']}")
-    
-    # LO Coverage breakdown
-    if result.lo_coverage:
-        print("\n  Learning Objective Coverage:")
-        for lo in sorted(result.lo_coverage.keys()):
-            pct = result.lo_coverage[lo]
-            bar_filled = int(pct // 10)
-            bar = "█" * bar_filled + "░" * (10 - bar_filled)
-            status = "✅" if pct >= 70 else "⚠️" if pct >= 50 else "❌"
-            print(f"    {status} {lo}: {bar} {pct:.0f}%")
-    
-    # Weak areas recommendations
-    if result.weak_areas:
-        print("\n  📚 Areas Needing Review:")
-        for lo in result.weak_areas:
-            print(f"    • {lo}: See docs/theory_summary.md and docs/misconceptions.md")
-    
-    # Pass/Fail determination
-    passing = quiz["metadata"]["passing_score"]
-    print("\n" + "─" * 70)
-    if result.score_percentage >= passing:
-        print(f"  ✅ PASSED (threshold: {passing}%)")
-        print("     You may proceed to homework assignments.")
+    print("  RESULTS")
+    print(f"  Correct: {correct}/{len(questions)}")
+    print(f"  Points: {earned_points}/{total_points}")
+    print(f"  Score: {score:.1f}%")
+    print(f"  Status: {'✅ PASSED' if passed else '❌ NEEDS REVIEW'}")
+    print("=" * 70 + "\n")
+
+    return score
+
+
+def _ask_multiple_choice(q: dict) -> bool:
+    """Handle multiple choice question."""
+    options = q.get("options", {})
+    if isinstance(options, list):
+        for opt in options:
+            print(f"    {opt['key']}) {opt['text']}")
     else:
-        print(f"  ❌ NEEDS REVIEW (threshold: {passing}%)")
-        print("     Review the materials and retake the quiz.")
-    
-    print("\n" + "=" * 70)
+        for key, text in options.items():
+            print(f"    {key}) {text}")
+
+    answer = input("\n  Your answer: ").strip().lower()
+    correct = q.get("correct", q.get("correct_answer", "")).lower()
+    return answer == correct
+
+
+def _ask_fill_blank(q: dict) -> bool:
+    """Handle fill-in-the-blank question."""
+    if q.get("hint"):
+        print(f"  💡 Hint: {q['hint']}")
+
+    answer = input("  Your answer: ").strip()
+    correct_answers = q.get("correct", q.get("correct_answers", []))
+
+    if not isinstance(correct_answers, list):
+        correct_answers = [correct_answers]
+
+    if q.get("case_sensitive", False):
+        return answer in correct_answers
+    return answer.lower() in [str(c).lower() for c in correct_answers]
+
+
+def _ask_true_false(q: dict) -> bool:
+    """Handle true/false question."""
+    print("    T) True")
+    print("    F) False")
+
+    answer = input("\n  Your answer (T/F): ").strip().upper()
+    correct = q.get("correct", q.get("correct_answer"))
+
+    user_bool = answer in ("T", "TRUE", "YES", "1")
+    return user_bool == correct
+
+
+def _ask_numeric(q: dict) -> bool:
+    """Handle numeric question."""
+    if q.get("hint"):
+        print(f"  💡 Hint: {q['hint']}")
+
+    try:
+        answer = float(input("  Your answer: ").strip())
+    except ValueError:
+        return False
+
+    correct = float(q.get("correct", q.get("correct_answer", 0)))
+    tolerance = float(q.get("tolerance", 0))
+
+    return abs(answer - correct) <= tolerance
+
+
+def _ask_ordering(q: dict) -> bool:
+    """Handle ordering question."""
+    items = q.get("items", [])
+    for item in items:
+        print(f"    {item['id']}) {item['text']}")
+
+    print("\n  Enter the correct order (e.g. d,b,a,c):")
+    answer = input("  Your answer: ").strip().lower()
+    answer_list = [x.strip() for x in answer.replace(" ", "").split(",")]
+
+    correct_order = q.get("correct_order", [])
+    return answer_list == [x.lower() for x in correct_order]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXPORT FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def export_to_moodle_xml(quiz: dict[str, Any], output_path: Path) -> None:
+    """Export quiz to Moodle XML format."""
+    meta = quiz.get("metadata", {})
+
+    xml_parts = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<quiz>',
+        f'  <!-- Week {meta.get("week")} - {meta.get("topic")} -->',
+        f'  <!-- Exported: {datetime.now().isoformat()} -->',
+    ]
+
+    for q in quiz.get("questions", []):
+        q_type = q.get("type", "multiple_choice")
+
+        if q_type == "multiple_choice":
+            xml_parts.append(_moodle_multichoice(q))
+        elif q_type == "true_false":
+            xml_parts.append(_moodle_truefalse(q))
+        elif q_type in ("fill_blank", "numeric"):
+            xml_parts.append(_moodle_shortanswer(q))
+
+    xml_parts.append('</quiz>')
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(xml_parts))
+
+    print(f"Exported to Moodle XML: {output_path}")
+
+
+def _moodle_multichoice(q: dict) -> str:
+    """Generate Moodle XML for multiple choice question."""
+    lines = [
+        '  <question type="multichoice">',
+        f'    <name><text>{q["id"]}</text></name>',
+        f'    <questiontext format="html"><text><![CDATA[{q["stem"]}]]></text></questiontext>',
+        '    <shuffleanswers>true</shuffleanswers>',
+        '    <single>true</single>',
+    ]
+
+    correct = q.get("correct", q.get("correct_answer", ""))
+    options = q.get("options", {})
+
+    if isinstance(options, list):
+        for opt in options:
+            fraction = "100" if opt["key"] == correct else "0"
+            lines.append(f'    <answer fraction="{fraction}" format="html">')
+            lines.append(f'      <text><![CDATA[{opt["text"]}]]></text>')
+            lines.append('    </answer>')
+    else:
+        for key, text in options.items():
+            fraction = "100" if key == correct else "0"
+            lines.append(f'    <answer fraction="{fraction}" format="html">')
+            lines.append(f'      <text><![CDATA[{text}]]></text>')
+            lines.append('    </answer>')
+
+    if "explanation" in q:
+        exp = q["explanation"] if isinstance(q["explanation"], str) else str(q["explanation"])
+        lines.append(f'    <generalfeedback format="html"><text><![CDATA[{exp}]]></text></generalfeedback>')
+
+    lines.append('  </question>')
+    return "\n".join(lines)
+
+
+def _moodle_truefalse(q: dict) -> str:
+    """Generate Moodle XML for true/false question."""
+    correct = q.get("correct", q.get("correct_answer", True))
+    true_fraction = "100" if correct else "0"
+    false_fraction = "0" if correct else "100"
+
+    return f"""  <question type="truefalse">
+    <name><text>{q["id"]}</text></name>
+    <questiontext format="html"><text><![CDATA[{q["stem"]}]]></text></questiontext>
+    <answer fraction="{true_fraction}" format="html"><text>true</text></answer>
+    <answer fraction="{false_fraction}" format="html"><text>false</text></answer>
+  </question>"""
+
+
+def _moodle_shortanswer(q: dict) -> str:
+    """Generate Moodle XML for short answer question."""
+    correct = q.get("correct", q.get("correct_answers", q.get("correct_answer", "")))
+    if not isinstance(correct, list):
+        correct = [str(correct)]
+
+    lines = [
+        '  <question type="shortanswer">',
+        f'    <name><text>{q["id"]}</text></name>',
+        f'    <questiontext format="html"><text><![CDATA[{q["stem"]}]]></text></questiontext>',
+        f'    <usecase>{1 if q.get("case_sensitive") else 0}</usecase>',
+    ]
+
+    for ans in correct:
+        lines.append(f'    <answer fraction="100" format="html"><text>{ans}</text></answer>')
+
+    lines.append('  </question>')
+    return "\n".join(lines)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STATISTICS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def show_statistics(quiz: dict[str, Any]) -> None:
+    """Display quiz statistics."""
+    meta = quiz.get("metadata", {})
+    questions = quiz.get("questions", [])
+
+    print("\n" + "=" * 60)
+    print(f"  QUIZ STATISTICS: {meta.get('topic', 'Unknown')}")
+    print("=" * 60)
+
+    print(f"\n  Total Questions: {len(questions)}")
+    print(f"  Passing Score: {meta.get('passing_score', 70)}%")
+    print(f"  Estimated Time: {meta.get('estimated_time_minutes', '?')} minutes")
+
+    type_counts: dict[str, int] = {}
+    for q in questions:
+        qt = q.get("type", "unknown")
+        type_counts[qt] = type_counts.get(qt, 0) + 1
+
+    print("\n  By Type:")
+    for qt, count in sorted(type_counts.items()):
+        print(f"    {qt}: {count}")
+
+    lo_counts: dict[str, int] = {}
+    for q in questions:
+        lo = q.get("lo_ref", "unspecified")
+        lo_counts[lo] = lo_counts.get(lo, 0) + 1
+
+    print("\n  By Learning Objective:")
+    for lo, count in sorted(lo_counts.items()):
+        bar = "█" * count
+        print(f"    {lo}: {bar} ({count})")
+
+    diff_counts: dict[str, int] = {}
+    for q in questions:
+        diff = q.get("difficulty", "unspecified")
+        diff_counts[diff] = diff_counts.get(diff, 0) + 1
+
+    print("\n  By Difficulty:")
+    for diff, count in sorted(diff_counts.items()):
+        print(f"    {diff}: {count}")
+
+    bloom_counts: dict[str, int] = {}
+    for q in questions:
+        bloom = q.get("bloom_level", "unspecified")
+        bloom_counts[bloom] = bloom_counts.get(bloom, 0) + 1
+
+    print("\n  By Bloom Level:")
+    for bloom, count in sorted(bloom_counts.items()):
+        print(f"    {bloom}: {count}")
+
+    print("\n  Sections:")
+    for section in quiz.get("sections", []):
+        q_count = len(section.get("questions", []))
+        print(f"    {section['id']}: {q_count} questions")
+
+    print("\n" + "=" * 60 + "\n")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
+
 def main() -> int:
-    """
-    Main entry point for the quiz runner.
-    
-    Returns:
-        0 if quiz passed, 1 if failed or error
-    """
+    """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Run formative quiz for Week 1 - Network Fundamentals",
+        description="Week 1 Formative Quiz Runner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python formative/run_quiz.py                     # Full quiz
-  python formative/run_quiz.py --section pre_lab   # Pre-lab section only
-  python formative/run_quiz.py --section exit_ticket  # Exit ticket only
-  python formative/run_quiz.py --random --limit 5  # Random 5 questions
-  python formative/run_quiz.py --review            # Review mode (see answers)
-  python formative/run_quiz.py --list-sections     # List available sections
-
-Section IDs:
-  pre_lab      - Pre-Lab Quick Check (5 questions, 5 min)
-  during_lab   - During-Lab Checkpoints (5 questions)
-  exit_ticket  - Exit Ticket (5 questions, 10 min)
+    python run_quiz.py                      # Run full quiz
+    python run_quiz.py --section pre_lab    # Run pre-lab section
+    python run_quiz.py --random --limit 5   # Random 5 questions
+    python run_quiz.py --validate           # Validate quiz file
+    python run_quiz.py --export-json        # Export to JSON
+    python run_quiz.py --export-moodle      # Export to Moodle XML
+    python run_quiz.py --stats              # Show statistics
         """
     )
-    parser.add_argument(
-        "--quiz", "-q",
-        type=Path,
-        default=None,
-        help="Path to quiz YAML file (default: formative/quiz.yaml)"
-    )
-    parser.add_argument(
-        "--section", "-s",
-        help="Run specific section (pre_lab, during_lab, exit_ticket)"
-    )
-    parser.add_argument(
-        "--random", "-r",
-        action="store_true",
-        help="Randomize question order"
-    )
-    parser.add_argument(
-        "--limit", "-l",
-        type=int,
-        help="Limit number of questions"
-    )
-    parser.add_argument(
-        "--review",
-        action="store_true",
-        help="Review mode - show answers without asking"
-    )
-    parser.add_argument(
-        "--list-sections",
-        action="store_true",
-        help="List available sections and exit"
-    )
-    
+
+    parser.add_argument("--quiz", type=Path, help="Quiz file path")
+    parser.add_argument("--section", help="Run specific section only")
+    parser.add_argument("--random", action="store_true", help="Randomise question order")
+    parser.add_argument("--limit", type=int, help="Limit number of questions")
+    parser.add_argument("--list-sections", action="store_true", help="List available sections")
+    parser.add_argument("--validate", action="store_true", help="Validate quiz file")
+    parser.add_argument("--export-json", action="store_true", help="Export to JSON format")
+    parser.add_argument("--export-moodle", action="store_true", help="Export to Moodle XML")
+    parser.add_argument("--stats", action="store_true", help="Show quiz statistics")
+
     args = parser.parse_args()
-    
-    # Determine quiz file path
-    if args.quiz:
-        quiz_path = args.quiz
-    else:
-        # Try relative to script location first
-        script_dir = Path(__file__).parent
-        quiz_path = script_dir / "quiz.yaml"
-        if not quiz_path.exists():
-            # Try current directory
-            quiz_path = Path("formative/quiz.yaml")
-    
-    # Load quiz
+
     try:
-        quiz = load_quiz(quiz_path)
+        quiz = load_quiz(args.quiz)
     except FileNotFoundError as e:
-        print(f"❌ Error: {e}")
-        print("   Make sure you're in the correct directory or specify --quiz path")
+        print(f"Error: {e}")
         return 1
-    except ValueError as e:
-        print(f"❌ Invalid quiz file: {e}")
+    except Exception as e:
+        print(f"Error loading quiz: {e}")
         return 1
-    except yaml.YAMLError as e:
-        print(f"❌ YAML parsing error: {e}")
+
+    if args.validate:
+        is_valid, errors = validate_quiz(quiz)
+        if is_valid:
+            print("✅ Quiz validation passed!")
+            return 0
+        print("❌ Quiz validation failed:")
+        for err in errors:
+            print(f"  - {err}")
         return 1
-    
-    # List sections mode
+
     if args.list_sections:
-        print("\n📋 Available Quiz Sections:\n")
-        for sec in quiz.get("sections", []):
-            q_count = len(sec.get("questions", []))
-            time_limit = sec.get("time_limit_minutes", 0)
-            time_str = f"{time_limit} min" if time_limit else "No limit"
-            print(f"  {sec['id']:15} — {sec['name']}")
-            print(f"                    {q_count} questions, {time_str}")
-            if sec.get("description"):
-                print(f"                    {sec['description']}")
-            print()
+        print("\nAvailable sections:")
+        for section in quiz.get("sections", []):
+            q_count = len(section.get("questions", []))
+            time_limit = section.get("time_limit_minutes", "unlimited")
+            print(f"  {section['id']}: {section.get('name', '?')} ({q_count} questions, {time_limit} min)")
+        print()
         return 0
-    
-    # Run quiz
-    try:
-        result = run_quiz(
-            quiz,
-            section=args.section,
-            randomize=args.random,
-            limit=args.limit,
-            review_mode=args.review
-        )
-    except KeyboardInterrupt:
-        print("\n\n⚠️ Quiz cancelled by user")
-        return 1
-    
-    # Display results (skip in review mode)
-    if not args.review and result.total_questions > 0:
-        display_results(result, quiz)
-    
-    # Return exit code based on pass/fail
-    passing = quiz["metadata"]["passing_score"]
-    return 0 if result.score_percentage >= passing else 1
+
+    if args.stats:
+        show_statistics(quiz)
+        return 0
+
+    if args.export_json:
+        output = QUIZ_DIR / "quiz_lms_export.json"
+        save_quiz_json(quiz, output)
+        print(f"Exported to JSON: {output}")
+        return 0
+
+    if args.export_moodle:
+        output = QUIZ_DIR / "quiz_moodle.xml"
+        export_to_moodle_xml(quiz, output)
+        return 0
+
+    run_interactive_quiz(quiz, args.section, args.random, args.limit)
+    return 0
 
 
 if __name__ == "__main__":

@@ -1,8 +1,12 @@
 # Week 1: Fundamentals of Computer Networks
 
+[![CI Status](https://github.com/antonioclim/netENwsl/actions/workflows/ci.yml/badge.svg)](https://github.com/antonioclim/netENwsl/actions)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 >
-> by Revolvix
+> by ing. dr. Antonio Clim
 
 ---
 

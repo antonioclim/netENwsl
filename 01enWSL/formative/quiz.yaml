@@ -1,32 +1,41 @@
 # formative/quiz.yaml
 # Week 1 Formative Assessment — Machine-Readable Format
 # NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim
-# 
+#
 # This file provides programmatically executable quiz questions
 # that map directly to Learning Objectives and misconceptions.
 #
 # Run with: python formative/run_quiz.py
+# Export JSON: python formative/run_quiz.py --export-json
+# Export Moodle: python formative/run_quiz.py --export-moodle
 # Validate: python -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))"
 
 metadata:
   week: 1
   topic: "Network Fundamentals"
-  version: "1.0.0"
-  estimated_time_minutes: 15
+  version: "1.1.0"
+  estimated_time_minutes: 25
   passing_score: 70
-  total_questions: 15
+  total_questions: 22
   bloom_levels:
-    remember: 5
-    understand: 5
-    apply: 5
+    remember: 6
+    understand: 7
+    apply: 7
+    analyse: 2
   lo_coverage:
-    - LO1  # ICMP ping și latency
+    - LO1  # ICMP ping and latency
     - LO2  # TCP socket communication
     - LO3  # Data parsing
     - LO4  # PCAP analysis
     - LO5  # Transmission delay
     - LO6  # Docker containers
     - LO7  # Wireshark capture
+  lms_compatible: true
+  export_formats:
+    - yaml
+    - json
+    - moodle_xml
+    - canvas_qti
 
 sections:
   - id: pre_lab
@@ -34,24 +43,30 @@ sections:
     description: "Answer these BEFORE starting the laboratory exercises"
     time_limit_minutes: 5
     questions: [q01, q02, q03, q04, q05]
-    
+
   - id: during_lab
     name: "During-Lab Checkpoints"
     description: "Verify understanding at key points during the lab"
-    time_limit_minutes: 0  # No limit
+    time_limit_minutes: 0
     questions: [q06, q07, q08, q09, q10]
-    
+
   - id: exit_ticket
     name: "Exit Ticket"
     description: "Complete BEFORE leaving the laboratory"
     time_limit_minutes: 10
     questions: [q11, q12, q13, q14, q15]
 
+  - id: comprehensive_review
+    name: "Comprehensive Review"
+    description: "Additional questions covering all learning objectives"
+    time_limit_minutes: 15
+    questions: [q16, q17, q18, q19, q20, q21, q22]
+
 questions:
   # ═══════════════════════════════════════════════════════════════════════════
   # PRE-LAB SECTION (Remember level)
   # ═══════════════════════════════════════════════════════════════════════════
-  
+
   - id: q01
     type: multiple_choice
     lo_ref: LO1
@@ -71,8 +86,8 @@ questions:
       Analogy: Latency = pipe length, Bandwidth = pipe width.
     misconception_ref: "docs/misconceptions.md#misconception-1"
     feedback:
-      correct: "✅ Exact! Latency = time, Bandwidth = volume/second"
-      incorrect: "❌ Review docs/misconceptions.md §1: Ping measures latency, not bandwidth"
+      correct: "Correct! Latency = time, Bandwidth = volume/second"
+      incorrect: "Review docs/misconceptions.md: Ping measures latency, not bandwidth"
 
   - id: q02
     type: fill_blank
@@ -106,8 +121,8 @@ questions:
       After a client connects, the state changes to ESTABLISHED.
     misconception_ref: "docs/misconceptions.md#misconception-11"
     feedback:
-      correct: "✅ Correct! LISTEN = waiting, ESTABLISHED = communicating"
-      incorrect: "❌ LISTEN means waiting, not communicating. See socket states diagram."
+      correct: "Correct! LISTEN = waiting, ESTABLISHED = communicating"
+      incorrect: "LISTEN means waiting, not communicating. See socket states diagram."
 
   - id: q04
     type: multiple_choice
@@ -151,276 +166,321 @@ questions:
     lo_ref: LO1
     bloom_level: understand
     difficulty: intermediate
-    points: 2
-    stem: "Ping measures bandwidth (data throughput)."
+    points: 1
+    stem: "A ping to localhost (127.0.0.1) travels through the physical network interface."
     correct: false
     explanation: |
-      FALSE! Ping measures LATENCY (round-trip time), not bandwidth.
-      The time=12.3ms in ping output is RTT, not speed.
-      To measure bandwidth, use tools like iperf3.
-    misconception_ref: "docs/misconceptions.md#misconception-1"
-    feedback:
-      correct: "✅ Correct! Ping measures latency (RTT), not bandwidth."
-      incorrect: "❌ This is Misconception #1! Ping measures latency, not bandwidth."
+      Loopback traffic (127.0.0.1) never leaves the machine. It uses the
+      virtual loopback interface (lo) and stays entirely within the kernel's
+      network stack. This is why loopback pings have <1ms latency.
+    misconception_ref: "docs/misconceptions.md#misconception-3"
 
   - id: q07
-    type: true_false
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    points: 1
+    stem: "In the TCP three-way handshake, what flag combination does the server send in response to a SYN?"
+    options:
+      a: "ACK only"
+      b: "SYN only"
+      c: "SYN and ACK (SYN-ACK)"
+      d: "FIN and ACK"
+    correct: c
+    explanation: |
+      The three-way handshake sequence:
+      1. Client sends SYN (synchronise)
+      2. Server responds with SYN-ACK (synchronise + acknowledge)
+      3. Client sends ACK (acknowledge)
+      This establishes the connection with both sides synchronised.
+
+  - id: q08
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    points: 1
+    stem: "Why does TCP use sequence numbers?"
+    options:
+      a: "To encrypt the data"
+      b: "To identify the sender"
+      c: "To ensure ordered delivery and detect missing segments"
+      d: "To compress the payload"
+    correct: c
+    explanation: |
+      Sequence numbers allow TCP to:
+      - Reassemble segments in correct order (packets may arrive out of order)
+      - Detect missing segments (gaps in sequence numbers)
+      - Detect duplicate segments
+      - Calculate round-trip time for congestion control
+
+  - id: q09
+    type: fill_blank
     lo_ref: LO6
     bloom_level: understand
     difficulty: intermediate
-    points: 2
-    stem: "A Docker container's localhost (127.0.0.1) is the same as the host machine's localhost."
-    correct: false
-    explanation: |
-      FALSE! Containers have ISOLATED network namespaces.
-      Container's localhost ≠ Host's localhost
-      To reach host services from container, use host IP or special Docker DNS.
-    misconception_ref: "docs/misconceptions.md#misconception-7"
-    feedback:
-      correct: "✅ Correct! Container networking is isolated."
-      incorrect: "❌ Containers have isolated networking. See Misconception #7."
-
-  - id: q08
-    type: fill_blank
-    lo_ref: LO2
-    bloom_level: understand
-    difficulty: intermediate
-    points: 2
-    stem: "The TCP three-way handshake consists of: SYN → _______ → ACK"
-    correct: ["SYN-ACK", "SYN,ACK", "SYNACK", "SYN ACK"]
+    points: 1
+    stem: "To see ALL containers (including stopped ones), use: docker ps ___"
+    correct: ["-a", "--all"]
     case_sensitive: false
     explanation: |
-      TCP three-way handshake:
-      1. Client sends SYN (synchronize)
-      2. Server responds with SYN-ACK (synchronize-acknowledge)
-      3. Client sends ACK (acknowledge)
-      Connection is now ESTABLISHED.
-    related_doc: "docs/theory_summary.md#tcp-transmission-control-protocol"
-
-  - id: q09
-    type: matching
-    lo_ref: LO1
-    bloom_level: understand
-    difficulty: intermediate
-    points: 2
-    stem: "Match each command to its primary purpose:"
-    pairs:
-      - left: "ip addr"
-        right: "Show IP addresses and interfaces"
-      - left: "ss -tlnp"
-        right: "Show listening TCP ports with processes"
-      - left: "ping -c 4 host"
-        right: "Test connectivity and measure latency"
-      - left: "docker ps"
-        right: "List running containers"
-    explanation: |
-      ip addr: Network interface configuration
-      ss -tlnp: Socket statistics (-t=TCP, -l=listening, -n=numeric, -p=process)
-      ping: ICMP echo for connectivity testing
-      docker ps: Container management
-    related_doc: "docs/glossary.md#commands-reference"
+      'docker ps' shows only running containers.
+      'docker ps -a' or 'docker ps --all' shows all containers including stopped ones.
+    misconception_ref: "docs/misconceptions.md#misconception-8"
 
   - id: q10
-    type: short_answer
-    lo_ref: LO2
+    type: multiple_choice
+    lo_ref: LO6
     bloom_level: understand
     difficulty: intermediate
-    points: 2
-    stem: "Why might you choose UDP instead of TCP for an application?"
-    keywords: ["speed", "fast", "real-time", "streaming", "gaming", "low latency", "no handshake", "less overhead"]
-    min_keywords: 2
+    points: 1
+    stem: "If a process inside a Docker container connects to 'localhost', where does it connect?"
+    options:
+      a: "The Windows host machine"
+      b: "The WSL2 virtual machine"
+      c: "The container's own loopback interface"
+      d: "The Docker host network"
+    correct: c
     explanation: |
-      UDP is preferred when:
-      - Speed matters more than guaranteed delivery
-      - Real-time applications (VoIP, gaming, streaming)
-      - Simple request-response (DNS)
-      - Broadcast/multicast needed
-    misconception_ref: "docs/misconceptions.md#misconception-6"
+      Each container has its own network namespace with its own loopback interface.
+      'localhost' inside a container refers to that container, not the host.
+      To connect to the host, use 'host.docker.internal' or the host's IP.
+    misconception_ref: "docs/misconceptions.md#misconception-7"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # EXIT TICKET SECTION (Apply level)
   # ═══════════════════════════════════════════════════════════════════════════
 
   - id: q11
-    type: command
+    type: fill_blank
     lo_ref: LO1
     bloom_level: apply
     difficulty: intermediate
-    points: 3
-    stem: "Write the exact command to ping google.com exactly 4 times:"
-    correct: ["ping -c 4 google.com", "ping -c4 google.com", "ping google.com -c 4"]
-    validation_regex: "^ping\\s+(-c\\s*4\\s+google\\.com|google\\.com\\s+-c\\s*4)$"
+    points: 1
+    stem: "To ping google.com exactly 4 times in Linux, the command is: ping ___ 4 google.com"
+    correct: ["-c"]
+    case_sensitive: true
     explanation: |
-      The -c flag specifies the COUNT of packets to send.
-      Without -c, ping runs indefinitely on Linux.
-      Format: ping -c COUNT HOST
-    hint: "The flag for count is -c"
+      The -c flag specifies the count of ICMP echo requests to send.
+      Without -c, ping runs indefinitely (on Linux) until interrupted with Ctrl+C.
+      On Windows, the equivalent flag is -n.
 
   - id: q12
-    type: command
+    type: multiple_choice
     lo_ref: LO2
     bloom_level: apply
     difficulty: intermediate
-    points: 3
-    stem: "Write the command to show all listening TCP ports with process information:"
-    correct: ["ss -tlnp", "ss -tlpn", "ss -ltnp", "ss -lptn", "ss -ptnl", "ss -ntlp"]
+    points: 1
+    stem: "You see 'Connection refused' when trying to connect to a server. What is the most likely cause?"
+    options:
+      a: "The network cable is unplugged"
+      b: "The firewall is blocking the connection"
+      c: "No process is listening on that port"
+      d: "The server is too busy to accept connections"
+    correct: c
     explanation: |
-      ss flags:
-      -t = TCP only
-      -l = listening sockets only
-      -n = numeric (no DNS resolution)
-      -p = show process using socket
-      Order of flags doesn't matter.
-    related_doc: "docs/glossary.md#ss-flags"
+      'Connection refused' specifically means the TCP stack received the SYN
+      packet and responded with RST (reset) because nothing is listening on
+      that port. A firewall typically causes timeout, not refusal.
+      Network issues cause 'Network unreachable' or 'Host unreachable'.
 
   - id: q13
-    type: command
+    type: ordering
     lo_ref: LO6
     bloom_level: apply
     difficulty: intermediate
-    points: 3
-    stem: "You ran 'docker ps' and see nothing, but you know containers exist. What command shows ALL containers including stopped ones?"
-    correct: ["docker ps -a", "docker ps --all", "docker container ls -a", "docker container ls --all"]
+    points: 2
+    stem: "Order these commands to correctly start a lab environment:"
+    items:
+      - id: a
+        text: "docker compose up -d"
+      - id: b
+        text: "cd /mnt/d/NETWORKING/WEEK1"
+      - id: c
+        text: "docker ps"
+      - id: d
+        text: "sudo service docker start"
+    correct_order: [d, b, a, c]
     explanation: |
-      docker ps shows only RUNNING containers by default.
-      The -a (or --all) flag shows ALL containers:
-      - Running
-      - Stopped
-      - Exited
-    misconception_ref: "docs/misconceptions.md#misconception-8"
+      1. Start Docker service (required after Windows restart)
+      2. Navigate to the lab directory
+      3. Start containers with docker compose
+      4. Verify containers are running with docker ps
 
   - id: q14
-    type: code_trace
+    type: multiple_choice
     lo_ref: LO2
     bloom_level: apply
     difficulty: advanced
-    points: 3
-    stem: |
-      What will this code print? (Assume no server is listening on port 99999)
-      
-      ```python
-      import socket
-      sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      result = sock.connect_ex(("127.0.0.1", 99999))
-      print("OPEN" if result == 0 else "CLOSED")
-      sock.close()
-      ```
-    correct: ["CLOSED", "closed"]
+    points: 2
+    stem: "A TCP connection shows state TIME_WAIT. What does this indicate?"
+    options:
+      a: "The connection is waiting for the initial handshake"
+      b: "The connection is waiting for data from the peer"
+      c: "The connection was closed and is waiting before reusing the port"
+      d: "The connection has timed out due to network issues"
+    correct: c
     explanation: |
-      connect_ex() returns:
-      - 0 on successful connection
-      - Error code (non-zero) on failure
-      
-      Since no server listens on port 99999:
-      - connect_ex returns error code (e.g., 111 = ECONNREFUSED)
-      - result != 0, so prints "CLOSED"
-    related_doc: "docs/code_tracing.md#exercise-t1"
+      TIME_WAIT occurs after a connection is closed. The socket remains in
+      this state for 2*MSL (Maximum Segment Lifetime) to ensure:
+      - Any delayed packets from the old connection don't interfere with new connections
+      - The final ACK has time to reach the peer
+      This is why you might see 'Address already in use' when restarting a server.
 
   - id: q15
     type: multiple_choice
-    lo_ref: LO4
+    lo_ref: LO7
     bloom_level: apply
-    difficulty: advanced
-    points: 3
-    stem: |
-      In Wireshark, you capture traffic and see these packets in sequence:
-      
-      Packet 1: [SYN]
-      Packet 2: [SYN, ACK]
-      Packet 3: [ACK]
-      
-      What network event just occurred?
+    difficulty: intermediate
+    points: 1
+    stem: "In Wireshark, which filter shows only TCP packets with the SYN flag set?"
     options:
-      a: "A TCP connection was terminated (closed)"
-      b: "A TCP connection was established (three-way handshake)"
-      c: "Data was transferred between client and server"
-      d: "An error occurred and connection was reset"
+      a: "tcp.syn"
+      b: "tcp.flags.syn == 1"
+      c: "tcp contains SYN"
+      d: "filter.tcp.syn"
     correct: b
     explanation: |
-      SYN → SYN-ACK → ACK is the TCP three-way handshake.
-      This sequence ESTABLISHES a new TCP connection.
-      
-      Connection TERMINATION uses FIN flags, not SYN.
-      Data transfer comes AFTER the handshake.
-    related_doc: "docs/theory_summary.md#three-way-handshake"
+      Wireshark display filters use dot notation for protocol fields.
+      tcp.flags.syn == 1 filters packets where the SYN flag is set (value 1).
+      This shows both SYN (connection initiation) and SYN-ACK packets.
+      To see only pure SYN: tcp.flags.syn == 1 && tcp.flags.ack == 0
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SCORING CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
+  # ═══════════════════════════════════════════════════════════════════════════
+  # COMPREHENSIVE REVIEW — LO3, LO4, LO5, LO7 Coverage
+  # ═══════════════════════════════════════════════════════════════════════════
 
-scoring:
-  weights:
-    basic: 1
-    intermediate: 2
-    advanced: 3
-  
-  passing_thresholds:
-    pre_lab: 60
-    during_lab: 70
-    exit_ticket: 70
-    overall: 70
-  
-  max_points:
-    pre_lab: 5      # 5 questions × 1 point
-    during_lab: 10  # 5 questions × 2 points
-    exit_ticket: 15 # 5 questions × 3 points
-    total: 30
+  - id: q16
+    type: multiple_choice
+    lo_ref: LO3
+    bloom_level: understand
+    difficulty: intermediate
+    points: 1
+    stem: "When parsing a CSV file with network data, which Python module is most appropriate for handling comma-separated values with proper quoting?"
+    options:
+      a: "The re module with regex patterns"
+      b: "The csv module from the standard library"
+      c: "The json module with custom parsing"
+      d: "The str.split(',') method directly"
+    correct: b
+    explanation: |
+      The csv module handles edge cases like quoted fields containing commas,
+      escaped quotes and different delimiters. Using str.split(',') breaks
+      when data contains commas within quoted fields.
+    feedback:
+      correct: "Correct! The csv module properly handles quoting and escaping."
+      incorrect: "The csv module is designed specifically for this purpose and handles edge cases."
 
-grading_scale:
-  - range: [90, 100]
-    grade: "Excellent"
-    emoji: "🌟"
-    message: "Outstanding! Ready for advanced networking topics."
-    recommendation: "Proceed to homework assignments."
-    
-  - range: [80, 89]
-    grade: "Very Good"
-    emoji: "✅"
-    message: "Solid understanding with minor gaps."
-    recommendation: "Review weak areas before homework."
-    
-  - range: [70, 79]
-    grade: "Good"
-    emoji: "📗"
-    message: "Adequate understanding, some concepts need reinforcement."
-    recommendation: "Re-read theory_summary.md sections for weak LOs."
-    
-  - range: [60, 69]
-    grade: "Developing"
-    emoji: "📚"
-    message: "Partial understanding, significant review needed."
-    recommendation: "Review theory_summary.md and misconceptions.md completely."
-    
-  - range: [50, 59]
-    grade: "Needs Improvement"
-    emoji: "⚠️"
-    message: "Fundamental concepts not yet solid."
-    recommendation: "Seek instructor help. Review all Week 0 prerequisites."
-    
-  - range: [0, 49]
-    grade: "Incomplete"
-    emoji: "🔄"
-    message: "Major gaps in understanding."
-    recommendation: "Schedule office hours. Complete prerequisites before continuing."
+  - id: q17
+    type: fill_blank
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    points: 1
+    stem: "To extract an IP address from a string using Python regex, each octet pattern is: \\d{1,_}"
+    correct: ["3"]
+    case_sensitive: false
+    explanation: "Each octet of an IPv4 address is 1-3 digits (0-255). The pattern \\d{1,3} matches this."
+    hint: "Think about the maximum number of digits in an IP octet (e.g. 255)"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# METADATA FOR ANALYSIS
-# ═══════════════════════════════════════════════════════════════════════════════
+  - id: q18
+    type: numeric
+    lo_ref: LO5
+    bloom_level: apply
+    difficulty: intermediate
+    points: 2
+    stem: "Calculate the transmission delay (in milliseconds) for sending a 1500-byte packet over a 100 Mbps link. Round to 2 decimal places."
+    correct: 0.12
+    tolerance: 0.01
+    explanation: |
+      Transmission delay = Packet size / Bandwidth
+      = (1500 bytes x 8 bits/byte) / (100 x 10^6 bits/second)
+      = 12000 / 100,000,000
+      = 0.00012 seconds
+      = 0.12 milliseconds
+    hint: "Remember to convert bytes to bits (multiply by 8)"
+    show_work: true
 
-analytics:
-  target_first_vote_accuracy: "40-60%"  # For peer instruction
-  expected_improvement_after_discussion: "20-30%"
-  
-  difficulty_distribution:
-    basic: 33%      # 5/15 questions
-    intermediate: 33%  # 5/15 questions  
-    advanced: 33%   # 5/15 questions
-  
-  lo_question_mapping:
-    LO1: [q01, q06, q11]
-    LO2: [q03, q08, q10, q12, q14]
-    LO3: []  # Covered in lab exercises, not quiz
-    LO4: [q15]
-    LO5: []  # Covered in lab exercises
-    LO6: [q02, q04, q05, q07, q13]
-    LO7: [q15]  # Combined with LO4
+  - id: q19
+    type: multiple_choice
+    lo_ref: LO5
+    bloom_level: understand
+    difficulty: basic
+    points: 1
+    stem: "Which component of end-to-end delay is affected by the LENGTH of the physical link?"
+    options:
+      a: "Transmission delay"
+      b: "Propagation delay"
+      c: "Processing delay"
+      d: "Queuing delay"
+    correct: b
+    explanation: |
+      Propagation delay = Distance / Speed of light in medium
+
+      Longer physical links mean light/electrical signals travel further,
+      increasing propagation delay. Transmission delay depends on packet
+      size and bandwidth, not distance.
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    feedback:
+      correct: "Correct! Propagation delay is distance-dependent."
+      incorrect: "Remember: propagation = distance/speed, transmission = size/bandwidth"
+
+  - id: q20
+    type: multiple_choice
+    lo_ref: LO7
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "In Wireshark, which interface should you select to capture traffic from Docker containers running in WSL2?"
+    options:
+      a: "Ethernet (physical adapter)"
+      b: "Wi-Fi (wireless adapter)"
+      c: "vEthernet (WSL)"
+      d: "Loopback Adapter"
+    correct: c
+    explanation: |
+      Docker containers in WSL2 communicate through the virtual Ethernet
+      adapter that bridges WSL2 and Windows. The vEthernet (WSL) interface
+      captures this traffic. Physical adapters capture external network
+      traffic, not internal Docker communication.
+    related_doc: "../README.md#wireshark-setup-and-usage"
+    feedback:
+      correct: "Correct! vEthernet (WSL) captures WSL2/Docker traffic."
+      incorrect: "For Docker in WSL2, use vEthernet (WSL), not physical adapters."
+
+  - id: q21
+    type: fill_blank
+    lo_ref: LO7
+    bloom_level: apply
+    difficulty: intermediate
+    points: 1
+    stem: "To filter Wireshark display to show only TCP packets on port 9090, you would type: tcp.port == _____"
+    correct: ["9090"]
+    case_sensitive: false
+    explanation: "tcp.port matches both source and destination port. For specific direction, use tcp.srcport or tcp.dstport."
+    hint: "The display filter uses the format: protocol.field == value"
+
+  - id: q22
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: analyse
+    difficulty: advanced
+    points: 2
+    stem: "When analysing a PCAP file, you see a packet sequence: SYN, SYN-ACK, RST. What does this indicate?"
+    options:
+      a: "Successful connection followed by graceful close"
+      b: "Connection refused - server rejected the connection"
+      c: "Connection timeout - no response from server"
+      d: "Packet corruption - invalid checksum detected"
+    correct: b
+    explanation: |
+      The RST (Reset) flag after SYN-ACK typically indicates:
+      - The destination port is closed
+      - A firewall is blocking the connection
+      - The application crashed between SYN-ACK and connection establishment
+
+      A graceful close would show FIN packets, not RST.
+    feedback:
+      correct: "Excellent analysis! RST after handshake start indicates rejection."
+      incorrect: "RST indicates connection reset/refusal, not timeout or corruption."

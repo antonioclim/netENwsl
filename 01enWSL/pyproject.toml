@@ -1,24 +1,39 @@
-# pyproject.toml
-# Week 1 Computer Networks Laboratory Kit
+# pyproject.toml — Week 1 Laboratory Kit Configuration
 # NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim
 
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "netenwsl-week1"
-version = "1.0.0"
-description = "Week 1 Computer Networks Laboratory Kit - Network Fundamentals"
+name = "week1-network-fundamentals"
+version = "1.1.0"
+description = "Week 1 Laboratory Kit: Network Fundamentals - Computer Networks Course"
 readme = "README.md"
-requires-python = ">=3.11"
 license = {text = "MIT"}
+requires-python = ">=3.11"
 authors = [
     {name = "ing. dr. Antonio Clim"}
 ]
-keywords = ["networking", "education", "docker", "wsl2", "computer-networks"]
+maintainers = [
+    {name = "ing. dr. Antonio Clim"}
+]
+keywords = [
+    "networking",
+    "education",
+    "tcp-ip",
+    "sockets",
+    "wireshark",
+    "docker",
+    "laboratory"
+]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Education",
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Education",
@@ -29,43 +44,38 @@ dependencies = [
     "docker>=6.0.0",
     "requests>=2.28.0",
     "PyYAML>=6.0",
+    "scapy>=2.5.0",
+    "dpkt>=1.9.8",
+    "python-docx>=0.8.11",
 ]
 
 [project.optional-dependencies]
-analysis = [
-    "scapy>=2.5.0",
-    "dpkt>=1.9.8",
-]
-docs = [
-    "python-docx>=0.8.11",
-]
 dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
     "ruff>=0.1.0",
     "mypy>=1.8.0",
-    "pytest>=8.0.0",
-    "pytest-cov>=4.1.0",
     "pre-commit>=3.6.0",
 ]
-all = [
-    "netenwsl-week1[analysis,docs,dev]",
-]
-
-[project.scripts]
-quiz = "formative.run_quiz:main"
 
 [project.urls]
 Repository = "https://github.com/antonioclim/netENwsl"
-Documentation = "https://github.com/antonioclim/netENwsl/blob/main/README.md"
+Documentation = "https://github.com/antonioclim/netENwsl#readme"
+Issues = "https://github.com/antonioclim/netENwsl/issues"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# RUFF CONFIGURATION
+# RUFF CONFIGURATION (Linting and Formatting)
 # ═══════════════════════════════════════════════════════════════════════════════
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100
 indent-width = 4
 
-# Exclude common non-code directories
+# Directories to check
+src = ["src", "scripts", "tests", "formative"]
+
+# Exclude common non-source directories
 exclude = [
     ".git",
     ".github",
@@ -74,12 +84,13 @@ exclude = [
     ".ruff_cache",
     ".venv",
     "__pycache__",
-    "artifacts",
-    "pcap",
-    "docker/volumes",
+    "artefacts",
+    "pcap/*.pcap",
+    "*.egg-info",
 ]
 
 [tool.ruff.lint]
+# Enable these rule sets
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -88,21 +99,18 @@ select = [
     "B",      # flake8-bugbear
     "C4",     # flake8-comprehensions
     "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
     "SIM",    # flake8-simplify
     "TCH",    # flake8-type-checking
     "PTH",    # flake8-use-pathlib
-    "PL",     # Pylint
     "RUF",    # Ruff-specific rules
 ]
 
+# Ignore these rules
 ignore = [
-    "E501",     # line too long (handled by formatter)
-    "B008",     # function calls in argument defaults
-    "C901",     # too complex
-    "PLR0913",  # too many arguments
-    "PLR2004",  # magic value comparison
-    "ARG001",   # unused function argument (common in callbacks)
+    "E501",   # Line too long (handled by formatter)
+    "B008",   # Function call in default argument (needed for argparse)
+    "B904",   # raise-without-from-inside-except (too strict for beginners)
+    "SIM108", # Ternary operator (less readable for students)
 ]
 
 # Allow autofix for all enabled rules
@@ -110,13 +118,15 @@ fixable = ["ALL"]
 unfixable = []
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["ARG", "PLR2004"]
-"__init__.py" = ["F401"]
-"setup/*" = ["PLR"]
-"scripts/*" = ["PLR"]
+# Tests can use assert and have longer lines
+"tests/**/*.py" = ["S101", "E501"]
+# Scripts may have different conventions
+"scripts/**/*.py" = ["T201"]  # Allow print statements
+# Exercise files are educational
+"src/exercises/**/*.py" = ["T201", "E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "scripts", "tests", "formative"]
+known-first-party = ["src", "scripts"]
 force-single-line = false
 lines-after-imports = 2
 
@@ -125,22 +135,21 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+docstring-code-format = true
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MYPY CONFIGURATION
+# MYPY CONFIGURATION (Type Checking)
 # ═══════════════════════════════════════════════════════════════════════════════
+
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
 ignore_missing_imports = true
-check_untyped_defs = true
-disallow_untyped_defs = false  # Relaxed for educational code
+strict_optional = true
 show_error_codes = true
-pretty = true
 
+# Per-module overrides
 [[tool.mypy.overrides]]
 module = [
     "scapy.*",
@@ -150,46 +159,63 @@ module = [
 ignore_missing_imports = true
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# PYTEST CONFIGURATION
+# PYTEST CONFIGURATION (Testing)
 # ═══════════════════════════════════════════════════════════════════════════════
+
 [tool.pytest.ini_options]
+minversion = "7.0"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-    "-ra",  # Show extra test summary
-]
+
+# Markers for test categorisation
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "docker: marks tests that require Docker",
     "network: marks tests that require network access",
+    "integration: marks integration tests",
 ]
+
+# Command line options
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "-ra",
+]
+
+# Filter warnings
 filterwarnings = [
     "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # COVERAGE CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
+
 [tool.coverage.run]
-source = ["src", "scripts", "formative"]
+source = ["src", "scripts"]
 branch = true
 omit = [
     "*/tests/*",
-    "*/__init__.py",
+    "*/__pycache__/*",
+    "*/site-packages/*",
 ]
 
 [tool.coverage.report]
+show_missing = true
+fail_under = 70
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
+    "raise AssertionError",
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
+    "if typing.TYPE_CHECKING:",
 ]
-show_missing = true
-precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"

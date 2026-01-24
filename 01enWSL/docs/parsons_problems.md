@@ -1,305 +1,176 @@
-# 🧩 Parsons Problems — Week 1
-## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# Parsons Problems — Week 1
 
-> Reorder the scrambled code blocks to create a working solution.
-> This exercise builds your understanding of code structure without the cognitive load of syntax.
+> Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+
+Parsons problems are code arrangement exercises with **distractors** (incorrect blocks).
+
+## P1: Ping Latency Measurement (LO1)
+
+**Task:** Arrange blocks to ping a host 4 times and extract average RTT.
+
+### Correct Blocks
+```python
+# A
+import subprocess
+# B
+result = subprocess.run(["ping", "-c", "4", "8.8.8.8"], capture_output=True, text=True)
+# C
+output = result.stdout
+# D
+for line in output.split("\n"):
+    if "avg" in line:
+        print(f"Average RTT: {line}")
+```
+
+### Distractors
+```python
+# E (wrong flag - Windows syntax)
+result = subprocess.run(["ping", "-n", "4", "8.8.8.8"], capture_output=True, text=True)
+# F (missing capture)
+result = subprocess.run(["ping", "-c", "4", "8.8.8.8"])
+```
+
+**Order:** A → B → C → D | Exclude: E, F
 
 ---
 
-## Problem P1: TCP Port Checker
+## P2: TCP Server Setup (LO2)
 
-### Task
+**Task:** Create a TCP server listening on port 9090.
 
-Create a function that checks if a TCP port is open on a given host. The function should:
-1. Create a TCP socket
-2. Set a timeout
-3. Attempt connection
-4. Return True if open, False otherwise
-5. Always close the socket
-
-### Scrambled Blocks
-
+### Correct Blocks
 ```python
-# Block A
-    return result == 0
-
-# Block B
-def is_port_open(host: str, port: int) -> bool:
-
-# Block C
-    sock.settimeout(2)
-
-# Block D
-    result = sock.connect_ex((host, port))
-
-# Block E
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block F
-    sock.close()
-
-# Block G (DISTRACTOR - not needed)
-    sock.bind(('0.0.0.0', 0))
-
-# Block H (DISTRACTOR - not needed)
-    sock.listen(1)
+# A
+import socket
+# B
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# C
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# D
+server_socket.bind(("0.0.0.0", 9090))
+# E
+server_socket.listen(1)
+# F
+client_socket, address = server_socket.accept()
 ```
 
-### Correct Order
-
-<details>
-<summary>Click to reveal solution</summary>
-
+### Distractors
 ```python
-# Block B
-def is_port_open(host: str, port: int) -> bool:
-
-# Block E
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block C
-    sock.settimeout(2)
-
-# Block D
-    result = sock.connect_ex((host, port))
-
-# Block F
-    sock.close()
-
-# Block A
-    return result == 0
+# G (UDP socket)
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# H (connect instead of bind)
+server_socket.connect(("0.0.0.0", 9090))
 ```
 
-**Distractors explained:**
-- Block G (`bind`) is for servers binding to a local port, not clients connecting
-- Block H (`listen`) is for servers waiting for connections, not clients
-
-**Key insight:** `connect_ex()` returns 0 on success, error code otherwise. Always close sockets to free resources.
-
-</details>
+**Order:** A → B → C → D → E → F | Exclude: G, H
 
 ---
 
-## Problem P2: Ping Output Parser
+## P3: CSV Data Parsing (LO3)
 
-### Task
+**Task:** Parse CSV file and extract unique IPs.
 
-Create a function that extracts the average RTT from ping output. The function should:
-1. Define the regex pattern for RTT statistics
-2. Search the output for the pattern
-3. Extract and return the average value
-4. Handle the case when no match is found
-
-### Scrambled Blocks
-
+### Correct Blocks
 ```python
-# Block A
-    return None
-
-# Block B
-def extract_avg_rtt(ping_output: str) -> float | None:
-
-# Block C
-    match = re.search(pattern, ping_output)
-
-# Block D
-    if match:
-        return float(match.group(1))
-
-# Block E
-    pattern = r"rtt min/avg/max/mdev = [^/]+/([^/]+)/"
-
-# Block F (DISTRACTOR - wrong pattern)
-    pattern = r"time=(\d+\.?\d*) ms"
-
-# Block G (DISTRACTOR - wrong return)
-    return match.group(0)
+# A
+import csv
+# B
+ip_addresses = []
+# C
+with open("connections.csv", "r") as file:
+# D
+    reader = csv.DictReader(file)
+# E
+    for row in reader:
+# F
+        ip = row["source_ip"]
+        if ip not in ip_addresses:
+            ip_addresses.append(ip)
 ```
 
-### Correct Order
-
-<details>
-<summary>Click to reveal solution</summary>
-
+### Distractors
 ```python
-# Block B
-def extract_avg_rtt(ping_output: str) -> float | None:
-
-# Block E
-    pattern = r"rtt min/avg/max/mdev = [^/]+/([^/]+)/"
-
-# Block C
-    match = re.search(pattern, ping_output)
-
-# Block D
-    if match:
-        return float(match.group(1))
-
-# Block A
-    return None
+# G (wrong module)
+import json
+# H (string split - fails with quoted commas)
+    for line in file:
+        ip = line.split(",")[0]
 ```
 
-**Distractors explained:**
-- Block F extracts individual ping times, not the summary average
-- Block G returns `group(0)` (entire match) instead of `group(1)` (captured value)
-
-**Key insight:** The summary line format is `rtt min/avg/max/mdev = X/Y/Z/W ms` where Y is the average.
-
-</details>
+**Order:** A → B → C → D → E → F | Exclude: G, H
 
 ---
 
-## Problem P3: Docker Container Status Check
+## P4: TCP Client Connection (LO2)
 
-### Task
+**Task:** Connect to server, send message, receive response.
 
-Create a function that checks if a Docker container is running. The function should:
-1. Build the docker inspect command
-2. Run the command and capture output
-3. Check the return code
-4. Parse and return the running state
-
-### Scrambled Blocks
-
+### Correct Blocks
 ```python
-# Block A
-    return stdout.strip().lower() == "true"
-
-# Block B
-def is_container_running(name: str) -> bool:
-
-# Block C
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-# Block D
-    if result.returncode != 0:
-        return False
-
-# Block E
-    cmd = ["docker", "inspect", "--format", "{{.State.Running}}", name]
-
-# Block F
-    stdout = result.stdout
-
-# Block G (DISTRACTOR - wrong command)
-    cmd = ["docker", "ps", "--filter", f"name={name}"]
-
-# Block H (DISTRACTOR - wrong check)
-    if "running" in stdout.lower():
-        return True
+# A
+import socket
+# B
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# C
+client_socket.connect(("127.0.0.1", 9090))
+# D
+client_socket.sendall("Hello".encode("utf-8"))
+# E
+response = client_socket.recv(4096)
+# F
+client_socket.close()
 ```
 
-### Correct Order
-
-<details>
-<summary>Click to reveal solution</summary>
-
+### Distractors
 ```python
-# Block B
-def is_container_running(name: str) -> bool:
-
-# Block E
-    cmd = ["docker", "inspect", "--format", "{{.State.Running}}", name]
-
-# Block C
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-# Block D
-    if result.returncode != 0:
-        return False
-
-# Block F
-    stdout = result.stdout
-
-# Block A
-    return stdout.strip().lower() == "true"
+# G (send before connect)
+client_socket.sendall("Hello".encode("utf-8"))
+client_socket.connect(("127.0.0.1", 9090))
+# H (no encode)
+client_socket.sendall("Hello")
 ```
 
-**Distractors explained:**
-- Block G uses `docker ps` which lists containers but requires parsing tabular output
-- Block H checks for substring "running" which is fragile and incorrect
-
-**Key insight:** `docker inspect --format` extracts specific fields directly, avoiding parsing complexity.
-
-</details>
+**Order:** A → B → C → D → E → F | Exclude: G, H
 
 ---
 
-## Problem P4: Network Interface Extractor
+## P5: Docker Lab Startup (LO6)
 
-### Task
+**Task:** Start lab environment correctly.
 
-Create a function that extracts all IPv4 addresses from `ip addr` output. The function should:
-1. Define the regex pattern for IPv4 addresses
-2. Find all matches in the output
-3. Return a list of IP addresses (without subnet mask)
-
-### Scrambled Blocks
-
-```python
-# Block A
-    return [match.group(1) for match in matches]
-
-# Block B
-def get_ipv4_addresses(ip_output: str) -> list[str]:
-
-# Block C
-    matches = re.finditer(pattern, ip_output)
-
-# Block D
-    pattern = r"inet (\d+\.\d+\.\d+\.\d+)"
-
-# Block E (DISTRACTOR - includes subnet)
-    pattern = r"inet (\d+\.\d+\.\d+\.\d+/\d+)"
-
-# Block F (DISTRACTOR - wrong method)
-    matches = re.match(pattern, ip_output)
+### Correct Blocks
+```bash
+# A
+sudo service docker start
+# B  
+cd /mnt/d/NETWORKING/WEEK1/01enWSL
+# C
+docker compose -f docker/docker-compose.yml up -d
+# D
+docker ps
 ```
 
-### Correct Order
-
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block B
-def get_ipv4_addresses(ip_output: str) -> list[str]:
-
-# Block D
-    pattern = r"inet (\d+\.\d+\.\d+\.\d+)"
-
-# Block C
-    matches = re.finditer(pattern, ip_output)
-
-# Block A
-    return [match.group(1) for match in matches]
+### Distractors
+```bash
+# E (wrong directory)
+cd /mnt/c/Users/NETWORKING/
+# F (missing -d flag)
+docker compose -f docker/docker-compose.yml up
 ```
 
-**Distractors explained:**
-- Block E includes the subnet mask (`/24`), which the task says to exclude
-- Block F uses `re.match()` which only matches at string start, not `re.finditer()` for all occurrences
-
-**Key insight:** `re.finditer()` returns an iterator of all matches, allowing extraction of multiple IPs.
-
-</details>
+**Order:** A → B → C → D | Exclude: E, F
 
 ---
 
-## Self-Assessment
+## Summary
 
-After completing these problems, you should be able to:
-
-- [ ] Structure socket operations in the correct order
-- [ ] Build regex patterns for network output parsing
-- [ ] Use subprocess correctly for Docker commands
-- [ ] Distinguish between `re.match()`, `re.search()`, and `re.finditer()`
-
-**Scoring:**
-- 4/4 correct without hints: Excellent — ready for implementation exercises
-- 2-3/4 correct: Good — review the concepts you missed
-- 0-1/4 correct: Need more practice — re-read the code tracing exercises first
+| Problem | LO | Correct | Distractors | Difficulty |
+|---------|----|---------:|:-----------:|------------|
+| P1 | LO1 | 4 | 2 | Basic |
+| P2 | LO2 | 6 | 2 | Intermediate |
+| P3 | LO3 | 6 | 2 | Intermediate |
+| P4 | LO2 | 6 | 2 | Intermediate |
+| P5 | LO6 | 4 | 2 | Basic |
 
 ---
-
 *NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim*
-*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
