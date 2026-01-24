@@ -1,0 +1,391 @@
+# ============================================================================
+# Formative Quiz — Week 7: Packet Interception, Filtering and Defensive Port Probing
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# ============================================================================
+#
+# Usage:
+#   python3 formative/run_quiz.py
+#   python3 formative/run_quiz.py --random --limit 10
+#   python3 formative/run_quiz.py --lo LO1 LO2
+#
+# ============================================================================
+
+metadata:
+  week: 7
+  topic: "Packet Interception, Filtering and Defensive Port Probing"
+  version: "1.0.0"
+  estimated_time: "15 minutes"
+  passing_score: 70
+  total_questions: 15
+  lo_coverage: [LO1, LO2, LO3, LO4, LO5, LO6]
+  bloom_levels: [remember, understand, apply, analyze, evaluate]
+  created: "2026-01-24"
+  author: "ing. dr. Antonio Clim"
+
+learning_objectives:
+  LO1: "Identify TCP and UDP packet fields in captured traffic"
+  LO2: "Explain the difference between application-layer failures and network-layer filtering effects"
+  LO3: "Implement IP-based allow and block filtering rules"
+  LO4: "Analyse packet captures to determine root causes"
+  LO5: "Design custom firewall profiles"
+  LO6: "Evaluate the trade-offs between DROP and REJECT filtering actions"
+
+questions:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO1: Identify TCP and UDP packet fields (Remember/Understand)
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  - id: q01
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "Care este portul TCP utilizat de Echo Server în laboratorul Week 7?"
+    options:
+      a: "8888"
+      b: "9000"
+      c: "9090"
+      d: "9091"
+    correct: c
+    explanation: |
+      TCP Echo Server ascultă pe portul 9090. 
+      Portul 8888 este pentru Packet Filter Proxy, 9000 este REZERVAT pentru Portainer, 
+      iar 9091 este pentru UDP Receiver.
+    misconception_ref: "docs/misconceptions.md"
+    verify_command: "grep -A5 'tcp_server:' docker/docker-compose.yml | grep port"
+
+  - id: q02
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "Care este protocolul de transport utilizat de UDP Receiver în laborator?"
+    options:
+      a: "TCP pe portul 9090"
+      b: "UDP pe portul 9091"
+      c: "TCP pe portul 9091"
+      d: "UDP pe portul 9090"
+    correct: b
+    explanation: |
+      UDP Receiver folosește protocolul UDP pe portul 9091.
+      Numele serviciului indică protocolul (UDP), iar portul este configurat în docker-compose.yml.
+    verify_command: "grep '9091' docker/docker-compose.yml"
+
+  - id: q03
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "Câte pachete sunt necesare pentru a stabili o conexiune TCP înainte de trimiterea datelor?"
+    options:
+      a: "1 pachet (doar SYN)"
+      b: "2 pachete (SYN, SYN-ACK)"
+      c: "3 pachete (SYN, SYN-ACK, ACK)"
+      d: "4 pachete (SYN, SYN-ACK, ACK, DATA)"
+    correct: c
+    explanation: |
+      TCP three-way handshake necesită exact 3 pachete:
+      1. Client → Server: SYN
+      2. Server → Client: SYN-ACK  
+      3. Client → Server: ACK
+      Abia după aceasta se pot transmite date aplicație.
+    misconception_ref: "docs/peer_instruction.md#question-4"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO2: Explain application vs network-layer failures (Understand)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q04
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "Ce observă clientul TCP când firewall-ul aplică o regulă DROP?"
+    options:
+      a: "Eroare imediată 'Connection refused'"
+      b: "Mesaj ICMP 'Destination unreachable'"
+      c: "Timeout după perioada configurată"
+      d: "Conexiune reușită dar fără răspuns de la server"
+    correct: c
+    explanation: |
+      DROP discardă pachetul SILENT - nu trimite nicio notificare înapoi.
+      Clientul așteaptă un răspuns care nu vine niciodată, rezultând în timeout.
+      Aceasta diferă de REJECT care trimite notificare explicită.
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+
+  - id: q05
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "Dacă UDP sender raportează 'Datagram sent successfully' dar receiver nu primește nimic, care este cea mai probabilă cauză?"
+    options:
+      a: "Bug în codul sender-ului"
+      b: "UDP nu oferă confirmare de livrare - pachetul poate fi DROP-at"
+      c: "Receiver-ul nu ascultă pe portul corect"
+      d: "Conexiunea TCP subiacentă a eșuat"
+    correct: b
+    explanation: |
+      UDP este connectionless și fire-and-forget. Apelul sendto() reușește 
+      când pachetul este predat stack-ului de rețea, NU când ajunge la destinație.
+      Un firewall DROP sau packet loss sunt invizibile pentru sender.
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+
+  - id: q06
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: advanced
+    points: 3
+    stem: "Care afirmație descrie corect diferența dintre un port CLOSED și unul FILTERED?"
+    options:
+      a: "Closed înseamnă firewall activ; Filtered înseamnă serviciu oprit"
+      b: "Closed trimite RST/ICMP; Filtered nu trimite nimic (timeout)"
+      c: "Nu există diferență - ambele indică port inaccesibil"
+      d: "Closed permite conexiuni read-only; Filtered blochează complet"
+    correct: b
+    explanation: |
+      Port CLOSED: Host-ul este accesibil dar niciun serviciu nu ascultă. 
+                   Răspunde cu TCP RST sau ICMP port unreachable.
+      Port FILTERED: Nu se poate determina starea - firewall blochează probe-urile.
+                     Nu se primește niciun răspuns (timeout).
+    misconception_ref: "docs/misconceptions.md#misconception-2"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO3: Implement IP-based allow/block filtering (Apply)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q07
+    type: fill_blank
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    points: 2
+    stem: "Completează comanda iptables pentru a bloca (DROP) traficul TCP către portul 9090:"
+    template: "sudo iptables -A INPUT -p ___ --dport ___ -j ___"
+    correct: ["tcp", "9090", "DROP"]
+    acceptable_variants:
+      - ["TCP", "9090", "DROP"]
+    explanation: |
+      Structura comenzii iptables:
+      -A INPUT: adaugă la chain-ul INPUT
+      -p tcp: protocol TCP
+      --dport 9090: destination port 9090
+      -j DROP: jump to DROP (discard silent)
+    verify_command: "sudo iptables -A INPUT -p tcp --dport 9090 -j DROP"
+
+  - id: q08
+    type: multiple_choice
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    points: 2
+    stem: "Care comandă verifică regulile iptables active pe chain-ul INPUT?"
+    options:
+      a: "iptables --show INPUT"
+      b: "iptables -L INPUT -n"
+      c: "iptables -D INPUT --all"
+      d: "iptables -A INPUT --list"
+    correct: b
+    explanation: |
+      -L (--list): listează regulile
+      INPUT: specifică chain-ul
+      -n: afișează adrese numerice (nu rezolvă DNS)
+      
+      -A este pentru Add, -D pentru Delete.
+    verify_command: "sudo iptables -L INPUT -n"
+
+  - id: q09
+    type: multiple_choice
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: advanced
+    points: 3
+    stem: "În ce ordine procesează iptables regulile dintr-un chain?"
+    options:
+      a: "Alfabetic după target (ACCEPT, DROP, REJECT)"
+      b: "Prima regulă care matchează - restul sunt ignorate"
+      c: "Toate regulile sunt evaluate, apoi se aplică cea mai specifică"
+      d: "Random pentru load balancing"
+    correct: b
+    explanation: |
+      iptables folosește FIRST MATCH WINS. Regulile sunt evaluate în ordine 
+      (de sus în jos). Prima regulă care matchează pachetul determină acțiunea.
+      De aceea ordinea regulilor este CRITICĂ - reguli mai specifice trebuie 
+      plasate ÎNAINTE de reguli generale.
+    misconception_ref: "docs/code_tracing.md#exercise-t3"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO4: Analyse packet captures (Analyze)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q10
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: analyze
+    difficulty: intermediate
+    points: 2
+    stem: "În Wireshark, ce filtru afișează doar pachetele TCP SYN (cereri de conexiune)?"
+    options:
+      a: "tcp.syn == 1"
+      b: "tcp.flags.syn == 1 && tcp.flags.ack == 0"
+      c: "tcp.port == syn"
+      d: "tcp.connection == new"
+    correct: b
+    explanation: |
+      tcp.flags.syn == 1: pachetul are flag-ul SYN setat
+      tcp.flags.ack == 0: pachetul NU are flag-ul ACK setat
+      
+      Combinația identifică SYN pur (cerere conexiune nouă).
+      SYN-ACK ar avea ambele flags setate.
+    verify_command: "tshark -r capture.pcap -Y 'tcp.flags.syn==1 && tcp.flags.ack==0'"
+
+  - id: q11
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: analyze
+    difficulty: advanced
+    points: 3
+    stem: "Analizând o captură, observi: SYN trimis, niciun răspuns, SYN retransmis de 3 ori, apoi timeout. Ce concluzionezi?"
+    options:
+      a: "Serverul este oprit (port closed)"
+      b: "Firewall DROP sau packet loss pe traseu"
+      c: "Serverul a trimis RST dar a fost pierdut"
+      d: "Conexiunea a reușit dar datele nu au ajuns"
+    correct: b
+    explanation: |
+      Lipsa ORICĂRUI răspuns (nici RST, nici ICMP) după multiple SYN 
+      indică fie firewall DROP (discard silent), fie packet loss sever.
+      
+      Port closed ar trimite RST. 
+      REJECT ar trimite RST sau ICMP.
+      Dacă conexiunea reușea, am vedea SYN-ACK.
+    misconception_ref: "docs/theory_summary.md#tcp-three-way-handshake"
+
+  - id: q12
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: analyze
+    difficulty: intermediate
+    points: 2
+    stem: "Ce interfață Wireshark trebuie selectată pe Windows pentru a captura trafic Docker din WSL2?"
+    options:
+      a: "Ethernet (adaptor fizic)"
+      b: "Wi-Fi"
+      c: "vEthernet (WSL)"
+      d: "Loopback Adapter"
+    correct: c
+    explanation: |
+      Docker în WSL2 comunică printr-o rețea virtuală. 
+      Interfața vEthernet (WSL) conectează Windows la această rețea.
+      
+      Ethernet/Wi-Fi văd doar trafic extern.
+      Loopback vede doar localhost Windows, nu WSL2.
+    misconception_ref: "docs/misconceptions.md#misconception-4"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO5: Design custom firewall profiles (Create)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q13
+    type: ordering
+    lo_ref: LO5
+    bloom_level: create
+    difficulty: advanced
+    points: 3
+    stem: "Ordonează regulile iptables pentru a permite DOAR TCP 9090 și a bloca restul TCP:"
+    items:
+      - id: A
+        text: "iptables -A INPUT -p tcp --dport 9090 -j ACCEPT"
+      - id: B
+        text: "iptables -A INPUT -p tcp -j DROP"
+      - id: C
+        text: "iptables -A INPUT -p udp -j ACCEPT"
+    correct_order: [A, C, B]
+    explanation: |
+      Ordinea corectă:
+      1. ACCEPT TCP 9090 (regula specifică PRIMUL)
+      2. ACCEPT UDP (păstrăm UDP funcțional)
+      3. DROP TCP (regula generală ULTIMUL)
+      
+      Dacă DROP vine primul, TCP 9090 nu va fi niciodată ACCEPT.
+    misconception_ref: "docs/code_tracing.md#exercise-t3"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO6: Evaluate DROP vs REJECT trade-offs (Evaluate)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q14
+    type: multiple_choice
+    lo_ref: LO6
+    bloom_level: evaluate
+    difficulty: advanced
+    points: 3
+    stem: "Pentru un server intern folosit pentru debugging, ce acțiune firewall este preferabilă și de ce?"
+    options:
+      a: "DROP - pentru securitate maximă"
+      b: "REJECT - pentru feedback rapid la debugging"
+      c: "ACCEPT cu logging - pentru audit"
+      d: "Nu contează - efectul este identic"
+    correct: b
+    explanation: |
+      Pentru debugging INTERN, REJECT este preferabil deoarece:
+      - Oferă feedback IMEDIAT (connection refused vs timeout)
+      - Reduce timpul de diagnosticare
+      - Evidențiază clar că un firewall blochează
+      
+      DROP este preferabil pentru servicii EXTERNE (ascunde existența firewall).
+    misconception_ref: "docs/theory_summary.md#choosing-between-drop-and-reject"
+
+  - id: q15
+    type: multiple_choice
+    lo_ref: LO6
+    bloom_level: evaluate
+    difficulty: advanced
+    points: 3
+    stem: "Un attacker scanează rețeaua. Ce acțiune firewall face mai dificilă recunoașterea serviciilor active?"
+    options:
+      a: "REJECT - attacker-ul nu poate distinge porturile"
+      b: "DROP - toate porturile par 'filtered', ascunzând pe cele active"
+      c: "ACCEPT cu rate limiting"
+      d: "LOG fără DROP sau REJECT"
+    correct: b
+    explanation: |
+      DROP face toate porturile să pară "filtered" (timeout).
+      Attacker-ul nu poate distinge între:
+      - Port cu serviciu activ + firewall DROP
+      - Port fără serviciu + firewall DROP
+      - Host inexistent
+      
+      REJECT ar dezvălui că host-ul există și firewall-ul este activ.
+    misconception_ref: "docs/theory_summary.md#filtering-semantics"
+
+# ============================================================================
+# Scoring Configuration
+# ============================================================================
+
+scoring:
+  basic_questions: 1      # q01, q02
+  intermediate_questions: 2  # q03-q06, q08, q10, q12
+  advanced_questions: 3   # q09, q11, q13, q14, q15
+  
+  total_points: 32
+  passing_threshold: 22   # ~70%
+  
+  grade_boundaries:
+    A: 29   # 90%+
+    B: 26   # 80%+
+    C: 22   # 70%+
+    D: 19   # 60%+
+    F: 0    # <60%
+
+feedback_messages:
+  excellent: "Excelent! Ai demonstrat înțelegere completă a conceptelor de packet capture și filtering."
+  good: "Foarte bine! Revizuiește conceptele unde ai greșit folosind docs/misconceptions.md."
+  needs_work: "Necesită studiu suplimentar. Parcurge docs/theory_summary.md și refă exercițiile de laborator."
+  insufficient: "Revizuiește materialul complet. Începe cu docs/concept_analogies.md pentru fundamente."

@@ -1,17 +1,71 @@
-# Week 7 WSLkit - Python Dependencies
-# NETWORKING class - ASE, Informatics | by Revolvix
+# ============================================================================
+# Week 7 WSLkit — Python Dependencies (Pinned Versions)
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# ============================================================================
+#
+# Installation:
+#   pip install -r setup/requirements.txt
+#
+# Upgrade all packages:
+#   pip install --upgrade -r setup/requirements.txt
+#
+# Verify installation:
+#   pip list | grep -E "PyYAML|docker|requests|colorama"
+#
+# ============================================================================
 
-# Core dependencies
-PyYAML>=6.0
+# ─── CORE DEPENDENCIES ───────────────────────────────────────────────────────
+# These are required for laboratory functionality
 
-# Docker SDK (optional but recommended)
-docker>=6.0
+# YAML parsing for configuration files and quiz data
+# Used by: formative/run_quiz.py, scripts/start_lab.py
+PyYAML==6.0.1
 
-# HTTP requests for health checks
-requests>=2.28
+# ─── OPTIONAL BUT RECOMMENDED ────────────────────────────────────────────────
+# These enhance the laboratory experience but are not strictly required
 
-# Terminal colours (optional)
-colorama>=0.4
+# Docker SDK for Python - programmatic Docker control
+# Used by: scripts/start_lab.py, scripts/stop_lab.py, scripts/cleanup.py
+# Note: Core scripts also work with subprocess calls to docker CLI
+docker==7.0.0
 
-# Note: The core laboratory scripts use only the Python standard library.
-# These packages are for enhanced setup and management functionality.
+# HTTP client for health checks and API verification
+# Used by: setup/verify_environment.py, tests/test_environment.py
+requests==2.31.0
+
+# Cross-platform terminal colours
+# Used by: scripts/utils/logger.py for coloured output
+# Note: Scripts work without colours if not installed
+colorama==0.4.6
+
+# ─── DEVELOPMENT/TESTING (Optional) ──────────────────────────────────────────
+# Install with: pip install -r setup/requirements.txt[dev]
+
+# Uncomment for development work:
+# pytest==7.4.3
+# pytest-timeout==2.2.0
+# ruff==0.1.9
+
+# ─── NOTES ───────────────────────────────────────────────────────────────────
+#
+# Compatibility:
+#   - Tested with Python 3.11.x
+#   - Should work with Python 3.10+ (not tested)
+#   - Python 3.9 and below NOT supported
+#
+# Version Pinning Policy:
+#   - Major.Minor.Patch pinned for reproducibility
+#   - Update periodically to patch security issues
+#   - Test thoroughly before updating in production
+#
+# Troubleshooting:
+#   - "Permission denied": Use pip install --user or virtual environment
+#   - "No matching distribution": Check Python version (3.11+ required)
+#   - "SSL certificate error": pip install --trusted-host pypi.org
+#
+# Virtual Environment (Recommended):
+#   python3 -m venv .venv
+#   source .venv/bin/activate  # Linux/WSL
+#   pip install -r setup/requirements.txt
+#
+# ============================================================================
