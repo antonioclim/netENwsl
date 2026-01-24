@@ -99,8 +99,8 @@ Laboratory materials are available in **two languages**, organised in separate r
 
 1. **No separate VM required** — Runs directly on Windows without virtualisation overhead
 2. **Visual management** — Portainer provides web interface for containers
-3. **Modern Python scripts** — Easier to understand than Makefile
-4. **Native Wireshark integration** — Direct capture on Windows
+3. **Modern Python scripts** — Easier to understand than Makefile (still the Makefile option exists)
+4. **Native Wireshark integration** — Direct capture on Windows (Let's say "direct visual contact")
 5. **Consistent structure** — All 14 kits have identical organisation
 6. **Extended documentation** — Detailed README with complete troubleshooting
 
@@ -191,21 +191,21 @@ The pedagogical approach emphasises **learning through direct observation and ex
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                     EXPERIENTIAL LEARNING CYCLE                              │
+│                     EXPERIENTIAL LEARNING CYCLE                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│    ┌──────────────┐      ┌──────────────┐      ┌──────────────┐            │
-│    │    BUILD     │ ──▶  │   GENERATE   │ ──▶  │   CAPTURE    │            │
-│    │   network    │      │   network    │      │   packets    │            │
-│    │   services   │      │   traffic    │      │   PCAP       │            │
-│    └──────────────┘      └──────────────┘      └──────┬───────┘            │
+│    ┌──────────────┐      ┌──────────────┐      ┌──────────────┐             │
+│    │    BUILD     │ ──▶  │   GENERATE  │ ──▶  │   CAPTURE    │             │
+│    │   network    │      │   network    │      │   packets    │             │
+│    │   services   │      │   traffic    │      │   PCAP       │             │
+│    └──────────────┘      └──────────────┘      └──────┬───────┘             │
 │           ▲                                           │                     │
 │           │                                           ▼                     │
-│    ┌──────┴───────┐                          ┌──────────────┐              │
-│    │    APPLY     │ ◀────────────────────── │   ANALYSE    │              │
-│    │    new       │                          │  protocols   │              │
-│    │  knowledge   │                          │ & behaviour  │              │
-│    └──────────────┘                          └──────────────┘              │
+│    ┌──────┴───────┐                          ┌──────────────┐               │
+│    │    APPLY     │ ◀────────────────────── │   ANALYSE    │               │
+│    │    new       │                          │  protocols   │               │
+│    │  knowledge   │                          │ & behaviour  │               │
+│    └──────────────┘                          └──────────────┘               │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -237,58 +237,58 @@ The course follows a **bottom-up architectural exploration** aligned with OSI/TC
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                      LEARNING TRAJECTORY — SEMESTER 2                          ║
+║                      LEARNING TRAJECTORY — SEMESTER 2                         ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                               ║
-║  Week 14 ─┬─ INTEGRATION  ════════════════════════════════════════════════   ║
+║  Week 14 ─┬─ INTEGRATION  ════════════════════════════════════════════════    ║
 ║           │                                                                   ║
-║  Week 13 ─┤                ┌───────────────────────────────────────────┐     ║
-║  Week 12 ─┤  APPLICATION   │  • IoT & MQTT (publish/subscribe)        │     ║
-║  Week 11 ─┤  LAYER         │  • Email (SMTP, POP3, IMAP)              │     ║
-║  Week 10 ─┘                │  • RPC (JSON-RPC, XML-RPC, gRPC)         │     ║
-║                            │  • HTTP/HTTPS, REST APIs, DNS, SSH       │     ║
-║                            │  • Load Balancing                        │     ║
-║                            └───────────────────────────────────────────┘     ║
+║  Week 13 ─┤                ┌───────────────────────────────────────────┐      ║
+║  Week 12 ─┤  APPLICATION   │  • IoT & MQTT (publish/subscribe)         │      ║
+║  Week 11 ─┤  LAYER         │  • Email (SMTP, POP3, IMAP)               │      ║
+║  Week 10 ─┘                │  • RPC (JSON-RPC, XML-RPC, gRPC)          │      ║
+║                            │  • HTTP/HTTPS, REST APIs, DNS, SSH        │      ║
+║                            │  • Load Balancing                         │      ║
+║                            └───────────────────────────────────────────┘      ║
 ║                                                                               ║
-║  Week 9  ─┬─ SESSION &     ┌───────────────────────────────────────────┐     ║
-║           │  PRESENTATION  │  • FTP Active/Passive modes               │     ║
-║           │                │  • Binary serialisation                   │     ║
-║           │                │  • Session state management               │     ║
-║           └────────────────└───────────────────────────────────────────┘     ║
+║  Week 9  ─┬─ SESSION &     ┌───────────────────────────────────────────┐      ║
+║           │  PRESENTATION  │  • FTP Active/Passive modes               │      ║
+║           │                │  • Binary serialisation                   │      ║
+║           │                │  • Session state management               │      ║
+║           └────────────────└───────────────────────────────────────────┘      ║
 ║                                                                               ║
-║  Week 8  ─── TRANSPORT     ┌───────────────────────────────────────────┐     ║
-║                            │  • TCP 3-way handshake                    │     ║
-║                            │  • HTTP/1.1 server implementation         │     ║
-║                            │  • Nginx reverse proxy & load balancing   │     ║
-║                            └───────────────────────────────────────────┘     ║
+║  Week 8  ─── TRANSPORT     ┌───────────────────────────────────────────┐      ║
+║                            │  • TCP 3-way handshake                    │      ║
+║                            │  • HTTP/1.1 server implementation         │      ║
+║                            │  • Nginx reverse proxy & load balancing   │      ║
+║                            └───────────────────────────────────────────┘      ║
 ║                                                                               ║
-║  Week 7  ─── SECURITY      ┌───────────────────────────────────────────┐     ║
-║             & FILTERING    │  • iptables firewall rules                │     ║
-║                            │  • Packet filtering (DROP/REJECT)         │     ║
-║                            │  • Port scanning & reconnaissance         │     ║
-║                            │  • tcpdump, tshark, Wireshark             │     ║
-║                            └───────────────────────────────────────────┘     ║
+║  Week 7  ─── SECURITY      ┌───────────────────────────────────────────┐      ║
+║             & FILTERING    │  • iptables firewall rules                │      ║
+║                            │  • Packet filtering (DROP/REJECT)         │      ║
+║                            │  • Port scanning & reconnaissance         │      ║
+║                            │  • tcpdump, tshark, Wireshark             │      ║
+║                            └───────────────────────────────────────────┘      ║
 ║                                                                               ║
-║  Week 5  ─┬─ NETWORK       ┌───────────────────────────────────────────┐     ║
-║  Week 6  ─┘  LAYER         │  • IP addressing, CIDR, VLSM              │     ║
-║                            │  • NAT/PAT, SNAT, DNAT                    │     ║
-║                            │  • ARP, DHCP, ICMP, NDP                   │     ║
-║                            │  • Software-Defined Networking (SDN)      │     ║
-║                            └───────────────────────────────────────────┘     ║
+║  Week 5  ─┬─ NETWORK       ┌───────────────────────────────────────────┐      ║
+║  Week 6  ─┘  LAYER         │  • IP addressing, CIDR, VLSM              │      ║
+║                            │  • NAT/PAT, SNAT, DNAT                    │      ║
+║                            │  • ARP, DHCP, ICMP, NDP                   │      ║
+║                            │  • Software-Defined Networking (SDN)      │      ║
+║                            └───────────────────────────────────────────┘      ║
 ║                                                                               ║
-║  Week 4  ─── DATA LINK     ┌───────────────────────────────────────────┐     ║
-║                            │  • Ethernet frames, MAC addressing        │     ║
-║                            │  • CRC32 error detection                  │     ║
-║                            │  • Binary protocol design                 │     ║
-║                            │  • Python struct pack/unpack              │     ║
-║                            └───────────────────────────────────────────┘     ║
+║  Week 4  ─── DATA LINK     ┌───────────────────────────────────────────┐      ║
+║                            │  • Ethernet frames, MAC addressing        │      ║
+║                            │  • CRC32 error detection                  │      ║
+║                            │  • Binary protocol design                 │      ║
+║                            │  • Python struct pack/unpack              │      ║
+║                            └───────────────────────────────────────────┘      ║
 ║                                                                               ║
-║  Week 1  ─┬─ FUNDAMENTALS  ┌───────────────────────────────────────────┐     ║
-║  Week 2  ─┤                │  • CLI diagnostic tools (ip, ss, ping)    │     ║
-║  Week 3  ─┘                │  • Socket programming (TCP/UDP)           │     ║
-║                            │  • Concurrent servers (threading)         │     ║
-║                            │  • Packet capture & analysis              │     ║
-║                            └───────────────────────────────────────────┘     ║
+║  Week 1  ─┬─ FUNDAMENTALS  ┌───────────────────────────────────────────┐      ║
+║  Week 2  ─┤                │  • CLI diagnostic tools (ip, ss, ping)    │      ║
+║  Week 3  ─┘                │  • Socket programming (TCP/UDP)           │      ║
+║                            │  • Concurrent servers (threading)         │      ║
+║                            │  • Packet capture & analysis              │      ║
+║                            └───────────────────────────────────────────┘      ║
 ║                                                                               ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 ```
@@ -328,61 +328,61 @@ The choice of **WSL2 + native Docker in Ubuntu** architecture (instead of Docker
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              WINDOWS 10/11 HOST                                  │
-│                                                                                  │
-│  ┌────────────────┐   ┌────────────────┐   ┌────────────────┐   ┌────────────┐ │
-│  │   Wireshark    │   │    Browser     │   │  PowerShell/   │   │  VS Code   │ │
-│  │  (Native Win   │   │   (Portainer   │   │   Terminal     │   │   (IDE)    │ │
-│  │   Analyser)    │   │    :9000)      │   │   Windows      │   │            │ │
-│  └───────┬────────┘   └───────┬────────┘   └───────┬────────┘   └─────┬──────┘ │
+│                              WINDOWS 10/11 HOST                                 │
+│                                                                                 │
+│  ┌────────────────┐   ┌────────────────┐   ┌────────────────┐   ┌────────────┐  │
+│  │   Wireshark    │   │    Browser     │   │  PowerShell/   │   │  VS Code   │  │
+│  │  (Native Win   │   │   (Portainer   │   │   Terminal     │   │   (IDE)    │  │
+│  │   Analyser)    │   │    :9000)      │   │   Windows      │   │            │  │
+│  └───────┬────────┘   └───────┬────────┘   └───────┬────────┘   └─────┬──────┘  │
 │          │                    │                    │                  │         │
 │          │     ┌──────────────┴──────────────┬─────┴──────────────────┘         │
-│          │     │                             │                                   │
-│          ▼     ▼                             ▼                                   │
+│          │     │                             │                                  │
+│          ▼     ▼                             ▼                                  │
 │  ┌───────────────────────────────────────────────────────────────────────────┐  │
-│  │                    vEthernet (WSL) — Virtual Network                       │  │
-│  │              Bridge interface between Windows and Linux                    │  │
-│  │                     Dynamic IP: 172.x.x.x                                  │  │
+│  │                    vEthernet (WSL) — Virtual Network                      │  │
+│  │              Bridge interface between Windows and Linux                   │  │
+│  │                     Dynamic IP: 172.x.x.x                                 │  │
 │  └───────────────────────────────────────────┬───────────────────────────────┘  │
-│                                              │                                   │
+│                                              │                                  │
 │  ┌───────────────────────────────────────────┴───────────────────────────────┐  │
-│  │                         WSL2 (Lightweight Virtual Machine)                 │  │
+│  │                         WSL2 (Lightweight Virtual Machine)                │  │
 │  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
-│  │  │                        Ubuntu 22.04 LTS                              │  │  │
-│  │  │                   User: stud | Password: stud                        │  │  │
+│  │  │                        Ubuntu 22.04 LTS                             │  │  │
+│  │  │                   User: stud | Password: stud                       │  │  │
 │  │  │  ┌───────────────────────────────────────────────────────────────┐  │  │  │
-│  │  │  │                      Docker Engine 28.2.2                      │  │  │  │
-│  │  │  │                                                                │  │  │  │
-│  │  │  │   ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │  │  │  │
-│  │  │  │   │  Container  │  │  Container  │  │     Portainer CE    │  │  │  │  │
-│  │  │  │   │    Lab 1    │  │    Lab 2    │  │   (Port 9000)       │  │  │  │  │
-│  │  │  │   │  10.0.X.Y   │  │  10.0.X.Z   │  │  stud/studstudstud  │  │  │  │  │
-│  │  │  │   └─────────────┘  └─────────────┘  └─────────────────────┘  │  │  │  │
-│  │  │  │                                                                │  │  │  │
-│  │  │  │   ┌─────────────────────────────────────────────────────────┐│  │  │  │
-│  │  │  │   │              Docker Networks (bridge)                   ││  │  │  │
-│  │  │  │   │  week1net, week2net, ... week14net (10.0.X.0/24)       ││  │  │  │
-│  │  │  │   └─────────────────────────────────────────────────────────┘│  │  │  │
+│  │  │  │                      Docker Engine 28.2.2                     │  │  │  │
+│  │  │  │                                                               │  │  │  │
+│  │  │  │   ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │  │  │  │
+│  │  │  │   │  Container  │  │  Container  │  │     Portainer CE    │   │  │  │  │
+│  │  │  │   │    Lab 1    │  │    Lab 2    │  │   (Port 9000)       │   │  │  │  │
+│  │  │  │   │  10.0.X.Y   │  │  10.0.X.Z   │  │  stud/studstudstud  │   │  │  │  │
+│  │  │  │   └─────────────┘  └─────────────┘  └─────────────────────┘   │  │  │  │
+│  │  │  │                                                               │  │  │  │
+│  │  │  │   ┌─────────────────────────────────────────────────────────┐ │  │  │  │
+│  │  │  │   │              Docker Networks (bridge)                   │ │  │  │  │
+│  │  │  │   │  week1net, week2net, ... week14net (10.0.X.0/24)        │ │  │  │  │
+│  │  │  │   └─────────────────────────────────────────────────────────┘ │  │  │  │
 │  │  │  └───────────────────────────────────────────────────────────────┘  │  │  │
 │  │  └─────────────────────────────────────────────────────────────────────┘  │  │
 │  └───────────────────────────────────────────────────────────────────────────┘  │
-│                                                                                  │
-│                    WSL2 ↔ WINDOWS BOUNDARY                                       │
+│                                                                                 │
+│                    WSL2 ↔ WINDOWS BOUNDARY                                      │
 │    ══════════════════════════════════════════════════════════════════════════   │
-│                                │                                                 │
-│                                ▼                                                 │
+│                                │                                                │
+│                                ▼                                                │
 │         ┌──────────────────────────────────────────────────────────────┐        │
-│         │                vEthernet (WSL)                                │        │
+│         │                vEthernet (WSL)                               │        │
 │         │    ← Wireshark captures WSL traffic here →                   │        │
 │         └──────────────────────────────────────────────────────────────┘        │
-│                                │                                                 │
-│                                ▼                                                 │
+│                                │                                                │
+│                                ▼                                                │
 │                    ┌───────────────────────┐                                    │
-│                    │  Windows Network Stack │                                    │
-│                    │   (Internet Access)    │                                    │
+│                    │  Windows Network Stack │                                   │
+│                    │   (Internet Access)    │                                   │
 │                    └───────────────────────┘                                    │
-│                                                                                  │
-└──────────────────────────────────────────────────────────────────────────────────┘
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -813,25 +813,25 @@ docker run --rm alpine ping -c 5 8.8.8.8
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                     STANDARD LABORATORY WORKFLOW                              │
+│                     STANDARD LABORATORY WORKFLOW                             │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  1. CLONE              2. VERIFY               3. START                      │
-│  ┌──────────────┐     ┌──────────────┐       ┌──────────────┐               │
-│  │ git clone    │ ──▶ │ python       │  ──▶  │ python       │               │
-│  │ repository   │     │ verify_      │       │ start_       │               │
-│  │              │     │ environment  │       │ lab.py       │               │
-│  └──────────────┘     └──────────────┘       └──────────────┘               │
+│  ┌──────────────┐     ┌──────────────┐       ┌──────────────┐                │
+│  │ git clone    │ ──▶ │ python       │  ──▶ │ python       │                │
+│  │ repository   │     │ verify_      │       │ start_       │                │
+│  │              │     │ environment  │       │ lab.py       │                │
+│  └──────────────┘     └──────────────┘       └──────────────┘                │
 │                                                      │                       │
 │                                                      ▼                       │
 │  6. CLEANUP            5. ANALYSIS            4. EXERCISES                   │
-│  ┌──────────────┐     ┌──────────────┐       ┌──────────────┐               │
-│  │ python       │ ◀── │ Wireshark    │  ◀──  │ Python       │               │
-│  │ stop_        │     │ PCAP files   │       │ Exercises    │               │
-│  │ lab.py       │     │              │       │              │               │
-│  └──────────────┘     └──────────────┘       └──────────────┘               │
+│  ┌──────────────┐     ┌──────────────┐       ┌──────────────┐                │
+│  │ python       │ ◀── │ Wireshark    │  ◀── │ Python       │                │
+│  │ stop_        │     │ PCAP files   │       │ Exercises    │                │
+│  │ lab.py       │     │              │       │              │                │
+│  └──────────────┘     └──────────────┘       └──────────────┘                │
 │                                                                              │
-│  ⚠️ NOTE: Portainer (port 9000) remains ALWAYS active between laboratories! │
+│  ⚠️ NOTE: Portainer (port 9000) remains ALWAYS active between laboratories!  │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1141,21 +1141,21 @@ Synthesis laboratory — building a complete multi-tier application with load ba
 
 ```
 ┌─────────────────────────────────────────────┐
-│           FRONTEND NETWORK 172.21.0.0/24     │
+│           FRONTEND NETWORK 172.21.0.0/24    │
 │                                             │
-│    ┌─────────────┐    ┌─────────────┐      │
+│    ┌─────────────┐    ┌─────────────┐       │
 │    │   CLIENT    │    │     LB      │ ◄──── Port 8080
-│    │ 172.21.0.2  │    │ 172.21.0.10 │      │
-│    └─────────────┘    └──────┬──────┘      │
+│    │ 172.21.0.2  │    │ 172.21.0.10 │       │
+│    └─────────────┘    └──────┬──────┘       │
 └──────────────────────────────┼──────────────┘
                                │
 ┌──────────────────────────────┼──────────────┐
-│           BACKEND NETWORK 172.20.0.0/24      │
+│           BACKEND NETWORK 172.20.0.0/24     │
 │                              │              │
-│    ┌─────────────┐    ┌──────▼──────┐      │
-│    │    APP1     │◄───┤     LB      │      │
-│    │ 172.20.0.2  │    │ 172.20.0.10 │      │
-│    └─────────────┘    └──────┬──────┘      │
+│    ┌─────────────┐    ┌──────▼──────┐       │
+│    │    APP1     │◄───┤     LB      │       │
+│    │ 172.20.0.2  │    │ 172.20.0.10 │       │
+│    └─────────────┘    └──────┬──────┘       │
 │                              │              │
 │    ┌─────────────┐           │              │
 │    │    APP2     │◄──────────┘              │
@@ -1513,7 +1513,7 @@ Live coding is a teaching technique where the instructor writes code in front of
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    LIVE CODING CYCLE (15-20 minutes)                         │
+│                    LIVE CODING CYCLE (15-20 minutes)                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  1. CONTEXT (2 min)      Present the problem and objective                  │
