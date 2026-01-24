@@ -1,0 +1,286 @@
+# Week 2 Formative Quiz — Architectural Models and Socket Programming
+# NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim
+#
+# Run: python formative/run_quiz.py
+# Or:  make quiz
+
+metadata:
+  week: 2
+  topic: "Architectural Models and Socket Programming"
+  version: "1.0.0"
+  estimated_time_minutes: 15
+  passing_score: 70
+  total_questions: 15
+  lo_coverage:
+    - R1  # OSI layers
+    - R3  # Socket types
+    - U1  # TCP vs UDP
+    - U2  # Three-way handshake
+    - A1  # Implement TCP server
+    - N1  # Debug address in use
+    - N3  # Bind address differences
+
+# -----------------------------------------------------------------------------
+# LEVEL 1: REMEMBER (questions 1-5)
+# -----------------------------------------------------------------------------
+questions:
+  - id: q01
+    type: multiple_choice
+    lo_ref: R1
+    difficulty: basic
+    bloom_level: 1
+    stem: "How many layers does the OSI reference model have?"
+    options:
+      a: "4"
+      b: "5"
+      c: "7"
+      d: "8"
+    correct: c
+    explanation: "The OSI model has exactly 7 layers: Physical, Data Link, Network, Transport, Session, Presentation and Application."
+    misconception_ref: null
+
+  - id: q02
+    type: multiple_choice
+    lo_ref: R3
+    difficulty: basic
+    bloom_level: 1
+    stem: "Which socket type constant is used for TCP connections in Python?"
+    options:
+      a: "SOCK_DGRAM"
+      b: "SOCK_STREAM"
+      c: "SOCK_RAW"
+      d: "SOCK_TCP"
+    correct: b
+    explanation: "SOCK_STREAM indicates a reliable, connection-oriented byte stream — this is TCP. SOCK_DGRAM is for UDP datagrams."
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+
+  - id: q03
+    type: multiple_choice
+    lo_ref: R1
+    difficulty: basic
+    bloom_level: 1
+    stem: "At which OSI layer does IP addressing operate?"
+    options:
+      a: "Layer 2 — Data Link"
+      b: "Layer 3 — Network"
+      c: "Layer 4 — Transport"
+      d: "Layer 5 — Session"
+    correct: b
+    explanation: "IP (Internet Protocol) operates at Layer 3 (Network layer), handling logical addressing and routing between networks."
+    misconception_ref: null
+
+  - id: q04
+    type: multiple_choice
+    lo_ref: R3
+    difficulty: basic
+    bloom_level: 1
+    stem: "What is the default port number for DNS queries?"
+    options:
+      a: "22"
+      b: "53"
+      c: "80"
+      d: "443"
+    correct: b
+    explanation: "DNS uses port 53 for both UDP queries (most common) and TCP zone transfers."
+    misconception_ref: null
+
+  - id: q05
+    type: fill_blank
+    lo_ref: R1
+    difficulty: basic
+    bloom_level: 1
+    stem: "The TCP/IP model has ___ layers, compared to 7 in the OSI model."
+    correct:
+      - "4"
+      - "four"
+    explanation: "The TCP/IP model consolidates OSI layers into 4: Network Access, Internet, Transport and Application."
+    hint: "It is fewer than OSI"
+
+# -----------------------------------------------------------------------------
+# LEVEL 2: UNDERSTAND (questions 6-9)
+# -----------------------------------------------------------------------------
+  - id: q06
+    type: multiple_choice
+    lo_ref: U1
+    difficulty: intermediate
+    bloom_level: 2
+    stem: "Why is TCP called 'connection-oriented'?"
+    options:
+      a: "Because it uses physical cables"
+      b: "Because it establishes a session before data transfer"
+      c: "Because it only works on connected networks"
+      d: "Because it requires a constant internet connection"
+    correct: b
+    explanation: "TCP establishes a logical connection via the three-way handshake before any application data is exchanged. This ensures both endpoints are ready."
+    misconception_ref: "docs/misconceptions.md#misconception-7"
+
+  - id: q07
+    type: multiple_choice
+    lo_ref: U2
+    difficulty: intermediate
+    bloom_level: 2
+    stem: "What is the correct sequence of TCP flags in the three-way handshake?"
+    options:
+      a: "ACK → SYN → SYN-ACK"
+      b: "SYN → ACK → SYN-ACK"
+      c: "SYN → SYN-ACK → ACK"
+      d: "SYN-ACK → SYN → ACK"
+    correct: c
+    explanation: "The client sends SYN, server responds with SYN-ACK, then client completes with ACK. This synchronises sequence numbers."
+    misconception_ref: null
+
+  - id: q08
+    type: multiple_choice
+    lo_ref: U1
+    difficulty: intermediate
+    bloom_level: 2
+    stem: "Which statement about UDP is FALSE?"
+    options:
+      a: "UDP provides no delivery guarantee"
+      b: "UDP has lower overhead than TCP"
+      c: "UDP cannot receive responses from servers"
+      d: "UDP is suitable for real-time applications"
+    correct: c
+    explanation: "UDP sockets can both send and receive. 'Connectionless' means no handshake is required, not that communication is one-way."
+    misconception_ref: "docs/misconceptions.md#misconception-2"
+
+  - id: q09
+    type: fill_blank
+    lo_ref: U2
+    difficulty: intermediate
+    bloom_level: 2
+    stem: "After a TCP connection closes, the socket typically remains in ___ state for about 60 seconds."
+    correct:
+      - "TIME_WAIT"
+      - "TIME-WAIT"
+      - "TIMEWAIT"
+    explanation: "TIME_WAIT ensures delayed packets from the old connection do not interfere with new connections on the same port."
+    hint: "Two words, often written with underscore"
+
+# -----------------------------------------------------------------------------
+# LEVEL 3: APPLY (questions 10-12)
+# -----------------------------------------------------------------------------
+  - id: q10
+    type: multiple_choice
+    lo_ref: A1
+    difficulty: intermediate
+    bloom_level: 3
+    stem: "What socket option should you set to allow immediate rebind after server restart?"
+    options:
+      a: "SO_KEEPALIVE"
+      b: "SO_REUSEADDR"
+      c: "SO_BROADCAST"
+      d: "SO_LINGER"
+    correct: b
+    explanation: "SO_REUSEADDR allows binding to a port that is in TIME_WAIT state, preventing 'Address already in use' errors during development."
+    misconception_ref: "docs/misconceptions.md#misconception-10"
+
+  - id: q11
+    type: code_output
+    lo_ref: A1
+    difficulty: intermediate
+    bloom_level: 3
+    stem: |
+      What will this code print?
+      ```python
+      import socket
+      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      print(s.type == socket.SOCK_STREAM)
+      ```
+    options:
+      a: "True"
+      b: "False"
+      c: "None"
+      d: "Error: socket has no attribute 'type'"
+    correct: b
+    explanation: "SOCK_DGRAM (UDP) does not equal SOCK_STREAM (TCP), so the comparison returns False."
+    misconception_ref: null
+
+  - id: q12
+    type: fill_blank
+    lo_ref: A1
+    difficulty: intermediate
+    bloom_level: 3
+    stem: "To make a TCP server accept connections from any network interface, bind to address ___"
+    correct:
+      - "0.0.0.0"
+      - "\"0.0.0.0\""
+      - "'0.0.0.0'"
+    explanation: "0.0.0.0 means 'all interfaces'. Binding to 127.0.0.1 only accepts local connections."
+    hint: "Four groups of zeros"
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+
+# -----------------------------------------------------------------------------
+# LEVEL 4: ANALYSE (questions 13-14)
+# -----------------------------------------------------------------------------
+  - id: q13
+    type: multiple_choice
+    lo_ref: N1
+    difficulty: advanced
+    bloom_level: 4
+    stem: |
+      You see this error when starting your server:
+      `OSError: [Errno 98] Address already in use`
+      
+      Which command helps identify the process using the port?
+    options:
+      a: "ps aux | grep python"
+      b: "netstat -r"
+      c: "ss -tlnp | grep 9090"
+      d: "ifconfig -a"
+    correct: c
+    explanation: "ss -tlnp shows TCP listening sockets with process info. The -t flag filters TCP, -l shows listening, -n shows numeric ports, -p shows process."
+    misconception_ref: null
+
+  - id: q14
+    type: multiple_choice
+    lo_ref: N3
+    difficulty: advanced
+    bloom_level: 4
+    stem: |
+      Your TCP server binds to 127.0.0.1:9090. A Docker container tries to connect to host.docker.internal:9090.
+      
+      What happens?
+    options:
+      a: "Connection succeeds"
+      b: "Connection refused"
+      c: "Connection times out"
+      d: "DNS resolution fails"
+    correct: b
+    explanation: "127.0.0.1 only accepts connections from the same machine. Docker containers are separate network namespaces, so they cannot reach localhost-bound services."
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+
+# -----------------------------------------------------------------------------
+# LEVEL 5: EVALUATE (question 15)
+# -----------------------------------------------------------------------------
+  - id: q15
+    type: multiple_choice
+    lo_ref: E1
+    difficulty: advanced
+    bloom_level: 5
+    stem: |
+      You are designing a multiplayer game server. Players send position updates 30 times per second.
+      
+      Which protocol is more appropriate and why?
+    options:
+      a: "TCP — reliability ensures no position data is lost"
+      b: "UDP — low latency is more important than guaranteed delivery"
+      c: "TCP — the three-way handshake improves security"
+      d: "UDP — it automatically handles packet ordering"
+    correct: b
+    explanation: "For real-time games, a slightly stale position is useless anyway. UDP's lower latency outweighs TCP's reliability. Games implement their own interpolation for lost packets."
+    misconception_ref: "docs/misconceptions.md#misconception-8"
+
+# -----------------------------------------------------------------------------
+# Scoring rubric
+# -----------------------------------------------------------------------------
+scoring:
+  basic_questions: 5        # q01-q05: 1 point each
+  intermediate_questions: 7 # q06-q12: 1 point each
+  advanced_questions: 3     # q13-q15: 1 point each
+  max_score: 15
+  grade_boundaries:
+    excellent: 90   # 14-15 points
+    good: 75        # 12-13 points
+    satisfactory: 60 # 9-11 points
+    passing: 50     # 8 points

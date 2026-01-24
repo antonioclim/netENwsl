@@ -1,13 +1,13 @@
 """
 Network utilities for Week 2 exercises.
 
-This module provides helper functions for socket programming exercises.
+This module provides helper functions for socket programming exercises,
+including socket creation, address formatting and network diagnostics.
 
 NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim
 """
 
 from .net_utils import (
-from typing import Optional, List, Dict, Tuple, Any
     create_tcp_socket,
     create_udp_socket,
     format_address,

@@ -1,14 +1,23 @@
 # Python dependencies for Week 2 WSL Starter Kit
-# NETWORKING class - ASE, Informatics | by Revolvix
+# NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim
+#
+# Install: pip install -r setup/requirements.txt
 
-# Docker SDK for Python
+# --- Core dependencies ---
 docker>=6.0.0
-
-# HTTP requests library
 requests>=2.28.0
-
-# YAML configuration parsing
 pyyaml>=6.0
 
-# Type checking support (development)
+# --- Type checking ---
 typing-extensions>=4.5.0
+
+# --- Testing ---
+pytest>=7.4.0
+pytest-timeout>=2.2.0
+
+# --- Code quality ---
+ruff>=0.1.0
+
+# --- Optional: PCAP analysis (for homework 2.02) ---
+# Uncomment if needed:
+# scapy>=2.5.0

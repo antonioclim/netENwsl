@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "week": 2,
+    "topic": "Socket Programming Patterns",
+    "version": "1.0.0",
+    "description": "Parsons problems for Week 2 — reorder code blocks to create working solutions"
+  },
+  "problems": [
+    {
+      "id": "parsons_tcp_server",
+      "title": "TCP Server Setup",
+      "lo_ref": "A1",
+      "difficulty": "basic",
+      "instructions": "Arrange these blocks to create a TCP server that accepts one connection.",
+      "language": "python",
+      "blocks": [
+        {"id": "F", "code": "import socket", "indent": 0},
+        {"id": "B", "code": "sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)", "indent": 0},
+        {"id": "E", "code": "sock.bind((\"0.0.0.0\", 9090))", "indent": 0},
+        {"id": "A", "code": "sock.listen(5)", "indent": 0},
+        {"id": "C", "code": "conn, addr = sock.accept()", "indent": 0},
+        {"id": "H", "code": "print(f\"Connection from {addr}\")", "indent": 0}
+      ],
+      "distractors": [
+        {"id": "D", "code": "sock.connect((\"0.0.0.0\", 9090))", "indent": 0, "why_wrong": "connect() is for clients, not servers"},
+        {"id": "G", "code": "sock.sendto(b\"Hello\", addr)", "indent": 0, "why_wrong": "sendto() is for UDP, not TCP"}
+      ],
+      "correct_order": ["F", "B", "E", "A", "C", "H"],
+      "explanation": "TCP server pattern: import → create socket → bind → listen → accept. connect() is for clients; sendto() is for UDP."
+    },
+    {
+      "id": "parsons_udp_client",
+      "title": "UDP Client Send-Receive",
+      "lo_ref": "A2",
+      "difficulty": "basic",
+      "instructions": "Arrange these blocks to create a UDP client that sends 'ping' and receives a response.",
+      "language": "python",
+      "blocks": [
+        {"id": "G", "code": "import socket", "indent": 0},
+        {"id": "D", "code": "sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)", "indent": 0},
+        {"id": "B", "code": "sock.sendto(b\"ping\", (\"127.0.0.1\", 9091))", "indent": 0},
+        {"id": "A", "code": "response, server = sock.recvfrom(1024)", "indent": 0},
+        {"id": "F", "code": "print(f\"Received: {response}\")", "indent": 0}
+      ],
+      "distractors": [
+        {"id": "C", "code": "sock.connect((\"127.0.0.1\", 9091))", "indent": 0, "why_wrong": "connect() not required for UDP"},
+        {"id": "E", "code": "conn, addr = sock.accept()", "indent": 0, "why_wrong": "accept() is TCP server method"},
+        {"id": "H", "code": "sock.listen(5)", "indent": 0, "why_wrong": "listen() is TCP server method"}
+      ],
+      "correct_order": ["G", "D", "B", "A", "F"],
+      "explanation": "UDP is connectionless: just create socket, send, receive. No connect(), listen() or accept() needed."
+    },
+    {
+      "id": "parsons_threaded_handler",
+      "title": "Threaded Client Handler",
+      "lo_ref": "A5",
+      "difficulty": "intermediate",
+      "instructions": "Arrange these blocks to spawn a new thread for handling a TCP client.",
+      "language": "python",
+      "blocks": [
+        {"id": "E", "code": "import threading", "indent": 0},
+        {"id": "B", "code": "def handle_client(conn, addr):\n    data = conn.recv(1024)\n    conn.send(data.upper())\n    conn.close()", "indent": 0},
+        {"id": "F", "code": "conn, addr = sock.accept()", "indent": 0},
+        {"id": "D", "code": "t = threading.Thread(target=handle_client, args=(conn, addr))", "indent": 0},
+        {"id": "A", "code": "t.start()", "indent": 0}
+      ],
+      "distractors": [
+        {"id": "C", "code": "t.join()  # Wait for thread to finish", "indent": 0, "why_wrong": "join() blocks main thread, defeating concurrency"},
+        {"id": "G", "code": "t = threading.Thread(target=handle_client(conn, addr))", "indent": 0, "why_wrong": "Calls function immediately instead of passing reference"},
+        {"id": "H", "code": "handle_client(conn, addr)", "indent": 0, "why_wrong": "Direct call = iterative server, not concurrent"}
+      ],
+      "correct_order": ["E", "B", "F", "D", "A"],
+      "explanation": "Pass function reference (target=func), not call result (target=func()). Start thread without joining to allow concurrency."
+    },
+    {
+      "id": "parsons_error_handling",
+      "title": "Socket with Timeout and Error Handling",
+      "lo_ref": "A6",
+      "difficulty": "intermediate",
+      "instructions": "Arrange these blocks to create a TCP client with timeout and proper error handling.",
+      "language": "python",
+      "blocks": [
+        {"id": "H", "code": "import socket", "indent": 0},
+        {"id": "F", "code": "sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)", "indent": 0},
+        {"id": "B", "code": "sock.settimeout(5.0)", "indent": 0},
+        {"id": "D", "code": "try:", "indent": 0},
+        {"id": "C", "code": "    sock.connect((\"192.168.1.100\", 9090))", "indent": 1},
+        {"id": "A", "code": "except socket.timeout:\n    print(\"Connection timed out\")", "indent": 0},
+        {"id": "G", "code": "except ConnectionRefusedError:\n    print(\"Server not running\")", "indent": 0}
+      ],
+      "distractors": [
+        {"id": "E", "code": "sock.setblocking(True)", "indent": 0, "why_wrong": "True is default; redundant"},
+        {"id": "I", "code": "sock.settimeout(0)  # Non-blocking", "indent": 0, "why_wrong": "0 = non-blocking, not timed"}
+      ],
+      "correct_order": ["H", "F", "B", "D", "C", "A", "G"],
+      "explanation": "Set timeout before operations. Wrap connect() in try/except to handle both timeout and refused errors."
+    },
+    {
+      "id": "parsons_udp_echo_server",
+      "title": "Complete UDP Echo Server",
+      "lo_ref": "A2",
+      "difficulty": "advanced",
+      "instructions": "Arrange these blocks to create a UDP server that echoes back whatever it receives.",
+      "language": "python",
+      "blocks": [
+        {"id": "H", "code": "import socket", "indent": 0},
+        {"id": "F", "code": "sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)", "indent": 0},
+        {"id": "D", "code": "sock.bind((\"0.0.0.0\", 9091))", "indent": 0},
+        {"id": "B", "code": "while True:", "indent": 0},
+        {"id": "A", "code": "    data, addr = sock.recvfrom(1024)", "indent": 1},
+        {"id": "G", "code": "    print(f\"Echo to {addr}: {data}\")", "indent": 1},
+        {"id": "C", "code": "    sock.sendto(data, addr)", "indent": 1}
+      ],
+      "distractors": [
+        {"id": "E", "code": "sock.listen(5)", "indent": 0, "why_wrong": "listen() is TCP only"},
+        {"id": "I", "code": "conn, addr = sock.accept()", "indent": 0, "why_wrong": "accept() is TCP only"}
+      ],
+      "correct_order": ["H", "F", "D", "B", "A", "G", "C"],
+      "explanation": "UDP server pattern: bind → loop(recvfrom → process → sendto). No listen() or accept() — those are TCP methods."
+    }
+  ]
+}
