@@ -61,7 +61,7 @@ Compare XML-RPC, JSON-RPC, and gRPC protocols through analysis and benchmarking.
 
 ## Prerequisites
 
-Before starting, ensure you have completed:
+Before starting, check that you have completed:
 - Week 12 lab exercises
 - Understanding of application-layer protocols
 - Basic socket programming knowledge

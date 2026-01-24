@@ -230,6 +230,17 @@ By the end of this laboratory session, you will be able to:
 7. **Design** appropriate protocol selections for given distributed system requirements
 8. **Evaluate** the suitability of different RPC frameworks for microservices, public APIs and legacy integrations
 
+### ✅ Self-Check Before Continuing
+
+💭 **PREDICTION:** Before proceeding to the exercises, verify you can answer:
+
+- [ ] What are the 4 main SMTP commands in order? *(EHLO → MAIL FROM → RCPT TO → DATA)*
+- [ ] What response code does DATA return? *(354, not 250)*
+- [ ] What is the difference between JSON-RPC and gRPC serialisation? *(Text vs binary)*
+- [ ] Why does a JSON-RPC error still return HTTP 200? *(Transport vs application layer)*
+
+If unsure, review `docs/theory_summary.md` first, then run `make quiz` to test yourself.
+
 ## Prerequisites
 
 ### Knowledge Requirements

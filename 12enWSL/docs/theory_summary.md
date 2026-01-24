@@ -47,6 +47,58 @@ Think of SMTP like a postal service:
 3. **Data**: Headers + blank line + body + terminating dot
 4. **Commitment**: Server accepts responsibility for delivery
 
+#### SMTP State Machine Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         SMTP STATE MACHINE                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│    [TCP Connect]                                                         │
+│         │                                                                │
+│         ▼                                                                │
+│    ┌─────────┐  220 Ready                                               │
+│    │CONNECTED├──────────────┐                                           │
+│    └─────────┘              │                                           │
+│                             ▼                                           │
+│                       ┌─────────┐  EHLO/HELO                            │
+│                       │ GREETED ├──────────────┐                        │
+│                       └─────────┘              │                        │
+│                                                ▼                        │
+│                                          ┌──────────┐  250 OK           │
+│                    ┌─────────────────────┤IDENTIFIED├◄──────┐           │
+│                    │                     └──────────┘       │           │
+│                    │ MAIL FROM               │              │           │
+│                    ▼                         │              │           │
+│              ┌──────────┐  250 OK            │              │           │
+│              │MAIL_FROM ├────────────┐       │              │           │
+│              └──────────┘            │       │              │           │
+│                                      ▼       │              │           │
+│                                ┌─────────┐   │              │           │
+│                                │ RCPT_TO │◄──┘              │           │
+│                                └────┬────┘                  │           │
+│                    RCPT TO (more)   │   DATA                │           │
+│                         ▲           │     │                 │           │
+│                         └───────────┘     ▼                 │           │
+│                                     ┌──────────┐  354       │           │
+│                                     │   DATA   │            │           │
+│                                     └────┬─────┘            │           │
+│                                          │ . (dot)          │           │
+│                                          ▼                  │           │
+│                                     ┌──────────┐  250 OK    │           │
+│                                     │COMMITTED ├────────────┘           │
+│                                     └──────────┘                        │
+│                                          │ QUIT                         │
+│                                          ▼                              │
+│                                     ┌──────────┐  221 Bye               │
+│                                     │  CLOSED  │                        │
+│                                     └──────────┘                        │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+💭 **PREDICTION:** Before running an SMTP session, trace through this diagram and predict what response code you will see at each step.
+
 #### Common Misconception
 
 ❌ "SMTP handles all email operations"

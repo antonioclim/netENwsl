@@ -1,0 +1,179 @@
+# formative/quiz.yaml — Week 12 Self-Assessment Quiz
+# NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Run with: python formative/run_quiz.py
+#           make quiz
+
+metadata:
+  week: 12
+  topic: "Email Protocols and Remote Procedure Call"
+  version: "1.0.0"
+  author: "ing. dr. Antonio Clim"
+  estimated_time: "15 minutes"
+  passing_score: 70
+  lo_coverage: [LO1, LO2, LO4, LO5, LO7]
+
+questions:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO1: Recall SMTP dialogues (Remember)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q1
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: basic
+    bloom_level: remember
+    stem: "What response code does an SMTP server return after the DATA command?"
+    options:
+      a: "250 OK"
+      b: "354 Start mail input"
+      c: "220 Service ready"
+      d: "221 Bye"
+    correct: b
+    explanation: "DATA returns 354 (intermediate state) to signal readiness for message content, not 250 (command success)."
+    misconception_ref: "docs/misconceptions.md#misconception-4"
+
+  - id: q2
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: intermediate
+    bloom_level: understand
+    stem: "Which command sequence is correct for sending an email via SMTP?"
+    options:
+      a: "HELO → DATA → MAIL FROM → RCPT TO → QUIT"
+      b: "EHLO → MAIL FROM → RCPT TO → DATA → message → . → QUIT"
+      c: "MAIL FROM → EHLO → RCPT TO → DATA → QUIT"
+      d: "DATA → MAIL FROM → RCPT TO → EHLO → QUIT"
+    correct: b
+    explanation: "SMTP follows a strict state machine: greeting → envelope (MAIL FROM, RCPT TO) → DATA → content → QUIT."
+    misconception_ref: "docs/misconceptions.md#misconception-4"
+
+  - id: q10
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: basic
+    bloom_level: remember
+    stem: "SMTP is used to:"
+    options:
+      a: "Send and receive email"
+      b: "Send email only (push protocol)"
+      c: "Receive email only (pull protocol)"
+      d: "Transfer files between servers"
+    correct: b
+    explanation: "SMTP is exclusively a push protocol for sending. POP3 and IMAP are pull protocols for receiving."
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO2: Explain RPC abstraction (Understand)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q3
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: intermediate
+    bloom_level: understand
+    stem: "What is the primary role of a client stub in RPC?"
+    options:
+      a: "Execute the remote procedure directly on the server"
+      b: "Serialise parameters and send the request to the server"
+      c: "Store the server's IP address permanently"
+      d: "Authenticate the client with a password"
+    correct: b
+    explanation: "The client stub (proxy) handles serialisation and network communication, hiding remote invocation complexity from the caller."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO4: Demonstrate communication (Apply)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q8
+    type: fill_blank
+    lo_ref: LO4
+    difficulty: basic
+    bloom_level: apply
+    stem: "To connect to the lab SMTP server using netcat, the command is: nc localhost ___"
+    correct: ["1025"]
+    hint: "Check the port mapping in docker-compose.yml"
+
+  - id: q9
+    type: fill_blank
+    lo_ref: LO4
+    difficulty: intermediate
+    bloom_level: apply
+    stem: "To call the JSON-RPC server with curl, use port: curl -X POST http://localhost:___ ..."
+    correct: ["6200"]
+    hint: "JSON-RPC server port from the lab configuration"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO5: Analyse protocol differences (Analyse)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q4
+    type: multiple_choice
+    lo_ref: LO5
+    difficulty: intermediate
+    bloom_level: analyse
+    stem: "A JSON-RPC request for a non-existent method returns HTTP 200. Why?"
+    options:
+      a: "The server crashed silently"
+      b: "HTTP 200 means transport success; the RPC error is in the JSON body"
+      c: "JSON-RPC always returns 200 regardless of errors"
+      d: "The method was found but returned an empty result"
+    correct: b
+    explanation: "JSON-RPC separates transport-level (HTTP) from application-level errors. HTTP 200 = 'I processed your request'; error code -32601 in the body = 'method not found'."
+    misconception_ref: "docs/misconceptions.md#misconception-7"
+
+  - id: q5
+    type: multiple_choice
+    lo_ref: LO5
+    difficulty: advanced
+    bloom_level: analyse
+    stem: "Which statement about gRPC and Protocol Buffers is CORRECT?"
+    options:
+      a: "Protocol Buffers compress JSON for faster transmission"
+      b: "gRPC can optionally use JSON instead of Protocol Buffers"
+      c: "Protocol Buffers use a binary format with field numbers, not field names"
+      d: "gRPC requires HTTP/1.1 for maximum compatibility"
+    correct: c
+    explanation: "Protobuf is a completely different serialisation format — binary, schema-defined, using field tags (1, 2) instead of string keys."
+    misconception_ref: "docs/misconceptions.md#misconception-9"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO7: Design protocol selection (Evaluate)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q6
+    type: multiple_choice
+    lo_ref: LO7
+    difficulty: advanced
+    bloom_level: evaluate
+    stem: "You are designing an API for a mobile banking app with limited bandwidth. Which protocol is MOST appropriate?"
+    options:
+      a: "XML-RPC — widely supported by all platforms"
+      b: "JSON-RPC — human readable for easier debugging"
+      c: "gRPC — bandwidth efficient with strong type contracts"
+      d: "Raw TCP sockets — maximum performance possible"
+    correct: c
+    explanation: "Mobile apps benefit from gRPC's bandwidth efficiency (protobuf binary encoding), built-in code generation, and strong type contracts for security-critical operations."
+
+  - id: q7
+    type: multiple_choice
+    lo_ref: LO7
+    difficulty: advanced
+    bloom_level: evaluate
+    stem: "A legacy enterprise system from 2005 needs to integrate with your new microservices. Which protocol provides the best compatibility?"
+    options:
+      a: "gRPC with Protocol Buffers"
+      b: "GraphQL over HTTP"
+      c: "XML-RPC"
+      d: "WebSockets with JSON"
+    correct: c
+    explanation: "XML-RPC has been a standard since 1998 and is supported by virtually all legacy systems. gRPC requires HTTP/2, which many older systems do not support."
+    misconception_ref: "docs/misconceptions.md#misconception-8"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCORING_CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+scoring:
+  total_questions: 10
+  points_per_question: 10
+  passing_threshold: 70
+
+feedback:
+  excellent: "Outstanding! You have mastered Week 12 concepts. Ready for the homework."
+  good: "Good work! Review the misconceptions document for topics you missed."
+  needs_review: "Please revisit docs/theory_summary.md and try the exercises again before retaking the quiz."
