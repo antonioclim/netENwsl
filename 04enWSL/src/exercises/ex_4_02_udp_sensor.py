@@ -118,8 +118,8 @@ def parse_sensor_datagram(datagram: bytes) -> Optional[Tuple[int, float, str]]:
     Returns:
         Optional[Tuple]: (sensor_id, temperature, location) or None daca invalid
     
-    💭 PREDICTION: If the datagram is only 20 bytes instead of 23, what happens?
-       Will struct.unpack raise an error, or will it return garbage data?
+    # 💭 PREDICTION: If the datagram is only 20 bytes instead of 23, what happens?
+    #    Will struct.unpack raise an error, or will it return garbage data?
     
     TODO: Implementati aceasta function
     Hints:
@@ -180,18 +180,19 @@ def update_statistics(stats: Dict[int, SensorStats],
     
     TODO: Implementati aceasta function
     
-    💭 PREDICTION: What happens when we receive data from a sensor_id
-       that does not exist in the stats dictionary yet?
-       Will it crash, or should we create a new entry?
+    # 💭 PREDICTION: What happens when we receive data from a sensor_id
+    #    that does not exist in the stats dictionary yet?
+    #    Will it crash, or should we create a new entry?
+    
     Hints:
     - Daca sensor_id nu exists in stats, creati o noua intrare SensorStats
     - Actualizati: count, total, min_temp, max_temp, last_reading, last_timestamp
     - Folositi datetime.now().isoformat() for timestamp
     """
     
-    💭 PREDICTION: What happens when we receive data from a sensor_id
-       that doesn't exist in the stats dictionary yet?
-       Will it crash, or should we create a new entry?
+    # 💭 PREDICTION: What happens when we receive data from a sensor_id
+    #    that doesn't exist in the stats dictionary yet?
+    #    Will it crash, or should we create a new entry?
     # TODO: Implementare
     # 
     # if sensor_id not in stats:
@@ -220,10 +221,13 @@ def generate_report(stats: Dict[int, SensorStats]) -> dict:
         dict: Raport structurat
     
     TODO: Implementati aceasta function
+    
+    # 💭 PREDICTION: How many bytes would the JSON output be for 3 sensors
+    #    with 10 readings each? Consider: keys, values, formatting.
     """
     
-    💭 PREDICTION: How many bytes would the JSON output be for 3 sensors
-       with 10 readings each? Consider: keys, values, formatting.
+    # 💭 PREDICTION: How many bytes would the JSON output be for 3 sensors
+    #    with 10 readings each? Consider: keys, values, formatting.
     # TODO: Implementare
     # 
     # total_readings = sum(s.count for s in stats.values())
@@ -323,11 +327,15 @@ def run_aggregator(host: str = '0.0.0.0',
     - Folositi recvfrom() for a primi datagrame
     - Apelati parse_sensor_datagram() and update_statistics()
     - Optional: porniti thread for raportare periodica
+    
+    # 💭 PREDICTION: What happens when recvfrom() times out after 1 second?
+    #    Does it raise an exception, return empty data, or something else?
+    #    Why do we need a timeout in the first place?
     """
     
-    💭 PREDICTION: What happens when recvfrom() times out after 1 second?
-       Does it raise an exception, return empty data, or something else?
-       Why do we need a timeout in the first place?
+    # 💭 PREDICTION: What happens when recvfrom() times out after 1 second?
+    #    Does it raise an exception, return empty data, or something else?
+    #    Why do we need a timeout in the first place?
     # Statistici globale
     stats: Dict[int, SensorStats] = {}
     

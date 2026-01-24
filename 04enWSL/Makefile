@@ -3,17 +3,23 @@
 # NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 # ═══════════════════════════════════════════════════════════════════════════════
 #
+# Version: 1.1.0
+# Last Updated: 2026-01-24
+#
 # Usage:
-#   make help        - Show available commands
-#   make verify      - Check environment setup
-#   make test        - Run all tests
-#   make quiz        - Run formative quiz
-#   make docker-up   - Start lab containers
-#   make docker-down - Stop lab containers
+#   make help           - Show available commands
+#   make verify         - Check environment setup
+#   make verify-integrity - Verify all kit artifacts exist
+#   make test           - Run all tests
+#   make quiz           - Run formative quiz
+#   make docker-up      - Start lab containers
+#   make docker-down    - Stop lab containers
+#   make generate-pcap  - Generate PCAP sample files
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
 .PHONY: help test quiz lint docker-up docker-down clean verify smoke unit start stop
+.PHONY: verify-integrity generate-pcap syntax-check typecheck
 
 PYTHON := python3
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
@@ -31,47 +37,61 @@ help:
 	@echo "╔══════════════════════════════════════════════════════════════╗"
 	@echo "║  Week 4 Laboratory Kit — Available Commands                  ║"
 	@echo "║  Physical Layer, Data Link Layer & Custom Protocols          ║"
+	@echo "║  Version 1.1.0                                               ║"
 	@echo "╚══════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "  Environment:"
-	@echo "    make verify      - Verify environment setup"
-	@echo "    make start       - Start lab (docker-up + status)"
-	@echo "    make stop        - Stop lab and clean"
+	@echo "    make verify           - Verify environment setup"
+	@echo "    make verify-integrity - Verify all kit artifacts exist"
+	@echo "    make start            - Start lab (docker-up + status)"
+	@echo "    make stop             - Stop lab and clean"
 	@echo ""
 	@echo "  Testing:"
-	@echo "    make test        - Run all tests"
-	@echo "    make smoke       - Run smoke tests only"
-	@echo "    make unit        - Run unit tests only"
+	@echo "    make test             - Run all tests"
+	@echo "    make smoke            - Run smoke tests only"
+	@echo "    make unit             - Run unit tests only"
+	@echo "    make syntax-check     - Verify Python syntax"
 	@echo ""
 	@echo "  Learning:"
-	@echo "    make quiz        - Run formative quiz (full)"
-	@echo "    make quiz-random - Run 10 random questions"
-	@echo "    make quiz-lo3    - Quiz only LO3 questions"
-	@echo "    make quiz-lo4    - Quiz only LO4 questions"
+	@echo "    make quiz             - Run formative quiz (full)"
+	@echo "    make quiz-random      - Run 10 random questions"
+	@echo "    make quiz-lo3         - Quiz only LO3 questions"
+	@echo "    make quiz-lo4         - Quiz only LO4 questions"
 	@echo ""
 	@echo "  Docker:"
-	@echo "    make docker-up   - Start lab containers"
-	@echo "    make docker-down - Stop lab containers"
-	@echo "    make docker-logs - Follow container logs"
-	@echo "    make docker-status - Show container status"
+	@echo "    make docker-up        - Start lab containers"
+	@echo "    make docker-down      - Stop lab containers"
+	@echo "    make docker-logs      - Follow container logs"
+	@echo "    make docker-status    - Show container status"
 	@echo ""
 	@echo "  Code Quality:"
-	@echo "    make lint        - Check code style"
-	@echo "    make typecheck   - Run type checker (if mypy installed)"
+	@echo "    make lint             - Check code style"
+	@echo "    make typecheck        - Run type checker (if mypy installed)"
+	@echo ""
+	@echo "  PCAP Generation:"
+	@echo "    make generate-pcap    - Generate sample PCAP files"
+	@echo "    make capture-text     - Capture TEXT protocol traffic"
+	@echo "    make capture-binary   - Capture BINARY protocol traffic"
+	@echo "    make capture-udp      - Capture UDP sensor traffic"
 	@echo ""
 	@echo "  Cleanup:"
-	@echo "    make clean       - Clean artifacts and caches"
-	@echo "    make clean-docker - Remove Docker volumes"
+	@echo "    make clean            - Clean artifacts and caches"
+	@echo "    make clean-docker     - Remove Docker volumes"
 	@echo ""
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ENVIRONMENT
+# ENVIRONMENT VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
 verify:
 	@echo "Verifying environment..."
 	@$(PYTHON) setup/verify_environment.py
+
+verify-integrity:
+	@echo ""
+	@echo "Verifying kit integrity..."
+	@$(PYTHON) scripts/verify_kit_integrity.py
 
 start: docker-up
 	@echo ""
@@ -97,9 +117,17 @@ stop: docker-down clean
 # TESTING
 # ═══════════════════════════════════════════════════════════════════════════════
 
-test: smoke unit
+test: syntax-check smoke unit
 	@echo ""
 	@echo "All tests completed."
+
+syntax-check:
+	@echo ""
+	@echo "Checking Python syntax..."
+	@$(PYTHON) -m py_compile \
+		$$(find src scripts tests setup formative -name "*.py" 2>/dev/null) && \
+		echo "  ✓ All Python files have valid syntax" || \
+		(echo "  ✗ Syntax errors found" && exit 1)
 
 smoke:
 	@echo ""
@@ -159,17 +187,12 @@ quiz-remember:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CODE_QUALITY
+# CODE QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-lint:
+lint: syntax-check
 	@echo ""
 	@echo "Checking code style..."
-	@echo ""
-	@echo "Syntax check:"
-	@$(PYTHON) -m py_compile src/apps/*.py src/exercises/*.py scripts/*.py tests/*.py 2>/dev/null && \
-		echo "  ✓ All Python files have valid syntax" || \
-		echo "  ✗ Syntax errors found"
 	@echo ""
 	@echo "Style check (ruff):"
 	@command -v ruff >/dev/null 2>&1 && \
@@ -210,6 +233,28 @@ docker-restart: docker-down docker-up
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# PCAP GENERATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+generate-pcap:
+	@echo ""
+	@echo "Generating PCAP sample files..."
+	@$(PYTHON) scripts/generate_pcap_samples.py
+
+capture-text:
+	@echo "Capturing TEXT protocol traffic..."
+	@$(PYTHON) scripts/capture_traffic.py --interface any --port 5400 --output pcap/week04_lo3_text_proto.pcap
+
+capture-binary:
+	@echo "Capturing BINARY protocol traffic..."
+	@$(PYTHON) scripts/capture_traffic.py --interface any --port 5401 --output pcap/week04_lo4_binary_proto.pcap
+
+capture-udp:
+	@echo "Capturing UDP sensor traffic..."
+	@$(PYTHON) scripts/capture_traffic.py --interface any --port 5402 --output pcap/week04_lo5_udp_sensor.pcap
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # CLEANUP
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -239,20 +284,15 @@ clean-all: clean clean-docker
 # DEVELOPMENT (Instructor use)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-capture-text:
-	@echo "Capturing TEXT protocol traffic..."
-	@$(PYTHON) scripts/capture_traffic.py --interface any --port 5400 --output pcap/week04_lo3_text_proto.pcap
-
-capture-binary:
-	@echo "Capturing BINARY protocol traffic..."
-	@$(PYTHON) scripts/capture_traffic.py --interface any --port 5401 --output pcap/week04_lo4_binary_proto.pcap
-
-capture-udp:
-	@echo "Capturing UDP sensor traffic..."
-	@$(PYTHON) scripts/capture_traffic.py --interface any --port 5402 --output pcap/week04_lo5_udp_sensor.pcap
-
 demo1:
 	@$(PYTHON) scripts/run_demo.py --demo 1
 
 demo2:
 	@$(PYTHON) scripts/run_demo.py --demo 2
+
+# Pre-commit check: run all verifications
+pre-commit: verify-integrity syntax-check smoke
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════════╗"
+	@echo "║  ✓ Pre-commit checks passed                                  ║"
+	@echo "╚══════════════════════════════════════════════════════════════╝"

@@ -6,6 +6,25 @@
 
 ---
 
+## 📋 Kit Metadata
+
+| Property | Value |
+|----------|-------|
+| **Version** | 1.1.0 |
+| **Last Verified** | 2026-01-24 |
+| **Python Minimum** | 3.8+ |
+| **Docker Compose** | v2.0+ |
+| **Integrity Check** | `make verify-integrity` |
+
+**Quick Start Verification:**
+```bash
+make verify-integrity    # Verify all artifacts exist
+make syntax-check        # Check Python syntax
+make quiz --limit 5      # Quick quiz test
+```
+
+---
+
 ## ⚠️ Environment Notice
 
 This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
@@ -930,3 +949,4 @@ docker ps
 
 *NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
 *Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
+*Version 1.1.0 — Last verified: 2026-01-24*

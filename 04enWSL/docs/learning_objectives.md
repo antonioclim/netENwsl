@@ -8,6 +8,10 @@
 
 This document maps each Learning Objective to its supporting artefacts, ensuring complete pedagogical coverage and facilitating targeted study.
 
+**Kit Version:** 1.1.0  
+**Last Verified:** 2026-01-24  
+**Integrity Check:** `make verify-integrity`
+
 ---
 
 ## Bloom Taxonomy Distribution
@@ -71,9 +75,10 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 | Misconception | `docs/misconceptions.md` #1 | "TCP preserves message boundaries" | ✅ |
 | Misconception | `docs/misconceptions.md` #2 | "Length-prefix works with any data" | ✅ |
 | Parsons | `docs/parsons_problems.md` P2, P3 | recv_exact, parse framed message | ✅ |
+| PCAP Sample | `pcap/week04_lo3_text_commands.pcap` | TEXT protocol session capture | ✅ |
 | Quiz | `formative/quiz.yaml` q08, q12 | 2 apply-level questions | ✅ |
 
-**Coverage:** 9/9 ✅ **Complete**
+**Coverage:** 10/10 ✅ **Complete**
 
 ---
 
@@ -97,9 +102,10 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 | Misconception | `docs/misconceptions.md` #5 | "CRC guarantees integrity" | ✅ |
 | Misconception | `docs/misconceptions.md` #6 | "CRC32 = checksum" | ✅ |
 | Parsons | `docs/parsons_problems.md` P1, P4, P5 | Header build, CRC verify, UDP packet | ✅ |
+| PCAP Sample | `pcap/week04_lo4_binary_header.pcap` | BINARY protocol with CRC verification | ✅ |
 | Quiz | `formative/quiz.yaml` q09, q10, q11 | 3 apply-level questions | ✅ |
 
-**Coverage:** 15/15 ✅ **Complete**
+**Coverage:** 16/16 ✅ **Complete**
 
 ---
 
@@ -114,11 +120,12 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 | Lab Exercise | `README.md` § Exercise 4 | Protocol overhead analysis | ✅ |
 | Capture Script | `scripts/capture_traffic.py` | Automated packet capture | ✅ |
 | PCAP Instructions | `pcap/README.md` | Capture procedures | ✅ |
-| PCAP Samples | `pcap/week04_*.pcap` | Pre-captured samples | ✅ |
+| PCAP Sample | `pcap/week04_lo5_tcp_handshake.pcap` | Clean TCP 3-way handshake | ✅ |
+| PCAP Sample | `pcap/week04_lo5_udp_sensor.pcap` | UDP sensor datagrams | ✅ |
 | Peer Instruction | `docs/peer_instruction.md` Q1 | TCP boundary analysis | ✅ |
 | Quiz | `formative/quiz.yaml` q13, q14 | 2 analyse-level questions | ✅ |
 
-**Coverage:** 8/8 ✅ **Complete**
+**Coverage:** 9/9 ✅ **Complete**
 
 ---
 
@@ -145,11 +152,11 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 |----|-------------|----------------|----------|--------|
 | LO1 | Remember | 5 | 5/5 (100%) | ✅ Complete |
 | LO2 | Understand | 6 | 6/6 (100%) | ✅ Complete |
-| LO3 | Apply | 9 | 9/9 (100%) | ✅ Complete |
-| LO4 | Apply | 15 | 15/15 (100%) | ✅ Complete |
-| LO5 | Analyse | 8 | 8/8 (100%) | ✅ Complete |
+| LO3 | Apply | 10 | 10/10 (100%) | ✅ Complete |
+| LO4 | Apply | 16 | 16/16 (100%) | ✅ Complete |
+| LO5 | Analyse | 9 | 9/9 (100%) | ✅ Complete |
 | LO6 | Evaluate | 6 | 6/6 (100%) | ✅ Complete |
-| **Total** | — | **49** | **49/49 (100%)** | ✅ |
+| **Total** | — | **52** | **52/52 (100%)** | ✅ |
 
 ---
 
@@ -168,6 +175,7 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 | `formative/quiz.yaml` | All (LO1-LO6) | Self-assessment |
 | `src/exercises/*.py` | LO3, LO4 | Hands-on implementation |
 | `homework/exercises/*.py` | LO3, LO4, LO6 | Extended practice |
+| `pcap/*.pcap` | LO3, LO4, LO5 | Traffic analysis practice |
 
 ### By Bloom Level
 
@@ -175,9 +183,18 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 |-------|-----------|
 | Remember | theory_summary, glossary, quiz (q01-q03) |
 | Understand | misconceptions, peer_instruction, quiz (q04-q07) |
-| Apply | exercises, parsons_problems, code_tracing, quiz (q08-q12) |
+| Apply | exercises, parsons_problems, code_tracing, pcap samples, quiz (q08-q12) |
 | Analyse | pcap/, capture_traffic.py, peer_instruction, quiz (q13-q14) |
 | Evaluate | homework/, peer_instruction Q5, quiz (q15) |
+
+### PCAP Sample Index
+
+| File | Size | Packets | LO Coverage | Wireshark Filter |
+|------|------|---------|-------------|------------------|
+| `week04_lo3_text_commands.pcap` | ~5KB | 25+ | LO3 | `tcp.port == 5400` |
+| `week04_lo4_binary_header.pcap` | ~3KB | 18+ | LO4 | `tcp.port == 5401` |
+| `week04_lo5_tcp_handshake.pcap` | ~2KB | 12+ | LO5 | `tcp.flags.syn == 1` |
+| `week04_lo5_udp_sensor.pcap` | ~4KB | 30+ | LO5 | `udp.port == 5402` |
 
 ---
 
@@ -208,16 +225,32 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 ### For Students Struggling with Analysis (LO5)
 
 1. Review `README.md` § Wireshark Setup
-2. Practice with PCAP samples in `pcap/`
+2. Open PCAP samples in `pcap/` with Wireshark
 3. Study `docs/peer_instruction.md` Q1
 4. Run Exercise 4 and capture own traffic
 5. Take quiz: `python formative/run_quiz.py --lo LO5`
 
 ---
 
+## Verification
+
+Run `make verify-integrity` to confirm all artefacts exist:
+
+```bash
+$ make verify-integrity
+✓ All 52 artefacts verified
+✓ All PCAP samples present and valid
+✓ Quiz covers all 6 Learning Objectives
+✓ Kit integrity check passed
+```
+
+---
+
 ## Action Items for Instructors
 
 - [x] Generate and commit PCAP samples for LO5
+- [x] Add PCAP samples for LO3 and LO4
+- [x] Create integrity verification script
 - [ ] Update quiz questions based on common errors observed
 - [ ] Add peer instruction questions for LO1 if needed
 - [ ] Review homework submissions for LO6 coverage
@@ -226,3 +259,4 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 
 *NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
 *Week 4: Physical Layer, Data Link Layer & Custom Protocols*
+*Version 1.1.0 — Last updated: 2026-01-24*
