@@ -1,0 +1,86 @@
+name: ❓ Question
+description: Ask a question about using the laboratory materials
+title: "[QUESTION] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before asking a question, please review:
+        - The README documentation
+        - The troubleshooting guide
+        - The FAQ section
+        - Existing closed issues (your question may already be answered)
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Question Topic
+      description: What is your question about?
+      options:
+        - Understanding an exercise
+        - Interpreting expected output
+        - Choosing between approaches
+        - Clarifying documentation
+        - Best practices
+        - Going beyond the exercises
+        - General networking concept
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: week
+    attributes:
+      label: Related Week (if applicable)
+      description: Does your question relate to a specific week?
+      options:
+        - Not week-specific
+        - Week 00 (Appendix/Setup)
+        - Week 01
+        - Week 02
+        - Week 03
+        - Week 04
+        - Week 05
+        - Week 06
+        - Week 07
+        - Week 08
+        - Week 09
+        - Week 10
+        - Week 11
+        - Week 12
+        - Week 13
+        - Week 14
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Ask your question as clearly as possible.
+      placeholder: "What I would like to understand is..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context that helps us understand your question.
+      placeholder: "I am working on exercise X and trying to understand..."
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What Have You Tried?
+      description: Describe what you have already tried or researched.
+      placeholder: "I have looked at the documentation and tried..."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched the README and documentation
+          required: true
+        - label: I have checked if this question was already asked in existing issues
+          required: true
