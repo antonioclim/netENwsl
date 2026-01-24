@@ -1,0 +1,540 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Quiz Formativ — Week 14: Integrated Recap and Project Evaluation
+# ═══════════════════════════════════════════════════════════════════════════════
+# NETWORKING class — ASE, CSIE | Computer Networks Laboratory
+# by ing. dr. Antonio Clim
+#
+# Format: YAML standardizat pentru auto-evaluare
+# Compatibil cu: run_quiz.py, export la JSON/Moodle
+# Versiune: 1.0.0
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  week: 14
+  topic: "Integrated Recap and Project Evaluation"
+  version: "1.0.0"
+  author: "ing. dr. Antonio Clim"
+  institution: "ASE Bucharest, CSIE"
+  course: "Computer Networks"
+  language: "ro"
+  estimated_time_minutes: 15
+  passing_score_percent: 70
+  
+  bloom_coverage:
+    - level: "Remember"
+      count: 3
+      points: 3
+    - level: "Understand"
+      count: 3
+      points: 6
+    - level: "Apply"
+      count: 2
+      points: 4
+    - level: "Analyze"
+      count: 2
+      points: 6
+      
+  learning_objectives:
+    LO1:
+      description: "Recall OSI and TCP/IP layered architectures"
+      bloom_level: "Remember"
+    LO2:
+      description: "Explain reverse proxies and load balancers"
+      bloom_level: "Understand"
+    LO3:
+      description: "Implement multi-container Docker environment"
+      bloom_level: "Apply"
+    LO4:
+      description: "Analyse packet captures to trace HTTP flows"
+      bloom_level: "Analyze"
+    LO5:
+      description: "Design verification strategies for network services"
+      bloom_level: "Design"
+    LO6:
+      description: "Evaluate system behaviour under various conditions"
+      bloom_level: "Evaluate"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+questions:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BLOOM LEVEL 1: REMEMBER (3 questions, 1 point each)
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  - id: q01
+    type: multiple_choice
+    bloom_level: "Remember"
+    lo_ref: "LO1"
+    difficulty: "basic"
+    points: 1
+    
+    stem: "Care strat OSI este responsabil pentru adresarea logică (IP)?"
+    
+    options:
+      a: "Data Link (Layer 2)"
+      b: "Network (Layer 3)"
+      c: "Transport (Layer 4)"
+      d: "Application (Layer 7)"
+      
+    correct: "b"
+    
+    explanation: |
+      Stratul Network (Layer 3) gestionează adresarea IP și rutarea 
+      pachetelor între rețele diferite. 
+      - Data Link (L2) folosește adrese MAC pentru comunicarea locală
+      - Transport (L4) folosește porturi (nu adrese)
+      - Application (L7) gestionează date aplicație
+      
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    
+    verification:
+      command: "docker exec client ip addr show eth0"
+      expected: "inet 172.21.0.2/24"
+      
+    hint: "Gândește-te la ce informație folosește un router pentru a decide unde trimite un pachet."
+
+  - id: q02
+    type: multiple_choice
+    bloom_level: "Remember"
+    lo_ref: "LO1"
+    difficulty: "basic"
+    points: 1
+    
+    stem: "Ce Protocol Data Unit (PDU) folosește TCP la Layer 4?"
+    
+    options:
+      a: "Frame"
+      b: "Packet"
+      c: "Segment"
+      d: "Datagram"
+      
+    correct: "c"
+    
+    explanation: |
+      Fiecare layer OSI are propriul PDU:
+      - Layer 2 (Data Link): Frame
+      - Layer 3 (Network): Packet
+      - Layer 4 (Transport): Segment (TCP) sau Datagram (UDP)
+      - Layer 7 (Application): Data/Message
+      
+    misconception_ref: "docs/misconceptions.md#misconception-2"
+    
+    hint: "TCP = Transport Control Protocol → care layer?"
+
+  - id: q03
+    type: multiple_choice
+    bloom_level: "Remember"
+    lo_ref: "LO1"
+    difficulty: "basic"
+    points: 1
+    
+    stem: "Care este portul standard pentru HTTP (nu HTTPS)?"
+    
+    options:
+      a: "22"
+      b: "53"
+      c: "80"
+      d: "443"
+      
+    correct: "c"
+    
+    explanation: |
+      Porturi standard comune:
+      - 22: SSH (Secure Shell)
+      - 53: DNS (Domain Name System)
+      - 80: HTTP (HyperText Transfer Protocol)
+      - 443: HTTPS (HTTP Secure)
+      
+    verification:
+      command: "curl -I http://localhost:8080/ 2>/dev/null | head -1"
+      expected: "HTTP/1.1 200"
+      
+    hint: "HTTP = HyperText Transfer Protocol, H este la 8..."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BLOOM LEVEL 2: UNDERSTAND (3 questions, 2 points each)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q04
+    type: multiple_choice
+    bloom_level: "Understand"
+    lo_ref: "LO2"
+    difficulty: "intermediate"
+    points: 2
+    
+    stem: |
+      Un load balancer round-robin are 2 backend-uri (app1, app2).
+      Dacă trimiți 4 request-uri consecutive, care este distribuția așteptată?
+      
+    options:
+      a: "Toate 4 la app1 (sticky session)"
+      b: "app1, app2, app1, app2 (alternează determinist)"
+      c: "Distribuție aleatorie (poate fi orice)"
+      d: "Primele 2 la app1, următoarele 2 la app2 (batch)"
+      
+    correct: "b"
+    
+    explanation: |
+      Round-robin este un algoritm DETERMINIST și SECVENȚIAL:
+      - Request 1 → app1
+      - Request 2 → app2
+      - Request 3 → app1
+      - Request 4 → app2
+      
+      NU este aleatoriu! Cu N backend-uri, request-urile merg în ordine
+      1, 2, 3, ..., N, 1, 2, 3, ..., N (wrap-around cu modulo).
+      
+    misconception_ref: "docs/misconceptions.md#misconception-8"
+    
+    verification:
+      command: "for i in 1 2 3 4; do curl -s http://localhost:8080/ | grep -o 'app[12]'; done"
+      expected: "app1\napp2\napp1\napp2"
+      
+    hint: "Round = cerc, Robin = pe rând. Nu 'Random-robin'!"
+
+  - id: q05
+    type: multiple_choice
+    bloom_level: "Understand"
+    lo_ref: "LO3"
+    difficulty: "intermediate"
+    points: 2
+    
+    stem: |
+      În docker-compose.yml găsești: ports: "8080:80"
+      Ce înseamnă această configurație?
+      
+    options:
+      a: "Containerul ascultă pe portul 8080, host-ul pe 80"
+      b: "Host-ul expune portul 8080, care se mapează la portul 80 din container"
+      c: "Ambele porturi sunt identice (8080 = 80)"
+      d: "Host-ul ascultă pe 80, containerul pe 8080"
+      
+    correct: "b"
+    
+    explanation: |
+      Sintaxa Docker port mapping este HOST:CONTAINER
+      
+      "8080:80" înseamnă:
+      - Din exterior (browser): accesezi http://localhost:8080
+      - În interior (container): serviciul ascultă pe :80
+      
+      Memory aid: "Left is outside, Right is inside" 
+      (citim de la stânga la dreapta, ca traficul care intră)
+      
+    misconception_ref: "docs/misconceptions.md#misconception-5"
+    
+    verification:
+      command: "docker port week14_lb"
+      expected: "8080/tcp -> 0.0.0.0:8080"
+      
+    hint: "HOST:CONTAINER - ce e pe stânga e pentru exterior."
+
+  - id: q06
+    type: multiple_choice
+    bloom_level: "Understand"
+    lo_ref: "LO1"
+    difficulty: "intermediate"
+    points: 2
+    
+    stem: "Care este secvența corectă de flag-uri în TCP three-way handshake?"
+    
+    options:
+      a: "SYN → ACK → SYN-ACK"
+      b: "SYN → SYN-ACK → ACK"
+      c: "ACK → SYN → SYN-ACK"
+      d: "SYN → SYN → ACK"
+      
+    correct: "b"
+    
+    explanation: |
+      TCP Three-Way Handshake:
+      
+      Client                    Server
+        |                         |
+        |--- SYN (seq=x) -------->|  Pasul 1: "Vreau să mă conectez"
+        |                         |
+        |<-- SYN-ACK (ack=x+1) ---|  Pasul 2: "OK, și eu vreau"
+        |      (seq=y)            |
+        |                         |
+        |--- ACK (ack=y+1) ------>|  Pasul 3: "Perfect, începem"
+        |                         |
+        [=== Conexiune stabilită ===]
+      
+      SYN-ACK este UN SINGUR pachet cu ambele flag-uri setate!
+      
+    misconception_ref: "docs/misconceptions.md#misconception-3"
+    
+    verification:
+      command: "# În Wireshark: tcp.flags.syn == 1"
+      expected: "Vezi 2 pachete: SYN pur și SYN-ACK"
+      
+    hint: "Client inițiază (SYN), Server răspunde cu ambele (SYN+ACK), Client confirmă (ACK)."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BLOOM LEVEL 3: APPLY (2 questions, 2 points each)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q07
+    type: fill_blank
+    bloom_level: "Apply"
+    lo_ref: "LO3"
+    difficulty: "intermediate"
+    points: 2
+    
+    stem: |
+      Pentru a vedea toate containerele Docker care rulează în acest moment,
+      comanda completă este: docker ___
+      
+    correct:
+      - "ps"
+      - "container ls"
+      - "container list"
+      
+    case_sensitive: false
+    
+    explanation: |
+      Comenzi echivalente pentru listarea containerelor active:
+      - docker ps                    (scurt, tradițional)
+      - docker container ls          (nou, explicit)
+      - docker container list        (alias pentru ls)
+      
+      Pentru a vedea TOATE containerele (inclusiv oprite): docker ps -a
+      
+    verification:
+      command: "docker ps --format '{{.Names}}' | grep week14"
+      expected: "week14_app1, week14_app2, week14_lb, etc."
+      
+    hint: "ps = process status (prescurtare Unix tradițională)"
+
+  - id: q08
+    type: fill_blank
+    bloom_level: "Apply"
+    lo_ref: "LO4"
+    difficulty: "intermediate"
+    points: 2
+    
+    stem: |
+      În Wireshark, pentru a filtra doar pachetele HTTP cu metoda GET,
+      display filter-ul corect este: http.request.method == "___"
+      
+    correct:
+      - "GET"
+      
+    case_sensitive: true
+    
+    explanation: |
+      Wireshark display filters pentru HTTP:
+      - http.request.method == "GET"     (GET requests)
+      - http.request.method == "POST"    (POST requests)
+      - http.response.code == 200        (successful responses)
+      - http.host contains "example"     (specific host)
+      
+      ATENȚIE: Valorile sunt case-sensitive! "GET" nu "get".
+      
+    verification:
+      command: "# În Wireshark: Apply filter, apoi verify în lista de pachete"
+      expected: "Doar pachete cu Info: GET /..."
+      
+    hint: "Metodele HTTP sunt întotdeauna cu MAJUSCULE: GET, POST, PUT, DELETE..."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BLOOM LEVEL 4: ANALYZE (2 questions, 3 points each)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q09
+    type: multiple_choice
+    bloom_level: "Analyze"
+    lo_ref: "LO4"
+    difficulty: "advanced"
+    points: 3
+    
+    stem: |
+      În Wireshark, captezi trafic și observi următoarea secvență TCP:
+      
+      Packet 1: [SYN] 192.168.1.10:54321 → 10.0.0.5:8080
+      Packet 2: [RST, ACK] 10.0.0.5:8080 → 192.168.1.10:54321
+      
+      Ce indică această secvență?
+      
+    options:
+      a: "Conexiune stabilită cu succes, urmează transfer de date"
+      b: "Portul 8080 pe serverul 10.0.0.5 este închis sau nu există serviciu"
+      c: "Timeout de rețea - pachetele s-au pierdut"
+      d: "Firewall a blocat conexiunea silent (drop)"
+      
+    correct: "b"
+    
+    explanation: |
+      Analiza secvenței:
+      
+      [SYN] → Client încearcă să inițieze conexiunea
+      [RST, ACK] ← Server răspunde IMEDIAT cu Reset
+      
+      RST (Reset) imediat după SYN indică:
+      - Portul destinație este ÎNCHIS
+      - Nu există niciun serviciu care să asculte pe acel port
+      - Kernel-ul serverului răspunde automat cu RST
+      
+      Diferențe față de alte scenarii:
+      - Firewall DROP: Nu ai primi NIMIC înapoi (timeout)
+      - Firewall REJECT: Ai primi ICMP "port unreachable"
+      - Serviciu ocupat: Ai primi SYN-ACK (conexiune în curs)
+      
+    misconception_ref: "docs/code_tracing.md#exercise-t1"
+    
+    verification:
+      command: "# Test: nc -zv localhost 9999 (port închis)"
+      expected: "Connection refused"
+      
+    hint: "RST = Reset = 'Nu există nimeni aici!'"
+
+  - id: q10
+    type: multiple_choice
+    bloom_level: "Analyze"
+    lo_ref: "LO6"
+    difficulty: "advanced"
+    points: 3
+    
+    stem: |
+      Accesezi http://localhost:8080/ și primești răspunsul:
+      
+      HTTP/1.1 502 Bad Gateway
+      X-Error: upstream connection failed
+      
+      Care este cea mai probabilă cauză și primul pas de diagnosticare?
+      
+    options:
+      a: "Client-ul a trimis un request malformat → verifică request-ul"
+      b: "Backend-urile sunt down sau nu răspund → verifică docker ps și health"
+      c: "Load balancer-ul este supraîncărcat → verifică CPU/memory"
+      d: "Certificatul SSL a expirat → verifică certificatele"
+      
+    correct: "b"
+    
+    explanation: |
+      HTTP 502 Bad Gateway înseamnă:
+      
+      "Proxy-ul (load balancer) NU a putut obține un răspuns valid 
+       de la upstream server (backend-uri)"
+      
+      Cauze comune:
+      1. Backend-urile sunt oprite (docker ps nu le arată running)
+      2. Backend-urile nu răspund (health check eșuează)
+      3. Network connectivity între LB și backends e ruptă
+      4. Backend-urile returnează erori (500, timeout)
+      
+      Primul pas de diagnosticare:
+      ```bash
+      docker ps | grep week14_app      # Verifică dacă rulează
+      curl http://localhost:8001/health # Test direct app1
+      curl http://localhost:8002/health # Test direct app2
+      docker logs week14_lb            # Verifică log-urile LB
+      ```
+      
+    misconception_ref: "docs/troubleshooting.md#load-balancer-issues"
+    
+    verification:
+      command: "curl -s http://localhost:8080/lb-status"
+      expected: "healthy backends listed"
+      
+    hint: "502 = 'Am încercat să întreb backend-ul, dar n-a răspuns'"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCORING CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+scoring:
+  total_points: 19
+  passing_threshold: 13  # ~70%
+  
+  grade_boundaries:
+    A_plus:
+      min_points: 19
+      min_percent: 100
+      label: "Excelent"
+    A:
+      min_points: 17
+      min_percent: 90
+      label: "Foarte bine"
+    B:
+      min_points: 15
+      min_percent: 80
+      label: "Bine"
+    C:
+      min_points: 13
+      min_percent: 70
+      label: "Satisfăcător"
+    D:
+      min_points: 11
+      min_percent: 60
+      label: "Suficient"
+    F:
+      min_points: 0
+      min_percent: 0
+      label: "Insuficient"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FEEDBACK CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+feedback:
+  on_pass: |
+    🎉 Felicitări! Ai demonstrat o înțelegere solidă a conceptelor 
+    de rețelistică acoperite în acest curs.
+    
+    Ești pregătit pentru:
+    - Evaluarea practică finală
+    - Proiectul de semestru
+    
+    Continuă să exersezi cu exercițiile din src/exercises/!
+    
+  on_fail: |
+    📚 Mai ai nevoie de pregătire. Iată ce să revizuiești:
+    
+    1. Citește docs/theory_summary.md pentru conceptele de bază
+    2. Studiază docs/misconceptions.md pentru greșelile comune
+    3. Practică cu exercițiile din src/exercises/
+    4. Încearcă din nou quiz-ul după 30 minute de studiu
+    
+  per_lo_feedback:
+    LO1: |
+      Revizuiește straturile OSI/TCP-IP în docs/theory_summary.md secțiunea 1.
+      Exersează: python src/exercises/ex_14_01_review_drills.py --selftest
+    LO2: |
+      Studiază load balancing în docs/theory_summary.md secțiunea 4.
+      Verifică: docs/misconceptions.md#misconception-8 și #misconception-9
+    LO3: |
+      Practică Docker networking în docs/theory_summary.md secțiunea 8.
+      Rulează: docker network inspect week14_backend_net
+    LO4: |
+      Exersează cu Wireshark folosind filtrele din docs/commands_cheatsheet.md.
+      Captează: python scripts/capture_traffic.py
+    LO5: |
+      Studiază docs/troubleshooting.md pentru strategii de verificare.
+      Încearcă: python tests/smoke_test.py
+    LO6: |
+      Analizează scenariile din docs/peer_instruction.md.
+      Experimentează: oprește un backend și observă comportamentul LB
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA FOR EXPORT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+export:
+  moodle:
+    category: "Computer Networks / Week 14"
+    question_type_mapping:
+      multiple_choice: "multichoice"
+      fill_blank: "shortanswer"
+    shuffle_answers: true
+    
+  json:
+    include_explanations: true
+    include_verification: false
+    
+  canvas:
+    points_possible: 19
+    quiz_type: "practice_quiz"
