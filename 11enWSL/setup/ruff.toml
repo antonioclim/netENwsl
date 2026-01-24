@@ -1,0 +1,32 @@
+# =============================================================================
+# ruff.toml — Ruff Linter Configuration for Week 11 Lab Kit
+# =============================================================================
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# Usage: ruff check src/ scripts/ --config setup/ruff.toml
+# =============================================================================
+
+target-version = "py311"
+line-length = 100
+include = ["*.py"]
+exclude = [".git", ".venv", "venv", "__pycache__", "*.egg-info", "build", "dist"]
+
+[lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = ["E501", "E731", "B008", "SIM108"]
+fixable = ["ALL"]
+unfixable = []
+
+[lint.isort]
+known-first-party = ["src", "scripts", "formative", "tests"]
+force-single-line = false
+lines-after-imports = 2
+
+[lint.per-file-ignores]
+"tests/*.py" = ["E501", "F401", "F811"]
+"__init__.py" = ["F401"]
+"scripts/*.py" = ["E402"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

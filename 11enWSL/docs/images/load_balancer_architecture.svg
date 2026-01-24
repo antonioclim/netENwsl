@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4a5568"/>
+    </marker>
+    <linearGradient id="clientGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#63b3ed"/>
+      <stop offset="100%" style="stop-color:#3182ce"/>
+    </linearGradient>
+    <linearGradient id="lbGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#68d391"/>
+      <stop offset="100%" style="stop-color:#38a169"/>
+    </linearGradient>
+    <linearGradient id="backendGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fc8181"/>
+      <stop offset="100%" style="stop-color:#e53e3e"/>
+    </linearGradient>
+  </defs>
+  <text x="300" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#2d3748">Load Balancer Architecture — Week 11</text>
+  <rect x="50" y="160" width="100" height="60" rx="8" fill="url(#clientGrad)" stroke="#2b6cb0" stroke-width="2"/>
+  <text x="100" y="195" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Client</text>
+  <rect x="230" y="140" width="140" height="100" rx="8" fill="url(#lbGrad)" stroke="#276749" stroke-width="2"/>
+  <text x="300" y="175" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Load Balancer</text>
+  <text x="300" y="195" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">(Nginx :8080)</text>
+  <text x="300" y="225" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#e6fffa">Round-Robin | IP Hash</text>
+  <rect x="450" y="60" width="120" height="50" rx="6" fill="url(#backendGrad)" stroke="#c53030" stroke-width="2"/>
+  <text x="510" y="90" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Backend 1 :8081</text>
+  <rect x="450" y="165" width="120" height="50" rx="6" fill="url(#backendGrad)" stroke="#c53030" stroke-width="2"/>
+  <text x="510" y="195" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Backend 2 :8082</text>
+  <rect x="450" y="270" width="120" height="50" rx="6" fill="url(#backendGrad)" stroke="#c53030" stroke-width="2"/>
+  <text x="510" y="300" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Backend 3 :8083</text>
+  <line x1="150" y1="190" x2="225" y2="190" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="188" y="180" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#718096">HTTP</text>
+  <line x1="370" y1="165" x2="445" y2="95" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="370" y1="190" x2="445" y2="190" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="370" y1="215" x2="445" y2="285" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="380" y1="150" x2="445" y2="100" stroke="#38a169" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="380" y1="190" x2="445" y2="190" stroke="#38a169" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="380" y1="230" x2="445" y2="280" stroke="#38a169" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="50" y="340" width="500" height="50" rx="4" fill="#f7fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="70" y="360" font-family="Arial, sans-serif" font-size="11" fill="#4a5568">Legend:</text>
+  <line x1="130" y1="355" x2="170" y2="355" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="180" y="360" font-family="Arial, sans-serif" font-size="10" fill="#718096">Request flow</text>
+  <line x1="280" y1="355" x2="320" y2="355" stroke="#38a169" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="330" y="360" font-family="Arial, sans-serif" font-size="10" fill="#718096">Health check</text>
+  <text x="70" y="378" font-family="Arial, sans-serif" font-size="9" fill="#a0aec0">Network: s11_network (172.28.0.0/16)</text>
+</svg>

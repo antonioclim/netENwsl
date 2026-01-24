@@ -1,0 +1,212 @@
+{
+  "metadata": {
+    "title": "Week 11 Quiz — Application Protocols & Load Balancing",
+    "description": "Formative assessment covering FTP, DNS, SSH protocols and load balancing concepts",
+    "time_limit_minutes": 15,
+    "passing_score_percent": 70,
+    "shuffle_answers": true,
+    "show_correct_answers": true,
+    "export_format": "LMS-compatible JSON",
+    "lms_compatibility": ["Moodle", "Canvas", "Blackboard"],
+    "version": "2.0.0",
+    "week": 11,
+    "lo_coverage": ["LO1", "LO2", "LO3", "LO4", "LO5", "LO7"]
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "type": "multiple_choice",
+      "text": "Which load balancing algorithm distributes requests sequentially in cyclic order?",
+      "difficulty": "basic",
+      "topic": "Load Balancing",
+      "points": 1,
+      "answers": [
+        {"text": "Least connections", "correct": false},
+        {"text": "Round-robin", "correct": true, "feedback": "Round-robin rotates through backends 1→2→3→1→2→3 in sequence."},
+        {"text": "IP hash", "correct": false},
+        {"text": "Random", "correct": false}
+      ]
+    },
+    {
+      "id": "q02",
+      "type": "multiple_choice",
+      "text": "With default Nginx settings, what happens when the FIRST request is sent to a crashed backend?",
+      "difficulty": "intermediate",
+      "topic": "Load Balancing",
+      "points": 1,
+      "answers": [
+        {"text": "Nginx instantly reroutes to a healthy backend", "correct": false},
+        {"text": "The client receives a 502 Bad Gateway error", "correct": true, "feedback": "Nginx uses passive health checks by default."},
+        {"text": "Nginx waits 30 seconds before timing out", "correct": false},
+        {"text": "The request is queued until the backend recovers", "correct": false}
+      ]
+    },
+    {
+      "id": "q03",
+      "type": "multiple_choice",
+      "text": "You configure IP hash for session affinity. After a deployment restarts all backends, what happens to existing sessions?",
+      "difficulty": "intermediate",
+      "topic": "Load Balancing",
+      "points": 1,
+      "answers": [
+        {"text": "Sessions continue working — IP hash is deterministic", "correct": false},
+        {"text": "Sessions may be lost — hash distribution can change", "correct": true},
+        {"text": "Sessions are automatically migrated to new backends", "correct": false},
+        {"text": "Nginx stores session mappings persistently", "correct": false}
+      ]
+    },
+    {
+      "id": "q04",
+      "type": "fill_blank",
+      "text": "The Nginx directive to define a backend pool is called:",
+      "difficulty": "basic",
+      "topic": "Nginx",
+      "points": 1,
+      "correct_answers": ["upstream", "upstream block", "upstream directive"]
+    },
+    {
+      "id": "q05",
+      "type": "multiple_choice",
+      "text": "Given this Nginx config, what percentage of traffic goes to web1?\n\nupstream backend {\n    server web1:80 weight=3;\n    server web2:80 weight=2;\n    server web3:80 weight=1;\n}",
+      "difficulty": "advanced",
+      "topic": "Nginx",
+      "points": 1,
+      "answers": [
+        {"text": "30%", "correct": false},
+        {"text": "33%", "correct": false},
+        {"text": "50%", "correct": true, "feedback": "Total weight = 3+2+1 = 6. web1 gets 3/6 = 50%"},
+        {"text": "60%", "correct": false}
+      ]
+    },
+    {
+      "id": "q06",
+      "type": "multiple_choice",
+      "text": "What is the default port for DNS queries?",
+      "difficulty": "basic",
+      "topic": "DNS",
+      "points": 1,
+      "answers": [
+        {"text": "22", "correct": false},
+        {"text": "53", "correct": true, "feedback": "DNS uses port 53 for both UDP and TCP."},
+        {"text": "80", "correct": false},
+        {"text": "443", "correct": false}
+      ]
+    },
+    {
+      "id": "q07",
+      "type": "multiple_choice",
+      "text": "You set a DNS record with TTL=60 seconds. A user reports seeing the old IP after 5 minutes. What is the most likely cause?",
+      "difficulty": "intermediate",
+      "topic": "DNS",
+      "points": 1,
+      "answers": [
+        {"text": "The DNS change failed", "correct": false},
+        {"text": "The user's ISP resolver enforces a minimum TTL", "correct": true},
+        {"text": "DNS propagation always takes 24-48 hours", "correct": false},
+        {"text": "The user needs to restart their computer", "correct": false}
+      ]
+    },
+    {
+      "id": "q08",
+      "type": "fill_blank",
+      "text": "The DNS record type that maps a domain name to an IPv4 address is:",
+      "difficulty": "basic",
+      "topic": "DNS",
+      "points": 1,
+      "correct_answers": ["A", "A record", "a"]
+    },
+    {
+      "id": "q09",
+      "type": "multiple_choice",
+      "text": "What does NXDOMAIN mean in a DNS response?",
+      "difficulty": "intermediate",
+      "topic": "DNS",
+      "points": 1,
+      "answers": [
+        {"text": "The DNS server is broken", "correct": false},
+        {"text": "The domain does not exist", "correct": true},
+        {"text": "The query timed out", "correct": false},
+        {"text": "The server refused to answer", "correct": false}
+      ]
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "text": "How many TCP connections does FTP use during a file transfer?",
+      "difficulty": "intermediate",
+      "topic": "FTP",
+      "points": 1,
+      "answers": [
+        {"text": "One (multiplexed)", "correct": false},
+        {"text": "Two (control + data)", "correct": true},
+        {"text": "Three (control + upload + download)", "correct": false},
+        {"text": "Depends on file size", "correct": false}
+      ]
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "text": "Why does FTP passive mode work better through NAT than active mode?",
+      "difficulty": "advanced",
+      "topic": "FTP",
+      "points": 1,
+      "answers": [
+        {"text": "Passive mode uses encryption", "correct": false},
+        {"text": "In passive mode, the client initiates both connections (outbound)", "correct": true},
+        {"text": "Passive mode uses UDP instead of TCP", "correct": false},
+        {"text": "Passive mode compresses data", "correct": false}
+      ]
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "text": "What is the default port for SSH?",
+      "difficulty": "basic",
+      "topic": "SSH",
+      "points": 1,
+      "answers": [
+        {"text": "21", "correct": false},
+        {"text": "22", "correct": true},
+        {"text": "23", "correct": false},
+        {"text": "25", "correct": false}
+      ]
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "text": "You set up SSH local port forwarding:\nssh -L 8080:internal-web:80 user@jumphost\nWhich network segment is encrypted?",
+      "difficulty": "advanced",
+      "topic": "SSH",
+      "points": 1,
+      "answers": [
+        {"text": "Browser → localhost:8080", "correct": false},
+        {"text": "localhost:8080 → jumphost (the tunnel)", "correct": true},
+        {"text": "jumphost → internal-web:80", "correct": false},
+        {"text": "The entire path end-to-end", "correct": false}
+      ]
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "text": "When comparing Python load balancer vs Nginx, which typically has higher throughput?",
+      "difficulty": "intermediate",
+      "topic": "Performance",
+      "points": 1,
+      "answers": [
+        {"text": "Python (more flexible)", "correct": false},
+        {"text": "Nginx (optimised C, event-driven)", "correct": true},
+        {"text": "Both are equal", "correct": false},
+        {"text": "Depends on the algorithm", "correct": false}
+      ]
+    },
+    {
+      "id": "q15",
+      "type": "fill_blank",
+      "text": "To capture only HTTP traffic on port 8080, the Wireshark display filter is:",
+      "difficulty": "basic",
+      "topic": "Wireshark",
+      "points": 1,
+      "correct_answers": ["tcp.port == 8080", "tcp.port==8080", "tcp.port eq 8080"]
+    }
+  ]
+}

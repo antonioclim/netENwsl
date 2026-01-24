@@ -7,6 +7,9 @@
 
 ## Problem P1: Build a DNS Query Packet
 
+**LO Reference:** LO1, LO2  
+**Difficulty:** Intermediate
+
 ### Task
 
 Arrange the code blocks to create a function that builds a valid DNS query packet for an A record lookup. The function should:
@@ -35,10 +38,10 @@ def build_dns_query(domain: str) -> bytes:
 # Block E
     trans_id = random.randint(0, 0xFFFF)
 
-# Block F (DISTRACTOR - not needed)
+# Block F (DISTRACTOR — not needed)
     socket.setdefaulttimeout(5.0)
 
-# Block G (DISTRACTOR - not needed)
+# Block G (DISTRACTOR — not needed)
     response = socket.recv(4096)
 ```
 
@@ -56,27 +59,27 @@ def build_dns_query(domain: str) -> bytes:
 <summary>Click to reveal solution</summary>
 
 ```python
-# Block B - Function definition
+# Block B — Function definition
 def build_dns_query(domain: str) -> bytes:
 
-# Block E - Generate transaction ID
+# Block E — Generate transaction ID
     trans_id = random.randint(0, 0xFFFF)
 
-# Block D - Build header
+# Block D — Build header
     flags = 0x0100  # RD (Recursion Desired) flag
     header = struct.pack(">HHHHHH", trans_id, flags, 1, 0, 0, 0)
 
-# Block C - Build question section
+# Block C — Build question section
     question = encode_domain_name(domain)
     question += struct.pack(">HH", 1, 1)  # QTYPE=A, QCLASS=IN
 
-# Block A - Return complete packet
+# Block A — Return complete packet
     return header + question
 ```
 
 **Distractors explained:**
-- Block F (`socket.setdefaulttimeout`) - This configures socket behaviour, not packet building
-- Block G (`socket.recv`) - This receives data, but our function only builds the query
+- Block F (`socket.setdefaulttimeout`) — This configures socket behaviour, not packet building
+- Block G (`socket.recv`) — This receives data, but our function only builds the query
 
 **Key insight:** DNS packet structure is Header (12 bytes) + Question section. The header contains the transaction ID, flags and section counts.
 
@@ -85,6 +88,9 @@ def build_dns_query(domain: str) -> bytes:
 ---
 
 ## Problem P2: Implement Weighted Round-Robin Selection
+
+**LO Reference:** LO3  
+**Difficulty:** Intermediate
 
 ### Task
 
@@ -141,10 +147,10 @@ class WeightedRoundRobin:
 <summary>Click to reveal solution</summary>
 
 ```python
-# Block B - Class definition
+# Block B — Class definition
 class WeightedRoundRobin:
 
-# Block D - Constructor builds expanded list
+# Block D — Constructor builds expanded list
     def __init__(self, backends: dict):
         """backends = {"web1": 3, "web2": 2, "web3": 1}"""
         self._expanded = []
@@ -152,14 +158,14 @@ class WeightedRoundRobin:
             self._expanded.extend([name] * weight)
         self._index = 0
 
-# Block C - Select method signature and empty check
+# Block C — Select method signature and empty check
     def select(self) -> str:
         if not self._expanded:
 
-# Block A - Return None for empty list
+# Block A — Return None for empty list
             return None
 
-# Block E - Main selection logic
+# Block E — Main selection logic
         backend = self._expanded[self._index]
         self._index = (self._index + 1) % len(self._expanded)
         return backend
@@ -173,14 +179,17 @@ class WeightedRoundRobin:
 **Selection sequence:** web1 → web1 → web1 → web2 → web2 → web3 → web1 → ...
 
 **Distractors explained:**
-- Block F (`sort`) - Sorting would group backends together, changing the distribution pattern
-- Block G (`random.choice`) - This would give random selection, not round-robin
+- Block F (`sort`) — Sorting would group backends together, changing the distribution pattern
+- Block G (`random.choice`) — This would give random selection, not round-robin
 
 </details>
 
 ---
 
 ## Problem P3: Parse HTTP Response Status
+
+**LO Reference:** LO3, LO4  
+**Difficulty:** Basic
 
 ### Task
 
@@ -232,18 +241,18 @@ def parse_status_code(response: bytes) -> int:
 <summary>Click to reveal solution</summary>
 
 ```python
-# Block A - Function definition
+# Block A — Function definition
 def parse_status_code(response: bytes) -> int:
 
-# Block C - Find end of first line
+# Block C — Find end of first line
     first_line_end = response.find(b"\r\n")
     if first_line_end == -1:
         return 0
 
-# Block D - Extract and decode status line
+# Block D — Extract and decode status line
     status_line = response[:first_line_end].decode("ascii", errors="replace")
 
-# Block B - Parse and return status code
+# Block B — Parse and return status code
     try:
         parts = status_line.split()
         return int(parts[1])
@@ -260,14 +269,17 @@ Result: 200
 ```
 
 **Distractors explained:**
-- Block E - This splits headers from body, but we only need the first line
-- Block F - This assumes a response object with `.status_code` attribute (like requests library), but we're parsing raw bytes
+- Block E — This splits headers from body, but we only need the first line
+- Block F — This assumes a response object with `.status_code` attribute (like requests library), but we are parsing raw bytes
 
 </details>
 
 ---
 
 ## Problem P4: Check Port Availability
+
+**LO Reference:** LO1, LO5  
+**Difficulty:** Basic
 
 ### Task
 
@@ -318,14 +330,14 @@ def is_port_in_use(host: str, port: int, timeout: float = 1.0) -> bool:
 <summary>Click to reveal solution</summary>
 
 ```python
-# Block A - Function definition
+# Block A — Function definition
 def is_port_in_use(host: str, port: int, timeout: float = 1.0) -> bool:
 
-# Block B - Create and configure socket
+# Block B — Create and configure socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(timeout)
 
-# Block C - Try connection and cleanup
+# Block C — Try connection and cleanup
     try:
         result = sock.connect_ex((host, port))
         return result == 0
@@ -336,10 +348,123 @@ def is_port_in_use(host: str, port: int, timeout: float = 1.0) -> bool:
 **Key insight:** `connect_ex` is like `connect` but returns an error code instead of raising an exception. Return code 0 means success (something is listening on that port).
 
 **Distractors explained:**
-- Block D (`bind`) - This is for creating a server, not checking if a port is in use
-- Block E (`listen`) - This is also server-side; we're acting as a client to test connectivity
+- Block D (`bind`) — This is for creating a server, not checking if a port is in use
+- Block E (`listen`) — This is also server-side; we are acting as a client to test connectivity
 
 </details>
+
+---
+
+## Problem P5: Implement Passive Health Check
+
+**LO Reference:** LO3, LO7  
+**Difficulty:** Advanced
+
+### Task
+
+Arrange the code blocks to create a passive health check function. The function should:
+1. Track failed request counts per backend
+2. Mark backend as unhealthy after max_fails failures
+3. Recover backend after fail_timeout seconds
+4. Return whether a backend is healthy
+
+### Scrambled Blocks
+
+```python
+# Block A
+def is_healthy(self, backend: str) -> bool:
+
+# Block B
+class PassiveHealthCheck:
+    def __init__(self, max_fails: int = 2, fail_timeout: float = 10.0):
+        self.max_fails = max_fails
+        self.fail_timeout = fail_timeout
+        self._failures = {}  # backend -> (count, last_fail_time)
+
+# Block C
+    # Check if backend has recovered (timeout expired)
+    if time.time() - last_fail_time > self.fail_timeout:
+        self._failures[backend] = (0, 0)
+        return True
+
+# Block D
+    count, last_fail_time = self._failures.get(backend, (0, 0))
+    if count < self.max_fails:
+        return True
+
+# Block E
+    return False
+
+# Block F (DISTRACTOR)
+    requests.get(f"http://{backend}/health", timeout=1)
+    return True
+
+# Block G (DISTRACTOR)
+    self._failures[backend] = count + 1
+```
+
+### Hints
+
+- Class definition and `__init__` come first
+- The `is_healthy` method checks backend status
+- Check failure count before checking recovery
+- Recovery check compares current time with last failure
+- Two blocks are for different functionality (active health checks, recording failures)
+
+### Correct Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+```python
+# Block B — Class definition and constructor
+class PassiveHealthCheck:
+    def __init__(self, max_fails: int = 2, fail_timeout: float = 10.0):
+        self.max_fails = max_fails
+        self.fail_timeout = fail_timeout
+        self._failures = {}  # backend -> (count, last_fail_time)
+
+# Block A — Method signature
+def is_healthy(self, backend: str) -> bool:
+
+# Block D — Get failure info and check count
+    count, last_fail_time = self._failures.get(backend, (0, 0))
+    if count < self.max_fails:
+        return True
+
+# Block C — Check for recovery after timeout
+    # Check if backend has recovered (timeout expired)
+    if time.time() - last_fail_time > self.fail_timeout:
+        self._failures[backend] = (0, 0)
+        return True
+
+# Block E — Backend still unhealthy
+    return False
+```
+
+**Logic flow:**
+1. Get failure count and last failure time
+2. If count < max_fails → healthy
+3. If count >= max_fails but timeout expired → reset and mark healthy
+4. Otherwise → unhealthy
+
+**Distractors explained:**
+- Block F (`requests.get`) — This is an active health check (probing the backend), not passive
+- Block G (`count + 1`) — This records a failure but does not check health status
+
+</details>
+
+---
+
+## LO Traceability Matrix for Parsons Problems
+
+| Problem | LOs Covered | Difficulty | Core Concept |
+|---------|-------------|------------|--------------|
+| P1 | LO1, LO2 | Intermediate | DNS packet structure |
+| P2 | LO3 | Intermediate | Weighted round-robin algorithm |
+| P3 | LO3, LO4 | Basic | HTTP response parsing |
+| P4 | LO1, LO5 | Basic | Socket programming |
+| P5 | LO3, LO7 | Advanced | Health check implementation |
 
 ---
 
@@ -362,5 +487,5 @@ Try creating your own Parsons problem for a peer! Good candidates:
 
 ---
 
-*NETWORKING class - ASE, Informatics | Computer Networks Laboratory*
+*NETWORKING class - ASE, CSIE | Computer Networks Laboratory*  
 *Week 11: Application Protocols — FTP, DNS, SSH and Load Balancing*

@@ -1,7 +1,7 @@
 # =============================================================================
 # Makefile — Week 11 WSL Kit Command Orchestration
 # =============================================================================
-# NETWORKING class - ASE, Informatics | by Revolvix
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 #
 # Usage:
 #   make help          Show all available commands
@@ -21,10 +21,14 @@ PIP := pip3
 # Docker Compose file
 COMPOSE := docker compose -f docker/docker-compose.yml
 
-# Colors for output
+# Ruff configuration
+RUFF_CONFIG := setup/ruff.toml
+
+# Colours for output
 GREEN := \033[0;32m
 YELLOW := \033[0;33m
 RED := \033[0;31m
+BLUE := \033[0;34m
 NC := \033[0m
 
 # =============================================================================
@@ -53,9 +57,13 @@ help:
 	@echo "  make docker-build Rebuild Docker images"
 	@echo ""
 	@echo "$(YELLOW)Learning:$(NC)"
-	@echo "  make quiz         Run formative assessment quiz"
+	@echo "  make quiz         Run formative assessment quiz (all levels)"
+	@echo "  make quiz-basic   Run basic-level questions only"
+	@echo "  make quiz-inter   Run intermediate-level questions only"
+	@echo "  make quiz-advanced Run advanced-level questions only"
 	@echo "  make quiz-random  Run quiz with random order"
 	@echo "  make quiz-review  Review all quiz answers"
+	@echo "  make quiz-export  Export quiz to LMS JSON format"
 	@echo ""
 	@echo "$(YELLOW)Testing:$(NC)"
 	@echo "  make test         Run all tests"
@@ -66,6 +74,8 @@ help:
 	@echo "  make lint         Run code linter (ruff)"
 	@echo "  make typecheck    Run type checker (mypy)"
 	@echo "  make format       Format code (ruff)"
+	@echo "  make syntax       Check Python syntax"
+	@echo "  make ci           Run full CI checks locally"
 	@echo ""
 	@echo "$(YELLOW)Cleanup:$(NC)"
 	@echo "  make clean        Clean artifacts and caches"
@@ -130,6 +140,11 @@ docker-build:
 docker-logs:
 	$(COMPOSE) logs -f
 
+docker-validate:
+	@echo "$(YELLOW)Validating Docker configuration...$(NC)"
+	$(COMPOSE) config --quiet
+	@echo "$(GREEN)✓ docker-compose.yml is valid$(NC)"
+
 # =============================================================================
 # LEARNING / ASSESSMENT
 # =============================================================================
@@ -137,6 +152,18 @@ docker-logs:
 quiz:
 	@echo "$(YELLOW)Starting formative quiz...$(NC)"
 	$(PYTHON) formative/run_quiz.py
+
+quiz-basic:
+	@echo "$(YELLOW)Starting basic-level quiz...$(NC)"
+	$(PYTHON) formative/run_quiz.py --level basic
+
+quiz-inter:
+	@echo "$(YELLOW)Starting intermediate-level quiz...$(NC)"
+	$(PYTHON) formative/run_quiz.py --level intermediate
+
+quiz-advanced:
+	@echo "$(YELLOW)Starting advanced-level quiz...$(NC)"
+	$(PYTHON) formative/run_quiz.py --level advanced
 
 quiz-random:
 	$(PYTHON) formative/run_quiz.py --random
@@ -150,6 +177,18 @@ quiz-topic:
 ifdef T
 	$(PYTHON) formative/run_quiz.py --topic "$(T)"
 endif
+
+quiz-export:
+	@echo "$(YELLOW)Exporting quiz to LMS JSON format...$(NC)"
+	$(PYTHON) formative/run_quiz.py --export-json
+	@echo "$(GREEN)✓ Exported to formative/quiz.json$(NC)"
+
+quiz-validate:
+	@echo "$(YELLOW)Validating quiz files...$(NC)"
+	$(PYTHON) -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))"
+	@echo "$(GREEN)✓ quiz.yaml is valid$(NC)"
+	$(PYTHON) -c "import json; json.load(open('formative/quiz.json'))"
+	@echo "$(GREEN)✓ quiz.json is valid$(NC)"
 
 # =============================================================================
 # TESTING
@@ -182,7 +221,7 @@ test-env:
 
 lint:
 	@echo "$(YELLOW)Running linter...$(NC)"
-	$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ || true
+	$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --config $(RUFF_CONFIG) || true
 
 format:
 	@echo "$(YELLOW)Formatting code...$(NC)"
@@ -194,8 +233,25 @@ typecheck:
 
 syntax:
 	@echo "$(YELLOW)Checking Python syntax...$(NC)"
-	$(PYTHON) -m py_compile src/exercises/*.py scripts/*.py tests/*.py
+	$(PYTHON) -m py_compile src/exercises/*.py scripts/*.py tests/*.py formative/*.py
 	@echo "$(GREEN)✓ Syntax OK$(NC)"
+
+# =============================================================================
+# CI (LOCAL SIMULATION)
+# =============================================================================
+
+ci: syntax lint docker-validate quiz-validate test
+	@echo ""
+	@echo "$(GREEN)═══════════════════════════════════════════════════════$(NC)"
+	@echo "$(GREEN)✓ All CI checks passed!$(NC)"
+	@echo "$(GREEN)═══════════════════════════════════════════════════════$(NC)"
+
+ci-security:
+	@echo "$(YELLOW)Running security checks...$(NC)"
+	@echo "Checking for hardcoded credentials..."
+	@grep -rn "studstudstud" --include="*.py" --include="*.md" . | grep -v ".env" || echo "$(GREEN)✓ No hardcoded passwords found$(NC)"
+	@echo "Checking .gitignore..."
+	@grep -q "\.env$$" .gitignore && echo "$(GREEN)✓ .env is in .gitignore$(NC)" || echo "$(RED)⚠ .env should be in .gitignore$(NC)"
 
 # =============================================================================
 # CLEANUP
@@ -226,6 +282,10 @@ demo:
 	@echo "$(YELLOW)Running demo...$(NC)"
 	$(PYTHON) scripts/run_demo.py --demo 1
 
+validation-test:
+	@echo "$(YELLOW)Running validation self-tests...$(NC)"
+	$(PYTHON) scripts/utils/validation.py
+
 # =============================================================================
-# Revolvix&Hypotheticalandrei
+# End of Makefile
 # =============================================================================

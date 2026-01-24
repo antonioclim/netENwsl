@@ -1,14 +1,9 @@
 # =============================================================================
-# requirements.txt – Python Dependencies for Week 11 WSL Kit
+# requirements.txt — Python Dependencies for Week 11 WSL Kit
 # =============================================================================
-# NETWORKING class - ASE, Informatics | by Revolvix
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 #
 # Installation: pip install -r requirements.txt --break-system-packages
-#
-# VERSIONING POLICY:
-# - All dependencies use STRICT version pinning for reproducibility
-# - Update versions only after testing in the lab environment
-# - See pyproject.toml for version ranges accepted
 # =============================================================================
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -18,7 +13,7 @@
 # YAML parsing for quiz and configuration files
 pyyaml==6.0.1
 
-# DNS client exercise - manual DNS query construction
+# DNS client exercise — manual DNS query construction
 dnspython==2.4.2
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -35,14 +30,22 @@ pyftpdlib==1.5.9
 requests==2.31.0
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DEVELOPMENT DEPENDENCIES (For contributors)
+# DEVELOPMENT DEPENDENCIES (For contributors and CI)
 # ─────────────────────────────────────────────────────────────────────────────
-# Uncomment if needed:
-# pytest==7.4.3
-# ruff==0.1.9
-# mypy==1.8.0
+
+# Testing framework
+pytest==7.4.3
+pytest-cov==4.1.0
+
+# Code quality — linting
+ruff==0.1.9
+
+# Code quality — type checking
+mypy==1.8.0
+
+# Security auditing
+pip-audit==2.6.1
 
 # =============================================================================
-# VERIFICATION:
-# After installation, run: python setup/verify_environment.py
+# VERIFICATION: python setup/verify_environment.py
 # =============================================================================

@@ -5,12 +5,14 @@
 #
 # Run: python formative/run_quiz.py
 # Run with options: python formative/run_quiz.py --random --limit 5
+# Run by level: python formative/run_quiz.py --level basic
+# Export to LMS: python formative/run_quiz.py --export-json
 # =============================================================================
 
 metadata:
   week: 11
   topic: "Application Protocols & Load Balancing"
-  version: "1.0.0"
+  version: "2.0.0"
   estimated_time: "10-15 minutes"
   passing_score: 70
   total_questions: 15
@@ -20,6 +22,12 @@ metadata:
     basic: 5
     intermediate: 7
     advanced: 3
+  
+  lms_export:
+    enabled: true
+    format: "json"
+    output_file: "quiz.json"
+    compatible_with: ["Moodle", "Canvas", "Blackboard"]
 
 # =============================================================================
 # QUESTIONS
@@ -67,8 +75,8 @@ questions:
     topic: "Load Balancing"
     stem: "You configure IP hash for session affinity. After a deployment restarts all backends, what happens to existing sessions?"
     options:
-      a: "Sessions continue working - IP hash is deterministic"
-      b: "Sessions may be lost - hash distribution can change"
+      a: "Sessions continue working — IP hash is deterministic"
+      b: "Sessions may be lost — hash distribution can change"
       c: "Sessions are automatically migrated to new backends"
       d: "Nginx stores session mappings persistently"
     correct: b
@@ -82,7 +90,7 @@ questions:
     topic: "Nginx"
     stem: "The Nginx directive to define a backend pool is called:"
     correct: ["upstream", "upstream block", "upstream directive"]
-    hint: "It's where you list your backend servers"
+    hint: "It is where you list your backend servers"
     
   - id: q05
     type: multiple_choice
@@ -131,7 +139,7 @@ questions:
     lo_ref: LO2
     difficulty: intermediate
     topic: "DNS"
-    stem: "You set a DNS record with TTL=60 seconds. A user reports seeing the old IP after 5 minutes. What's the most likely cause?"
+    stem: "You set a DNS record with TTL=60 seconds. A user reports seeing the old IP after 5 minutes. What is the most likely cause?"
     options:
       a: "The DNS change failed"
       b: "The user's ISP resolver enforces a minimum TTL"
@@ -148,7 +156,7 @@ questions:
     topic: "DNS"
     stem: "The DNS record type that maps a domain name to an IPv4 address is:"
     correct: ["A", "A record", "a"]
-    hint: "It's a single letter"
+    hint: "It is a single letter"
     
   - id: q09
     type: multiple_choice
@@ -162,7 +170,7 @@ questions:
       c: "The query timed out"
       d: "The server refused to answer"
     correct: b
-    explanation: "NXDOMAIN (RCODE 3) is a valid response indicating the domain doesn't exist."
+    explanation: "NXDOMAIN (RCODE 3) is a valid response indicating the domain does not exist."
     misconception_ref: "docs/misconceptions.md#2.3"
 
   # ---------------------------------------------------------------------------
@@ -196,7 +204,7 @@ questions:
       c: "Passive mode uses UDP instead of TCP"
       d: "Passive mode compresses data"
     correct: b
-    explanation: "In passive mode, client initiates data connection to server's ephemeral port - outbound connections pass through NAT easily."
+    explanation: "In passive mode, client initiates data connection to server's ephemeral port — outbound connections pass through NAT easily."
     misconception_ref: "docs/misconceptions.md#3.1"
 
   # ---------------------------------------------------------------------------
@@ -247,11 +255,11 @@ questions:
     stem: "When comparing Python load balancer vs Nginx, which typically has higher throughput?"
     options:
       a: "Python (more flexible)"
-      b: "Nginx (optimized C, event-driven)"
+      b: "Nginx (optimised C, event-driven)"
       c: "Both are equal"
       d: "Depends on the algorithm"
     correct: b
-    explanation: "Nginx is highly optimized (C, async I/O) and typically handles 10x+ more requests than Python implementations."
+    explanation: "Nginx is highly optimised (C, async I/O) and typically handles 10x+ more requests than Python implementations."
     
   - id: q15
     type: fill_blank
@@ -284,5 +292,5 @@ scoring:
       message: "Please re-read docs/theory_summary.md and try the quiz again."
 
 # =============================================================================
-# Revolvix&Hypotheticalandrei
+# End of Quiz
 # =============================================================================
