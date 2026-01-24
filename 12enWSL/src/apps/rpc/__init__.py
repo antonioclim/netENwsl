@@ -1,1 +1,0 @@
-"""RPC Applications | by Revolvix"""

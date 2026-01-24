@@ -1,1 +1,0 @@
-"""Email Applications | by Revolvix"""
