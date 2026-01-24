@@ -4,16 +4,45 @@
 # NETWORKING class - ASE, Informatics | by Revolvix
 #
 # Installation: pip install -r requirements.txt --break-system-packages
+#
+# VERSIONING POLICY:
+# - All dependencies use STRICT version pinning for reproducibility
+# - Update versions only after testing in the lab environment
+# - See pyproject.toml for version ranges accepted
 # =============================================================================
 
-# Core dependencies
-pyyaml>=6.0
+# ─────────────────────────────────────────────────────────────────────────────
+# CORE DEPENDENCIES (Required)
+# ─────────────────────────────────────────────────────────────────────────────
 
-# DNS client exercise
-dnspython>=2.4.0
+# YAML parsing for quiz and configuration files
+pyyaml==6.0.1
 
-# SSH provisioning demo (optional)
-paramiko>=3.3.0
+# DNS client exercise - manual DNS query construction
+dnspython==2.4.2
 
-# FTP server demo (optional)
-pyftpdlib>=1.5.0
+# ─────────────────────────────────────────────────────────────────────────────
+# OPTIONAL DEPENDENCIES (For extended exercises)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# SSH provisioning demo
+paramiko==3.4.0
+
+# FTP server demo
+pyftpdlib==1.5.9
+
+# HTTP requests (for load testing)
+requests==2.31.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEVELOPMENT DEPENDENCIES (For contributors)
+# ─────────────────────────────────────────────────────────────────────────────
+# Uncomment if needed:
+# pytest==7.4.3
+# ruff==0.1.9
+# mypy==1.8.0
+
+# =============================================================================
+# VERIFICATION:
+# After installation, run: python setup/verify_environment.py
+# =============================================================================

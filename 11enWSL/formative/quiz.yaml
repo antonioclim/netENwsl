@@ -1,0 +1,288 @@
+# =============================================================================
+# quiz.yaml — Week 11 Formative Quiz
+# =============================================================================
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+#
+# Run: python formative/run_quiz.py
+# Run with options: python formative/run_quiz.py --random --limit 5
+# =============================================================================
+
+metadata:
+  week: 11
+  topic: "Application Protocols & Load Balancing"
+  version: "1.0.0"
+  estimated_time: "10-15 minutes"
+  passing_score: 70
+  total_questions: 15
+  lo_coverage: [LO1, LO2, LO3, LO4, LO5, LO7]
+  
+  difficulty_distribution:
+    basic: 5
+    intermediate: 7
+    advanced: 3
+
+# =============================================================================
+# QUESTIONS
+# =============================================================================
+questions:
+
+  # ---------------------------------------------------------------------------
+  # LOAD BALANCING (LO3, LO4)
+  # ---------------------------------------------------------------------------
+  
+  - id: q01
+    type: multiple_choice
+    lo_ref: LO3
+    difficulty: basic
+    topic: "Load Balancing"
+    stem: "Which load balancing algorithm distributes requests sequentially in cyclic order?"
+    options:
+      a: "Least connections"
+      b: "Round-robin"
+      c: "IP hash"
+      d: "Random"
+    correct: b
+    explanation: "Round-robin rotates through backends 1→2→3→1→2→3 in sequence."
+    misconception_ref: "docs/misconceptions.md#1.1"
+    
+  - id: q02
+    type: multiple_choice
+    lo_ref: LO3
+    difficulty: intermediate
+    topic: "Load Balancing"
+    stem: "With default Nginx settings, what happens when the FIRST request is sent to a crashed backend?"
+    options:
+      a: "Nginx instantly reroutes to a healthy backend"
+      b: "The client receives a 502 Bad Gateway error"
+      c: "Nginx waits 30 seconds before timing out"
+      d: "The request is queued until the backend recovers"
+    correct: b
+    explanation: "Nginx uses passive health checks by default. The first request to a dead backend returns 502."
+    misconception_ref: "docs/misconceptions.md#1.3"
+    
+  - id: q03
+    type: multiple_choice
+    lo_ref: LO3
+    difficulty: intermediate
+    topic: "Load Balancing"
+    stem: "You configure IP hash for session affinity. After a deployment restarts all backends, what happens to existing sessions?"
+    options:
+      a: "Sessions continue working - IP hash is deterministic"
+      b: "Sessions may be lost - hash distribution can change"
+      c: "Sessions are automatically migrated to new backends"
+      d: "Nginx stores session mappings persistently"
+    correct: b
+    explanation: "IP hash provides affinity, not persistence. Backend pool changes can alter hash distribution."
+    misconception_ref: "docs/misconceptions.md#1.2"
+    
+  - id: q04
+    type: fill_blank
+    lo_ref: LO4
+    difficulty: basic
+    topic: "Nginx"
+    stem: "The Nginx directive to define a backend pool is called:"
+    correct: ["upstream", "upstream block", "upstream directive"]
+    hint: "It's where you list your backend servers"
+    
+  - id: q05
+    type: multiple_choice
+    lo_ref: LO4
+    difficulty: advanced
+    topic: "Nginx"
+    stem: |
+      Given this Nginx config, what percentage of traffic goes to web1?
+      ```
+      upstream backend {
+          server web1:80 weight=3;
+          server web2:80 weight=2;
+          server web3:80 weight=1;
+      }
+      ```
+    options:
+      a: "30%"
+      b: "33%"
+      c: "50%"
+      d: "60%"
+    correct: c
+    explanation: "Total weight = 3+2+1 = 6. web1 gets 3/6 = 50%"
+    misconception_ref: "docs/misconceptions.md#5.2"
+
+  # ---------------------------------------------------------------------------
+  # DNS (LO1, LO2)
+  # ---------------------------------------------------------------------------
+    
+  - id: q06
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: basic
+    topic: "DNS"
+    stem: "What is the default port for DNS queries?"
+    options:
+      a: "22"
+      b: "53"
+      c: "80"
+      d: "443"
+    correct: b
+    explanation: "DNS uses port 53 for both UDP (queries) and TCP (zone transfers, large responses)."
+    misconception_ref: "docs/misconceptions.md#2.2"
+    
+  - id: q07
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: intermediate
+    topic: "DNS"
+    stem: "You set a DNS record with TTL=60 seconds. A user reports seeing the old IP after 5 minutes. What's the most likely cause?"
+    options:
+      a: "The DNS change failed"
+      b: "The user's ISP resolver enforces a minimum TTL"
+      c: "DNS propagation always takes 24-48 hours"
+      d: "The user needs to restart their computer"
+    correct: b
+    explanation: "Many ISP resolvers enforce minimum TTL (e.g., 5 minutes) regardless of record settings."
+    misconception_ref: "docs/misconceptions.md#2.1"
+    
+  - id: q08
+    type: fill_blank
+    lo_ref: LO1
+    difficulty: basic
+    topic: "DNS"
+    stem: "The DNS record type that maps a domain name to an IPv4 address is:"
+    correct: ["A", "A record", "a"]
+    hint: "It's a single letter"
+    
+  - id: q09
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: intermediate
+    topic: "DNS"
+    stem: "What does NXDOMAIN mean in a DNS response?"
+    options:
+      a: "The DNS server is broken"
+      b: "The domain does not exist"
+      c: "The query timed out"
+      d: "The server refused to answer"
+    correct: b
+    explanation: "NXDOMAIN (RCODE 3) is a valid response indicating the domain doesn't exist."
+    misconception_ref: "docs/misconceptions.md#2.3"
+
+  # ---------------------------------------------------------------------------
+  # FTP (LO1, LO2)
+  # ---------------------------------------------------------------------------
+    
+  - id: q10
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: intermediate
+    topic: "FTP"
+    stem: "How many TCP connections does FTP use during a file transfer?"
+    options:
+      a: "One (multiplexed)"
+      b: "Two (control + data)"
+      c: "Three (control + upload + download)"
+      d: "Depends on file size"
+    correct: b
+    explanation: "FTP uses dual-connection architecture: persistent control (port 21) + transient data."
+    misconception_ref: "docs/misconceptions.md#3.2"
+    
+  - id: q11
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: advanced
+    topic: "FTP"
+    stem: "Why does FTP passive mode work better through NAT than active mode?"
+    options:
+      a: "Passive mode uses encryption"
+      b: "In passive mode, the client initiates both connections (outbound)"
+      c: "Passive mode uses UDP instead of TCP"
+      d: "Passive mode compresses data"
+    correct: b
+    explanation: "In passive mode, client initiates data connection to server's ephemeral port - outbound connections pass through NAT easily."
+    misconception_ref: "docs/misconceptions.md#3.1"
+
+  # ---------------------------------------------------------------------------
+  # SSH (LO1, LO2)
+  # ---------------------------------------------------------------------------
+    
+  - id: q12
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: basic
+    topic: "SSH"
+    stem: "What is the default port for SSH?"
+    options:
+      a: "21"
+      b: "22"
+      c: "23"
+      d: "25"
+    correct: b
+    explanation: "SSH uses TCP port 22 by default."
+    
+  - id: q13
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: advanced
+    topic: "SSH"
+    stem: |
+      You set up SSH local port forwarding:
+      `ssh -L 8080:internal-web:80 user@jumphost`
+      Which network segment is encrypted?
+    options:
+      a: "Browser → localhost:8080"
+      b: "localhost:8080 → jumphost (the tunnel)"
+      c: "jumphost → internal-web:80"
+      d: "The entire path end-to-end"
+    correct: b
+    explanation: "SSH encrypts only the tunnel segment. Traffic between jumphost and destination is plaintext."
+    misconception_ref: "docs/misconceptions.md#4.1"
+
+  # ---------------------------------------------------------------------------
+  # GENERAL / COMBINED (LO5, LO7)
+  # ---------------------------------------------------------------------------
+    
+  - id: q14
+    type: multiple_choice
+    lo_ref: LO7
+    difficulty: intermediate
+    topic: "Performance"
+    stem: "When comparing Python load balancer vs Nginx, which typically has higher throughput?"
+    options:
+      a: "Python (more flexible)"
+      b: "Nginx (optimized C, event-driven)"
+      c: "Both are equal"
+      d: "Depends on the algorithm"
+    correct: b
+    explanation: "Nginx is highly optimized (C, async I/O) and typically handles 10x+ more requests than Python implementations."
+    
+  - id: q15
+    type: fill_blank
+    lo_ref: LO5
+    difficulty: basic
+    topic: "Wireshark"
+    stem: "To capture only HTTP traffic on port 8080, the Wireshark display filter is:"
+    correct: ["tcp.port == 8080", "tcp.port==8080", "tcp.port eq 8080"]
+    hint: "Use tcp.port with the port number"
+
+# =============================================================================
+# SCORING
+# =============================================================================
+scoring:
+  points_per_question: 1
+  passing_threshold: 70
+  
+  feedback:
+    excellent:
+      min_score: 90
+      message: "Excellent! You have a strong understanding of Week 11 concepts."
+    good:
+      min_score: 70
+      message: "Good job! Review the explanations for questions you missed."
+    needs_review:
+      min_score: 50
+      message: "You should review the theory material before proceeding."
+    needs_help:
+      min_score: 0
+      message: "Please re-read docs/theory_summary.md and try the quiz again."
+
+# =============================================================================
+# Revolvix&Hypotheticalandrei
+# =============================================================================

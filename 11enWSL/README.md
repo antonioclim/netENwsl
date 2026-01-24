@@ -213,8 +213,13 @@ This laboratory employs evidence-based teaching methods:
 - **Common Misconceptions**: See `docs/misconceptions.md` for typical errors and corrections
 - **Code Tracing**: See `docs/code_tracing.md` for step-by-step execution exercises
 - **Glossary**: See `docs/glossary.md` for technical terminology reference
+- **Formative Assessment**: See `docs/formative_assessment.md` for self-check questions and checkpoints
+- **Interactive Quiz**: Run `python formative/run_quiz.py` for automated self-assessment
+- **LO Traceability**: See `docs/learning_objectives.md` for complete mapping of objectives to artifacts
 
 ## Learning Objectives
+
+> 📋 **Full traceability matrix**: See [`docs/learning_objectives.md`](docs/learning_objectives.md) for detailed mapping to all course artifacts.
 
 By the end of this laboratory session, you will be able to:
 
