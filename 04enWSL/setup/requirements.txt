@@ -1,14 +1,23 @@
-# Setup script dependencies
-# NETWORKING class - ASE, Informatics | by Revolvix
+# ═══════════════════════════════════════════════════════════════════════════════
+# setup/requirements.txt — Week 4 Laboratory Kit
+# NETWORKING class - ASE, Informatics | Computer Networks Laboratory
+# by ing. dr. Antonio Clim
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Minimal dependencies for setup scripts.
+# For full development dependencies, see: ../requirements.txt
+#
+# Install with: pip install -r setup/requirements.txt --break-system-packages
 #
 # Note: Most Week 4 functionality uses Python standard library only.
-# These are optional packages that enhance the experience.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Docker SDK for Python (optional - for programmatic Docker control)
+# Docker SDK for Python (for programmatic Docker control)
 docker>=6.0.0
 
-# HTTP requests library (optional - for health checks)
+# HTTP requests library (for health checks)
 requests>=2.28.0
 
-# YAML parser (optional - for configuration files)
+# YAML parser (for configuration files)
 pyyaml>=6.0

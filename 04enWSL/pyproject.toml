@@ -1,0 +1,164 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# pyproject.toml — Week 4 Laboratory Kit
+# NETWORKING class - ASE, Informatics | Computer Networks Laboratory
+# by ing. dr. Antonio Clim
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This file configures Python tooling for code quality:
+# - mypy: Static type checking
+# - ruff: Fast Python linter and formatter
+# - pytest: Test configuration
+#
+# Usage:
+#   mypy src/ scripts/          # Type check
+#   ruff check src/ scripts/    # Lint
+#   ruff format src/ scripts/   # Format
+#   pytest tests/               # Run tests
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[project]
+name = "week4-networking-lab"
+version = "1.6.0"
+description = "Week 4 Laboratory Kit: Physical Layer, Data Link Layer & Custom Protocols"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "ing. dr. Antonio Clim"}
+]
+keywords = ["networking", "education", "protocols", "tcp", "udp"]
+
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.0",
+    "ruff>=0.1.0",
+    "pytest>=7.0",
+    "types-PyYAML>=6.0",
+    "jsonschema>=4.0",
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MYPY Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+show_error_codes = true
+show_column_numbers = true
+
+# Strictness settings
+strict_optional = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = false  # Allow gradual typing
+disallow_incomplete_defs = true
+
+# Per-module settings for gradual adoption
+[[tool.mypy.overrides]]
+module = "src.exercises.*"
+disallow_untyped_defs = false  # Student exercises allow untyped
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false  # Tests can be more relaxed
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RUFF Configuration (Linting)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.ruff]
+target-version = "py38"
+line-length = 100
+
+# Exclude directories
+exclude = [
+    ".git",
+    "__pycache__",
+    ".mypy_cache",
+    ".pytest_cache",
+    "homework/solutions",
+    "artifacts",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "RUF",    # Ruff-specific rules
+]
+
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+    "E402",   # Module level import not at top of file (needed for path setup)
+    "N806",   # Variable in function should be lowercase (allows CONSTANTS)
+    "SIM108", # Use ternary operator (readability preference)
+    "B008",   # Do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["B011", "S101"]  # Allow assert in tests
+"src/exercises/*.py" = ["F841", "E501"]  # Allow unused variables in student code
+"scripts/*.py" = ["T201"]  # Allow print in scripts
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "scripts"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PYTEST Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "smoke_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring Docker",
+    "smoke: marks smoke tests for quick validation",
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COVERAGE Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "src/exercises/*",  # Student code
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "pass  # Replace with implementation",
+]

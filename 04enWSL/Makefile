@@ -1,25 +1,30 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Makefile — Week 4 Laboratory Kit
-# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# NETWORKING class - ASE, Informatics | Computer Networks Laboratory
+# by ing. dr. Antonio Clim
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# Version: 1.1.0
+# Version: 1.6.0
 # Last Updated: 2026-01-24
 #
 # Usage:
 #   make help           - Show available commands
 #   make verify         - Check environment setup
-#   make verify-integrity - Verify all kit artifacts exist
+#   make verify-integrity - Verify all kit artefacts exist
 #   make test           - Run all tests
 #   make quiz           - Run formative quiz
 #   make docker-up      - Start lab containers
 #   make docker-down    - Stop lab containers
 #   make generate-pcap  - Generate PCAP sample files
+#   make export-quiz-moodle - Export quiz to Moodle format
+#   make export-quiz-canvas - Export quiz to Canvas format
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
 .PHONY: help test quiz lint docker-up docker-down clean verify smoke unit start stop
 .PHONY: verify-integrity generate-pcap syntax-check typecheck
+.PHONY: validate-quiz verify-manifest update-manifest pre-commit-install pre-commit
+.PHONY: export-quiz-moodle export-quiz-canvas export-quiz-all
 
 PYTHON := python3
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
@@ -37,12 +42,12 @@ help:
 	@echo "╔══════════════════════════════════════════════════════════════╗"
 	@echo "║  Week 4 Laboratory Kit — Available Commands                  ║"
 	@echo "║  Physical Layer, Data Link Layer & Custom Protocols          ║"
-	@echo "║  Version 1.1.0                                               ║"
+	@echo "║  Version 1.6.0                                               ║"
 	@echo "╚══════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "  Environment:"
 	@echo "    make verify           - Verify environment setup"
-	@echo "    make verify-integrity - Verify all kit artifacts exist"
+	@echo "    make verify-integrity - Verify all kit artefacts exist"
 	@echo "    make start            - Start lab (docker-up + status)"
 	@echo "    make stop             - Stop lab and clean"
 	@echo ""
@@ -58,6 +63,11 @@ help:
 	@echo "    make quiz-lo3         - Quiz only LO3 questions"
 	@echo "    make quiz-lo4         - Quiz only LO4 questions"
 	@echo ""
+	@echo "  Quiz Export (LMS):"
+	@echo "    make export-quiz-moodle - Export quiz to Moodle JSON"
+	@echo "    make export-quiz-canvas - Export quiz to Canvas JSON"
+	@echo "    make export-quiz-all    - Export quiz to all formats"
+	@echo ""
 	@echo "  Docker:"
 	@echo "    make docker-up        - Start lab containers"
 	@echo "    make docker-down      - Stop lab containers"
@@ -65,8 +75,14 @@ help:
 	@echo "    make docker-status    - Show container status"
 	@echo ""
 	@echo "  Code Quality:"
-	@echo "    make lint             - Check code style"
-	@echo "    make typecheck        - Run type checker (if mypy installed)"
+	@echo "    make lint             - Check code style (ruff)"
+	@echo "    make typecheck        - Run type checker (mypy)"
+	@echo ""
+	@echo "  Integrity & Validation:"
+	@echo "    make validate-quiz    - Validate quiz.yaml schema"
+	@echo "    make verify-manifest  - Verify file checksums"
+	@echo "    make update-manifest  - Update manifest checksums"
+	@echo "    make pre-commit       - Run all pre-commit checks"
 	@echo ""
 	@echo "  PCAP Generation:"
 	@echo "    make generate-pcap    - Generate sample PCAP files"
@@ -75,7 +91,7 @@ help:
 	@echo "    make capture-udp      - Capture UDP sensor traffic"
 	@echo ""
 	@echo "  Cleanup:"
-	@echo "    make clean            - Clean artifacts and caches"
+	@echo "    make clean            - Clean artefacts and caches"
 	@echo "    make clean-docker     - Remove Docker volumes"
 	@echo ""
 
@@ -121,14 +137,6 @@ test: syntax-check smoke unit
 	@echo ""
 	@echo "All tests completed."
 
-syntax-check:
-	@echo ""
-	@echo "Checking Python syntax..."
-	@$(PYTHON) -m py_compile \
-		$$(find src scripts tests setup formative -name "*.py" 2>/dev/null) && \
-		echo "  ✓ All Python files have valid syntax" || \
-		(echo "  ✗ Syntax errors found" && exit 1)
-
 smoke:
 	@echo ""
 	@echo "Running smoke tests..."
@@ -137,18 +145,15 @@ smoke:
 unit:
 	@echo ""
 	@echo "Running unit tests..."
-	@$(PYTHON) -m pytest tests/ -v --tb=short 2>/dev/null || \
-		$(PYTHON) tests/test_unit_functions.py 2>/dev/null || \
-		echo "Note: pytest not installed, using unittest"
+	@$(PYTHON) -m pytest tests/test_unit_functions.py -v --tb=short 2>/dev/null || \
+		$(PYTHON) tests/test_unit_functions.py
 
-exercise1:
-	@$(PYTHON) tests/test_exercises.py --exercise 1
-
-exercise2:
-	@$(PYTHON) tests/test_exercises.py --exercise 2
-
-exercise3:
-	@$(PYTHON) tests/test_exercises.py --exercise 3
+syntax-check:
+	@echo ""
+	@echo "Checking Python syntax..."
+	@find . -name "*.py" -not -path "./.git/*" -not -path "*/__pycache__/*" | \
+		xargs $(PYTHON) -m py_compile
+	@echo "  ✓ All Python files have valid syntax"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -156,34 +161,40 @@ exercise3:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 quiz:
+	@echo ""
 	@$(PYTHON) formative/run_quiz.py
 
 quiz-random:
-	@$(PYTHON) formative/run_quiz.py --random --limit 10
-
-quiz-lo1:
-	@$(PYTHON) formative/run_quiz.py --lo LO1
-
-quiz-lo2:
-	@$(PYTHON) formative/run_quiz.py --lo LO2
+	@echo ""
+	@$(PYTHON) formative/run_quiz.py --random 10
 
 quiz-lo3:
+	@echo ""
 	@$(PYTHON) formative/run_quiz.py --lo LO3
 
 quiz-lo4:
+	@echo ""
 	@$(PYTHON) formative/run_quiz.py --lo LO4
 
-quiz-lo5:
-	@$(PYTHON) formative/run_quiz.py --lo LO5
 
-quiz-lo6:
-	@$(PYTHON) formative/run_quiz.py --lo LO6
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUIZ LMS EXPORT
+# ═══════════════════════════════════════════════════════════════════════════════
 
-quiz-apply:
-	@$(PYTHON) formative/run_quiz.py --bloom apply
+export-quiz-moodle:
+	@echo ""
+	@echo "Exporting quiz to Moodle format..."
+	@$(PYTHON) scripts/export_quiz_lms.py --format moodle
 
-quiz-remember:
-	@$(PYTHON) formative/run_quiz.py --bloom remember
+export-quiz-canvas:
+	@echo ""
+	@echo "Exporting quiz to Canvas format..."
+	@$(PYTHON) scripts/export_quiz_lms.py --format canvas
+
+export-quiz-all:
+	@echo ""
+	@echo "Exporting quiz to all LMS formats..."
+	@$(PYTHON) scripts/export_quiz_lms.py --format all
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -260,7 +271,7 @@ capture-udp:
 
 clean:
 	@echo ""
-	@echo "Cleaning artifacts..."
+	@echo "Cleaning artefacts..."
 	@rm -rf artifacts/*.pcap artifacts/*.log 2>/dev/null || true
 	@rm -rf __pycache__ */__pycache__ */*/__pycache__ 2>/dev/null || true
 	@rm -rf .pytest_cache .mypy_cache .ruff_cache 2>/dev/null || true
@@ -281,6 +292,44 @@ clean-all: clean clean-docker
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# AI RISK PREVENTION (Integrity & Validation)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+validate-quiz:
+	@echo ""
+	@echo "Validating quiz schema..."
+	@$(PYTHON) scripts/validate_quiz_schema.py
+
+verify-manifest:
+	@echo ""
+	@echo "Verifying file checksums..."
+	@$(PYTHON) scripts/verify_manifest.py
+
+update-manifest:
+	@echo ""
+	@echo "Updating manifest checksums..."
+	@$(PYTHON) scripts/verify_manifest.py --update
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PRE-COMMIT HOOKS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+pre-commit-install:
+	@echo ""
+	@echo "Installing pre-commit hooks..."
+	@command -v pre-commit >/dev/null 2>&1 && \
+		pre-commit install || \
+		echo "(pre-commit not installed - run: pip install pre-commit)"
+
+pre-commit: verify-integrity syntax-check validate-quiz verify-manifest lint
+	@echo ""
+	@echo "╔══════════════════════════════════════════════════════════════╗"
+	@echo "║  ✓ All pre-commit checks passed                              ║"
+	@echo "╚══════════════════════════════════════════════════════════════╝"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # DEVELOPMENT (Instructor use)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -289,10 +338,3 @@ demo1:
 
 demo2:
 	@$(PYTHON) scripts/run_demo.py --demo 2
-
-# Pre-commit check: run all verifications
-pre-commit: verify-integrity syntax-check smoke
-	@echo ""
-	@echo "╔══════════════════════════════════════════════════════════════╗"
-	@echo "║  ✓ Pre-commit checks passed                                  ║"
-	@echo "╚══════════════════════════════════════════════════════════════╝"

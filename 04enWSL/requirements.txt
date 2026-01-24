@@ -1,0 +1,46 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# requirements.txt — Week 4 Laboratory Kit
+# NETWORKING class - ASE, Informatics | Computer Networks Laboratory
+# by ing. dr. Antonio Clim
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Install with: pip install -r requirements.txt --break-system-packages
+#
+# Note: Most Week 4 functionality uses Python standard library only.
+# These packages enhance the development and testing experience.
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Core Dependencies (Required for full functionality)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# YAML parser for quiz and configuration files
+pyyaml>=6.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Development Dependencies (Optional but recommended)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Docker SDK for programmatic Docker control
+docker>=6.0.0
+
+# HTTP requests library for health checks
+requests>=2.28.0
+
+# JSON Schema validation for quiz files
+jsonschema>=4.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Testing and Quality (For contributors)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Testing framework
+pytest>=7.0
+
+# Linting and formatting
+ruff>=0.1.0
+
+# Type checking
+mypy>=1.0
+types-PyYAML>=6.0
