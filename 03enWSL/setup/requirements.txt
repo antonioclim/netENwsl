@@ -1,0 +1,5 @@
+# Setup script requirements
+# NETWORKING class - ASE, Informatics | by Revolvix
+
+pyyaml>=6.0
+requests>=2.28.0

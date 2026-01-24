@@ -1,0 +1,178 @@
+# ============================================================================
+# docker-compose.yml — Week 3 Laboratory Environment
+# NETWORKING class - ASE, Informatics | by Revolvix
+# ============================================================================
+#
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
+# Topology:
+#   client ↔ router (tunnel) ↔ server
+#   receiver (broadcast/multicast listener)
+#
+# Usage:
+#   docker compose up -d              # Start all services
+#   docker compose logs -f            # Follow logs
+#   docker compose exec client bash   # Interactive shell
+#   docker compose down               # Stop and remove
+#
+# ============================================================================
+
+services:
+  # ─── SERVER ─────────────────────────────────────────────────────────────
+  # TCP Echo server on port 8080
+  
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: week3_server
+    hostname: server
+    networks:
+      week3_network:
+        ipv4_address: 172.20.0.10
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../src:/app/src:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=3
+    command: >
+      bash -c "
+        echo '[SERVER] Starting echo server on :8080...';
+        python3 /app/src/apps/echo_server.py --listen 0.0.0.0:8080
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─── ROUTER / TUNNEL ────────────────────────────────────────────────────
+  # TCP tunnel: listens on 9090, forwards to server:8080
+  
+  router:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: week3_router
+    hostname: router
+    networks:
+      week3_network:
+        ipv4_address: 172.20.0.254
+    ports:
+      - "9090:9090"
+      # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
+    volumes:
+      - ../src:/app/src:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=3
+    depends_on:
+      server:
+        condition: service_healthy
+    command: >
+      bash -c "
+        echo '[ROUTER] Waiting for server...';
+        sleep 2;
+        echo '[ROUTER] Starting TCP tunnel :9090 → server:8080...';
+        python3 /app/src/apps/tcp_tunnel.py \
+          --listen 0.0.0.0:9090 --target 172.20.0.10:8080
+      "
+    restart: unless-stopped
+
+  # ─── CLIENT ─────────────────────────────────────────────────────────────
+  # Interactive container for testing and exercises
+  
+  client:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: week3_client
+    hostname: client
+    networks:
+      week3_network:
+        ipv4_address: 172.20.0.100
+    volumes:
+      - ../src:/app/src:rw
+      - ../pcap:/app/pcap:rw
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=3
+    depends_on:
+      - router
+      - server
+    stdin_open: true
+    tty: true
+    command: >
+      bash -c "
+        echo '╔══════════════════════════════════════════════════════════════╗';
+        echo '║     WEEK 3 CLIENT — Network Programming Laboratory          ║';
+        echo '║     WSL2 + Ubuntu 22.04 + Docker + Portainer                 ║';
+        echo '╠══════════════════════════════════════════════════════════════╣';
+        echo '║  Server:  172.20.0.10:8080 (TCP echo)                        ║';
+        echo '║  Router:  172.20.0.254:9090 (tunnel → server)                ║';
+        echo '║  Client:  172.20.0.100                                       ║';
+        echo '╠══════════════════════════════════════════════════════════════╣';
+        echo '║  Portainer: http://localhost:9000 (global)                   ║';
+        echo '║  Credentials: stud / studstudstud                            ║';
+        echo '╠══════════════════════════════════════════════════════════════╣';
+        echo '║  Quick tests:                                                ║';
+        echo '║    echo HELLO | nc server 8080       # Direct to server     ║';
+        echo '║    echo HELLO | nc router 9090       # Through tunnel       ║';
+        echo '║    python3 /app/src/exercises/ex_3_01_udp_broadcast.py      ║';
+        echo '╚══════════════════════════════════════════════════════════════╝';
+        exec bash
+      "
+
+  # ─── RECEIVER ───────────────────────────────────────────────────────────
+  # Broadcast/multicast receiver (optional profile)
+  
+  receiver:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: week3_receiver
+    hostname: receiver
+    networks:
+      week3_network:
+        ipv4_address: 172.20.0.101
+    volumes:
+      - ../src:/app/src:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=3
+    command: >
+      bash -c "
+        echo '[RECEIVER] Listening for broadcast on port 5007...';
+        python3 /app/src/exercises/ex_3_01_udp_broadcast.py recv --port 5007 --count 100
+      "
+    profiles:
+      - broadcast
+    restart: unless-stopped
+
+# ─── NETWORKS ─────────────────────────────────────────────────────────────
+
+networks:
+  week3_network:
+    name: week3_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
+
+# ─── VOLUMES ──────────────────────────────────────────────────────────────
+# NOTE: Portainer data volume is managed globally, not here
+
+volumes: {}
