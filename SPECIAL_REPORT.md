@@ -19,7 +19,7 @@
 
 ## Disclaimer and Conflict of Interest
 
-This report was written by the authors of the CLIM&TOMA/ASE-CSIE materials, which creates an obvious conflict of interest. We acknowledge that absolute objectivity is an ideal we strive towards rather than a certainty we possess. Readers are encouraged to verify the cited sources independently and form their own opinions.
+This report was written by the authors of the CLIM&TOMA/ASE-CSIE materials (which decrease objectivity and creates an obvious conflict of interest). We acknowledge that absolute objectivity is an ideal we strive towards rather than a certainty we possess. Readers are encouraged to verify the cited sources independently and form their own opinions.
 
 In other words: yes, we are showing off a bit, but we are trying to be fair about it.
 
