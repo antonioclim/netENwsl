@@ -1,0 +1,374 @@
+{
+  "$schema": "https://purl.imsglobal.org/spec/qti/v3p0/schema/json/qti3-item-schema.json",
+  "metadata": {
+    "title": "Week 2: Architectural Models and Socket Programming",
+    "description": "Formative assessment quiz covering OSI/TCP-IP models and socket programming fundamentals",
+    "identifier": "NETW_W02_QUIZ_v2",
+    "version": "2.0.0",
+    "language": "en-GB",
+    "subject": "Computer Networks",
+    "educationalLevel": "Undergraduate",
+    "timeLimit": 900,
+    "passingScore": 70,
+    "author": "ing. dr. Antonio Clim",
+    "institution": "ASE-CSIE Bucharest",
+    "course": "Computer Networks Laboratory",
+    "created": "2026-01-24",
+    "lms_compatibility": {
+      "moodle": {
+        "format": "xml",
+        "category": "Week 02 - Sockets",
+        "question_type_mapping": {
+          "multiple_choice": "multichoice",
+          "fill_blank": "shortanswer",
+          "code_output": "multichoice"
+        }
+      },
+      "canvas": {
+        "format": "qti",
+        "assignment_group": "Formative Quizzes",
+        "question_type_mapping": {
+          "multiple_choice": "multiple_choice_question",
+          "fill_blank": "short_answer_question",
+          "code_output": "multiple_choice_question"
+        }
+      }
+    }
+  },
+  "settings": {
+    "shuffleQuestions": false,
+    "shuffleAnswers": true,
+    "showCorrectAnswers": true,
+    "showCorrectAnswersAfterSubmission": true,
+    "allowMultipleAttempts": true,
+    "maxAttempts": 3,
+    "scoringMethod": "keep_highest",
+    "penaltyFactor": 0.33,
+    "feedbackMode": "immediate"
+  },
+  "learningObjectives": [
+    {"id": "R1", "description": "List the seven layers of the OSI model in order", "bloom": 1},
+    {"id": "R2", "description": "Identify the four layers of the TCP/IP model", "bloom": 1},
+    {"id": "R3", "description": "Recall socket types for TCP and UDP", "bloom": 1},
+    {"id": "R4", "description": "State default ports for common services", "bloom": 1},
+    {"id": "R5", "description": "Define key networking terms", "bloom": 1},
+    {"id": "U1", "description": "Explain TCP vs UDP differences", "bloom": 2},
+    {"id": "U2", "description": "Describe the TCP three-way handshake", "bloom": 2},
+    {"id": "U3", "description": "Compare iterative vs concurrent servers", "bloom": 2},
+    {"id": "A1", "description": "Implement a basic TCP server", "bloom": 3},
+    {"id": "A3", "description": "Use socket options correctly", "bloom": 3},
+    {"id": "N1", "description": "Debug address-in-use errors", "bloom": 4},
+    {"id": "N3", "description": "Differentiate bind addresses", "bloom": 4},
+    {"id": "E1", "description": "Justify protocol choice for scenarios", "bloom": 5}
+  ],
+  "questions": [
+    {
+      "id": "q01",
+      "type": "multiple_choice",
+      "loRef": "R1",
+      "difficulty": "basic",
+      "bloomLevel": 1,
+      "points": 1,
+      "stem": "How many layers does the OSI reference model have?",
+      "choices": [
+        {"id": "a", "text": "4", "correct": false},
+        {"id": "b", "text": "5", "correct": false},
+        {"id": "c", "text": "7", "correct": true},
+        {"id": "d", "text": "8", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! The OSI model has 7 layers.",
+        "incorrect": "The OSI model has exactly 7 layers: Physical, Data Link, Network, Transport, Session, Presentation and Application."
+      },
+      "tags": ["osi", "layers", "model"]
+    },
+    {
+      "id": "q02",
+      "type": "multiple_choice",
+      "loRef": "R3",
+      "difficulty": "basic",
+      "bloomLevel": 1,
+      "points": 1,
+      "stem": "Which socket type constant is used for TCP connections in Python?",
+      "choices": [
+        {"id": "a", "text": "SOCK_DGRAM", "correct": false},
+        {"id": "b", "text": "SOCK_STREAM", "correct": true},
+        {"id": "c", "text": "SOCK_RAW", "correct": false},
+        {"id": "d", "text": "SOCK_TCP", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! SOCK_STREAM is for TCP connections.",
+        "incorrect": "SOCK_STREAM indicates a reliable, connection-oriented byte stream — this is TCP. SOCK_DGRAM is for UDP datagrams."
+      },
+      "tags": ["socket", "tcp", "python"]
+    },
+    {
+      "id": "q03",
+      "type": "multiple_choice",
+      "loRef": "R1",
+      "difficulty": "basic",
+      "bloomLevel": 1,
+      "points": 1,
+      "stem": "At which OSI layer does IP addressing operate?",
+      "choices": [
+        {"id": "a", "text": "Layer 2 — Data Link", "correct": false},
+        {"id": "b", "text": "Layer 3 — Network", "correct": true},
+        {"id": "c", "text": "Layer 4 — Transport", "correct": false},
+        {"id": "d", "text": "Layer 5 — Session", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! IP operates at Layer 3 (Network layer).",
+        "incorrect": "IP (Internet Protocol) operates at Layer 3 (Network layer), handling logical addressing and routing between networks."
+      },
+      "tags": ["osi", "ip", "network-layer"]
+    },
+    {
+      "id": "q04",
+      "type": "multiple_choice",
+      "loRef": "R4",
+      "difficulty": "basic",
+      "bloomLevel": 1,
+      "points": 1,
+      "stem": "What is the default port number for SSH connections?",
+      "choices": [
+        {"id": "a", "text": "21", "correct": false},
+        {"id": "b", "text": "22", "correct": true},
+        {"id": "c", "text": "23", "correct": false},
+        {"id": "d", "text": "25", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! SSH uses port 22.",
+        "incorrect": "SSH uses port 22 by default. Port 21 is FTP, 23 is Telnet and 25 is SMTP."
+      },
+      "tags": ["ports", "ssh", "well-known"]
+    },
+    {
+      "id": "q05",
+      "type": "fill_blank",
+      "loRef": "R2",
+      "difficulty": "basic",
+      "bloomLevel": 1,
+      "points": 1,
+      "stem": "The TCP/IP model has ___ layers, compared to 7 in the OSI model.",
+      "acceptedAnswers": ["4", "four", "Four"],
+      "caseSensitive": false,
+      "feedback": {
+        "correct": "Correct! The TCP/IP model has 4 layers.",
+        "incorrect": "The TCP/IP model consolidates OSI layers into 4: Network Access, Internet, Transport and Application."
+      },
+      "hint": "It is fewer than OSI",
+      "tags": ["tcp-ip", "layers", "model"]
+    },
+    {
+      "id": "q06",
+      "type": "multiple_choice",
+      "loRef": "U1",
+      "difficulty": "intermediate",
+      "bloomLevel": 2,
+      "points": 1,
+      "stem": "Why is TCP called 'connection-oriented'?",
+      "choices": [
+        {"id": "a", "text": "Because it uses physical cables", "correct": false},
+        {"id": "b", "text": "Because it establishes a session before data transfer", "correct": true},
+        {"id": "c", "text": "Because it only works on connected networks", "correct": false},
+        {"id": "d", "text": "Because it requires a constant internet connection", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! TCP establishes a logical connection via the three-way handshake.",
+        "incorrect": "TCP establishes a logical connection via the three-way handshake before any application data is exchanged. This ensures both endpoints are ready."
+      },
+      "tags": ["tcp", "connection", "handshake"]
+    },
+    {
+      "id": "q07",
+      "type": "multiple_choice",
+      "loRef": "U2",
+      "difficulty": "intermediate",
+      "bloomLevel": 2,
+      "points": 1,
+      "stem": "What is the correct sequence of TCP flags in the three-way handshake?",
+      "choices": [
+        {"id": "a", "text": "ACK → SYN → SYN-ACK", "correct": false},
+        {"id": "b", "text": "SYN → ACK → SYN-ACK", "correct": false},
+        {"id": "c", "text": "SYN → SYN-ACK → ACK", "correct": true},
+        {"id": "d", "text": "SYN-ACK → SYN → ACK", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! The sequence is SYN → SYN-ACK → ACK.",
+        "incorrect": "The client sends SYN, server responds with SYN-ACK, then client completes with ACK. This synchronises sequence numbers."
+      },
+      "tags": ["tcp", "handshake", "flags"]
+    },
+    {
+      "id": "q08",
+      "type": "multiple_choice",
+      "loRef": "U1",
+      "difficulty": "intermediate",
+      "bloomLevel": 2,
+      "points": 1,
+      "stem": "Which statement about UDP is FALSE?",
+      "choices": [
+        {"id": "a", "text": "UDP provides no delivery guarantee", "correct": false},
+        {"id": "b", "text": "UDP has lower overhead than TCP", "correct": false},
+        {"id": "c", "text": "UDP cannot receive responses from servers", "correct": true},
+        {"id": "d", "text": "UDP is suitable for real-time applications", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! UDP can indeed receive responses — it is bidirectional.",
+        "incorrect": "UDP sockets can both send and receive. 'Connectionless' means no handshake is required, not that communication is one-way."
+      },
+      "tags": ["udp", "connectionless", "bidirectional"]
+    },
+    {
+      "id": "q09",
+      "type": "fill_blank",
+      "loRef": "U2",
+      "difficulty": "intermediate",
+      "bloomLevel": 2,
+      "points": 1,
+      "stem": "After a TCP connection closes, the socket typically remains in ___ state for about 60 seconds.",
+      "acceptedAnswers": ["TIME_WAIT", "TIME-WAIT", "TIMEWAIT", "time_wait"],
+      "caseSensitive": false,
+      "feedback": {
+        "correct": "Correct! The TIME_WAIT state prevents port reuse issues.",
+        "incorrect": "TIME_WAIT ensures delayed packets from the old connection do not interfere with new connections on the same port."
+      },
+      "hint": "Two words, often written with underscore",
+      "tags": ["tcp", "state", "time-wait"]
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "loRef": "A3",
+      "difficulty": "intermediate",
+      "bloomLevel": 3,
+      "points": 1,
+      "stem": "What socket option should you set to allow immediate rebind after server restart?",
+      "choices": [
+        {"id": "a", "text": "SO_KEEPALIVE", "correct": false},
+        {"id": "b", "text": "SO_REUSEADDR", "correct": true},
+        {"id": "c", "text": "SO_BROADCAST", "correct": false},
+        {"id": "d", "text": "SO_LINGER", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! SO_REUSEADDR allows rebinding during TIME_WAIT.",
+        "incorrect": "SO_REUSEADDR allows binding to a port that is in TIME_WAIT state, preventing 'Address already in use' errors during development."
+      },
+      "tags": ["socket-options", "reuseaddr", "bind"]
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "loRef": "A1",
+      "difficulty": "intermediate",
+      "bloomLevel": 3,
+      "points": 1,
+      "stem": "What will this code print?\n\nimport socket\ns = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)\nprint(s.type == socket.SOCK_STREAM)",
+      "choices": [
+        {"id": "a", "text": "True", "correct": false},
+        {"id": "b", "text": "False", "correct": true},
+        {"id": "c", "text": "None", "correct": false},
+        {"id": "d", "text": "Error: socket has no attribute 'type'", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! SOCK_DGRAM does not equal SOCK_STREAM.",
+        "incorrect": "SOCK_DGRAM (UDP) does not equal SOCK_STREAM (TCP), so the comparison returns False."
+      },
+      "tags": ["socket", "type", "comparison"]
+    },
+    {
+      "id": "q12",
+      "type": "fill_blank",
+      "loRef": "A1",
+      "difficulty": "intermediate",
+      "bloomLevel": 3,
+      "points": 1,
+      "stem": "To make a TCP server accept connections from any network interface, bind to address ___",
+      "acceptedAnswers": ["0.0.0.0", "\"0.0.0.0\"", "'0.0.0.0'"],
+      "caseSensitive": false,
+      "feedback": {
+        "correct": "Correct! 0.0.0.0 binds to all interfaces.",
+        "incorrect": "0.0.0.0 means 'all interfaces'. Binding to 127.0.0.1 only accepts local connections."
+      },
+      "hint": "Four groups of zeros",
+      "tags": ["bind", "address", "interfaces"]
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "loRef": "N1",
+      "difficulty": "advanced",
+      "bloomLevel": 4,
+      "points": 1,
+      "stem": "You see this error when starting your server:\nOSError: [Errno 98] Address already in use\n\nWhich command helps identify the process using the port?",
+      "choices": [
+        {"id": "a", "text": "ps aux | grep python", "correct": false},
+        {"id": "b", "text": "netstat -r", "correct": false},
+        {"id": "c", "text": "ss -tlnp | grep 9090", "correct": true},
+        {"id": "d", "text": "ifconfig -a", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! ss -tlnp shows TCP listening sockets with process info.",
+        "incorrect": "ss -tlnp shows TCP listening sockets with process info. The -t flag filters TCP, -l shows listening, -n shows numeric ports, -p shows process."
+      },
+      "tags": ["troubleshooting", "ss", "port"]
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "loRef": "N3",
+      "difficulty": "advanced",
+      "bloomLevel": 4,
+      "points": 1,
+      "stem": "Your TCP server binds to 127.0.0.1:9090. A Docker container tries to connect to host.docker.internal:9090.\n\nWhat happens?",
+      "choices": [
+        {"id": "a", "text": "Connection succeeds", "correct": false},
+        {"id": "b", "text": "Connection refused", "correct": true},
+        {"id": "c", "text": "Connection times out", "correct": false},
+        {"id": "d", "text": "DNS resolution fails", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! 127.0.0.1 only accepts local connections.",
+        "incorrect": "127.0.0.1 only accepts connections from the same machine. Docker containers are separate network namespaces, so they cannot reach localhost-bound services."
+      },
+      "tags": ["bind", "docker", "localhost"]
+    },
+    {
+      "id": "q15",
+      "type": "multiple_choice",
+      "loRef": "E1",
+      "difficulty": "advanced",
+      "bloomLevel": 5,
+      "points": 1,
+      "stem": "You are designing a multiplayer game server. Players send position updates 30 times per second.\n\nWhich protocol is more appropriate and why?",
+      "choices": [
+        {"id": "a", "text": "TCP — reliability ensures no position data is lost", "correct": false},
+        {"id": "b", "text": "UDP — low latency is more important than guaranteed delivery", "correct": true},
+        {"id": "c", "text": "TCP — the three-way handshake improves security", "correct": false},
+        {"id": "d", "text": "UDP — it automatically handles packet ordering", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Correct! For real-time games, latency matters more than reliability.",
+        "incorrect": "For real-time games, a slightly stale position is useless anyway. UDP's lower latency outweighs TCP's reliability. Games implement their own interpolation for lost packets."
+      },
+      "tags": ["protocol-choice", "udp", "real-time"]
+    }
+  ],
+  "summary": {
+    "totalQuestions": 15,
+    "questionsByLevel": {
+      "basic": 5,
+      "intermediate": 7,
+      "advanced": 3
+    },
+    "questionsByBloom": {
+      "remember": 5,
+      "understand": 4,
+      "apply": 3,
+      "analyse": 2,
+      "evaluate": 1
+    },
+    "maxPoints": 15,
+    "estimatedTime": 15
+  }
+}

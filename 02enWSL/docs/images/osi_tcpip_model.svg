@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 380" width="550" height="380">
+  <rect width="550" height="380" fill="#fafafa"/>
+  <text x="275" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">OSI Model vs TCP/IP Model</text>
+  <rect x="30" y="45" width="200" height="25" rx="5" fill="#5c6bc0"/>
+  <text x="130" y="62" text-anchor="middle" font-family="Arial" font-size="12" fill="white" font-weight="bold">OSI Model (7 Layers)</text>
+  <rect x="320" y="45" width="200" height="25" rx="5" fill="#26a69a"/>
+  <text x="420" y="62" text-anchor="middle" font-family="Arial" font-size="12" fill="white" font-weight="bold">TCP/IP Model (4 Layers)</text>
+  <g font-family="Arial" font-size="10">
+    <rect x="30" y="80" width="200" height="30" fill="#7986cb"/><text x="40" y="98" fill="white" font-weight="bold">7. Application</text><text x="220" y="98" text-anchor="end" fill="white">HTTP, FTP</text>
+    <rect x="30" y="110" width="200" height="30" fill="#9fa8da"/><text x="40" y="128" fill="#333" font-weight="bold">6. Presentation</text><text x="220" y="128" text-anchor="end" fill="#555">SSL, JPEG</text>
+    <rect x="30" y="140" width="200" height="30" fill="#c5cae9"/><text x="40" y="158" fill="#333" font-weight="bold">5. Session</text><text x="220" y="158" text-anchor="end" fill="#555">NetBIOS</text>
+    <rect x="30" y="170" width="200" height="30" fill="#81d4fa"/><text x="40" y="188" fill="#333" font-weight="bold">4. Transport</text><text x="220" y="188" text-anchor="end" fill="#555">TCP, UDP</text>
+    <rect x="30" y="200" width="200" height="30" fill="#a5d6a7"/><text x="40" y="218" fill="#333" font-weight="bold">3. Network</text><text x="220" y="218" text-anchor="end" fill="#555">IP, ICMP</text>
+    <rect x="30" y="230" width="200" height="30" fill="#ffe082"/><text x="40" y="248" fill="#333" font-weight="bold">2. Data Link</text><text x="220" y="248" text-anchor="end" fill="#555">Ethernet</text>
+    <rect x="30" y="260" width="200" height="30" fill="#ffab91"/><text x="40" y="278" fill="#333" font-weight="bold">1. Physical</text><text x="220" y="278" text-anchor="end" fill="#555">Cables</text>
+    <rect x="320" y="80" width="200" height="90" fill="#4db6ac"/><text x="330" y="130" fill="white" font-weight="bold">Application</text><text x="510" y="130" text-anchor="end" fill="white">HTTP, DNS, SSH</text>
+    <rect x="320" y="170" width="200" height="30" fill="#81d4fa"/><text x="330" y="188" fill="#333" font-weight="bold">Transport</text><text x="510" y="188" text-anchor="end" fill="#555">TCP, UDP</text>
+    <rect x="320" y="200" width="200" height="30" fill="#a5d6a7"/><text x="330" y="218" fill="#333" font-weight="bold">Internet</text><text x="510" y="218" text-anchor="end" fill="#555">IP, ICMP</text>
+    <rect x="320" y="230" width="200" height="60" fill="#ffcc80"/><text x="330" y="265" fill="#333" font-weight="bold">Network Access</text><text x="510" y="265" text-anchor="end" fill="#555">Ethernet, WiFi</text>
+  </g>
+  <g stroke="#999" stroke-width="1" stroke-dasharray="4,4">
+    <line x1="230" y1="125" x2="320" y2="125"/>
+    <line x1="230" y1="185" x2="320" y2="185"/>
+    <line x1="230" y1="215" x2="320" y2="215"/>
+    <line x1="230" y1="260" x2="320" y2="260"/>
+  </g>
+  <rect x="400" y="310" width="120" height="45" rx="5" fill="#e8f5e9" stroke="#4caf50"/>
+  <text x="460" y="328" text-anchor="middle" font-family="Arial" font-size="10" fill="#2e7d32" font-weight="bold">Week 2 Focus</text>
+  <text x="460" y="345" text-anchor="middle" font-family="Arial" font-size="10" fill="#2e7d32">Transport Layer</text>
+  <text x="275" y="370" text-anchor="middle" font-family="Arial" font-size="9" fill="#999">Week 2 — Socket Programming | NETWORKING class</text>
+</svg>

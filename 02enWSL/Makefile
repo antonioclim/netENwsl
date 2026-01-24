@@ -4,193 +4,171 @@
 # Usage: make [target]
 # Run 'make help' to see all available targets.
 
-.PHONY: help install lint test smoke quiz docker-up docker-down docker-logs \
-        clean verify all ci check-syntax
+.PHONY: help install lint lint-fix typecheck test smoke quiz quiz-random \
+        quiz-quick quiz-review quiz-export docker-up docker-down docker-logs \
+        docker-shell docker-build docker-status clean clean-docker ci all \
+        verify verify-integrity check-syntax test-coverage
 
 # Configuration
 PYTHON := python3
 PIP := pip
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
 QUIZ_FILE := formative/quiz.yaml
+RUFF_CONFIG := ruff.toml
 
 # Colours for terminal output
 CYAN := \033[36m
 GREEN := \033[32m
 YELLOW := \033[33m
 RED := \033[31m
+BLUE := \033[34m
 RESET := \033[0m
 
 # Default target
 .DEFAULT_GOAL := help
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# HELP
-# ═══════════════════════════════════════════════════════════════════════════════
-
 help: ## Show this help message
 	@echo ""
 	@echo "$(CYAN)Week 2 Laboratory Kit — Available Commands$(RESET)"
 	@echo ""
-	@echo "$(GREEN)Development:$(RESET)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2}'
+	@echo "$(GREEN)Setup & Verification:$(RESET)"
+	@echo "  $(CYAN)install$(RESET)          Install Python dependencies"
+	@echo "  $(CYAN)verify$(RESET)           Verify environment"
+	@echo "  $(CYAN)verify-integrity$(RESET) Verify file checksums"
 	@echo ""
-	@echo "$(GREEN)Quick Start:$(RESET)"
-	@echo "  1. make install     # Install dependencies"
-	@echo "  2. make verify      # Check environment"
-	@echo "  3. make docker-up   # Start lab containers"
-	@echo "  4. make test        # Run all tests"
+	@echo "$(GREEN)Code Quality:$(RESET)"
+	@echo "  $(CYAN)check-syntax$(RESET)     Check Python syntax"
+	@echo "  $(CYAN)lint$(RESET)             Run ruff linter"
+	@echo "  $(CYAN)lint-fix$(RESET)         Run ruff with auto-fix"
+	@echo "  $(CYAN)typecheck$(RESET)        Run mypy type checker"
 	@echo ""
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# SETUP
-# ═══════════════════════════════════════════════════════════════════════════════
+	@echo "$(GREEN)Testing:$(RESET)"
+	@echo "  $(CYAN)test$(RESET)             Run all tests"
+	@echo "  $(CYAN)test-coverage$(RESET)    Run tests with coverage"
+	@echo "  $(CYAN)smoke$(RESET)            Run smoke tests"
+	@echo ""
+	@echo "$(GREEN)Formative Assessment:$(RESET)"
+	@echo "  $(CYAN)quiz$(RESET)             Run interactive quiz"
+	@echo "  $(CYAN)quiz-random$(RESET)      Run randomised quiz"
+	@echo "  $(CYAN)quiz-quick$(RESET)       Run 5-question quiz"
+	@echo "  $(CYAN)quiz-review$(RESET)      Review all questions"
+	@echo "  $(CYAN)quiz-export$(RESET)      Export to LMS formats"
+	@echo ""
+	@echo "$(GREEN)Docker:$(RESET)"
+	@echo "  $(CYAN)docker-up$(RESET)        Start containers"
+	@echo "  $(CYAN)docker-down$(RESET)      Stop containers"
+	@echo "  $(CYAN)docker-logs$(RESET)      View logs"
+	@echo "  $(CYAN)docker-shell$(RESET)     Shell into container"
+	@echo ""
+	@echo "$(GREEN)CI/CD:$(RESET)"
+	@echo "  $(CYAN)ci$(RESET)               Run full CI pipeline"
+	@echo "  $(CYAN)all$(RESET)              Full setup and verification"
+	@echo ""
 
 install: ## Install Python dependencies
 	@echo "$(CYAN)Installing dependencies...$(RESET)"
 	$(PIP) install -r setup/requirements.txt
 	@echo "$(GREEN)✓ Dependencies installed$(RESET)"
 
-verify: ## Verify environment is correctly configured
+verify: ## Verify environment
 	@echo "$(CYAN)Verifying environment...$(RESET)"
 	$(PYTHON) setup/verify_environment.py
-	@echo "$(GREEN)✓ Environment verification complete$(RESET)"
+	@echo "$(GREEN)✓ Environment verified$(RESET)"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CODE QUALITY
-# ═══════════════════════════════════════════════════════════════════════════════
+verify-integrity: ## Verify file checksums
+	@echo "$(CYAN)Verifying integrity...$(RESET)"
+	@if [ -f MANIFEST.sha256 ]; then \
+		sha256sum -c MANIFEST.sha256 --quiet && \
+		echo "$(GREEN)✓ All files verified$(RESET)" || \
+		echo "$(YELLOW)⚠ Some checksums differ$(RESET)"; \
+	else \
+		echo "$(YELLOW)⚠ MANIFEST.sha256 not found$(RESET)"; \
+	fi
 
-check-syntax: ## Check Python syntax (no external deps)
-	@echo "$(CYAN)Checking Python syntax...$(RESET)"
+check-syntax: ## Check Python syntax
+	@echo "$(CYAN)Checking syntax...$(RESET)"
 	@find src scripts tests formative -name "*.py" -exec $(PYTHON) -m py_compile {} \;
 	@echo "$(GREEN)✓ No syntax errors$(RESET)"
 
-lint: ## Run ruff linter on all Python files
-	@echo "$(CYAN)Running ruff linter...$(RESET)"
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --config ruff.toml || true
+lint: ## Run ruff linter
+	@echo "$(CYAN)Running linter...$(RESET)"
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --config $(RUFF_CONFIG) || true
 	@echo "$(GREEN)✓ Linting complete$(RESET)"
 
 lint-fix: ## Run ruff with auto-fix
-	@echo "$(CYAN)Running ruff with auto-fix...$(RESET)"
-	$(PYTHON) -m ruff check --fix src/ scripts/ tests/ formative/ --config ruff.toml
+	$(PYTHON) -m ruff check --fix src/ scripts/ tests/ formative/ --config $(RUFF_CONFIG)
 	@echo "$(GREEN)✓ Auto-fixes applied$(RESET)"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTING
-# ═══════════════════════════════════════════════════════════════════════════════
+typecheck: ## Run mypy type checker
+	@$(PYTHON) -m mypy src/ scripts/ --ignore-missing-imports --no-error-summary 2>/dev/null || true
+	@echo "$(GREEN)✓ Type check complete$(RESET)"
 
-test: ## Run all tests with pytest
-	@echo "$(CYAN)Running all tests...$(RESET)"
+test: ## Run all tests
+	@echo "$(CYAN)Running tests...$(RESET)"
 	$(PYTHON) -m pytest tests/ -v --tb=short
-	@echo "$(GREEN)✓ All tests complete$(RESET)"
+	@echo "$(GREEN)✓ Tests complete$(RESET)"
 
-smoke: ## Run quick smoke tests only
-	@echo "$(CYAN)Running smoke tests...$(RESET)"
+test-coverage: ## Run tests with coverage
+	$(PYTHON) -m pytest tests/ -v --cov=src --cov=scripts --cov-report=term --cov-report=html
+	@echo "$(GREEN)✓ Coverage: htmlcov/index.html$(RESET)"
+
+smoke: ## Run smoke tests
 	$(PYTHON) tests/smoke_test.py
 	@echo "$(GREEN)✓ Smoke tests complete$(RESET)"
 
-test-exercises: ## Run exercise-specific tests
-	@echo "$(CYAN)Running exercise tests...$(RESET)"
-	$(PYTHON) tests/test_exercises.py
-	@echo "$(GREEN)✓ Exercise tests complete$(RESET)"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# FORMATIVE ASSESSMENT
-# ═══════════════════════════════════════════════════════════════════════════════
-
-quiz: ## Run the interactive formative quiz
-	@echo "$(CYAN)Starting formative quiz...$(RESET)"
+quiz: ## Run interactive quiz
+	@echo "$(CYAN)Starting quiz...$(RESET)"
 	$(PYTHON) formative/run_quiz.py
 
-quiz-random: ## Run quiz with randomised questions
+quiz-random: ## Run randomised quiz
 	$(PYTHON) formative/run_quiz.py --random
 
-quiz-quick: ## Run a quick 5-question quiz
+quiz-quick: ## Run 5-question quiz
 	$(PYTHON) formative/run_quiz.py --limit 5 --random
 
-quiz-review: ## Review all questions with answers
+quiz-review: ## Review all questions
 	$(PYTHON) formative/run_quiz.py --review
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# DOCKER
-# ═══════════════════════════════════════════════════════════════════════════════
+quiz-export: ## Export to LMS formats
+	@echo "$(CYAN)Exporting quiz...$(RESET)"
+	@mkdir -p exports
+	$(PYTHON) formative/export_quiz_to_lms.py --format moodle --output exports/quiz_moodle.xml
+	$(PYTHON) formative/export_quiz_to_lms.py --format gift --output exports/quiz.gift
+	$(PYTHON) formative/export_quiz_to_lms.py --format json --output exports/quiz_export.json
+	@echo "$(GREEN)✓ Exports in exports/$(RESET)"
 
-docker-up: ## Start laboratory Docker containers
-	@echo "$(CYAN)Starting Docker containers...$(RESET)"
+docker-up: ## Start containers
 	$(DOCKER_COMPOSE) up -d
-	@echo "$(GREEN)✓ Containers started$(RESET)"
-	@echo ""
-	@echo "Container status:"
 	$(DOCKER_COMPOSE) ps
 
-docker-down: ## Stop laboratory Docker containers
-	@echo "$(CYAN)Stopping Docker containers...$(RESET)"
+docker-down: ## Stop containers
 	$(DOCKER_COMPOSE) down
-	@echo "$(GREEN)✓ Containers stopped$(RESET)"
 
-docker-logs: ## View container logs (follow mode)
+docker-logs: ## View logs
 	$(DOCKER_COMPOSE) logs -f
 
-docker-shell: ## Open shell in lab container
+docker-shell: ## Shell into container
 	docker exec -it week2_lab /bin/bash
 
-docker-build: ## Rebuild Docker images
-	@echo "$(CYAN)Building Docker images...$(RESET)"
+docker-build: ## Rebuild images
 	$(DOCKER_COMPOSE) build --no-cache
-	@echo "$(GREEN)✓ Images rebuilt$(RESET)"
 
-docker-status: ## Show container status
+docker-status: ## Container status
 	$(DOCKER_COMPOSE) ps
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# EXERCISES
-# ═══════════════════════════════════════════════════════════════════════════════
-
-run-tcp-server: ## Start TCP server (Exercise 1)
-	$(PYTHON) src/exercises/ex_2_01_tcp.py server --port 9090
-
-run-tcp-client: ## Run TCP client (Exercise 1)
-	$(PYTHON) src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 -m "Hello"
-
-run-udp-server: ## Start UDP server (Exercise 2)
-	$(PYTHON) src/exercises/ex_2_02_udp.py server --port 9091
-
-run-udp-client: ## Run UDP client (Exercise 2)
-	$(PYTHON) src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 -o ping
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CLEANUP
-# ═══════════════════════════════════════════════════════════════════════════════
-
-clean: ## Remove generated files and caches
-	@echo "$(CYAN)Cleaning up...$(RESET)"
+clean: ## Remove generated files
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete 2>/dev/null || true
-	rm -rf artifacts/*.pcap artifacts/*.log 2>/dev/null || true
+	find . -type d -name htmlcov -exec rm -rf {} + 2>/dev/null || true
+	rm -rf exports/ 2>/dev/null || true
 	@echo "$(GREEN)✓ Cleanup complete$(RESET)"
 
-clean-docker: ## Remove Docker containers, volumes and networks
-	@echo "$(YELLOW)Warning: This will remove all Week 2 Docker resources$(RESET)"
+clean-docker: ## Remove Docker resources
 	$(DOCKER_COMPOSE) down --volumes --remove-orphans
-	@echo "$(GREEN)✓ Docker resources removed$(RESET)"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CI/CD
-# ═══════════════════════════════════════════════════════════════════════════════
-
-ci: check-syntax lint test ## Run full CI pipeline (syntax + lint + tests)
+ci: check-syntax lint test ## Run CI pipeline
 	@echo "$(GREEN)✓ CI pipeline complete$(RESET)"
 
-all: install verify ci ## Full setup and verification
+all: install verify ci ## Full setup
 	@echo "$(GREEN)✓ All checks passed$(RESET)"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CAPTURE
-# ═══════════════════════════════════════════════════════════════════════════════
-
-capture: ## Start traffic capture (requires sudo)
-	@echo "$(CYAN)Starting traffic capture...$(RESET)"
-	@echo "$(YELLOW)Note: May require sudo for raw socket access$(RESET)"
-	$(PYTHON) scripts/capture_traffic.py --interface eth0 --output pcap/capture_$$(date +%Y%m%d_%H%M%S).pcap

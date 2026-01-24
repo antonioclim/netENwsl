@@ -1,31 +1,27 @@
 # ruff.toml — Code Quality Configuration
 # NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim
-#
-# Run: ruff check src/ scripts/ tests/
-# Fix: ruff check --fix src/ scripts/ tests/
+
+target-version = "py311"
+line-length = 100
+
+exclude = [
+    ".git", ".github", ".mypy_cache", ".pytest_cache", ".ruff_cache",
+    ".venv", "__pycache__", "htmlcov", "exports", "artifacts",
+]
 
 [lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-]
-ignore = [
-    "E501",   # line too long (handled by formatter)
-    "B008",   # function call in default argument
-    "B905",   # zip without strict (Python 3.10+)
-]
+select = ["E", "W", "F", "I", "B", "C4", "UP", "SIM"]
+ignore = ["E501", "B008", "B905"]
 
 [lint.per-file-ignores]
-"__init__.py" = ["F401"]  # unused imports in __init__ are fine
-"tests/*" = ["B011"]       # assert False is fine in tests
+"__init__.py" = ["F401", "F403"]
+"tests/*" = ["B011", "S101"]
+"homework/*" = ["B"]
 
 [lint.isort]
-known-first-party = ["src", "scripts"]
+known-first-party = ["src", "scripts", "formative"]
+force-single-line = false
+lines-after-imports = 2
 
 [format]
 quote-style = "double"

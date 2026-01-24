@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <rect width="600" height="400" fill="#fafafa"/>
+  <text x="300" y="30" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#333">TCP vs UDP Comparison</text>
+  <rect x="30" y="50" width="260" height="320" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
+  <rect x="30" y="50" width="260" height="35" rx="10" fill="#1976d2"/>
+  <text x="160" y="74" text-anchor="middle" font-family="Arial" font-size="14" fill="white" font-weight="bold">TCP (SOCK_STREAM)</text>
+  <rect x="310" y="50" width="260" height="320" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <rect x="310" y="50" width="260" height="35" rx="10" fill="#f57c00"/>
+  <text x="440" y="74" text-anchor="middle" font-family="Arial" font-size="14" fill="white" font-weight="bold">UDP (SOCK_DGRAM)</text>
+  <g font-family="Arial" font-size="11" fill="#333">
+    <text x="50" y="110" font-weight="bold" fill="#1976d2">Connection:</text>
+    <text x="50" y="128">✓ Connection-oriented</text>
+    <text x="50" y="144">✓ Three-way handshake</text>
+    <text x="50" y="172" font-weight="bold" fill="#1976d2">Reliability:</text>
+    <text x="50" y="190">✓ Guaranteed delivery</text>
+    <text x="50" y="206">✓ Retransmission</text>
+    <text x="50" y="234" font-weight="bold" fill="#1976d2">Ordering:</text>
+    <text x="50" y="252">✓ In-order delivery</text>
+    <text x="50" y="280" font-weight="bold" fill="#1976d2">Use Cases:</text>
+    <text x="50" y="298">• Web (HTTP/HTTPS)</text>
+    <text x="50" y="314">• Email (SMTP)</text>
+    <text x="50" y="330">• File transfer (FTP)</text>
+    <text x="50" y="358">Header: 20-60 bytes</text>
+    <text x="330" y="110" font-weight="bold" fill="#f57c00">Connection:</text>
+    <text x="330" y="128">✗ Connectionless</text>
+    <text x="330" y="144">✗ No handshake</text>
+    <text x="330" y="172" font-weight="bold" fill="#f57c00">Reliability:</text>
+    <text x="330" y="190">✗ Best-effort delivery</text>
+    <text x="330" y="206">✗ No retransmission</text>
+    <text x="330" y="234" font-weight="bold" fill="#f57c00">Ordering:</text>
+    <text x="330" y="252">✗ No ordering guarantee</text>
+    <text x="330" y="280" font-weight="bold" fill="#f57c00">Use Cases:</text>
+    <text x="330" y="298">• DNS queries</text>
+    <text x="330" y="314">• Video streaming</text>
+    <text x="330" y="330">• Online gaming</text>
+    <text x="330" y="358">Header: 8 bytes</text>
+  </g>
+  <text x="300" y="390" text-anchor="middle" font-family="Arial" font-size="9" fill="#999">Week 2 — Socket Programming | NETWORKING class</text>
+</svg>

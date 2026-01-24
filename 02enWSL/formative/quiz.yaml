@@ -3,25 +3,55 @@
 #
 # Run: python formative/run_quiz.py
 # Or:  make quiz
+#
+# Export to LMS: python formative/export_quiz_to_lms.py --format moodle
+#                python formative/export_quiz_to_lms.py --format canvas
 
 metadata:
   week: 2
   topic: "Architectural Models and Socket Programming"
-  version: "1.0.0"
+  version: "2.0.0"
   estimated_time_minutes: 15
   passing_score: 70
   total_questions: 15
+  
+  # Learning Objective Coverage
   lo_coverage:
-    - R1  # OSI layers
-    - R3  # Socket types
-    - U1  # TCP vs UDP
-    - U2  # Three-way handshake
-    - A1  # Implement TCP server
-    - N1  # Debug address in use
-    - N3  # Bind address differences
-
+    - R1   # OSI layers
+    - R2   # TCP/IP model
+    - R3   # Socket types
+    - R4   # Common ports
+    - R5   # Terminology
+    - U1   # TCP vs UDP
+    - U2   # Three-way handshake
+    - U3   # Iterative vs concurrent
+    - A1   # Implement TCP server
+    - A3   # Socket options
+    - N1   # Debug address in use
+    - N3   # Bind address differences
+    - E1   # Protocol choice justification
+  
+  # LMS Export Settings
+  lms_export:
+    supported_formats:
+      - moodle_xml
+      - canvas_qti
+      - gift
+      - json
+    category: "Week 02 - Sockets"
+    shuffle_answers: true
+    shuffle_questions: false
+    default_grade: 1
+    penalty_factor: 0.33
+    
+  # Provenance
+  author: "ing. dr. Antonio Clim"
+  institution: "ASE-CSIE Bucharest"
+  last_updated: "2026-01-24"
+  
 # -----------------------------------------------------------------------------
 # LEVEL 1: REMEMBER (questions 1-5)
+# Bloom Level 1: Retrieve knowledge from long-term memory
 # -----------------------------------------------------------------------------
 questions:
   - id: q01
@@ -29,6 +59,7 @@ questions:
     lo_ref: R1
     difficulty: basic
     bloom_level: 1
+    points: 1
     stem: "How many layers does the OSI reference model have?"
     options:
       a: "4"
@@ -38,12 +69,14 @@ questions:
     correct: c
     explanation: "The OSI model has exactly 7 layers: Physical, Data Link, Network, Transport, Session, Presentation and Application."
     misconception_ref: null
+    tags: ["osi", "layers", "model"]
 
   - id: q02
     type: multiple_choice
     lo_ref: R3
     difficulty: basic
     bloom_level: 1
+    points: 1
     stem: "Which socket type constant is used for TCP connections in Python?"
     options:
       a: "SOCK_DGRAM"
@@ -53,12 +86,14 @@ questions:
     correct: b
     explanation: "SOCK_STREAM indicates a reliable, connection-oriented byte stream — this is TCP. SOCK_DGRAM is for UDP datagrams."
     misconception_ref: "docs/misconceptions.md#misconception-1"
+    tags: ["socket", "tcp", "python"]
 
   - id: q03
     type: multiple_choice
     lo_ref: R1
     difficulty: basic
     bloom_level: 1
+    points: 1
     stem: "At which OSI layer does IP addressing operate?"
     options:
       a: "Layer 2 — Data Link"
@@ -68,42 +103,50 @@ questions:
     correct: b
     explanation: "IP (Internet Protocol) operates at Layer 3 (Network layer), handling logical addressing and routing between networks."
     misconception_ref: null
+    tags: ["osi", "ip", "network-layer"]
 
   - id: q04
     type: multiple_choice
-    lo_ref: R3
+    lo_ref: R4
     difficulty: basic
     bloom_level: 1
-    stem: "What is the default port number for DNS queries?"
+    points: 1
+    stem: "What is the default port number for SSH connections?"
     options:
-      a: "22"
-      b: "53"
-      c: "80"
-      d: "443"
+      a: "21"
+      b: "22"
+      c: "23"
+      d: "25"
     correct: b
-    explanation: "DNS uses port 53 for both UDP queries (most common) and TCP zone transfers."
+    explanation: "SSH uses port 22 by default. Port 21 is FTP, 23 is Telnet and 25 is SMTP."
     misconception_ref: null
+    tags: ["ports", "ssh", "well-known"]
 
   - id: q05
     type: fill_blank
-    lo_ref: R1
+    lo_ref: R2
     difficulty: basic
     bloom_level: 1
+    points: 1
     stem: "The TCP/IP model has ___ layers, compared to 7 in the OSI model."
     correct:
       - "4"
       - "four"
+      - "Four"
     explanation: "The TCP/IP model consolidates OSI layers into 4: Network Access, Internet, Transport and Application."
     hint: "It is fewer than OSI"
+    tags: ["tcp-ip", "layers", "model"]
 
 # -----------------------------------------------------------------------------
 # LEVEL 2: UNDERSTAND (questions 6-9)
+# Bloom Level 2: Construct meaning from instructional messages
 # -----------------------------------------------------------------------------
   - id: q06
     type: multiple_choice
     lo_ref: U1
     difficulty: intermediate
     bloom_level: 2
+    points: 1
     stem: "Why is TCP called 'connection-oriented'?"
     options:
       a: "Because it uses physical cables"
@@ -113,12 +156,14 @@ questions:
     correct: b
     explanation: "TCP establishes a logical connection via the three-way handshake before any application data is exchanged. This ensures both endpoints are ready."
     misconception_ref: "docs/misconceptions.md#misconception-7"
+    tags: ["tcp", "connection", "handshake"]
 
   - id: q07
     type: multiple_choice
     lo_ref: U2
     difficulty: intermediate
     bloom_level: 2
+    points: 1
     stem: "What is the correct sequence of TCP flags in the three-way handshake?"
     options:
       a: "ACK → SYN → SYN-ACK"
@@ -128,12 +173,14 @@ questions:
     correct: c
     explanation: "The client sends SYN, server responds with SYN-ACK, then client completes with ACK. This synchronises sequence numbers."
     misconception_ref: null
+    tags: ["tcp", "handshake", "flags"]
 
   - id: q08
     type: multiple_choice
     lo_ref: U1
     difficulty: intermediate
     bloom_level: 2
+    points: 1
     stem: "Which statement about UDP is FALSE?"
     options:
       a: "UDP provides no delivery guarantee"
@@ -143,28 +190,34 @@ questions:
     correct: c
     explanation: "UDP sockets can both send and receive. 'Connectionless' means no handshake is required, not that communication is one-way."
     misconception_ref: "docs/misconceptions.md#misconception-2"
+    tags: ["udp", "connectionless", "bidirectional"]
 
   - id: q09
     type: fill_blank
     lo_ref: U2
     difficulty: intermediate
     bloom_level: 2
+    points: 1
     stem: "After a TCP connection closes, the socket typically remains in ___ state for about 60 seconds."
     correct:
       - "TIME_WAIT"
       - "TIME-WAIT"
       - "TIMEWAIT"
+      - "time_wait"
     explanation: "TIME_WAIT ensures delayed packets from the old connection do not interfere with new connections on the same port."
     hint: "Two words, often written with underscore"
+    tags: ["tcp", "state", "time-wait"]
 
 # -----------------------------------------------------------------------------
 # LEVEL 3: APPLY (questions 10-12)
+# Bloom Level 3: Carry out or use a procedure in a given situation
 # -----------------------------------------------------------------------------
   - id: q10
     type: multiple_choice
-    lo_ref: A1
+    lo_ref: A3
     difficulty: intermediate
     bloom_level: 3
+    points: 1
     stem: "What socket option should you set to allow immediate rebind after server restart?"
     options:
       a: "SO_KEEPALIVE"
@@ -174,12 +227,14 @@ questions:
     correct: b
     explanation: "SO_REUSEADDR allows binding to a port that is in TIME_WAIT state, preventing 'Address already in use' errors during development."
     misconception_ref: "docs/misconceptions.md#misconception-10"
+    tags: ["socket-options", "reuseaddr", "bind"]
 
   - id: q11
     type: code_output
     lo_ref: A1
     difficulty: intermediate
     bloom_level: 3
+    points: 1
     stem: |
       What will this code print?
       ```python
@@ -195,12 +250,14 @@ questions:
     correct: b
     explanation: "SOCK_DGRAM (UDP) does not equal SOCK_STREAM (TCP), so the comparison returns False."
     misconception_ref: null
+    tags: ["socket", "type", "comparison"]
 
   - id: q12
     type: fill_blank
     lo_ref: A1
     difficulty: intermediate
     bloom_level: 3
+    points: 1
     stem: "To make a TCP server accept connections from any network interface, bind to address ___"
     correct:
       - "0.0.0.0"
@@ -209,15 +266,18 @@ questions:
     explanation: "0.0.0.0 means 'all interfaces'. Binding to 127.0.0.1 only accepts local connections."
     hint: "Four groups of zeros"
     misconception_ref: "docs/misconceptions.md#misconception-6"
+    tags: ["bind", "address", "interfaces"]
 
 # -----------------------------------------------------------------------------
 # LEVEL 4: ANALYSE (questions 13-14)
+# Bloom Level 4: Break material into parts, determine relationships
 # -----------------------------------------------------------------------------
   - id: q13
     type: multiple_choice
     lo_ref: N1
     difficulty: advanced
     bloom_level: 4
+    points: 1
     stem: |
       You see this error when starting your server:
       `OSError: [Errno 98] Address already in use`
@@ -231,12 +291,14 @@ questions:
     correct: c
     explanation: "ss -tlnp shows TCP listening sockets with process info. The -t flag filters TCP, -l shows listening, -n shows numeric ports, -p shows process."
     misconception_ref: null
+    tags: ["troubleshooting", "ss", "port"]
 
   - id: q14
     type: multiple_choice
     lo_ref: N3
     difficulty: advanced
     bloom_level: 4
+    points: 1
     stem: |
       Your TCP server binds to 127.0.0.1:9090. A Docker container tries to connect to host.docker.internal:9090.
       
@@ -249,15 +311,18 @@ questions:
     correct: b
     explanation: "127.0.0.1 only accepts connections from the same machine. Docker containers are separate network namespaces, so they cannot reach localhost-bound services."
     misconception_ref: "docs/misconceptions.md#misconception-6"
+    tags: ["bind", "docker", "localhost"]
 
 # -----------------------------------------------------------------------------
 # LEVEL 5: EVALUATE (question 15)
+# Bloom Level 5: Make judgements based on criteria and standards
 # -----------------------------------------------------------------------------
   - id: q15
     type: multiple_choice
     lo_ref: E1
     difficulty: advanced
     bloom_level: 5
+    points: 1
     stem: |
       You are designing a multiplayer game server. Players send position updates 30 times per second.
       
@@ -270,17 +335,27 @@ questions:
     correct: b
     explanation: "For real-time games, a slightly stale position is useless anyway. UDP's lower latency outweighs TCP's reliability. Games implement their own interpolation for lost packets."
     misconception_ref: "docs/misconceptions.md#misconception-8"
+    tags: ["protocol-choice", "udp", "real-time"]
 
 # -----------------------------------------------------------------------------
-# Scoring rubric
+# Scoring Configuration
 # -----------------------------------------------------------------------------
 scoring:
-  basic_questions: 5        # q01-q05: 1 point each
-  intermediate_questions: 7 # q06-q12: 1 point each
-  advanced_questions: 3     # q13-q15: 1 point each
+  levels:
+    basic: 5        # q01-q05: 5 questions
+    intermediate: 7 # q06-q12: 7 questions
+    advanced: 3     # q13-q15: 3 questions
   max_score: 15
   grade_boundaries:
     excellent: 90   # 14-15 points
     good: 75        # 12-13 points
     satisfactory: 60 # 9-11 points
     passing: 50     # 8 points
+
+# -----------------------------------------------------------------------------
+# Feedback Templates (for LMS export)
+# -----------------------------------------------------------------------------
+feedback:
+  correct: "Well done! Your understanding of {topic} is solid."
+  incorrect: "Review the {lo_ref} section in the learning materials."
+  partial: "You're on the right track. Consider reviewing {hint}."
