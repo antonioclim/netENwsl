@@ -2,7 +2,7 @@
 
 > NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 >
-> by Revolvix
+> by ing. dr. Antonio Clim
 
 This document describes the expected outputs for each exercise to help verify correct implementation.
 
@@ -379,4 +379,4 @@ Results: 11 passed, 0 failed
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

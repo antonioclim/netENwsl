@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Prerequisites Installation Helper
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Assists with installing and configuring prerequisites for the Week 3 laboratory.
 This script provides guidance and automation for Windows/WSL2 environments.
@@ -266,7 +266,7 @@ def main() -> int:
     print("=" * 60)
     print("Prerequisites Installation Helper")
     print("Week 3 Laboratory - NETWORKING class")
-    print("ASE, Informatics | by Revolvix")
+    print("ASE, Informatics | by ing. dr. Antonio Clim")
     print("=" * 60)
     
     installer = PrerequisiteInstaller()

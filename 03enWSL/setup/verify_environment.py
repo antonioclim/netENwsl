@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Environment Verification Script
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 

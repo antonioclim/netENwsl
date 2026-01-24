@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Docker Configuration Helper
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Assists with configuring Docker Desktop for best laboratory performance.
 """
@@ -271,7 +271,7 @@ def main() -> int:
     print("=" * 60)
     print("Docker Configuration Helper")
     print("Week 3 Laboratory - NETWORKING class")
-    print("ASE, Informatics | by Revolvix")
+    print("ASE, Informatics | by ing. dr. Antonio Clim")
     print("=" * 60)
     
     configurator = DockerConfigurator()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Environment Validation Tests
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Tests to verify the laboratory environment is correctly configured.
 """

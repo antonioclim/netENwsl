@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Network Testing Utilities
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Provides utilities for network testing and validation.
 """

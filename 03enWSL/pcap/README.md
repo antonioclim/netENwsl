@@ -2,7 +2,7 @@
 
 > NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 >
-> by Revolvix
+> by ing. dr. Antonio Clim
 
 This directory stores packet capture files (`.pcap`) generated during laboratory exercises.
 
@@ -153,4 +153,4 @@ For homework requiring packet captures:
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

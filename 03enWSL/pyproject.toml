@@ -1,0 +1,238 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# pyproject.toml — Week 3 Network Programming Laboratory Kit
+# ═══════════════════════════════════════════════════════════════════════════════
+# NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
+#
+# This file configures:
+#   - Project metadata
+#   - Ruff linter/formatter
+#   - Pytest testing framework
+#   - Type checking with mypy
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[project]
+name = "netenwsl-week03"
+version = "3.1.0"
+description = "Week 3 Laboratory Kit: Network Programming (Broadcast, Multicast, TCP Tunnel)"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "ing. dr. Antonio Clim", email = "antonio.clim@csie.ase.ro"}
+]
+maintainers = [
+    {name = "ing. dr. Antonio Clim", email = "antonio.clim@csie.ase.ro"}
+]
+keywords = [
+    "networking",
+    "education",
+    "laboratory",
+    "sockets",
+    "broadcast",
+    "multicast",
+    "tcp-tunnel",
+    "python",
+    "docker",
+    "wsl2"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+    "Topic :: System :: Networking",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-timeout>=2.2.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/antonioclim/netENwsl"
+Documentation = "https://github.com/antonioclim/netENwsl/wiki"
+Repository = "https://github.com/antonioclim/netENwsl.git"
+Issues = "https://github.com/antonioclim/netENwsl/issues"
+
+[project.scripts]
+start-lab = "scripts.start_lab:main"
+stop-lab = "scripts.stop_lab:main"
+run-quiz = "formative.run_quiz:main"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RUFF CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.ruff]
+# Target Python 3.10+
+target-version = "py310"
+
+# Line length consistent with Black
+line-length = 100
+
+# Exclude common non-source directories
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*.egg-info",
+    ".mypy_cache",
+    ".pytest_cache",
+    "artifacts",
+    "pcap",
+]
+
+[tool.ruff.lint]
+# Enable comprehensive rule sets
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "PTH",    # flake8-use-pathlib
+    "RUF",    # Ruff-specific rules
+]
+
+# Ignore rules that conflict with educational clarity
+ignore = [
+    "E501",   # Line too long — handled by formatter
+    "B008",   # Function call in default argument — common pattern in argparse
+    "ARG001", # Unused function argument — common in callbacks
+    "SIM108", # Ternary instead of if-else — less readable for students
+    "PTH123", # open() vs Path.open() — both acceptable
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can have unused imports and assertions
+"tests/*.py" = ["F401", "B011"]
+# Homework scaffolds may have unused variables (TODOs)
+"homework/exercises/*.py" = ["F841", "ARG"]
+# Init files can have unused imports
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+# Group imports: stdlib, third-party, local
+known-first-party = ["scripts", "src", "formative"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+# Indent with 4 spaces
+indent-style = "space"
+# Unix line endings
+line-ending = "lf"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PYTEST CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.pytest.ini_options]
+# Test discovery
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Output verbosity
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "-ra",
+]
+
+# Markers for test categorization
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "docker: marks tests that require Docker containers",
+    "network: marks tests that require network connectivity",
+    "integration: marks integration tests",
+]
+
+# Timeout for individual tests (seconds)
+timeout = 30
+
+# Minimum coverage percentage
+# Uncomment when coverage is stable:
+# --cov=src --cov=scripts --cov-fail-under=70
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MYPY CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+# Stricter checks for main source
+[[tool.mypy.overrides]]
+module = "src.*"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+# Relaxed checks for tests
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COVERAGE CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.coverage.run]
+source = ["src", "scripts", "formative"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+skip_covered = true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BUILD SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["src*", "scripts*", "formative*"]

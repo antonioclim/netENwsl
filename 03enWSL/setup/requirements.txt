@@ -1,5 +1,19 @@
-# Setup script requirements
-# NETWORKING class - ASE, Informatics | by Revolvix
+# ═══════════════════════════════════════════════════════════════════════════════
+# requirements.txt — Week 3 Network Programming Laboratory Kit
+# ═══════════════════════════════════════════════════════════════════════════════
+# NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Install: pip install -r setup/requirements.txt
+# ═══════════════════════════════════════════════════════════════════════════════
 
-pyyaml>=6.0
-requests>=2.28.0
+# Core dependencies (required for all exercises)
+pyyaml>=6.0,<7.0              # Quiz YAML parsing
+requests>=2.28.0,<3.0         # HTTP utilities
+
+# Development dependencies (optional, for linting and testing)
+# Uncomment if needed:
+# ruff>=0.1.0                 # Fast Python linter
+# pytest>=7.4.0               # Testing framework
+# pytest-cov>=4.1.0           # Coverage reporting
+# pytest-timeout>=2.2.0       # Test timeouts
+# mypy>=1.5.0                 # Type checking

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Exercise Verification Tests
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Tests to verify laboratory exercises complete successfully.
 """
