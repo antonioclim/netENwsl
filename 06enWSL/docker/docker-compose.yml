@@ -1,0 +1,125 @@
+# docker-compose.yml - Container orchestration for Week 6 Laboratory
+# NETWORKING class - ASE, Informatics | by Revolvix
+#
+# This compose file provides an isolated environment for NAT/PAT and SDN exercises.
+# Supports both interactive and automated demonstration modes.
+
+services:
+  # Main laboratory environment with Mininet and networking tools
+  week6-lab:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: week6-networking:latest
+    container_name: week6_lab
+    hostname: week6-lab
+    privileged: true  # Required for Mininet network namespaces
+    stdin_open: true
+    tty: true
+    network_mode: "host"  # Full access to host network for Mininet
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - NET_RAW
+    volumes:
+      # Persistent directories
+      - ../pcap:/home/student/week6/pcap
+      - ../artifacts:/home/student/week6/artifacts
+      # Source code (read-only for safety)
+      - ../src:/home/student/week6/src:ro
+      - ../scripts:/home/student/week6/scripts:ro
+      # Kernel modules for OVS
+      - /lib/modules:/lib/modules:ro
+    environment:
+      - TERM=xterm-256color
+      - PYTHONUNBUFFERED=1
+      - WEEK=6
+    working_dir: /home/student/week6
+    command: /bin/bash
+    healthcheck:
+      test: ["CMD", "mn", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Dedicated SDN controller container
+  sdn-controller:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: week6-networking:latest
+    container_name: week6_controller
+    hostname: sdn-controller
+    privileged: false
+    ports:
+      - "6633:6633"
+      - "6653:6653"
+    volumes:
+      - ../src/apps:/app/controllers:ro
+      - ../artifacts:/app/logs
+    environment:
+      - TERM=xterm-256color
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    command: >
+      sh -c "
+        echo 'Starting SDN Controller (OS-Ken)...'
+        echo 'Listening on ports 6633 and 6653'
+        if command -v osken-manager >/dev/null 2>&1; then
+          osken-manager /app/controllers/sdn_policy_controller.py
+        else
+          echo 'osken-manager not available (os-ken >= 4.0.0)'
+          echo 'Using static flow installation mode'
+          sleep infinity
+        fi
+      "
+    profiles:
+      - controller  # Activate with: docker compose --profile controller up
+
+  # Portainer for container management (optional)
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: week6_portainer
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    profiles:
+      - management  # Activate with: docker compose --profile management up
+
+volumes:
+  portainer_data:
+    name: week6_portainer_data
+
+networks:
+  default:
+    name: week6_network
+    driver: bridge
+
+# ============================================================================
+# Usage:
+#
+# 1. Build images:
+#    docker compose build
+#
+# 2. Start main lab environment (interactive):
+#    docker compose run --rm week6-lab
+#
+# 3. Start with SDN controller:
+#    docker compose --profile controller up -d sdn-controller
+#    docker compose run --rm week6-lab
+#
+# 4. Start with Portainer management:
+#    docker compose --profile management up -d portainer
+#
+# 5. Stop and cleanup:
+#    docker compose down -v
+#
+# NOTES:
+# - Mininet requires privileged mode and host networking
+# - On macOS/Windows, Mininet functionality may be limited
+# - For full functionality, use native Linux or VirtualBox VM
+# ============================================================================
