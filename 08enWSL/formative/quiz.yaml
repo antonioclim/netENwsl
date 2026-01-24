@@ -1,35 +1,36 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Formative Assessment Quiz — Week 8: Transport Layer & HTTP
-# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# Computer Networks — ASE, CSIE
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# This quiz was designed through extensive brainstorming sessions with Andrei T.
-# and refined using pedagogical principles from the Psychopedagogy module
-# (Universitatea Politehnica București — where engineers learn to teach).
-#
-# "The best way to learn is to test yourself before you think you're ready."
-# — A lesson from preparing teaching materials at 2 AM
+# This quiz supports:
+# - Interactive CLI mode: python formative/run_quiz.py
+# - LMS export (Moodle/Canvas): python formative/run_quiz.py --export-lms
 #
 # Usage:
 #   python formative/run_quiz.py                    # Run all questions
 #   python formative/run_quiz.py --random           # Randomise order
 #   python formative/run_quiz.py --lo LO3           # Filter by Learning Objective
 #   python formative/run_quiz.py --difficulty basic # Filter by difficulty
+#   python formative/run_quiz.py --export-lms       # Export for Moodle/Canvas
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
 metadata:
   week: 8
   topic: "Transport Layer — HTTP Server Implementation and Reverse Proxies"
-  version: "1.0.0"
-  author: "ing. dr. Antonio Clim"
-  contributors:
-    - name: "Andrei T."
-      role: "Brainstorming and pedagogical review"
+  version: "2.0.0"
   institution: "ASE București — CSIE"
-  estimated_time_minutes: 15
+  estimated_time_minutes: 20
   passing_score: 70
-  total_questions: 15
+  total_questions: 20
+  
+  # LMS export settings
+  lms_export:
+    format: "QTI"  # Question and Test Interoperability standard
+    category: "Week8_Transport_HTTP"
+    shuffle_answers: true
+    points_per_question: 5
   
   learning_objectives:
     LO1: "Identify TCP/UDP headers and explain port demultiplexing"
@@ -47,22 +48,17 @@ metadata:
     evaluate: "Justify a decision or course of action"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUESTIONS
+# QUESTIONS — LO1: TCP/UDP Headers and Port Demultiplexing
 # ═══════════════════════════════════════════════════════════════════════════════
 
 questions:
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # LO1: TCP/UDP Headers and Port Demultiplexing
-  # ─────────────────────────────────────────────────────────────────────────────
-  
   - id: q01
     lo_ref: LO1
     bloom_level: remember
     difficulty: basic
     question_type: multiple_choice
-    stem: |
-      What is the size of the port number field in TCP and UDP headers?
+    stem: "What is the size of the port number field in TCP and UDP headers?"
     options:
       a: "8 bits (256 possible ports)"
       b: "16 bits (65,536 possible ports)"
@@ -71,9 +67,7 @@ questions:
     correct: b
     explanation: |
       Port numbers are 16-bit unsigned integers (0-65535) in both TCP and UDP.
-      This is why the maximum port number is 65535, not 65536 (we start from 0).
-      Andrei T. once asked: "Why not 32-bit?" — Because 65K ports per host is plenty,
-      and smaller headers mean less overhead.
+      This is why the maximum port number is 65535 not 65536 (we start from 0).
     misconception_ref: "docs/misconceptions.md#port-size"
     points: 5
 
@@ -93,7 +87,7 @@ questions:
     correct: b
     explanation: |
       The OS maintains a table mapping port numbers to sockets.
-      When a datagram arrives, the OS demultiplexes by looking up the destination port.
+      When a datagram arrives the OS demultiplexes by looking up the destination port.
       This is why you get "Address already in use" when two processes try to bind the same port.
     misconception_ref: "docs/misconceptions.md#demultiplexing"
     points: 5
@@ -103,30 +97,43 @@ questions:
     bloom_level: apply
     difficulty: intermediate
     question_type: fill_blank
-    stem: |
-      Complete the socket creation for a TCP server:
-      server = socket.socket(socket.AF_INET, socket._______)
+    stem: "Complete the socket creation for a TCP server: server = socket.socket(socket.AF_INET, socket._______)"
     correct:
       - "SOCK_STREAM"
       - "socket.SOCK_STREAM"
     explanation: |
       SOCK_STREAM = TCP (reliable, ordered, connection-oriented)
       SOCK_DGRAM = UDP (unreliable, unordered, connectionless)
-      A common mistake from the psychopedagogy module: students remember "stream" 
-      sounds like water flowing continuously — which is exactly how TCP works!
     points: 5
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # LO2: Three-Way Handshake
-  # ─────────────────────────────────────────────────────────────────────────────
-
   - id: q04
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    question_type: multiple_choice
+    stem: "Which port range is designated for well-known services?"
+    options:
+      a: "0-255"
+      b: "0-1023"
+      c: "1024-49151"
+      d: "49152-65535"
+    correct: b
+    explanation: |
+      Ports 0-1023 are well-known ports (HTTP=80, HTTPS=443, SSH=22, DNS=53).
+      Ports 1024-49151 are registered ports.
+      Ports 49152-65535 are dynamic/ephemeral ports.
+    points: 5
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS — LO2: Three-Way Handshake
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  - id: q05
     lo_ref: LO2
     bloom_level: remember
     difficulty: basic
     question_type: multiple_choice
-    stem: |
-      What is the correct sequence of TCP flags during connection establishment?
+    stem: "What is the correct sequence of TCP flags during connection establishment?"
     options:
       a: "ACK → SYN → SYN-ACK"
       b: "SYN → ACK → SYN-ACK"
@@ -135,310 +142,297 @@ questions:
     correct: c
     explanation: |
       The three-way handshake: Client sends SYN, Server responds with SYN-ACK,
-      Client confirms with ACK. Mnemonic from Andrei: "SYN-cerely, SYN-cerely ACKnowledged, ACK!"
+      Client confirms with ACK.
     misconception_ref: "docs/misconceptions.md#third-ack-optional"
     points: 5
-
-  - id: q05
-    lo_ref: LO2
-    bloom_level: understand
-    difficulty: intermediate
-    question_type: multiple_choice
-    stem: |
-      Why does TCP require THREE packets for connection establishment instead of two?
-    options:
-      a: "To reduce network congestion by spreading packets over time"
-      b: "To synchronise sequence numbers in BOTH directions"
-      c: "To allow time for DNS resolution between packets"
-      d: "To comply with RFC requirements for backward compatibility"
-    correct: b
-    explanation: |
-      Two packets would only confirm one direction. The third ACK proves:
-      - Client can send (SYN arrived)
-      - Server can send AND receive (SYN-ACK arrived)  
-      - Client can receive (ACK confirms SYN-ACK was received)
-      Without the third packet, the server cannot confirm the client received its response.
-    misconception_ref: "docs/misconceptions.md#third-ack-optional"
-    points: 10
 
   - id: q06
     lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    question_type: multiple_choice
+    stem: "Why does TCP require THREE packets for connection establishment instead of two?"
+    options:
+      a: "To reduce network congestion by spreading packets over time"
+      b: "Both sides must confirm they can send AND receive (bidirectional verification)"
+      c: "The third packet carries the first data payload"
+      d: "Four packets would be needed for full reliability but TCP sacrifices reliability for speed"
+    correct: b
+    explanation: |
+      Three packets ensure bidirectional confirmation:
+      1. SYN: Client proves it can send
+      2. SYN-ACK: Server proves it can send AND receive
+      3. ACK: Client proves it can receive
+      Two packets would only confirm one direction.
+    points: 5
+
+  - id: q07
+    lo_ref: LO2
     bloom_level: analyse
     difficulty: advanced
     question_type: multiple_choice
     stem: |
-      You capture these packets in Wireshark:
-      
-        Packet 1: 192.168.1.10 → 10.0.0.5  [SYN] Seq=1000
-        Packet 2: 10.0.0.5 → 192.168.1.10  [RST, ACK] Seq=0, Ack=1001
-      
-      What does this indicate?
+      You capture this handshake:
+      Packet 1: SYN, Seq=1000
+      Packet 2: SYN-ACK, Seq=5000, Ack=1001
+      Packet 3: ACK, Seq=1001, Ack=?
+      What is the Ack value in Packet 3?
     options:
-      a: "Successful connection establishment"
-      b: "The server's port is closed or no service is listening"
-      c: "Network congestion caused packet loss"
-      d: "The client cancelled the connection"
+      a: "5000"
+      b: "5001"
+      c: "1001"
+      d: "1002"
     correct: b
     explanation: |
-      RST (Reset) immediately after SYN means "I received your connection request,
-      but nothing is listening on that port." The server's TCP stack responds
-      automatically — no application involvement needed.
-      Wireshark filter to find these: tcp.flags.reset == 1
-    points: 10
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # LO3: HTTP Server Implementation
-  # ─────────────────────────────────────────────────────────────────────────────
-
-  - id: q07
-    lo_ref: LO3
-    bloom_level: remember
-    difficulty: basic
-    question_type: fill_blank
-    stem: |
-      HTTP headers are separated from the body by a blank line.
-      In bytes, this separator is: _______
-    correct:
-      - "\\r\\n\\r\\n"
-      - "\r\n\r\n"
-      - "CRLF CRLF"
-      - "b'\\r\\n\\r\\n'"
-    explanation: |
-      HTTP uses CRLF (Carriage Return + Line Feed) as line endings.
-      Two consecutive CRLFs = blank line = end of headers.
-      Fun fact from 2 AM debugging: forgetting this separator makes browsers hang forever.
+      The ACK number is always the next expected sequence number.
+      Server sent SYN with Seq=5000, so client acknowledges 5001 (5000 + 1).
     points: 5
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS — LO3: HTTP/1.1 Server Implementation
+# ═══════════════════════════════════════════════════════════════════════════════
 
   - id: q08
     lo_ref: LO3
-    bloom_level: apply
-    difficulty: intermediate
+    bloom_level: remember
+    difficulty: basic
     question_type: multiple_choice
-    stem: |
-      Your HTTP server receives a HEAD request for /index.html (file size: 1024 bytes).
-      What should the response include?
+    stem: "What character sequence separates HTTP header lines?"
     options:
-      a: "Status line, headers, and the 1024-byte file content"
-      b: "Status line and headers only, with Content-Length: 1024"
-      c: "Status line only, no headers or body"
-      d: "Status line, headers, and Content-Length: 0"
+      a: "\\n (LF only)"
+      b: "\\r\\n (CRLF)"
+      c: "\\r (CR only)"
+      d: "Two spaces"
     correct: b
     explanation: |
-      HEAD returns the SAME headers that GET would return, but with NO body.
-      Content-Length must still show what GET would return (1024).
-      This is used for cache validation — check if a file changed without downloading it.
-    misconception_ref: "docs/misconceptions.md#head-returns-head-metadata"
-    points: 10
+      HTTP uses CRLF (Carriage Return + Line Feed, \\r\\n) as line terminators.
+      The end of headers is marked by a blank line (\\r\\n\\r\\n).
+    points: 5
 
   - id: q09
+    lo_ref: LO3
+    bloom_level: understand
+    difficulty: intermediate
+    question_type: multiple_choice
+    stem: "What does the HTTP HEAD method return?"
+    options:
+      a: "Only the first 1KB of the response body"
+      b: "The headers that would be returned for a GET request (no body)"
+      c: "Metadata about the HEAD request itself"
+      d: "The server's capabilities and supported methods"
+    correct: b
+    explanation: |
+      HEAD returns the same headers as GET but without the response body.
+      Useful for checking if a resource exists or getting its size without downloading it.
+    misconception_ref: "docs/misconceptions.md#head-returns-head-metadata"
+    points: 5
+
+  - id: q10
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    question_type: fill_blank
+    stem: "To decode HTTP header bytes use encoding: raw_data.decode('_______')"
+    correct:
+      - "iso-8859-1"
+      - "latin-1"
+      - "latin1"
+    explanation: |
+      HTTP/1.1 headers use ISO-8859-1 (Latin-1) encoding per RFC 7230.
+      UTF-8 is only used for the message body when specified by Content-Type.
+    points: 5
+
+  - id: q11
     lo_ref: LO3
     bloom_level: apply
     difficulty: intermediate
     question_type: multiple_choice
-    stem: |
-      What HTTP status code should your server return for a request to /../../../etc/passwd 
-      when path traversal is detected and blocked?
+    stem: "Which HTTP status code should be returned for a malformed request?"
     options:
-      a: "400 Bad Request — the URL is malformed"
-      b: "403 Forbidden — access denied due to security policy"
-      c: "404 Not Found — file doesn't exist in web root"
-      d: "500 Internal Server Error — security check failed"
+      a: "404 Not Found"
+      b: "400 Bad Request"
+      c: "500 Internal Server Error"
+      d: "403 Forbidden"
     correct: b
     explanation: |
-      403 Forbidden is semantically correct: "I understood your request, but I refuse."
-      - 400 = malformed syntax (but /../ is syntactically valid)
-      - 404 = resource doesn't exist (it might, we just won't serve it)
-      - 500 = server error (security working correctly isn't an error)
-    misconception_ref: "docs/misconceptions.md#403-vs-404"
-    points: 10
+      400 Bad Request indicates the server cannot process the request due to client error
+      (malformed syntax, invalid framing, deceptive routing).
+    points: 5
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # LO4: Reverse Proxy and Load Balancing
-  # ─────────────────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS — LO4: Reverse Proxy with Load Balancing
+# ═══════════════════════════════════════════════════════════════════════════════
 
-  - id: q10
+  - id: q12
     lo_ref: LO4
     bloom_level: understand
     difficulty: basic
     question_type: multiple_choice
-    stem: |
-      In a reverse proxy architecture, what does the client browser connect to?
+    stem: "What is the primary difference between a forward proxy and a reverse proxy?"
     options:
-      a: "Directly to all backend servers simultaneously"
-      b: "Only to the reverse proxy (backends are hidden)"
-      c: "To a random backend selected by DNS"
-      d: "To the backend with the lowest load"
+      a: "Forward proxies are faster than reverse proxies"
+      b: "Forward proxies serve clients; reverse proxies serve backend servers"
+      c: "Forward proxies use HTTP; reverse proxies use HTTPS"
+      d: "There is no difference; the terms are interchangeable"
     correct: b
     explanation: |
-      The "reverse" in reverse proxy means it's deployed by the SERVER side.
-      Clients see only the proxy — backends are completely hidden.
-      This is opposite to a forward proxy (deployed by client, hides client from server).
+      Forward proxy: Client knows it is using a proxy; proxy hides client from server.
+      Reverse proxy: Client thinks it is talking to origin; proxy hides servers from client.
     misconception_ref: "docs/misconceptions.md#reverse-vs-forward-proxy"
     points: 5
 
-  - id: q11
+  - id: q13
     lo_ref: LO4
     bloom_level: apply
     difficulty: intermediate
-    question_type: fill_blank
-    stem: |
-      In round-robin with 3 backends, to cycle the index correctly after each request:
-      self.index = (self.index + 1) % _______
-    correct:
-      - "len(self.backends)"
-      - "3"
-      - "len(backends)"
-    explanation: |
-      The modulo operation makes the index wrap around: 0→1→2→0→1→2→...
-      Without %, you'd get IndexError when index exceeds list length.
-      Andrei's debugging tip: "If round-robin isn't cycling, check your modulo!"
-    points: 5
-
-  - id: q12
-    lo_ref: LO4
-    bloom_level: analyse
-    difficulty: advanced
     question_type: multiple_choice
     stem: |
-      nginx is configured with weighted round-robin (weights 5:3:1 for backends A:B:C).
-      After exactly 9 requests, the distribution should be:
+      A load balancer uses weights: backend1=5, backend2=3, backend3=2.
+      After 10 requests how many should backend1 have received?
     options:
-      a: "A:3, B:3, C:3 — weights are only hints"
-      b: "A:5, B:3, C:1 — exact proportional distribution"
-      c: "A:9, B:0, C:0 — highest weight gets all traffic"
-      d: "Cannot determine without knowing request timing"
-    correct: b
+      a: "3"
+      b: "4"
+      c: "5"
+      d: "10"
+    correct: c
     explanation: |
-      Weighted round-robin distributes REQUESTS proportionally, not randomly.
-      Total weight = 9, so in 9 requests: A gets 5, B gets 3, C gets 1.
-      nginx's smooth weighted round-robin ensures this even for small request counts.
-    misconception_ref: "docs/misconceptions.md#round-robin-equal-load"
-    points: 10
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # LO5: Packet Analysis
-  # ─────────────────────────────────────────────────────────────────────────────
-
-  - id: q13
-    lo_ref: LO5
-    bloom_level: apply
-    difficulty: intermediate
-    question_type: fill_blank
-    stem: |
-      Write the Wireshark display filter to show only TCP SYN packets (no SYN-ACK):
-      tcp.flags.syn == 1 && tcp.flags._______ == 0
-    correct:
-      - "ack"
-      - "ACK"
-    explanation: |
-      SYN packets have SYN=1, ACK=0. SYN-ACK packets have SYN=1, ACK=1.
-      This filter is essential for counting new connection attempts.
-      Pro tip: save this as a filter button in Wireshark.
+      Total weight = 5 + 3 + 2 = 10
+      backend1 receives: 10 × (5/10) = 5 requests
     points: 5
 
   - id: q14
+    lo_ref: LO4
+    bloom_level: understand
+    difficulty: intermediate
+    question_type: multiple_choice
+    stem: "Why might equal round-robin NOT distribute load equally across backends?"
+    options:
+      a: "Round-robin algorithms are inherently random"
+      b: "Request processing times vary; some requests take longer than others"
+      c: "Network latency affects the order of requests"
+      d: "Round-robin only works with exactly 3 backends"
+    correct: b
+    explanation: |
+      Equal request distribution ≠ equal load.
+      If one backend receives long-running requests it may be overloaded
+      even with equal request counts.
+    misconception_ref: "docs/misconceptions.md#round-robin-equal-load"
+    points: 5
+
+  - id: q15
+    lo_ref: LO4
+    bloom_level: apply
+    difficulty: intermediate
+    question_type: fill_blank
+    stem: "The HTTP header that passes the original client IP through a proxy is: _______"
+    correct:
+      - "X-Forwarded-For"
+      - "x-forwarded-for"
+    explanation: |
+      X-Forwarded-For (XFF) is the de-facto standard header for identifying
+      the originating IP address of a client connecting through a proxy.
+    points: 5
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS — LO5: Packet Capture Analysis
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  - id: q16
+    lo_ref: LO5
+    bloom_level: apply
+    difficulty: intermediate
+    question_type: multiple_choice
+    stem: "Which Wireshark filter shows only TCP SYN packets (not SYN-ACK)?"
+    options:
+      a: "tcp.flags.syn == 1"
+      b: "tcp.flags.syn == 1 && tcp.flags.ack == 0"
+      c: "tcp.syn"
+      d: "tcp contains SYN"
+    correct: b
+    explanation: |
+      SYN packets have SYN=1 and ACK=0.
+      SYN-ACK packets have both SYN=1 and ACK=1.
+      The filter must exclude ACK to show only pure SYN packets.
+    points: 5
+
+  - id: q17
     lo_ref: LO5
     bloom_level: analyse
     difficulty: advanced
     question_type: multiple_choice
     stem: |
-      You see multiple HTTP request/response pairs in Wireshark, all with tcp.stream == 0.
-      What does this indicate?
+      You see [RST, ACK] immediately after [SYN]. What happened?
     options:
-      a: "Each request used a different TCP connection"
-      b: "All requests reused the same TCP connection (keep-alive)"
-      c: "The packets were captured out of order"
-      d: "Wireshark failed to reassemble the TCP stream"
+      a: "Connection established successfully"
+      b: "Connection refused — no service listening on that port"
+      c: "Connection timed out"
+      d: "Firewall blocked the connection silently"
     correct: b
     explanation: |
-      tcp.stream is Wireshark's identifier for a TCP connection.
-      Same stream number = same connection = HTTP keep-alive is working.
-      Multiple streams would indicate connection-per-request (HTTP/1.0 style).
+      RST (Reset) immediately after SYN indicates connection refused.
+      The server actively rejected the connection (port closed or not listening).
+      Firewall drops would show no response (timeout) not RST.
+    points: 5
+
+  - id: q18
+    lo_ref: LO5
+    bloom_level: understand
+    difficulty: intermediate
+    question_type: multiple_choice
+    stem: "In HTTP/1.1 multiple requests can use the same TCP connection because of:"
+    options:
+      a: "HTTP/1.1 multiplexing"
+      b: "Persistent connections (keep-alive)"
+      c: "TCP pipelining"
+      d: "Connection pooling at OS level"
+    correct: b
+    explanation: |
+      HTTP/1.1 uses persistent connections by default (Connection: keep-alive).
+      Multiple request-response pairs share one TCP connection.
+      True multiplexing (concurrent streams) is an HTTP/2 feature.
     misconception_ref: "docs/misconceptions.md#http-one-request-per-connection"
-    points: 10
+    points: 5
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # LO6: Security Evaluation
-  # ─────────────────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS — LO6: Security Vulnerabilities
+# ═══════════════════════════════════════════════════════════════════════════════
 
-  - id: q15
+  - id: q19
     lo_ref: LO6
     bloom_level: evaluate
     difficulty: advanced
     question_type: multiple_choice
     stem: |
-      Your HTTP server uses this path validation:
-      
-        if '..' in requested_path:
-            return 403
-      
-      Is this implementation secure?
+      A client requests: GET /../../../etc/passwd HTTP/1.1
+      What should your server return?
     options:
-      a: "Yes — it blocks all directory traversal attempts"
-      b: "No — encoded variants like %2e%2e can bypass it"
-      c: "Yes — HTTP standards require decoded paths"
-      d: "No — but only on Windows systems"
-    correct: b
+      a: "200 OK with the file contents"
+      b: "400 Bad Request"
+      c: "403 Forbidden or 404 Not Found"
+      d: "500 Internal Server Error"
+    correct: c
     explanation: |
-      Simple string matching is insufficient! Attackers can use:
-      - URL encoding: %2e%2e = ..
-      - Double encoding: %252e%252e
-      - Unicode: various representations
-      
-      Correct approach: URL-decode, then os.path.normpath(), then verify containment.
-      This is why we teach is_safe_path() with proper normalisation.
-    misconception_ref: "docs/misconceptions.md#simple-string-security"
-    points: 15
+      This is a directory traversal attack. The server should:
+      1. Detect the path escapes the document root
+      2. Return 403 (reveals the file exists) or 404 (reveals nothing)
+      Never return the file contents!
+    misconception_ref: "docs/misconceptions.md#403-vs-404"
+    points: 5
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SCORING
-# ═══════════════════════════════════════════════════════════════════════════════
-
-scoring:
-  total_points: 115
-  passing_threshold: 80  # ~70%
-  
-  grade_boundaries:
-    excellent: 100    # 87%+
-    good: 85          # 74%+
-    satisfactory: 70  # 61%+
-    needs_improvement: 0
-  
-  feedback_messages:
-    excellent: |
-      Excellent work! You have a solid understanding of transport layer concepts
-      and HTTP implementation. Ready to tackle the homework assignments.
-    good: |
-      Good progress! Review the misconceptions document for topics where you
-      hesitated. Consider re-doing the Parsons problems for hands-on practice.
-    satisfactory: |
-      You're on the right track but need more practice. Focus on:
-      - Re-reading docs/theory_summary.md
-      - Tracing through docs/code_tracing.md exercises
-      - Discussing with peers using docs/peer_instruction.md
-    needs_improvement: |
-      Don't worry — this material takes time to absorb. Recommended approach:
-      1. Review the lecture slides (00LECTURES/S8Theory_Week8_EN.html)
-      2. Work through concept_analogies.md for intuitive understanding
-      3. Complete the exercises with a partner (see pair_programming_guide.md)
-      4. Retake this quiz after 24 hours of practice
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# ACKNOWLEDGMENTS
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# This quiz structure was developed with input from:
-# - Andrei T. (ASE colleague) — question design and misconception identification
-# - Principles from DPPD module, Universitatea Politehnica București — 
-#   where I learned that good assessment is about revealing understanding,
-#   not catching students out. (ASE doesn't accept engineers for their 
-#   psychopedagogy programme — but I understand their reasoning.)
-#
-# The questions target common misconceptions identified during 3+ years of
-# teaching Computer Networks at ASE-CSIE.
-#
-# "A good question makes the student think. A great question makes them
-# realise they need to think differently." — from a DPPD lecture that
-# stuck with me
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+  - id: q20
+    lo_ref: LO6
+    bloom_level: evaluate
+    difficulty: advanced
+    question_type: multiple_choice
+    stem: "Which security issue does rate limiting primarily address?"
+    options:
+      a: "SQL injection"
+      b: "Cross-site scripting (XSS)"
+      c: "Denial of service (DoS) and brute force attacks"
+      d: "Man-in-the-middle attacks"
+    correct: c
+    explanation: |
+      Rate limiting restricts how many requests a client can make in a time window.
+      This protects against DoS attacks (overwhelming the server) and
+      brute force attacks (password guessing, credential stuffing).
+    points: 5

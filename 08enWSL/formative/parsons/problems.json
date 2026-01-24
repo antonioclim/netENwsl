@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "week": 8,
+    "topic": "Transport Layer — HTTP Server and Reverse Proxies",
+    "version": "1.0.0",
+    "description": "Parsons problems for code arrangement practice with distractors"
+  },
+  "problems": [
+    {
+      "id": "P1",
+      "title": "TCP Server Socket Setup",
+      "lo_ref": "LO1",
+      "difficulty": "basic",
+      "instructions": "Arrange the code blocks in the correct order to create a TCP server that listens on port 8080. Some blocks are distractors and should NOT be used.",
+      "language": "python",
+      "blocks": [
+        {"id": 1, "code": "import socket", "indent": 0, "distractor": false},
+        {"id": 2, "code": "server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)", "indent": 0, "distractor": false},
+        {"id": 3, "code": "server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)", "indent": 0, "distractor": true},
+        {"id": 4, "code": "server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)", "indent": 0, "distractor": false},
+        {"id": 5, "code": "server.bind(('0.0.0.0', 8080))", "indent": 0, "distractor": false},
+        {"id": 6, "code": "server.connect(('0.0.0.0', 8080))", "indent": 0, "distractor": true},
+        {"id": 7, "code": "server.listen(5)", "indent": 0, "distractor": false},
+        {"id": 8, "code": "client, addr = server.accept()", "indent": 0, "distractor": false}
+      ],
+      "correct_order": [1, 2, 4, 5, 7, 8],
+      "explanation": "TCP servers use SOCK_STREAM (not SOCK_DGRAM which is UDP). The sequence is: import → create socket → set options → bind → listen → accept. connect() is for clients not servers."
+    },
+    {
+      "id": "P2",
+      "title": "HTTP Response Construction",
+      "lo_ref": "LO3",
+      "difficulty": "intermediate",
+      "instructions": "Build a valid HTTP/1.1 200 OK response with body 'Hello World'. Some blocks are distractors.",
+      "language": "python",
+      "blocks": [
+        {"id": 1, "code": "body = 'Hello World'", "indent": 0, "distractor": false},
+        {"id": 2, "code": "status_line = 'HTTP/1.1 200 OK\\r\\n'", "indent": 0, "distractor": false},
+        {"id": 3, "code": "status_line = 'HTTP/1.0 200\\n'", "indent": 0, "distractor": true},
+        {"id": 4, "code": "headers = 'Content-Type: text/plain\\r\\n'", "indent": 0, "distractor": false},
+        {"id": 5, "code": "headers += f'Content-Length: {len(body)}\\r\\n'", "indent": 0, "distractor": false},
+        {"id": 6, "code": "headers += f'Content-Size: {len(body)}\\r\\n'", "indent": 0, "distractor": true},
+        {"id": 7, "code": "headers += '\\r\\n'", "indent": 0, "distractor": false},
+        {"id": 8, "code": "headers += '\\n\\n'", "indent": 0, "distractor": true},
+        {"id": 9, "code": "response = status_line + headers + body", "indent": 0, "distractor": false}
+      ],
+      "correct_order": [1, 2, 4, 5, 7, 9],
+      "explanation": "Body must be defined first so Content-Length can be calculated. HTTP/1.1 uses CRLF (\\r\\n) not just LF. The header is Content-Length not Content-Size. A blank line (\\r\\n) separates headers from body."
+    },
+    {
+      "id": "P3",
+      "title": "Round-Robin Backend Selection",
+      "lo_ref": "LO4",
+      "difficulty": "intermediate",
+      "instructions": "Implement a round-robin backend selector that cycles through servers. Watch for distractors.",
+      "language": "python",
+      "blocks": [
+        {"id": 1, "code": "class RoundRobinBalancer:", "indent": 0, "distractor": false},
+        {"id": 2, "code": "    def __init__(self, backends):", "indent": 0, "distractor": false},
+        {"id": 3, "code": "        self.backends = backends", "indent": 1, "distractor": false},
+        {"id": 4, "code": "        self.current = 0", "indent": 1, "distractor": false},
+        {"id": 5, "code": "        self.current = random.randint(0, len(backends))", "indent": 1, "distractor": true},
+        {"id": 6, "code": "    def next_backend(self):", "indent": 0, "distractor": false},
+        {"id": 7, "code": "        backend = self.backends[self.current]", "indent": 1, "distractor": false},
+        {"id": 8, "code": "        self.current = (self.current + 1) % len(self.backends)", "indent": 1, "distractor": false},
+        {"id": 9, "code": "        self.current = self.current + 1", "indent": 1, "distractor": true},
+        {"id": 10, "code": "        return backend", "indent": 1, "distractor": false}
+      ],
+      "correct_order": [1, 2, 3, 4, 6, 7, 8, 10],
+      "explanation": "Round-robin starts at index 0 (not random). The modulo operator (%) ensures we wrap around to 0 after reaching the last backend. Without modulo we would get an index out of bounds error."
+    },
+    {
+      "id": "P4",
+      "title": "Path Traversal Prevention",
+      "lo_ref": "LO6",
+      "difficulty": "advanced",
+      "instructions": "Implement safe path validation to prevent directory traversal attacks. Identify the distractors.",
+      "language": "python",
+      "blocks": [
+        {"id": 1, "code": "def is_safe_path(requested_path, docroot):", "indent": 0, "distractor": false},
+        {"id": 2, "code": "    # Normalise the path to resolve .. and .", "indent": 0, "distractor": false},
+        {"id": 3, "code": "    full_path = os.path.normpath(os.path.join(docroot, requested_path.lstrip('/')))", "indent": 0, "distractor": false},
+        {"id": 4, "code": "    full_path = docroot + requested_path", "indent": 0, "distractor": true},
+        {"id": 5, "code": "    # Resolve any symlinks to get the real path", "indent": 0, "distractor": false},
+        {"id": 6, "code": "    real_path = os.path.realpath(full_path)", "indent": 0, "distractor": false},
+        {"id": 7, "code": "    real_docroot = os.path.realpath(docroot)", "indent": 0, "distractor": false},
+        {"id": 8, "code": "    # Check if the resolved path is within docroot", "indent": 0, "distractor": false},
+        {"id": 9, "code": "    return real_path.startswith(real_docroot + os.sep)", "indent": 0, "distractor": false},
+        {"id": 10, "code": "    return '..' not in requested_path", "indent": 0, "distractor": true}
+      ],
+      "correct_order": [1, 2, 3, 5, 6, 7, 8, 9],
+      "explanation": "Simple string concatenation is vulnerable. Checking for '..' in the string is insufficient (can be encoded). The correct approach normalises the path resolves symlinks and checks if the result starts with the docroot."
+    },
+    {
+      "id": "P5",
+      "title": "Proxy Request Forwarding",
+      "lo_ref": "LO4",
+      "difficulty": "advanced",
+      "instructions": "Forward an HTTP request to a backend server adding the X-Forwarded-For header. Avoid the distractors.",
+      "language": "python",
+      "blocks": [
+        {"id": 1, "code": "def forward_request(client_request, backend_addr, client_ip):", "indent": 0, "distractor": false},
+        {"id": 2, "code": "    # Create connection to backend", "indent": 0, "distractor": false},
+        {"id": 3, "code": "    backend_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)", "indent": 0, "distractor": false},
+        {"id": 4, "code": "    backend_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)", "indent": 0, "distractor": true},
+        {"id": 5, "code": "    backend_sock.connect(backend_addr)", "indent": 0, "distractor": false},
+        {"id": 6, "code": "    # Add X-Forwarded-For header", "indent": 0, "distractor": false},
+        {"id": 7, "code": "    modified_request = add_header(client_request, 'X-Forwarded-For', client_ip)", "indent": 0, "distractor": false},
+        {"id": 8, "code": "    modified_request = client_request.replace(client_ip, backend_addr)", "indent": 0, "distractor": true},
+        {"id": 9, "code": "    # Send request and receive response", "indent": 0, "distractor": false},
+        {"id": 10, "code": "    backend_sock.sendall(modified_request)", "indent": 0, "distractor": false},
+        {"id": 11, "code": "    response = backend_sock.recv(65536)", "indent": 0, "distractor": false},
+        {"id": 12, "code": "    backend_sock.close()", "indent": 0, "distractor": false},
+        {"id": 13, "code": "    return response", "indent": 0, "distractor": false}
+      ],
+      "correct_order": [1, 2, 3, 5, 6, 7, 9, 10, 11, 12, 13],
+      "explanation": "HTTP proxying uses TCP (SOCK_STREAM) not UDP. We add the X-Forwarded-For header to pass the original client IP — we do not replace anything in the request. The proxy connects to the backend sends the modified request and returns the response."
+    }
+  ]
+}

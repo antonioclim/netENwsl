@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <style>
+    .title { font: bold 18px sans-serif; fill: #333; }
+    .label { font: 12px sans-serif; fill: #333; }
+    .small { font: 10px sans-serif; fill: #666; }
+    .port { font: bold 11px monospace; fill: #c00; }
+    .box { fill: #f8f9fa; stroke: #333; stroke-width: 2; }
+    .client-box { fill: #e3f2fd; stroke: #1976d2; }
+    .proxy-box { fill: #fff3e0; stroke: #f57c00; }
+    .backend-box { fill: #e8f5e9; stroke: #388e3c; }
+    .arrow { fill: none; stroke: #666; stroke-width: 2; marker-end: url(#arrowhead); }
+    .arrow-reverse { fill: none; stroke: #999; stroke-width: 1.5; stroke-dasharray: 5,3; }
+    .network-line { stroke: #aaa; stroke-width: 1; stroke-dasharray: 3,3; }
+  </style>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" class="title">Week 8 Laboratory Architecture</text>
+  <text x="400" y="50" text-anchor="middle" class="small">Reverse Proxy with Load Balancing</text>
+  
+  <!-- Network zones -->
+  <rect x="30" y="70" width="740" height="360" rx="10" fill="#fafafa" stroke="#ddd"/>
+  <text x="50" y="95" class="small">Docker Network: week8-laboratory-network (172.28.8.0/24)</text>
+  
+  <!-- Client -->
+  <rect x="60" y="180" width="120" height="80" rx="8" class="box client-box"/>
+  <text x="120" y="210" text-anchor="middle" class="label">Client</text>
+  <text x="120" y="230" text-anchor="middle" class="small">(Your Browser/</text>
+  <text x="120" y="245" text-anchor="middle" class="small">curl/Python)</text>
+  
+  <!-- Nginx Proxy -->
+  <rect x="280" y="140" width="160" height="160" rx="8" class="box proxy-box"/>
+  <text x="360" y="170" text-anchor="middle" class="label">nginx</text>
+  <text x="360" y="188" text-anchor="middle" class="small">Reverse Proxy</text>
+  <line x1="280" y1="200" x2="440" y2="200" class="network-line"/>
+  <text x="360" y="220" text-anchor="middle" class="port">:8080 HTTP</text>
+  <text x="360" y="240" text-anchor="middle" class="port">:8443 HTTPS</text>
+  <text x="360" y="270" text-anchor="middle" class="small">Round-Robin</text>
+  <text x="360" y="285" text-anchor="middle" class="small">Load Balancer</text>
+  
+  <!-- Backend 1 -->
+  <rect x="560" y="100" width="120" height="70" rx="8" class="box backend-box"/>
+  <text x="620" y="130" text-anchor="middle" class="label">backend1</text>
+  <text x="620" y="150" text-anchor="middle" class="port">:8080</text>
+  <text x="620" y="165" text-anchor="middle" class="small">172.28.8.21</text>
+  
+  <!-- Backend 2 -->
+  <rect x="560" y="190" width="120" height="70" rx="8" class="box backend-box"/>
+  <text x="620" y="220" text-anchor="middle" class="label">backend2</text>
+  <text x="620" y="240" text-anchor="middle" class="port">:8080</text>
+  <text x="620" y="255" text-anchor="middle" class="small">172.28.8.22</text>
+  
+  <!-- Backend 3 -->
+  <rect x="560" y="280" width="120" height="70" rx="8" class="box backend-box"/>
+  <text x="620" y="310" text-anchor="middle" class="label">backend3</text>
+  <text x="620" y="330" text-anchor="middle" class="port">:8080</text>
+  <text x="620" y="345" text-anchor="middle" class="small">172.28.8.23</text>
+  
+  <!-- Arrows -->
+  <path d="M180 220 L270 220" class="arrow"/>
+  <text x="225" y="210" text-anchor="middle" class="small">HTTP</text>
+  
+  <path d="M440 175 L550 135" class="arrow"/>
+  <path d="M440 220 L550 225" class="arrow"/>
+  <path d="M440 265 L550 315" class="arrow"/>
+  
+  <!-- Labels for load balancing -->
+  <text x="495" y="150" text-anchor="middle" class="small">weight=W₁</text>
+  <text x="495" y="215" text-anchor="middle" class="small">weight=W₂</text>
+  <text x="495" y="300" text-anchor="middle" class="small">weight=W₃</text>
+  
+  <!-- Your Server Box (Exercise) -->
+  <rect x="60" y="320" width="120" height="80" rx="8" class="box" style="fill: #fce4ec; stroke: #c2185b;"/>
+  <text x="120" y="350" text-anchor="middle" class="label">YOUR Server</text>
+  <text x="120" y="370" text-anchor="middle" class="port">:UNIQUE_PORT</text>
+  <text x="120" y="385" text-anchor="middle" class="small">(Exercise 1)</text>
+  
+  <!-- Note -->
+  <text x="400" y="420" text-anchor="middle" class="small">Wᵢ = Your unique weights from student_context.json</text>
+  <text x="400" y="435" text-anchor="middle" class="small">UNIQUE_PORT = Your unique port from student_context.json</text>
+</svg>

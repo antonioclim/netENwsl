@@ -1,15 +1,11 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Makefile — Week 8: Transport Layer & HTTP
-# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# Computer Networks — ASE, CSIE
 # ═══════════════════════════════════════════════════════════════════════════════
-#
-# This Makefile was created after extensive discussion with Andrei T. about
-# what targets students actually need. The answer: fewer than you'd think.
-#
-# Principle from DPPD module: "Make the easy path the correct path."
 #
 # Usage:
 #   make help        # Show all available targets
+#   make init ID=... # FIRST: Initialise with your student ID
 #   make start       # Start the lab environment
 #   make quiz        # Run formative assessment
 #   make test        # Run all tests
@@ -22,6 +18,7 @@ PYTHON := python3
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
 QUIZ_FILE := formative/quiz.yaml
 SHELL := /bin/bash
+CONTEXT_FILE := artifacts/student_context.json
 
 # Colours for output (works on most terminals)
 GREEN := \033[92m
@@ -42,25 +39,96 @@ BOLD := \033[1m
 help: ## Show this help message
 	@echo ""
 	@echo "$(BOLD)Week 8 Laboratory — Transport Layer & HTTP$(RESET)"
-	@echo "Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim"
+	@echo "Computer Networks — ASE, CSIE"
 	@echo ""
 	@echo "$(BOLD)Usage:$(RESET) make $(CYAN)<target>$(RESET)"
 	@echo ""
+	@echo "$(BOLD)⭐ Getting Started (in order):$(RESET)"
+	@echo "  $(CYAN)init$(RESET)            Initialise with YOUR student ID (REQUIRED FIRST)"
+	@echo "                    Example: make init ID=12345ABC"
+	@echo "  $(CYAN)start$(RESET)           Start Docker lab environment"
+	@echo "  $(CYAN)quiz-basic$(RESET)      Check your prerequisite knowledge"
+	@echo ""
 	@echo "$(BOLD)Lab Environment:$(RESET)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '(start|stop|status|logs|clean)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2}'
+	@echo "  $(CYAN)start$(RESET)           Start the lab environment (nginx + backends)"
+	@echo "  $(CYAN)stop$(RESET)            Stop the lab environment (keeps Portainer)"
+	@echo "  $(CYAN)restart$(RESET)         Restart the lab environment"
+	@echo "  $(CYAN)status$(RESET)          Show status of lab containers"
+	@echo "  $(CYAN)logs$(RESET)            Show live logs from all containers"
 	@echo ""
 	@echo "$(BOLD)Assessment:$(RESET)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '(quiz|test|smoke)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2}'
+	@echo "  $(CYAN)quiz$(RESET)            Run the full formative quiz"
+	@echo "  $(CYAN)quiz-lo$(RESET)         Quiz specific LO: make quiz-lo LO=3"
+	@echo "  $(CYAN)quiz-basic$(RESET)      Run only basic difficulty questions"
+	@echo "  $(CYAN)quiz-advanced$(RESET)   Run only advanced difficulty questions"
+	@echo "  $(CYAN)quiz-export$(RESET)     Export quiz for LMS (Moodle/Canvas)"
+	@echo "  $(CYAN)parsons$(RESET)         Run Parsons code arrangement problems"
+	@echo "  $(CYAN)progress$(RESET)        Show your learning progress over time"
+	@echo "  $(CYAN)test$(RESET)            Run all tests (exercise + environment)"
+	@echo "  $(CYAN)smoke$(RESET)           Run quick smoke tests"
+	@echo ""
+	@echo "$(BOLD)Submission:$(RESET)"
+	@echo "  $(CYAN)verify-pcap$(RESET)     Verify PCAP files before submission"
+	@echo "  $(CYAN)check-context$(RESET)   Show your unique context values"
 	@echo ""
 	@echo "$(BOLD)Development:$(RESET)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '(lint|verify|demo)' | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2}'
+	@echo "  $(CYAN)lint$(RESET)            Run code linter (ruff)"
+	@echo "  $(CYAN)verify$(RESET)          Verify environment prerequisites"
+	@echo "  $(CYAN)demo$(RESET)            Run interactive demo menu"
+	@echo "  $(CYAN)clean$(RESET)           Clean up lab environment"
 	@echo ""
-	@echo "$(BOLD)Examples:$(RESET)"
-	@echo "  make start          # Start Docker environment"
-	@echo "  make quiz           # Take the formative quiz"
-	@echo "  make quiz-lo LO=3   # Quiz only LO3 questions"
-	@echo "  make test           # Run all tests"
+	@echo "$(BOLD)Quick Start Workflow:$(RESET)"
+	@echo "  1. make init ID=your_student_id"
+	@echo "  2. make start"
+	@echo "  3. make quiz-basic"
+	@echo "  4. [complete exercises]"
+	@echo "  5. make verify-pcap"
+	@echo "  6. make test"
 	@echo ""
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STUDENT INITIALISATION (REQUIRED FIRST STEP)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+.PHONY: init
+init: ## ⭐ FIRST: Initialise session with your student ID
+	@if [ -z "$(ID)" ]; then \
+		echo "$(RED)╔═══════════════════════════════════════════════════════════════╗$(RESET)"; \
+		echo "$(RED)║  ERROR: Student ID required                                   ║$(RESET)"; \
+		echo "$(RED)╚═══════════════════════════════════════════════════════════════╝$(RESET)"; \
+		echo ""; \
+		echo "$(BOLD)Usage:$(RESET) make init ID=your_student_id"; \
+		echo ""; \
+		echo "This generates YOUR unique exercise parameters."; \
+		echo "You MUST run this before starting exercises."; \
+		exit 1; \
+	fi
+	@$(PYTHON) scripts/generate_student_context.py "$(ID)"
+	@echo ""
+	@echo "$(GREEN)✓ Session initialised for: $(ID)$(RESET)"
+	@echo "  Your context: $(CONTEXT_FILE)"
+	@echo ""
+	@echo "$(BOLD)Next steps:$(RESET)"
+	@echo "  1. make start      # Start lab environment"
+	@echo "  2. make quiz-basic # Check your prerequisites"
+	@echo ""
+
+.PHONY: verify-pcap
+verify-pcap: ## Verify PCAP submissions before homework submission
+	@if [ ! -f "$(CONTEXT_FILE)" ]; then \
+		echo "$(RED)Error: Run 'make init ID=...' first$(RESET)"; \
+		exit 1; \
+	fi
+	@$(PYTHON) scripts/verify_pcap_submission.py
+
+.PHONY: check-context
+check-context: ## Show your unique context values
+	@if [ ! -f "$(CONTEXT_FILE)" ]; then \
+		echo "$(RED)No context found. Run: make init ID=your_student_id$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BOLD)Your Unique Context:$(RESET)"
+	@cat $(CONTEXT_FILE) | $(PYTHON) -m json.tool
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LAB ENVIRONMENT
@@ -69,20 +137,20 @@ help: ## Show this help message
 .PHONY: start
 start: ## Start the lab environment (nginx + backends)
 	@echo "$(BOLD)Starting Week 8 laboratory environment...$(RESET)"
-	@$(PYTHON) scripts/start_lab.py
+	@$(PYTHON) scripts/start_lab.py 2>/dev/null || $(DOCKER_COMPOSE) up -d
 	@echo ""
 	@echo "$(GREEN)✓ Lab started successfully!$(RESET)"
 	@echo ""
 	@echo "Access points:"
 	@echo "  • HTTP Proxy:  http://localhost:8080"
 	@echo "  • HTTPS Proxy: https://localhost:8443"
-	@echo "  • Portainer:   http://localhost:9000 (stud/studstudstud)"
+	@echo "  • Portainer:   http://localhost:9000"
 	@echo ""
 
 .PHONY: stop
 stop: ## Stop the lab environment (keeps Portainer running)
 	@echo "$(BOLD)Stopping Week 8 laboratory...$(RESET)"
-	@$(PYTHON) scripts/stop_lab.py
+	@$(PYTHON) scripts/stop_lab.py 2>/dev/null || $(DOCKER_COMPOSE) down
 	@echo "$(GREEN)✓ Lab stopped$(RESET)"
 
 .PHONY: status
@@ -142,6 +210,38 @@ quiz-advanced: ## Run only advanced difficulty questions
 quiz-list: ## List all quiz questions
 	@$(PYTHON) formative/run_quiz.py --list-questions
 
+.PHONY: quiz-export
+quiz-export: ## Export quiz for LMS (JSON format)
+	@mkdir -p artifacts
+	@$(PYTHON) formative/run_quiz.py --export-lms artifacts/quiz_lms_export.json
+	@$(PYTHON) formative/run_quiz.py --export-moodle artifacts/quiz_moodle_export.xml
+	@echo "$(GREEN)✓ Exported to artifacts/quiz_lms_export.json$(RESET)"
+	@echo "$(GREEN)✓ Exported to artifacts/quiz_moodle_export.xml$(RESET)"
+
+.PHONY: parsons
+parsons: ## Run Parsons code arrangement problems
+	@$(PYTHON) formative/parsons/run_parsons.py
+
+.PHONY: parsons-lo
+parsons-lo: ## Run Parsons for specific LO (use: make parsons-lo LO=3)
+	@if [ -z "$(LO)" ]; then \
+		echo "$(RED)Error: Specify LO number, e.g., make parsons-lo LO=3$(RESET)"; \
+		exit 1; \
+	fi
+	@$(PYTHON) formative/parsons/run_parsons.py --lo LO$(LO)
+
+.PHONY: parsons-list
+parsons-list: ## List available Parsons problems
+	@$(PYTHON) formative/parsons/run_parsons.py --list
+
+.PHONY: progress
+progress: ## Show your learning progress over time
+	@$(PYTHON) formative/progress_tracker.py
+
+.PHONY: progress-reset
+progress-reset: ## Reset progress tracking (start fresh)
+	@$(PYTHON) formative/progress_tracker.py --reset
+
 .PHONY: test
 test: ## Run all tests (exercise + environment)
 	@echo "$(BOLD)Running all tests...$(RESET)"
@@ -151,11 +251,18 @@ test: ## Run all tests (exercise + environment)
 
 .PHONY: test-ex1
 test-ex1: ## Run tests for Exercise 1 only
-	@$(PYTHON) tests/test_exercises.py --exercise 1
+	@$(PYTHON) tests/test_exercises.py --exercise 1 2>/dev/null || \
+		$(PYTHON) -m pytest tests/test_exercises.py -k "Exercise1" -v
 
 .PHONY: test-ex2
 test-ex2: ## Run tests for Exercise 2 only
-	@$(PYTHON) tests/test_exercises.py --exercise 2
+	@$(PYTHON) tests/test_exercises.py --exercise 2 2>/dev/null || \
+		$(PYTHON) -m pytest tests/test_exercises.py -k "Exercise2" -v
+
+.PHONY: test-context
+test-context: ## Run tests that verify unique context usage
+	@$(PYTHON) -m pytest tests/test_unique_context.py -v 2>/dev/null || \
+		echo "$(YELLOW)Context tests require student context. Run 'make init ID=...' first.$(RESET)"
 
 .PHONY: smoke
 smoke: ## Run smoke tests to verify environment
@@ -178,10 +285,25 @@ install: ## Install Python dependencies
 	@echo "$(GREEN)✓ Dependencies installed$(RESET)"
 
 .PHONY: lint
-lint: ## Run code linter (if ruff is installed)
+lint: ## Run code linter (ruff)
 	@echo "$(BOLD)Running linter...$(RESET)"
 	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --ignore E501 2>/dev/null || \
 		echo "$(YELLOW)Ruff not installed. Install with: pip install ruff$(RESET)"
+
+.PHONY: lint-fix
+lint-fix: ## Run linter and auto-fix issues
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --fix 2>/dev/null || \
+		echo "$(YELLOW)Ruff not installed. Install with: pip install ruff$(RESET)"
+
+.PHONY: format
+format: ## Format code with ruff
+	@$(PYTHON) -m ruff format src/ scripts/ tests/ formative/ 2>/dev/null || \
+		echo "$(YELLOW)Ruff not installed. Install with: pip install ruff$(RESET)"
+
+.PHONY: typecheck
+typecheck: ## Run type checker (mypy)
+	@$(PYTHON) -m mypy src/exercises/ scripts/ --ignore-missing-imports 2>/dev/null || \
+		echo "$(YELLOW)Mypy not installed. Install with: pip install mypy$(RESET)"
 
 .PHONY: demo
 demo: ## Run interactive demo menu
@@ -237,6 +359,28 @@ clean-pycache: ## Remove Python cache directories
 	@echo "$(GREEN)✓ Python cache removed$(RESET)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# CI/CD TARGETS (for automated pipelines)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+.PHONY: ci-lint
+ci-lint: ## CI: Run linting checks
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/
+
+.PHONY: ci-test
+ci-test: ## CI: Run tests for CI pipeline
+	@$(PYTHON) -m pytest tests/ -v --tb=short --ignore=tests/test_unique_context.py
+
+.PHONY: ci-syntax
+ci-syntax: ## CI: Check Python syntax
+	@find . -name "*.py" -not -path "*/__pycache__/*" -exec $(PYTHON) -m py_compile {} \;
+	@echo "$(GREEN)✓ Syntax check passed$(RESET)"
+
+.PHONY: ci-docker
+ci-docker: ## CI: Verify Docker configuration
+	@$(DOCKER_COMPOSE) config --quiet
+	@echo "$(GREEN)✓ Docker Compose configuration valid$(RESET)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # QUICK REFERENCE
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -246,33 +390,26 @@ cheatsheet: ## Show quick command reference
 	@echo "$(BOLD)Quick Reference — Week 8$(RESET)"
 	@echo ""
 	@echo "$(CYAN)Start your session:$(RESET)"
-	@echo "  make start        # Start Docker environment"
-	@echo "  make smoke        # Verify everything works"
+	@echo "  make init ID=your_id  # Generate unique context"
+	@echo "  make start            # Start Docker environment"
+	@echo "  make smoke            # Verify everything works"
 	@echo ""
 	@echo "$(CYAN)Work on exercises:$(RESET)"
-	@echo "  make demo-http    # See HTTP server in action"
-	@echo "  make test-ex1     # Test your Exercise 1"
-	@echo "  make test-ex2     # Test your Exercise 2"
+	@echo "  make demo-http        # See HTTP server in action"
+	@echo "  make test-ex1         # Test your Exercise 1"
+	@echo "  make test-ex2         # Test your Exercise 2"
 	@echo ""
 	@echo "$(CYAN)Self-assessment:$(RESET)"
-	@echo "  make quiz         # Full formative quiz"
-	@echo "  make quiz-lo LO=3 # Quiz specific LO"
-	@echo "  make quiz-review  # See all answers"
+	@echo "  make quiz             # Full formative quiz"
+	@echo "  make quiz-lo LO=3     # Quiz specific LO"
+	@echo "  make parsons          # Code arrangement practice"
+	@echo "  make progress         # View your progress"
+	@echo ""
+	@echo "$(CYAN)Before submission:$(RESET)"
+	@echo "  make verify-pcap      # Check PCAP files"
+	@echo "  make test             # Run all tests"
 	@echo ""
 	@echo "$(CYAN)End your session:$(RESET)"
-	@echo "  make stop         # Stop containers"
-	@echo "  make clean        # Full cleanup"
+	@echo "  make stop             # Stop containers"
+	@echo "  make clean            # Full cleanup"
 	@echo ""
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Acknowledgments
-# ═══════════════════════════════════════════════════════════════════════════════
-#
-# Makefile design informed by:
-# - Andrei T. (ASE) — "Students need 5 targets, not 50"
-# - DPPD module, UPB — "Reduce cognitive load in tooling"
-#
-# The colour scheme uses ANSI codes that work on WSL/Ubuntu terminals.
-# If colours don't display, your terminal may need configuration.
-#
-# ═══════════════════════════════════════════════════════════════════════════════
