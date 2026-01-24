@@ -1,0 +1,166 @@
+name: 🏛️ Institutional Licence Request
+description: Apply for an institutional licence to use these materials in your educational programme
+title: "[LICENCE] Institutional Application — "
+labels: ["licence"]
+assignees:
+  - antonioclim
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Institutional Licence Application
+        
+        Thank you for your interest in incorporating these materials into your educational programme.
+        
+        As specified in our [Restrictive Educational Licence](../LICENCE.md), educational institutions may apply for a licence permitting classroom use, distribution to students and inclusion in learning management systems.
+        
+        Please provide the information below. Applications are typically reviewed within 30–60 days.
+
+  - type: input
+    id: institution
+    attributes:
+      label: Institution Name
+      description: Full legal name of your educational institution.
+      placeholder: "e.g., University of Example, Faculty of Computing"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Institution Type
+      description: What type of institution are you?
+      options:
+        - Public university
+        - Private university
+        - Technical college
+        - Secondary school
+        - Training provider (non-profit)
+        - Training provider (commercial)
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: input
+    id: country
+    attributes:
+      label: Country
+      description: Country where the institution is located.
+      placeholder: "e.g., Romania"
+    validations:
+      required: true
+
+  - type: input
+    id: website
+    attributes:
+      label: Institution Website
+      description: Official website of your institution.
+      placeholder: "https://..."
+    validations:
+      required: true
+
+  - type: input
+    id: contact_name
+    attributes:
+      label: Contact Person
+      description: Name of the person submitting this request.
+      placeholder: "Dr. Jane Smith"
+    validations:
+      required: true
+
+  - type: input
+    id: contact_role
+    attributes:
+      label: Contact Role
+      description: Your position at the institution.
+      placeholder: "e.g., Lecturer, Department Head, Programme Director"
+    validations:
+      required: true
+
+  - type: input
+    id: contact_email
+    attributes:
+      label: Contact Email
+      description: Institutional email address for correspondence.
+      placeholder: "jane.smith@university.example"
+    validations:
+      required: true
+
+  - type: textarea
+    id: intended_use
+    attributes:
+      label: Intended Use
+      description: Describe how you plan to use these materials.
+      placeholder: |
+        - Which course(s) will use the materials?
+        - How will materials be delivered (classroom, LMS, hybrid)?
+        - Will you modify the materials or use them as-is?
+    validations:
+      required: true
+
+  - type: input
+    id: students
+    attributes:
+      label: Estimated Student Numbers
+      description: Approximate number of students who would use the materials per academic year.
+      placeholder: "e.g., 150 students per year"
+    validations:
+      required: true
+
+  - type: input
+    id: duration
+    attributes:
+      label: Licence Duration Requested
+      description: How long do you need the licence for?
+      placeholder: "e.g., 3 academic years (2026-2029)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language Version Required
+      description: Which language version do you need?
+      options:
+        - English (netENwsl)
+        - Romanian (netROwsl)
+        - Both versions
+    validations:
+      required: true
+
+  - type: textarea
+    id: modifications
+    attributes:
+      label: Planned Modifications
+      description: Do you plan to modify or adapt the materials? If so, describe the changes.
+      placeholder: "e.g., Translation to another language, adaptation for specific infrastructure..."
+
+  - type: textarea
+    id: attribution
+    attributes:
+      label: Attribution Commitment
+      description: How will you attribute the materials to the original authors?
+      placeholder: "e.g., Attribution on syllabus, acknowledgement in LMS, citation in course materials..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other relevant information to support your application.
+
+  - type: checkboxes
+    id: agreements
+    attributes:
+      label: Agreements
+      description: Please confirm the following.
+      options:
+        - label: I confirm that I am authorised to make this request on behalf of the institution
+          required: true
+        - label: I have read and understood the Restrictive Educational Licence
+          required: true
+        - label: The institution agrees to comply with all attribution requirements
+          required: true
+        - label: I understand that this is an application and approval is not guaranteed
+          required: true
