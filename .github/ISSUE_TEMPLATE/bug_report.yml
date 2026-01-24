@@ -1,0 +1,150 @@
+name: 🐛 Bug Report
+description: Report a bug in scripts, exercises or configuration files
+title: "[BUG] "
+labels: ["bug"]
+assignees:
+  - antonioclim
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report this bug. Please fill in the details below to help us investigate and resolve the issue efficiently.
+        
+  - type: dropdown
+    id: week
+    attributes:
+      label: Affected Week
+      description: Which laboratory week does this bug affect?
+      options:
+        - Week 00 (Appendix/Setup)
+        - Week 01 — Network Fundamentals
+        - Week 02 — Socket Programming
+        - Week 03 — Advanced Network Models
+        - Week 04 — Physical and Data Link Layers
+        - Week 05 — Network Layer and IP
+        - Week 06 — NAT/PAT and SDN
+        - Week 07 — Packet Capture and Security
+        - Week 08 — Transport Layer and HTTP
+        - Week 09 — Session and Presentation
+        - Week 10 — Application Protocols
+        - Week 11 — Load Balancing
+        - Week 12 — Email and RPC
+        - Week 13 — IoT Security
+        - Week 14 — Review and Assessment
+        - Multiple weeks
+        - General/Repository-wide
+    validations:
+      required: true
+
+  - type: input
+    id: file
+    attributes:
+      label: Affected File(s)
+      description: Which file(s) contain the bug? Provide the path from the week folder.
+      placeholder: "e.g., scripts/start_lab.py or src/exercises/ex_01_02.py"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: "Describe the problem you encountered..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behaviour
+      description: What did you expect to happen?
+      placeholder: "Describe what should happen..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behaviour
+      description: What actually happened?
+      placeholder: "Describe what actually happened..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Navigate to week folder...
+        2. Run the command...
+        3. Observe the error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error Message or Output
+      description: If applicable, paste the error message or unexpected output.
+      render: shell
+      placeholder: |
+        Paste the error message here...
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - Other (specify in additional context)
+    validations:
+      required: true
+
+  - type: input
+    id: wsl
+    attributes:
+      label: WSL Distribution and Version
+      description: Run `wsl -l -v` and `lsb_release -a` to find this information.
+      placeholder: "e.g., Ubuntu 22.04.3 LTS, WSL version 2"
+    validations:
+      required: true
+
+  - type: input
+    id: docker
+    attributes:
+      label: Docker Version
+      description: Run `docker --version` to find this.
+      placeholder: "e.g., Docker version 28.2.2"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python Version
+      description: Run `python3 --version` to find this.
+      placeholder: "e.g., Python 3.11.8"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots or information about the problem.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have checked the troubleshooting guide in the README
+          required: true
+        - label: I have run `python3 setup/verify_environment.py` and it passes
+          required: false
+        - label: I have searched existing issues for duplicates
+          required: true
