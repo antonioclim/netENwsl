@@ -1,0 +1,385 @@
+{
+  "$schema": "https://purl.imsglobal.org/spec/qti/v3p0/schema/json/qti-item-schema-v3p0.json",
+  "metadata": {
+    "week": 3,
+    "title": "Network Programming: Broadcast, Multicast and TCP Tunnelling",
+    "version": "2.0.0",
+    "author": "ing. dr. Antonio Clim",
+    "institution": "ASE Bucharest - CSIE",
+    "course": "Computer Networks Laboratory",
+    "estimated_time_minutes": 18,
+    "passing_score": 70,
+    "total_questions": 17,
+    "total_points": 34,
+    "export_formats": ["moodle_gift", "canvas_qti", "json"],
+    "bloom_distribution": {
+      "remember": 4,
+      "understand": 4,
+      "apply": 4,
+      "analyze": 3,
+      "evaluate": 2
+    },
+    "lo_coverage": ["LO1", "LO2", "LO3", "LO4", "LO5", "LO6"]
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "lo_ref": "LO1",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "type": "multiple_choice",
+      "stem": "Which IP address is reserved for \"limited broadcast\" that never traverses routers?",
+      "options": {
+        "a": "224.0.0.1",
+        "b": "255.255.255.255",
+        "c": "192.168.255.255",
+        "d": "0.0.0.0"
+      },
+      "correct": "b",
+      "explanation": "255.255.255.255 is the limited broadcast address that remains strictly in the local Layer 2 domain.",
+      "feedback": {
+        "correct": "Correct! 255.255.255.255 is the limited broadcast address.",
+        "incorrect": "Review the difference between limited and directed broadcast addresses."
+      }
+    },
+    {
+      "id": "q02",
+      "lo_ref": "LO1",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "type": "multiple_choice",
+      "stem": "Which socket option MUST be set before sending UDP datagrams to a broadcast address?",
+      "options": {
+        "a": "SO_REUSEADDR",
+        "b": "SO_BROADCAST",
+        "c": "IP_MULTICAST_TTL",
+        "d": "SO_KEEPALIVE"
+      },
+      "correct": "b",
+      "explanation": "SO_BROADCAST is mandatory. Without this option the kernel refuses transmission.",
+      "feedback": {
+        "correct": "Correct! SO_BROADCAST must be enabled for broadcast transmission.",
+        "incorrect": "Remember that broadcast requires explicit permission via SO_BROADCAST."
+      }
+    },
+    {
+      "id": "q03",
+      "lo_ref": "LO1",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "type": "multiple_choice",
+      "stem": "In which IP address range are multicast addresses found?",
+      "options": {
+        "a": "10.0.0.0 - 10.255.255.255",
+        "b": "172.16.0.0 - 172.31.255.255",
+        "c": "224.0.0.0 - 239.255.255.255",
+        "d": "240.0.0.0 - 255.255.255.254"
+      },
+      "correct": "c",
+      "explanation": "Class D (224.0.0.0/4) is reserved for multicast.",
+      "feedback": {
+        "correct": "Correct! Class D addresses (224-239) are reserved for multicast.",
+        "incorrect": "Class D (224.0.0.0/4) is the multicast address range."
+      }
+    },
+    {
+      "id": "q04",
+      "lo_ref": "LO1",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "type": "multiple_choice",
+      "stem": "Which protocol does a host use to announce to the router that it wishes to receive traffic from a multicast group?",
+      "options": {
+        "a": "ARP",
+        "b": "ICMP",
+        "c": "IGMP",
+        "d": "DHCP"
+      },
+      "correct": "c",
+      "explanation": "IGMP (Internet Group Management Protocol) is used to manage membership in multicast groups.",
+      "feedback": {
+        "correct": "Correct! IGMP manages multicast group membership.",
+        "incorrect": "IGMP is specifically designed for multicast group management."
+      }
+    },
+    {
+      "id": "q05",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 2,
+      "type": "multiple_choice",
+      "stem": "Why is broadcast limited to the Layer 2 domain whilst multicast can traverse routers?",
+      "options": {
+        "a": "Broadcast uses UDP, multicast uses TCP",
+        "b": "Routers do not process broadcast packets but have IGMP support for multicast",
+        "c": "Broadcast has TTL=0 by default",
+        "d": "Multicast is encrypted and broadcast is not"
+      },
+      "correct": "b",
+      "explanation": "Routers by design do NOT route broadcast packets. For multicast, routers can participate in multicast routing protocols and use IGMP.",
+      "feedback": {
+        "correct": "Correct! Routers block broadcast but support multicast via IGMP.",
+        "incorrect": "Consider how routers handle broadcast vs multicast differently."
+      }
+    },
+    {
+      "id": "q06",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 2,
+      "type": "multiple_choice",
+      "stem": "What does a TTL value of 1 signify for a multicast packet?",
+      "options": {
+        "a": "The packet expires after 1 second",
+        "b": "The packet can traverse at most 1 router",
+        "c": "The packet remains in the local segment (link-local)",
+        "d": "The packet has priority 1"
+      },
+      "correct": "c",
+      "explanation": "TTL in IP counts hops, NOT seconds. TTL=1 means the packet cannot traverse any router.",
+      "feedback": {
+        "correct": "Correct! TTL=1 limits the packet to the local network segment.",
+        "incorrect": "TTL counts router hops, not time. TTL=1 means link-local only."
+      }
+    },
+    {
+      "id": "q07",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 2,
+      "type": "multiple_choice",
+      "stem": "Container A binds to port 5008 but does NOT call IP_ADD_MEMBERSHIP. Container B sends multicast to 239.1.1.1:5008. What happens?",
+      "options": {
+        "a": "A receives the message because it is listening on the correct port",
+        "b": "A does NOT receive the message because it has not joined the group",
+        "c": "A receives the message if it is on the same network",
+        "d": "Protocol error - multicast requires TCP"
+      },
+      "correct": "b",
+      "explanation": "Multicast requires explicit group join via IP_ADD_MEMBERSHIP.",
+      "feedback": {
+        "correct": "Correct! Multicast requires explicit group membership.",
+        "incorrect": "Binding to a port is not enough for multicast - you must join the group."
+      }
+    },
+    {
+      "id": "q08",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 2,
+      "type": "multiple_choice",
+      "stem": "What happens at Layer 2 when a host receives a multicast frame addressed to a group it has NOT joined?",
+      "options": {
+        "a": "The NIC accepts the frame and passes it to the OS",
+        "b": "The NIC discards the frame in hardware (efficient filtering)",
+        "c": "The OS kernel filters the frame",
+        "d": "The router intercepts and redirects the frame"
+      },
+      "correct": "b",
+      "explanation": "Modern NICs support hardware multicast filtering. Only NICs of hosts that have joined the group process the frame.",
+      "feedback": {
+        "correct": "Correct! NICs filter multicast at the hardware level.",
+        "incorrect": "Multicast filtering happens at the NIC level for efficiency."
+      }
+    },
+    {
+      "id": "q09",
+      "lo_ref": "LO3",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "type": "fill_blank",
+      "stem": "To enable UDP broadcast transmission in Python, you must call: sock.setsockopt(socket.SOL_SOCKET, socket.___, 1)",
+      "correct": ["SO_BROADCAST", "socket.SO_BROADCAST"],
+      "hint": "This option explicitly permits transmission to broadcast addresses",
+      "explanation": "SO_BROADCAST is the flag that allows the kernel to accept sendto() calls to broadcast addresses.",
+      "feedback": {
+        "correct": "Correct! SO_BROADCAST enables broadcast transmission.",
+        "incorrect": "The correct answer is SO_BROADCAST."
+      }
+    },
+    {
+      "id": "q10",
+      "lo_ref": "LO3",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "type": "fill_blank",
+      "stem": "To join multicast group 239.1.1.1, you construct mreq as follows: mreq = socket.inet_aton('239.1.1.1') + struct.pack('=I', socket.___)",
+      "correct": ["INADDR_ANY", "socket.INADDR_ANY"],
+      "hint": "The special value meaning 'all interfaces'",
+      "explanation": "INADDR_ANY (0.0.0.0) specifies that you want to receive multicast on any available interface.",
+      "feedback": {
+        "correct": "Correct! INADDR_ANY allows multicast on all interfaces.",
+        "incorrect": "INADDR_ANY is the constant for binding to all interfaces."
+      }
+    },
+    {
+      "id": "q11",
+      "lo_ref": "LO4",
+      "bloom_level": "apply",
+      "difficulty": "advanced",
+      "points": 3,
+      "type": "multiple_choice",
+      "stem": "A TCP tunnel listens on port 9090 and forwards to server:8080. When a client connects to the tunnel, how many TCP connections are established to deliver a single message?",
+      "options": {
+        "a": "1 connection (client to server, tunnel is transparent)",
+        "b": "2 connections (client to tunnel and tunnel to server)",
+        "c": "3 connections (client to tunnel to buffer to server)",
+        "d": "0 connections (tunnel uses UDP internally)"
+      },
+      "correct": "b",
+      "explanation": "The TCP tunnel TERMINATES the client's connection and creates a NEW connection to the server. Thus there are two independent TCP connections.",
+      "feedback": {
+        "correct": "Correct! A tunnel creates two separate TCP connections.",
+        "incorrect": "A tunnel terminates one connection and creates another."
+      }
+    },
+    {
+      "id": "q12",
+      "lo_ref": "LO4",
+      "bloom_level": "apply",
+      "difficulty": "advanced",
+      "points": 3,
+      "type": "multiple_choice",
+      "stem": "Why can a simple single-threaded TCP tunnel using blocking recv() not perform correct bidirectional relay?",
+      "options": {
+        "a": "recv() consumes too much memory",
+        "b": "recv() blocks execution - it cannot read from both sockets simultaneously",
+        "c": "TCP does not support full-duplex",
+        "d": "Tunnels require UDP for bidirectional traffic"
+      },
+      "correct": "b",
+      "explanation": "recv() is blocking. In a single-threaded tunnel, if you wait for data from the client, you cannot simultaneously receive data from the server.",
+      "feedback": {
+        "correct": "Correct! Blocking I/O prevents simultaneous bidirectional relay.",
+        "incorrect": "Blocking recv() cannot handle two directions at once."
+      }
+    },
+    {
+      "id": "q13",
+      "lo_ref": "LO5",
+      "bloom_level": "analyze",
+      "difficulty": "advanced",
+      "points": 3,
+      "type": "multiple_choice",
+      "stem": "In Wireshark, you observe: 1. SYN (client:45678 to router:9090), 2. SYN-ACK (router:9090 to client:45678), 3. ACK (client:45678 to router:9090), 4. SYN (router:52341 to server:8080), 5. SYN-ACK (server:8080 to router:52341), 6. ACK (router:52341 to server:8080). What do you conclude?",
+      "options": {
+        "a": "Direct client-server connection with NAT",
+        "b": "Two separate TCP handshakes - the tunnel terminates and re-initiates the connection",
+        "c": "Protocol error - there should be only one handshake",
+        "d": "Retransmission due to packet loss"
+      },
+      "correct": "b",
+      "explanation": "The two handshakes confirm the tunnel architecture: client establishes connection with tunnel, then tunnel establishes a NEW connection with server.",
+      "feedback": {
+        "correct": "Correct! Two handshakes indicate tunnel connection termination.",
+        "incorrect": "Analyse the sequence - two complete 3-way handshakes occur."
+      }
+    },
+    {
+      "id": "q14",
+      "lo_ref": "LO5",
+      "bloom_level": "analyze",
+      "difficulty": "advanced",
+      "points": 3,
+      "type": "multiple_choice",
+      "stem": "You capture traffic with the filter 'igmp' and observe: 'IGMP Membership Report, Group: 239.1.1.1'. What action has the host just performed?",
+      "options": {
+        "a": "It sent data to the multicast group",
+        "b": "It left the multicast group",
+        "c": "It joined multicast group 239.1.1.1",
+        "d": "It queried the router about available groups"
+      },
+      "correct": "c",
+      "explanation": "Membership Report is the IGMP message sent when a host joins a multicast group.",
+      "feedback": {
+        "correct": "Correct! Membership Report indicates a group join.",
+        "incorrect": "IGMP Membership Report is sent when joining a group."
+      }
+    },
+    {
+      "id": "q15",
+      "lo_ref": "LO6",
+      "bloom_level": "analyze",
+      "difficulty": "advanced",
+      "points": 3,
+      "type": "multiple_choice",
+      "stem": "You are designing a live video streaming system for 10,000 clients across a university campus with 5 subnets. Which communication method is MOST APPROPRIATE?",
+      "options": {
+        "a": "Broadcast - simple to implement",
+        "b": "Unicast to each client - guarantees delivery",
+        "c": "Multicast - efficient for one-to-many, traverses subnets",
+        "d": "TCP tunnel - reliable and secure"
+      },
+      "correct": "c",
+      "explanation": "Multicast is ideal for one-to-many streaming: a single transmission serves all interested clients and traverses subnets with PIM/IGMP.",
+      "feedback": {
+        "correct": "Correct! Multicast is optimal for large-scale streaming.",
+        "incorrect": "Consider bandwidth efficiency and subnet traversal requirements."
+      }
+    },
+    {
+      "id": "q16",
+      "lo_ref": "LO6",
+      "bloom_level": "evaluate",
+      "difficulty": "advanced",
+      "points": 3,
+      "type": "multiple_choice",
+      "stem": "A startup designs a real-time notification system for 50,000 globally distributed users. An engineer proposes: 'We should use UDP multicast for all notifications because it is efficient.' What is the PRIMARY flaw?",
+      "options": {
+        "a": "UDP multicast cannot traverse the internet backbone between continents",
+        "b": "UDP multicast is too slow for 500ms latency",
+        "c": "UDP multicast cannot handle 50,000 users",
+        "d": "UDP multicast requires TCP for reliability"
+      },
+      "correct": "a",
+      "explanation": "IP multicast does not work across the public internet. Multicast routing (PIM, MSDP) is not deployed on most ISPs.",
+      "feedback": {
+        "correct": "Correct! Multicast does not traverse the public internet.",
+        "incorrect": "Consider how multicast routing works (or does not work) across ISPs."
+      }
+    },
+    {
+      "id": "q17",
+      "lo_ref": "LO6",
+      "bloom_level": "evaluate",
+      "difficulty": "advanced",
+      "points": 3,
+      "type": "multiple_choice",
+      "stem": "A network administrator implements service discovery: 200 services broadcast availability every 5 seconds to 255.255.255.255 across 15 router-connected subnets. What is the MOST CRITICAL problem?",
+      "options": {
+        "a": "Broadcasts do not traverse routers - services on other subnets will not be discovered",
+        "b": "5-second intervals are too slow for service discovery",
+        "c": "512 bytes is too large for UDP packets",
+        "d": "Broadcasts should use TCP for reliability"
+      },
+      "correct": "a",
+      "explanation": "255.255.255.255 broadcasts are limited to the local L2 domain and do not cross routers. With 15 subnets, services will only discover others on their own subnet.",
+      "feedback": {
+        "correct": "Correct! Broadcast cannot cross router boundaries.",
+        "incorrect": "Remember that 255.255.255.255 is limited to the local subnet."
+      }
+    }
+  ],
+  "scoring": {
+    "total_points": 34,
+    "passing_threshold": 24,
+    "grade_bands": [
+      {"range": [31, 34], "grade": "Excellent", "feedback": "Solid understanding of all concepts."},
+      {"range": [24, 30], "grade": "Good", "feedback": "Solid foundations. Review marked concepts."},
+      {"range": [17, 23], "grade": "Satisfactory", "feedback": "Additional study required."},
+      {"range": [0, 16], "grade": "Insufficient", "feedback": "Review theory and redo exercises."}
+    ]
+  },
+  "moodle_gift_export": "# Auto-generated GIFT format for Moodle import\n# Category: Week3_NetworkProgramming\n# Use: python run_quiz.py --export-lms moodle\n",
+  "canvas_qti_note": "For Canvas QTI export, use: python run_quiz.py --export-lms canvas"
+}

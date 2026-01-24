@@ -1,338 +1,227 @@
-# 🧩 Parsons Problems — Week 3
+# Parsons Problems — Week 3
 
-> Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+> NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
 
-Reorder the code blocks to create a working solution. Some problems include distractor blocks that should not be used.
+## Instructions
+
+Arrange scrambled code blocks into correct order. Watch for **DISTRACTOR** blocks!
 
 ---
 
-## Problem P1: UDP Broadcast Sender
+## Problem 1: UDP Broadcast Sender ⭐⭐
 
-### Task
+**LO3** — Arrange blocks to create UDP broadcast sender.
 
-Create a function that sends a UDP broadcast message to all hosts on the local network segment.
-
-### Scrambled Blocks
-
+### Blocks (scrambled)
 ```python
-# Block A
-    sock.sendto(message.encode(), (broadcast_addr, port))
+# A
+message = "Hello!".encode('utf-8')
 
-# Block B
-def send_broadcast(message: str, port: int, broadcast_addr: str = "255.255.255.255") -> bool:
+# B
+sock.sendto(message, (BROADCAST_ADDR, PORT))
 
-# Block C
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+# C
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# Block D
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# D
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-# Block E
-    return True
+# E — DISTRACTOR
+sock.connect((BROADCAST_ADDR, PORT))
 
-# Block F
-    sock.close()
+# F
+import socket
+BROADCAST_ADDR = '255.255.255.255'
+PORT = 5007
 
-# Block G (DISTRACTOR - not needed)
-    sock.bind(('', 0))
-
-# Block H (DISTRACTOR - not needed)
-    sock.connect((broadcast_addr, port))
+# G — DISTRACTOR
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 ```
 
-### Correct Order
+<details><summary>Solution</summary>
+**Order: F → C → D → A → B**
 
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block B - Function definition
-def send_broadcast(message: str, port: int, broadcast_addr: str = "255.255.255.255") -> bool:
-
-# Block D - Create UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# Block C - Enable broadcast permission
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-
-# Block A - Send the message
-    sock.sendto(message.encode(), (broadcast_addr, port))
-
-# Block F - Clean up
-    sock.close()
-
-# Block E - Return success
-    return True
-```
-
-**Distractors explained:**
-- **Block G (bind):** Not needed for sending — bind is for receivers or when you need a specific source port
-- **Block H (connect):** UDP broadcast uses `sendto()`, not `connect()` + `send()`. Also, `connect()` would set a default destination, but broadcast requires explicit addressing
-
-**Key insight:** `SO_BROADCAST` must be set BEFORE calling `sendto()` with a broadcast address, or the kernel will reject the operation.
-
+Distractors wrong: E (UDP uses sendto, not connect), G (SO_REUSEADDR for receivers)
 </details>
 
 ---
 
-## Problem P2: Multicast Group Join
+## Problem 2: UDP Multicast Receiver ⭐⭐
 
-### Task
+**LO3** — Arrange blocks for multicast receiver joining 239.1.1.1.
 
-Create a function that sets up a UDP socket to receive multicast traffic from a specific group.
-
-### Scrambled Blocks
-
+### Blocks
 ```python
-# Block A
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+# A
+data, addr = sock.recvfrom(1024)
 
-# Block B
-def join_multicast_group(group_ip: str, port: int) -> socket.socket:
+# B
+import socket, struct
+MCAST_GROUP = '239.1.1.1'
+PORT = 5008
 
-# Block C
-    sock.bind(('', port))
+# C
+sock.bind(('', PORT))
 
-# Block D
-    mreq = socket.inet_aton(group_ip) + struct.pack('=I', socket.INADDR_ANY)
+# D
+mreq = struct.pack('4sL', socket.inet_aton(MCAST_GROUP), socket.INADDR_ANY)
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-# Block E
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# E
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-# Block F
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# F — DISTRACTOR
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-# Block G
-    return sock
-
-# Block H (DISTRACTOR - not needed)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-
-# Block I (DISTRACTOR - wrong order)
-    sock.connect((group_ip, port))
+# G — DISTRACTOR
+sock.bind((MCAST_GROUP, PORT))
 ```
 
-### Correct Order
+<details><summary>Solution</summary>
+**Order: B → E → C → D → A**
 
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block B - Function definition
-def join_multicast_group(group_ip: str, port: int) -> socket.socket:
-
-# Block E - Create UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# Block F - Allow address reuse (important for multiple receivers)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# Block C - Bind to port
-    sock.bind(('', port))
-
-# Block D - Build membership request structure
-    mreq = socket.inet_aton(group_ip) + struct.pack('=I', socket.INADDR_ANY)
-
-# Block A - Join the multicast group
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-
-# Block G - Return configured socket
-    return sock
-```
-
-**Distractors explained:**
-- **Block H (SO_BROADCAST):** Multicast and broadcast are different mechanisms — SO_BROADCAST is not used for multicast
-- **Block I (connect):** Multicast receivers should not `connect()` — they need to receive from any sender in the group
-
-**Key insight:** The `mreq` structure is 8 bytes: 4 bytes for the group IP address and 4 bytes for the local interface (INADDR_ANY = all interfaces).
-
+Distractors wrong: F (multicast doesn't use SO_BROADCAST), G (bind to '', not group)
 </details>
 
 ---
 
-## Problem P3: TCP Tunnel Connection Setup
+## Problem 3: Multicast Sender with TTL ⭐⭐
 
-### Task
+**LO2, LO3** — Create multicast sender with TTL=32.
 
-Create the connection setup portion of a TCP tunnel that listens for incoming connections and forwards them to a target server.
-
-### Scrambled Blocks
-
+### Blocks
 ```python
-# Block A
-    client_sock, client_addr = listen_sock.accept()
+# A
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, TTL)
 
-# Block B
-def setup_tunnel_connection(listen_port: int, target_host: str, target_port: int):
+# B
+import socket
+MCAST_GROUP = '239.1.1.1'
+PORT = 5008
+TTL = 32
 
-# Block C
-    listen_sock.listen(5)
+# C
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# Block D
-    target_sock = socket.create_connection((target_host, target_port))
+# D
+sock.sendto(b"Hello multicast", (MCAST_GROUP, PORT))
 
-# Block E
-    listen_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# E — DISTRACTOR
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-# Block F
-    listen_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# Block G
-    listen_sock.bind(('', listen_port))
-
-# Block H
-    return client_sock, target_sock
-
-# Block I (DISTRACTOR - wrong protocol)
-    listen_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# Block J (DISTRACTOR - wrong order)
-    listen_sock.accept()
-    listen_sock.bind(('', listen_port))
+# F — DISTRACTOR
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
 ```
 
-### Correct Order
+<details><summary>Solution</summary>
+**Order: B → C → A → D**
 
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block B - Function definition
-def setup_tunnel_connection(listen_port: int, target_host: str, target_port: int):
-
-# Block E - Create TCP listening socket
-    listen_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block F - Allow address reuse
-    listen_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# Block G - Bind to listen port
-    listen_sock.bind(('', listen_port))
-
-# Block C - Start listening for connections
-    listen_sock.listen(5)
-
-# Block A - Accept incoming client connection
-    client_sock, client_addr = listen_sock.accept()
-
-# Block D - Connect to target server
-    target_sock = socket.create_connection((target_host, target_port))
-
-# Block H - Return both sockets for relay
-    return client_sock, target_sock
-```
-
-**Distractors explained:**
-- **Block I (SOCK_DGRAM):** TCP tunnel requires TCP sockets (SOCK_STREAM), not UDP
-- **Block J (wrong order):** You cannot `accept()` before `bind()` and `listen()` — the sequence is always: socket → bind → listen → accept
-
-**Key insight:** The tunnel creates TWO connections: one from the client to the tunnel (via accept) and one from the tunnel to the server (via create_connection).
-
+Distractors wrong: E (not needed for multicast), F (TTL=1 is link-local only)
 </details>
 
 ---
 
-## Problem P4: Bidirectional Data Relay
+## Problem 4: TCP Tunnel Handler ⭐⭐⭐
 
-### Task
+**LO4** — Arrange bidirectional tunnel handler.
 
-Create a function that relays data bidirectionally between two sockets using threads.
-
-### Scrambled Blocks
-
+### Blocks
 ```python
-# Block A
-def relay(src: socket.socket, dst: socket.socket, name: str) -> None:
+# A
+def handle_connection(client_sock, target_host, target_port):
 
-# Block B
-    while True:
+# B
+    target_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    target_sock.connect((target_host, target_port))
 
-# Block C
-        data = src.recv(4096)
+# C
+    t1 = threading.Thread(target=relay, args=(client_sock, target_sock))
+    t2 = threading.Thread(target=relay, args=(target_sock, client_sock))
 
-# Block D
-        if not data:
-            break
+# D
+    t1.start(); t2.start()
+    t1.join(); t2.join()
 
-# Block E
-        dst.sendall(data)
+# E
+    client_sock.close(); target_sock.close()
 
-# Block F
-def start_bidirectional_relay(sock_a: socket.socket, sock_b: socket.socket) -> None:
+# F — DISTRACTOR
+    target_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# Block G
-    t1 = threading.Thread(target=relay, args=(sock_a, sock_b, "A→B"))
-
-# Block H
-    t2 = threading.Thread(target=relay, args=(sock_b, sock_a, "B→A"))
-
-# Block I
-    t1.start()
-    t2.start()
-
-# Block J (DISTRACTOR - wrong function)
-        dst.send(data)
-
-# Block K (DISTRACTOR - unnecessary)
-        time.sleep(0.001)
+# G — DISTRACTOR
+    data = client_sock.recv(4096)
+    target_sock.send(data)
 ```
 
-### Correct Order
+<details><summary>Solution</summary>
+**Order: A → B → C → D → E**
 
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block A - Relay function definition
-def relay(src: socket.socket, dst: socket.socket, name: str) -> None:
-
-# Block B - Main loop
-    while True:
-
-# Block C - Receive data
-        data = src.recv(4096)
-
-# Block D - Check for connection close
-        if not data:
-            break
-
-# Block E - Forward all data
-        dst.sendall(data)
-
-# Block F - Bidirectional relay setup function
-def start_bidirectional_relay(sock_a: socket.socket, sock_b: socket.socket) -> None:
-
-# Block G - Create thread for A→B direction
-    t1 = threading.Thread(target=relay, args=(sock_a, sock_b, "A→B"))
-
-# Block H - Create thread for B→A direction
-    t2 = threading.Thread(target=relay, args=(sock_b, sock_a, "B→A"))
-
-# Block I - Start both threads
-    t1.start()
-    t2.start()
-```
-
-**Distractors explained:**
-- **Block J (send vs sendall):** `send()` may not send all data in one call — `sendall()` guarantees complete transmission
-- **Block K (sleep):** Unnecessary delay that reduces throughput — `recv()` already blocks when no data is available
-
-**Key insight:** Two threads are essential because `recv()` is a blocking call. Without separate threads, data could only flow in one direction at a time.
-
+Distractors wrong: F (tunnel uses TCP not UDP), G (single-threaded blocks bidirectional)
 </details>
 
 ---
 
-## Self-Assessment
+## Problem 5: Relay Function ⭐⭐⭐
 
-After completing these problems, you should be able to:
+**LO4** — Create relay function for tunnel.
 
-- [ ] Correctly sequence socket setup operations (socket → bind → listen → accept)
-- [ ] Distinguish between broadcast and multicast socket options
-- [ ] Understand why TCP tunnels require two separate connections
-- [ ] Explain the role of threads in bidirectional data relay
-- [ ] Choose `sendall()` over `send()` for reliable forwarding
+### Blocks
+```python
+# A
+def relay(source, destination):
+
+# B
+    try:
+        while True:
+            data = source.recv(4096)
+
+# C
+            if not data:
+                break
+
+# D
+            destination.sendall(data)
+
+# E
+    except (socket.error, BrokenPipeError):
+        pass
+
+# F
+    finally:
+        source.close(); destination.close()
+
+# G — DISTRACTOR
+            destination.send(data)
+
+# H — DISTRACTOR
+            if len(data) < 4096:
+                break
+
+# I — DISTRACTOR
+    data = source.recv(4096)
+```
+
+<details><summary>Solution</summary>
+**Order: A → B → C → D → E → F**
+
+Distractors wrong:
+- G: send() may not send all bytes (use sendall)
+- H: short read doesn't mean end
+- I: outside loop = reads once only
+</details>
 
 ---
 
-*Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*
+## Summary
+
+| Problem | LO | Difficulty | Key Concept |
+|---------|-----|------------|-------------|
+| P1 | LO3 | ⭐⭐ | SO_BROADCAST |
+| P2 | LO3 | ⭐⭐ | IP_ADD_MEMBERSHIP |
+| P3 | LO2,3 | ⭐⭐ | TTL scope |
+| P4 | LO4 | ⭐⭐⭐ | Threading for bidirectional |
+| P5 | LO4 | ⭐⭐⭐ | sendall() vs send() |
+
+---
+*Week 3: Network Programming — Broadcast, Multicast and TCP Tunnelling*

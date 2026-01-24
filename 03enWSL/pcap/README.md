@@ -1,156 +1,218 @@
-# Packet Capture Storage
+# PCAP Reference Captures — Week 3
 
-> NETWORKING class - ASE, Informatics | Computer Networks Laboratory
+> NETWORKING class - ASE, CSIE | Computer Networks Laboratory
 >
 > by ing. dr. Antonio Clim
 
-This directory stores packet capture files (`.pcap`) generated during laboratory exercises.
+---
+
+## Overview
+
+This directory contains reference packet captures (PCAP files) for Week 3 laboratory exercises. These captures serve as:
+
+1. **Reference outputs** — What students should see when exercises work correctly
+2. **Teaching aids** — Pre-captured traffic for classroom demonstrations
+3. **Verification tools** — Compare against student captures for assessment
 
 ---
 
-## Directory Purpose
+## Available Captures
 
-Store Wireshark/tcpdump captures for:
-- Exercise verification and debugging
-- Protocol analysis assignments
-- Homework submissions requiring traffic samples
-- Reference captures for comparison
+### 1. week3_broadcast_demo.pcap
+
+**Contents:** UDP broadcast traffic demonstration
+
+| Field | Value |
+|-------|-------|
+| Packets | ~10 |
+| Duration | 5 seconds |
+| Protocol | UDP |
+| Source | 172.20.0.100 (client) |
+| Destination | 255.255.255.255:5007 |
+
+**Wireshark display filter:**
+```
+udp.port == 5007 && eth.dst == ff:ff:ff:ff:ff:ff
+```
+
+**Key observations:**
+- Destination MAC is broadcast (ff:ff:ff:ff:ff:ff)
+- Destination IP is limited broadcast (255.255.255.255)
+- All hosts on the subnet receive these packets
 
 ---
 
-## Naming Convention
+### 2. week3_multicast_igmp.pcap
 
-Use descriptive names following this pattern:
+**Contents:** IGMP group join and multicast traffic
 
+| Field | Value |
+|-------|-------|
+| Packets | ~15-20 |
+| Duration | 10 seconds |
+| Protocols | IGMP, UDP |
+| Multicast group | 239.1.1.1 |
+| Port | 5008 |
+
+**Wireshark display filter:**
 ```
-week3_<exercise>_<description>_<timestamp>.pcap
+igmp || (udp.port == 5008 && ip.dst == 239.1.1.1)
 ```
 
-**Examples:**
-- `week3_ex01_broadcast_20240215_1030.pcap`
-- `week3_ex02_multicast_join_20240215_1045.pcap`
-- `week3_ex03_tunnel_session_20240215_1100.pcap`
-- `week3_analysis_full_session_20240215.pcap`
+**Key observations:**
+- IGMP Membership Report when joining group
+- Multicast destination MAC starts with 01:00:5e
+- TTL value affects propagation scope
+
+**IGMP message types to identify:**
+- Type 0x16: Membership Report (IGMPv2)
+- Type 0x17: Leave Group
+- Type 0x11: Membership Query
 
 ---
 
-## Creating Captures
+### 3. week3_tcp_tunnel_flow.pcap
 
-### Method 1: Capture Script (Recommended)
+**Contents:** Complete TCP tunnel connection flow
 
-```powershell
-# From project root
-python scripts/capture_traffic.py --container server --duration 30 --output pcap/my_capture.pcap
+| Field | Value |
+|-------|-------|
+| Packets | ~20-30 |
+| Duration | 5 seconds |
+| Protocol | TCP |
+| Client | 172.20.0.100:random |
+| Tunnel | 172.20.0.254:9090 |
+| Server | 172.20.0.10:8080 |
+
+**Wireshark display filter:**
+```
+tcp.port == 9090 || tcp.port == 8080
 ```
 
-### Method 2: tcpdump in Container
+**Key observations:**
+- Two separate 3-way handshakes (client↔tunnel, tunnel↔server)
+- Different source ports on each connection
+- Server sees tunnel's IP, not original client's IP
+
+**TCP flags to identify:**
+- SYN: Connection initiation
+- SYN-ACK: Connection acceptance
+- ACK: Acknowledgement
+- FIN: Connection termination
+
+---
+
+## How to Generate Your Own Captures
+
+### Using tcpdump (in container)
 
 ```bash
-# Start capture
-docker exec week3_server tcpdump -i eth0 -w /tmp/capture.pcap
+# Broadcast capture
+docker exec week3_client tcpdump -i eth0 -w /app/pcap/my_broadcast.pcap \
+    'udp port 5007' -c 20
 
-# Stop with Ctrl+C, then copy out
-docker cp week3_server:/tmp/capture.pcap ./pcap/
+# Multicast/IGMP capture
+docker exec week3_client tcpdump -i eth0 -w /app/pcap/my_multicast.pcap \
+    'igmp or (udp port 5008)' -c 30
+
+# TCP tunnel capture
+docker exec week3_router tcpdump -i eth0 -w /app/pcap/my_tunnel.pcap \
+    'tcp port 9090 or tcp port 8080' -c 50
 ```
 
-### Method 3: Wireshark on Windows
+### Using scripts
 
-1. Open Wireshark as Administrator
-2. Select WSL/Docker interface
-3. Apply capture filter if needed
-4. File → Save As → `pcap/filename.pcap`
-
----
-
-## Recommended Capture Filters
-
-Apply these filters during capture to reduce file size:
-
-### Exercise 1: Broadcast
-
-```
-udp port 5007
-```
-
-### Exercise 2: Multicast
-
-```
-udp port 5008 or igmp
-```
-
-### Exercise 3: Tunnel
-
-```
-tcp port 8080 or tcp port 9090
-```
-
-### Full Session
-
-```
-host 172.20.0.10 or host 172.20.0.100 or host 172.20.0.101 or host 172.20.0.254
+```bash
+# Use the capture_traffic.py script
+python scripts/capture_traffic.py --interface eth0 --duration 30 \
+    --filter "udp port 5007" --output pcap/my_capture.pcap
 ```
 
 ---
 
-## File Size Guidelines
+## Opening in Wireshark
 
-- **Exercise captures:** 100KB - 1MB typical
-- **Full session:** 1MB - 10MB typical
-- **Maximum recommended:** 50MB
+### From WSL
 
-Large captures may be truncated or sampled for analysis.
+```bash
+# Copy to Windows-accessible location
+cp pcap/week3_broadcast_demo.pcap /mnt/c/Users/YourName/Desktop/
 
----
-
-## Cleaning Up
-
-Capture files are cleaned automatically by:
-
-```powershell
-python scripts/cleanup.py --full
+# Or use Wireshark directly if installed
+wireshark pcap/week3_broadcast_demo.pcap &
 ```
 
-Or manually:
+### Display Filter Quick Reference
 
-```powershell
-# Remove all captures
-Remove-Item pcap/*.pcap
+| Purpose | Filter |
+|---------|--------|
+| All broadcast | `eth.dst == ff:ff:ff:ff:ff:ff` |
+| UDP broadcast on port 5007 | `udp.port == 5007` |
+| Multicast traffic | `ip.dst >= 224.0.0.0 && ip.dst <= 239.255.255.255` |
+| IGMP only | `igmp` |
+| TCP handshakes | `tcp.flags.syn == 1` |
+| Tunnel traffic | `tcp.port == 9090` |
+| HTTP traffic | `tcp.port == 8080` |
 
-# Keep .gitkeep
+---
+
+## Verification Checklist
+
+When comparing your captures to reference files, verify:
+
+### Broadcast (ex_3_01)
+- [ ] Destination IP is 255.255.255.255 or subnet broadcast
+- [ ] Destination MAC is ff:ff:ff:ff:ff:ff
+- [ ] SO_BROADCAST was set (no "Permission denied" errors)
+
+### Multicast (ex_3_02)
+- [ ] IGMP Membership Report present
+- [ ] Destination IP is 239.x.x.x range
+- [ ] Destination MAC starts with 01:00:5e
+- [ ] TTL matches configured value
+
+### TCP Tunnel (ex_3_03)
+- [ ] Two complete 3-way handshakes visible
+- [ ] Source IP changes between client→tunnel and tunnel→server
+- [ ] Data is relayed in both directions
+
+---
+
+## Troubleshooting
+
+### No packets captured
+
+1. Check interface name: `ip link show`
+2. Verify containers are running: `docker ps`
+3. Check filter syntax: start with no filter, then add constraints
+
+### Cannot open PCAP file
+
+1. Verify file exists: `ls -la pcap/`
+2. Check file size (should be > 0 bytes)
+3. Try `tcpdump -r filename.pcap` to validate
+
+### Wireshark shows "malformed packets"
+
+1. Capture may have been truncated
+2. Try capturing with `-s 0` for full packets
+3. Check network interface MTU settings
+
+---
+
+## Note on File Availability
+
+Reference PCAP files may need to be generated locally due to environment-specific network configurations. Use the commands above or run the laboratory exercises to create captures.
+
+To generate reference captures automatically:
+
+```bash
+make docker-up
+# Wait for containers to start
+python scripts/capture_traffic.py --generate-references
 ```
 
 ---
 
-## Submitting Captures
-
-For homework requiring packet captures:
-
-1. Name file according to homework instructions
-2. Verify file opens correctly in Wireshark
-3. Include relevant display filters in submission
-4. Note any interesting observations
-
----
-
-## Troubleshooting Captures
-
-### Empty Capture File
-
-- Check you're capturing on the correct interface
-- Verify containers are running and generating traffic
-- Try capturing without filters first
-
-### Missing Packets
-
-- Increase capture buffer: `-B 10` in tcpdump
-- Disable promiscuous mode if not needed
-- Check for packet drops in tcpdump output
-
-### Permission Denied
-
-- Run Wireshark as Administrator on Windows
-- Check Docker socket permissions on WSL
-
----
-
-*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
+*NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim*
+*Week 3: Network Programming — Broadcast, Multicast and TCP Tunnelling*

@@ -2,38 +2,23 @@
 # pyproject.toml — Week 3 Network Programming Laboratory Kit
 # ═══════════════════════════════════════════════════════════════════════════════
 # NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
-#
-# This file configures:
-#   - Project metadata
-#   - Ruff linter/formatter
-#   - Pytest testing framework
-#   - Type checking with mypy
 # ═══════════════════════════════════════════════════════════════════════════════
 
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "netenwsl-week03"
-version = "3.1.0"
-description = "Week 3 Laboratory Kit: Network Programming (Broadcast, Multicast, TCP Tunnel)"
+name = "week3-network-programming"
+version = "2.0.0"
+description = "Week 3 Laboratory Kit: Network Programming with UDP Broadcast, Multicast and TCP Tunnelling"
 readme = "README.md"
 license = {text = "MIT"}
+requires-python = ">=3.10"
 authors = [
     {name = "ing. dr. Antonio Clim", email = "antonio.clim@csie.ase.ro"}
 ]
-maintainers = [
-    {name = "ing. dr. Antonio Clim", email = "antonio.clim@csie.ase.ro"}
-]
-keywords = [
-    "networking",
-    "education",
-    "laboratory",
-    "sockets",
-    "broadcast",
-    "multicast",
-    "tcp-tunnel",
-    "python",
-    "docker",
-    "wsl2"
-]
+keywords = ["networking", "education", "sockets", "broadcast", "multicast", "tcp", "tunnel"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -47,30 +32,24 @@ classifiers = [
     "Topic :: Education",
     "Topic :: System :: Networking",
 ]
-requires-python = ">=3.10"
+
 dependencies = [
-    "pyyaml>=6.0",
-    "requests>=2.28.0",
+    "pyyaml>=6.0.1",
+    "requests>=2.31.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "ruff>=0.1.0",
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-timeout>=2.2.0",
-    "ruff>=0.1.0",
-    "mypy>=1.5.0",
+    "mypy>=1.7.0",
+    "pre-commit>=3.5.0",
+    "jsonschema>=4.20.0",
 ]
 
-[project.urls]
-Homepage = "https://github.com/antonioclim/netENwsl"
-Documentation = "https://github.com/antonioclim/netENwsl/wiki"
-Repository = "https://github.com/antonioclim/netENwsl.git"
-Issues = "https://github.com/antonioclim/netENwsl/issues"
-
 [project.scripts]
-start-lab = "scripts.start_lab:main"
-stop-lab = "scripts.stop_lab:main"
 run-quiz = "formative.run_quiz:main"
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -78,26 +57,18 @@ run-quiz = "formative.run_quiz:main"
 # ═══════════════════════════════════════════════════════════════════════════════
 
 [tool.ruff]
-# Target Python 3.10+
-target-version = "py310"
-
-# Line length consistent with Black
 line-length = 100
-
-# Exclude common non-source directories
+target-version = "py310"
 exclude = [
     ".git",
     ".venv",
     "__pycache__",
-    "*.egg-info",
-    ".mypy_cache",
     ".pytest_cache",
-    "artifacts",
-    "pcap",
+    "htmlcov",
+    "*.egg-info",
 ]
 
 [tool.ruff.lint]
-# Enable comprehensive rule sets
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -111,75 +82,38 @@ select = [
     "TCH",    # flake8-type-checking
     "PTH",    # flake8-use-pathlib
     "RUF",    # Ruff-specific rules
+    "D",      # pydocstyle (docstrings)
 ]
-
-# Ignore rules that conflict with educational clarity
 ignore = [
-    "E501",   # Line too long — handled by formatter
-    "B008",   # Function call in default argument — common pattern in argparse
-    "ARG001", # Unused function argument — common in callbacks
-    "SIM108", # Ternary instead of if-else — less readable for students
-    "PTH123", # open() vs Path.open() — both acceptable
+    "E501",   # Line too long (handled by formatter)
+    "B008",   # Function call in default argument (intentional for CLI)
+    "ARG001", # Unused function argument (needed for callbacks)
+    "SIM108", # Ternary instead of if-else (readability preference)
+    "PTH123", # open() vs Path.open() (educational clarity)
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D203",   # one-blank-line-before-class (conflicts with D211)
+    "D213",   # multi-line-summary-second-line (conflicts with D212)
 ]
-
-# Allow autofix for all enabled rules
-fixable = ["ALL"]
-unfixable = []
 
 [tool.ruff.lint.per-file-ignores]
-# Tests can have unused imports and assertions
-"tests/*.py" = ["F401", "B011"]
-# Homework scaffolds may have unused variables (TODOs)
-"homework/exercises/*.py" = ["F841", "ARG"]
-# Init files can have unused imports
-"__init__.py" = ["F401"]
+"tests/*" = ["D", "ARG", "S101"]  # Allow missing docstrings in tests
+"homework/*" = ["F841", "ARG", "D"]  # Allow unused variables (TODOs for students)
+"formative/*" = ["D"]  # Quiz runner has inline comments
 
 [tool.ruff.lint.isort]
-# Group imports: stdlib, third-party, local
-known-first-party = ["scripts", "src", "formative"]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+known-first-party = ["src", "scripts", "formative"]
+force-single-line = false
+lines-after-imports = 2
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.format]
-# Use double quotes for strings
 quote-style = "double"
-# Indent with 4 spaces
 indent-style = "space"
-# Unix line endings
+skip-magic-trailing-comma = false
 line-ending = "lf"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PYTEST CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[tool.pytest.ini_options]
-# Test discovery
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-
-# Output verbosity
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-    "-ra",
-]
-
-# Markers for test categorization
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "docker: marks tests that require Docker containers",
-    "network: marks tests that require network connectivity",
-    "integration: marks integration tests",
-]
-
-# Timeout for individual tests (seconds)
-timeout = 30
-
-# Minimum coverage percentage
-# Uncomment when coverage is stable:
-# --cov=src --cov=scripts --cov-fail-under=70
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MYPY CONFIGURATION
@@ -189,18 +123,57 @@ timeout = 30
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
-ignore_missing_imports = true
-
-# Stricter checks for main source
-[[tool.mypy.overrides]]
-module = "src.*"
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+check_untyped_defs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
+no_implicit_optional = true
+show_error_codes = true
+show_column_numbers = true
 
-# Relaxed checks for tests
 [[tool.mypy.overrides]]
-module = "tests.*"
+module = [
+    "yaml.*",
+    "pytest.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+    "homework.*",
+]
 disallow_untyped_defs = false
+check_untyped_defs = true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PYTEST CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "-ra",
+    "-q",
+    "--strict-markers",
+    "--tb=short",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "docker: marks tests that require Docker containers",
+    "integration: marks integration tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+timeout = 60
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # COVERAGE CONFIGURATION
@@ -212,27 +185,25 @@ branch = true
 omit = [
     "*/tests/*",
     "*/__pycache__/*",
-    "*/site-packages/*",
+    "*/homework/*",
 ]
 
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
-    "raise NotImplementedError",
     "if __name__ == .__main__.:",
+    "raise NotImplementedError",
     "if TYPE_CHECKING:",
+    "@abstractmethod",
 ]
+fail_under = 70
 show_missing = true
 skip_covered = true
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# BUILD SYSTEM
-# ═══════════════════════════════════════════════════════════════════════════════
+[tool.coverage.html]
+directory = "htmlcov"
 
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["src*", "scripts*", "formative*"]
+# ═══════════════════════════════════════════════════════════════════════════════
+# EOF
+# ═══════════════════════════════════════════════════════════════════════════════

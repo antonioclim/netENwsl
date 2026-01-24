@@ -1,0 +1,197 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ase.ro/csie/networking/week3/quiz.schema.json",
+  "title": "Week 3 Quiz Schema",
+  "description": "JSON Schema for validating quiz.yaml structure",
+  "type": "object",
+  "required": ["metadata", "questions"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["week", "title", "total_questions", "passing_score"],
+      "properties": {
+        "week": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 14,
+          "description": "Week number in the course"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Quiz title"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version"
+        },
+        "author": {
+          "type": "string",
+          "description": "Quiz author"
+        },
+        "institution": {
+          "type": "string",
+          "description": "Institution name"
+        },
+        "course": {
+          "type": "string",
+          "description": "Course name"
+        },
+        "estimated_time_minutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 60,
+          "description": "Estimated completion time in minutes"
+        },
+        "passing_score": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 100,
+          "description": "Passing percentage threshold"
+        },
+        "total_questions": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of questions"
+        },
+        "bloom_distribution": {
+          "type": "object",
+          "properties": {
+            "remember": {"type": "integer", "minimum": 0},
+            "understand": {"type": "integer", "minimum": 0},
+            "apply": {"type": "integer", "minimum": 0},
+            "analyze": {"type": "integer", "minimum": 0},
+            "evaluate": {"type": "integer", "minimum": 0},
+            "create": {"type": "integer", "minimum": 0}
+          },
+          "description": "Distribution of questions by Bloom level"
+        },
+        "lo_coverage": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^LO[1-9][0-9]?$"
+          },
+          "description": "Learning Objectives covered"
+        },
+        "lms_export": {
+          "type": "object",
+          "description": "LMS export configuration"
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "lo_ref", "bloom_level", "type", "stem", "correct"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^q[0-9]{2}$",
+            "description": "Question identifier (e.g., q01, q02)"
+          },
+          "lo_ref": {
+            "type": "string",
+            "pattern": "^LO[1-9][0-9]?$",
+            "description": "Learning Objective reference"
+          },
+          "bloom_level": {
+            "type": "string",
+            "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
+            "description": "Bloom taxonomy level"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["basic", "intermediate", "advanced"],
+            "description": "Difficulty level"
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1,
+            "description": "Point value"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["multiple_choice", "fill_blank", "true_false", "matching"],
+            "description": "Question type"
+          },
+          "stem": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Question stem/text"
+          },
+          "options": {
+            "type": "object",
+            "description": "Answer options for multiple choice",
+            "additionalProperties": {"type": "string"}
+          },
+          "correct": {
+            "oneOf": [
+              {"type": "string"},
+              {"type": "array", "items": {"type": "string"}}
+            ],
+            "description": "Correct answer(s)"
+          },
+          "hint": {
+            "type": "string",
+            "description": "Optional hint for fill_blank questions"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "Explanation shown after answering"
+          },
+          "misconception_ref": {
+            "type": "string",
+            "description": "Reference to misconceptions document"
+          },
+          "lms_feedback": {
+            "type": "object",
+            "properties": {
+              "correct": {"type": "string"},
+              "incorrect": {"type": "string"}
+            },
+            "description": "LMS-specific feedback"
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"type": {"const": "multiple_choice"}}},
+            "then": {"required": ["options"]}
+          }
+        ]
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "properties": {
+        "total_points": {"type": "integer", "minimum": 1},
+        "passing_threshold": {"type": "integer", "minimum": 1},
+        "grade_bands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "range": {
+                "type": "array",
+                "items": {"type": "integer"},
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "grade": {"type": "string"},
+              "feedback": {"type": "string"}
+            }
+          }
+        },
+        "lo_feedback": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    }
+  }
+}

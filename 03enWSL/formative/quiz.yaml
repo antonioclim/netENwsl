@@ -3,28 +3,30 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
 #
-# Format: YAML executabil cu run_quiz.py
-# Acoperire: Toate 6 Learning Objectives, 3 niveluri Bloom
-# Timp estimat: 12-15 minute
+# Format: YAML executable with run_quiz.py
+# Export: JSON compatible with Moodle/Canvas LMS (use --export-lms flag)
+# Coverage: All 6 Learning Objectives, 4 Bloom levels
+# Estimated time: 15-18 minutes
 # ═══════════════════════════════════════════════════════════════════════════════
 
 metadata:
   week: 3
-  title: "Network Programming: Broadcast, Multicast & TCP Tunnelling"
-  version: "1.0.0"
+  title: "Network Programming: Broadcast, Multicast and TCP Tunnelling"
+  version: "2.0.0"
   author: "ing. dr. Antonio Clim"
   institution: "ASE Bucharest — CSIE"
   course: "Computer Networks Laboratory"
   
-  estimated_time_minutes: 15
+  estimated_time_minutes: 18
   passing_score: 70
-  total_questions: 15
+  total_questions: 17
   
   bloom_distribution:
     remember: 4      # LO1 - Recall fundamentals
     understand: 4    # LO2 - Explain concepts
     apply: 4         # LO3, LO4 - Implement/Construct
     analyze: 3       # LO5 - Analyse traffic
+    evaluate: 2      # LO6 - Evaluate appropriateness
   
   lo_coverage:
     - LO1  # Recall unicast/broadcast/multicast differences
@@ -33,6 +35,17 @@ metadata:
     - LO4  # Construct TCP tunnel
     - LO5  # Analyse captured traffic
     - LO6  # Evaluate appropriateness of communication modes
+  
+  # LMS Export Configuration
+  lms_export:
+    moodle:
+      format: "gift"
+      category: "Week3_NetworkProgramming"
+      shuffle_answers: true
+    canvas:
+      format: "qti"
+      bank_name: "Week3_Quiz"
+      points_possible: 34
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # QUESTIONS — BLOOM LEVEL 1: REMEMBER (LO1)
@@ -49,8 +62,8 @@ questions:
     type: multiple_choice
     
     stem: |
-      Care este adresa IP rezervată pentru "limited broadcast" care nu traversează
-      niciodată routerele?
+      Which IP address is reserved for "limited broadcast" that never traverses
+      routers?
     
     options:
       a: "224.0.0.1"
@@ -61,11 +74,14 @@ questions:
     correct: b
     
     explanation: |
-      255.255.255.255 este adresa de "limited broadcast" care rămâne strict în
-      domeniul Layer 2 local. Nu este niciodată rutată, indiferent de configurația
-      routerului.
+      255.255.255.255 is the "limited broadcast" address that remains strictly in
+      the local Layer 2 domain. It is never routed regardless of router configuration.
     
     misconception_ref: "docs/misconceptions.md#misconception-1"
+    
+    lms_feedback:
+      correct: "Correct! 255.255.255.255 is the limited broadcast address."
+      incorrect: "Review the difference between limited and directed broadcast addresses."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q02
@@ -76,8 +92,8 @@ questions:
     type: multiple_choice
     
     stem: |
-      Ce opțiune de socket TREBUIE setată înainte de a trimite datagrame UDP
-      la o adresă de broadcast?
+      Which socket option MUST be set before sending UDP datagrams to a
+      broadcast address?
     
     options:
       a: "SO_REUSEADDR"
@@ -88,10 +104,14 @@ questions:
     correct: b
     
     explanation: |
-      SO_BROADCAST este obligatorie. Fără această opțiune, kernel-ul refuză
-      transmisia cu OSError (Permission denied sau Network unreachable).
+      SO_BROADCAST is mandatory. Without this option the kernel refuses
+      transmission with OSError (Permission denied or Network unreachable).
     
     misconception_ref: "docs/misconceptions.md#misconception-2"
+    
+    lms_feedback:
+      correct: "Correct! SO_BROADCAST must be enabled for broadcast transmission."
+      incorrect: "Remember that broadcast requires explicit permission via SO_BROADCAST."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q03
@@ -102,7 +122,7 @@ questions:
     type: multiple_choice
     
     stem: |
-      În ce interval de adrese IP se găsesc adresele multicast?
+      In which IP address range are multicast addresses found?
     
     options:
       a: "10.0.0.0 – 10.255.255.255"
@@ -113,11 +133,15 @@ questions:
     correct: c
     
     explanation: |
-      Clasa D (224.0.0.0/4) este rezervată pentru multicast. Adresele din
-      239.0.0.0/8 sunt "administratively scoped" (pentru utilizare privată,
-      similar cu 10.x.x.x pentru unicast).
+      Class D (224.0.0.0/4) is reserved for multicast. Addresses in the
+      239.0.0.0/8 range are "administratively scoped" (for private use,
+      similar to 10.x.x.x for unicast).
     
     misconception_ref: "docs/misconceptions.md#misconception-6"
+    
+    lms_feedback:
+      correct: "Correct! Class D addresses (224-239) are reserved for multicast."
+      incorrect: "Class D (224.0.0.0/4) is the multicast address range."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q04
@@ -128,8 +152,8 @@ questions:
     type: multiple_choice
     
     stem: |
-      Ce protocol folosește un host pentru a anunța routerul că dorește să
-      primească trafic dintr-un grup multicast?
+      Which protocol does a host use to announce to the router that it wishes to
+      receive traffic from a multicast group?
     
     options:
       a: "ARP"
@@ -140,9 +164,13 @@ questions:
     correct: c
     
     explanation: |
-      IGMP (Internet Group Management Protocol) este folosit pentru a gestiona
-      membership-ul în grupuri multicast. Host-ul trimite un "Membership Report"
-      când face join la un grup.
+      IGMP (Internet Group Management Protocol) is used to manage membership
+      in multicast groups. The host sends a "Membership Report" when joining
+      a group.
+    
+    lms_feedback:
+      correct: "Correct! IGMP manages multicast group membership."
+      incorrect: "IGMP is specifically designed for multicast group management."
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # QUESTIONS — BLOOM LEVEL 2: UNDERSTAND (LO2)
@@ -157,24 +185,28 @@ questions:
     type: multiple_choice
     
     stem: |
-      De ce broadcast-ul este limitat la domeniul Layer 2, în timp ce multicast-ul
-      poate traversa routere?
+      Why is broadcast limited to the Layer 2 domain whilst multicast can
+      traverse routers?
     
     options:
-      a: "Broadcast folosește UDP, multicast folosește TCP"
-      b: "Routerele nu procesează pachete broadcast, dar au suport IGMP pentru multicast"
-      c: "Broadcast are TTL=0 implicit"
-      d: "Multicast este criptat și broadcast nu"
+      a: "Broadcast uses UDP, multicast uses TCP"
+      b: "Routers do not process broadcast packets but have IGMP support for multicast"
+      c: "Broadcast has TTL=0 by default"
+      d: "Multicast is encrypted and broadcast is not"
     
     correct: b
     
     explanation: |
-      Routerele, prin design, NU rutează pachete broadcast (ar inunda întreaga
-      rețea). Pentru multicast, routerele pot participa la protocoale de rutare
-      multicast (PIM, DVMRP) și folosesc IGMP pentru a afla ce grupuri au
-      membri în fiecare segment.
+      Routers by design do NOT route broadcast packets (it would flood the entire
+      network). For multicast, routers can participate in multicast routing
+      protocols (PIM, DVMRP) and use IGMP to discover which groups have
+      members in each segment.
     
     misconception_ref: "docs/misconceptions.md#misconception-1"
+    
+    lms_feedback:
+      correct: "Correct! Routers block broadcast but support multicast via IGMP."
+      incorrect: "Consider how routers handle broadcast vs multicast differently."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q06
@@ -185,22 +217,26 @@ questions:
     type: multiple_choice
     
     stem: |
-      Ce semnifică valoarea TTL=1 pentru un pachet multicast?
+      What does a TTL value of 1 signify for a multicast packet?
     
     options:
-      a: "Pachetul expiră după 1 secundă"
-      b: "Pachetul poate traversa maxim 1 router"
-      c: "Pachetul rămâne în segmentul local (link-local)"
-      d: "Pachetul are prioritate 1"
+      a: "The packet expires after 1 second"
+      b: "The packet can traverse at most 1 router"
+      c: "The packet remains in the local segment (link-local)"
+      d: "The packet has priority 1"
     
     correct: c
     
     explanation: |
-      TTL (Time To Live) în IP numără hop-uri, NU secunde. TTL=1 înseamnă că
-      pachetul nu poate traversa niciun router — rămâne strict în segmentul
-      local (link-local scope).
+      TTL (Time To Live) in IP counts hops, NOT seconds. TTL=1 means the
+      packet cannot traverse any router — it remains strictly in the local
+      segment (link-local scope).
     
     misconception_ref: "docs/misconceptions.md#misconception-5"
+    
+    lms_feedback:
+      correct: "Correct! TTL=1 limits the packet to the local network segment."
+      incorrect: "TTL counts router hops, not time. TTL=1 means link-local only."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q07
@@ -211,24 +247,28 @@ questions:
     type: multiple_choice
     
     stem: |
-      Un container A face bind() pe portul 5008 dar NU apelează IP_ADD_MEMBERSHIP.
-      Container B trimite multicast la 239.1.1.1:5008.
-      Ce se întâmplă?
+      Container A binds to port 5008 but does NOT call IP_ADD_MEMBERSHIP.
+      Container B sends multicast to 239.1.1.1:5008.
+      What happens?
     
     options:
-      a: "A primește mesajul deoarece ascultă pe portul corect"
-      b: "A NU primește mesajul deoarece nu a făcut join la grup"
-      c: "A primește mesajul dacă este pe aceeași rețea"
-      d: "Eroare de protocol — multicast necesită TCP"
+      a: "A receives the message because it is listening on the correct port"
+      b: "A does NOT receive the message because it has not joined the group"
+      c: "A receives the message if it is on the same network"
+      d: "Protocol error — multicast requires TCP"
     
     correct: b
     
     explanation: |
-      Multicast necesită explicit join la grup prin IP_ADD_MEMBERSHIP.
-      Spre deosebire de broadcast (care ajunge la toate hosturile din L2),
-      multicast este selectiv — doar membrii grupului primesc traficul.
+      Multicast requires explicit group join via IP_ADD_MEMBERSHIP.
+      Unlike broadcast (which reaches all hosts in L2), multicast is
+      selective — only group members receive the traffic.
     
     misconception_ref: "docs/misconceptions.md#misconception-4"
+    
+    lms_feedback:
+      correct: "Correct! Multicast requires explicit group membership."
+      incorrect: "Binding to a port is not enough for multicast — you must join the group."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q08
@@ -239,21 +279,25 @@ questions:
     type: multiple_choice
     
     stem: |
-      Ce diferență fundamentală există între broadcast și multicast din perspectiva
-      eficienței rețelei?
+      What happens at Layer 2 when a host receives a multicast frame addressed
+      to a group it has NOT joined?
     
     options:
-      a: "Broadcast este mai rapid deoarece nu necesită join"
-      b: "Multicast reduce traficul deoarece doar membrii grupului procesează pachetele"
-      c: "Broadcast folosește mai puțină lățime de bandă"
-      d: "Nu există diferențe semnificative"
+      a: "The NIC accepts the frame and passes it to the OS"
+      b: "The NIC discards the frame in hardware (efficient filtering)"
+      c: "The OS kernel filters the frame"
+      d: "The router intercepts and redirects the frame"
     
     correct: b
     
     explanation: |
-      În broadcast, TOATE hosturile din L2 primesc și procesează frame-ul
-      (chiar dacă nu ascultă pe port). În multicast, doar NIC-urile membrilor
-      grupului procesează frame-ul — celelalte îl ignoră la nivel hardware.
+      Modern NICs support hardware multicast filtering through the multicast
+      address table. Only NICs of hosts that have joined the group process
+      the frame — others discard it at the hardware level.
+    
+    lms_feedback:
+      correct: "Correct! NICs filter multicast at the hardware level."
+      incorrect: "Multicast filtering happens at the NIC level for efficiency."
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # QUESTIONS — BLOOM LEVEL 3: APPLY (LO3, LO4)
@@ -268,19 +312,23 @@ questions:
     type: fill_blank
     
     stem: |
-      Pentru a permite transmisia UDP broadcast în Python, trebuie să apelezi:
+      To enable UDP broadcast transmission in Python, you must call:
       sock.setsockopt(socket.SOL_SOCKET, socket.___, 1)
     
     correct:
       - "SO_BROADCAST"
       - "socket.SO_BROADCAST"
     
-    hint: "Opțiunea permite explicit transmisia către adrese broadcast"
+    hint: "This option explicitly permits transmission to broadcast addresses"
     
     explanation: |
-      SO_BROADCAST este flag-ul care permite kernel-ului să accepte sendto()
-      către adrese broadcast. Este o măsură de siguranță împotriva flood-ului
-      accidental.
+      SO_BROADCAST is the flag that allows the kernel to accept sendto()
+      calls to broadcast addresses. It is a safety measure against
+      accidental flooding.
+    
+    lms_feedback:
+      correct: "Correct! SO_BROADCAST enables broadcast transmission."
+      incorrect: "The correct answer is SO_BROADCAST."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q10
@@ -291,19 +339,23 @@ questions:
     type: fill_blank
     
     stem: |
-      Pentru a face join la grupul multicast 239.1.1.1, construiești mreq astfel:
+      To join multicast group 239.1.1.1, you construct mreq as follows:
       mreq = socket.inet_aton('239.1.1.1') + struct.pack('=I', socket.___)
     
     correct:
       - "INADDR_ANY"
       - "socket.INADDR_ANY"
     
-    hint: "Valoarea specială care înseamnă 'toate interfețele'"
+    hint: "The special value meaning 'all interfaces'"
     
     explanation: |
-      INADDR_ANY (0.0.0.0) specifică faptul că vrei să primești multicast pe
-      orice interfață disponibilă. Pentru a specifica o interfață anume, ai
-      folosi IP-ul acelei interfețe.
+      INADDR_ANY (0.0.0.0) specifies that you want to receive multicast on
+      any available interface. To specify a particular interface, you would
+      use that interface's IP address.
+    
+    lms_feedback:
+      correct: "Correct! INADDR_ANY allows multicast on all interfaces."
+      incorrect: "INADDR_ANY is the constant for binding to all interfaces."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q11
@@ -314,24 +366,28 @@ questions:
     type: multiple_choice
     
     stem: |
-      Un TCP tunnel ascultă pe portul 9090 și forwarded la server:8080.
-      Când un client se conectează la tunnel, câte conexiuni TCP sunt stabilite
-      pentru a livra un singur mesaj?
+      A TCP tunnel listens on port 9090 and forwards to server:8080.
+      When a client connects to the tunnel, how many TCP connections are
+      established to deliver a single message?
     
     options:
-      a: "1 conexiune (client → server, tunelul este transparent)"
-      b: "2 conexiuni (client → tunnel și tunnel → server)"
-      c: "3 conexiuni (client → tunnel → buffer → server)"
-      d: "0 conexiuni (tunelul folosește UDP intern)"
+      a: "1 connection (client → server, tunnel is transparent)"
+      b: "2 connections (client → tunnel and tunnel → server)"
+      c: "3 connections (client → tunnel → buffer → server)"
+      d: "0 connections (tunnel uses UDP internally)"
     
     correct: b
     
     explanation: |
-      TCP tunnel-ul TERMINĂ conexiunea clientului și creează o conexiune NOUĂ
-      către server. Astfel, există două conexiuni TCP independente, fiecare cu
-      propriul state machine. Tunelul acționează ca un proxy/intermediar.
+      The TCP tunnel TERMINATES the client's connection and creates a NEW
+      connection to the server. Thus there are two independent TCP connections,
+      each with its own state machine. The tunnel acts as a proxy/intermediary.
     
     misconception_ref: "docs/misconceptions.md#misconception-7"
+    
+    lms_feedback:
+      correct: "Correct! A tunnel creates two separate TCP connections."
+      incorrect: "A tunnel terminates one connection and creates another."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q12
@@ -342,24 +398,29 @@ questions:
     type: multiple_choice
     
     stem: |
-      De ce un TCP tunnel simplu (single-threaded) care folosește recv() blocant
-      nu poate face relay bidirecțional corect?
+      Why can a simple single-threaded TCP tunnel using blocking recv() not
+      perform correct bidirectional relay?
     
     options:
-      a: "recv() consumă prea multă memorie"
-      b: "recv() blochează execuția — nu poate citi simultan din ambele socket-uri"
-      c: "TCP nu suportă full-duplex"
-      d: "Tunelele necesită UDP pentru bidirecțional"
+      a: "recv() consumes too much memory"
+      b: "recv() blocks execution — it cannot read from both sockets simultaneously"
+      c: "TCP does not support full-duplex"
+      d: "Tunnels require UDP for bidirectional traffic"
     
     correct: b
     
     explanation: |
-      recv() este blocant — dacă nu sunt date, thread-ul așteaptă. Într-un
-      tunnel single-threaded, dacă aștepți date de la client, nu poți primi
-      simultan date de la server. Soluția: threading sau async I/O (select/poll).
+      recv() is blocking — if there is no data, the thread waits. In a
+      single-threaded tunnel, if you wait for data from the client, you cannot
+      simultaneously receive data from the server. Solution: threading or
+      async I/O (select/poll).
+    
+    lms_feedback:
+      correct: "Correct! Blocking I/O prevents simultaneous bidirectional relay."
+      incorrect: "Blocking recv() cannot handle two directions at once."
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUESTIONS — BLOOM LEVEL 4: ANALYZE (LO5, LO6)
+# QUESTIONS — BLOOM LEVEL 4: ANALYSE (LO5)
 # ═══════════════════════════════════════════════════════════════════════════════
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -371,7 +432,7 @@ questions:
     type: multiple_choice
     
     stem: |
-      În Wireshark, observi următoarea secvență pentru o conexiune prin tunnel:
+      In Wireshark, you observe the following sequence for a connection through a tunnel:
       1. SYN (client:45678 → router:9090)
       2. SYN-ACK (router:9090 → client:45678)
       3. ACK (client:45678 → router:9090)
@@ -379,23 +440,27 @@ questions:
       5. SYN-ACK (server:8080 → router:52341)
       6. ACK (router:52341 → server:8080)
       
-      Ce concluzionezi?
+      What do you conclude?
     
     options:
-      a: "Conexiunea directă client-server cu NAT"
-      b: "Două TCP handshake-uri separate — tunnel-ul termină și re-inițiază conexiunea"
-      c: "Eroare de protocol — ar trebui un singur handshake"
-      d: "Retransmisie din cauza packet loss"
+      a: "Direct client-server connection with NAT"
+      b: "Two separate TCP handshakes — the tunnel terminates and re-initiates the connection"
+      c: "Protocol error — there should be only one handshake"
+      d: "Retransmission due to packet loss"
     
     correct: b
     
     explanation: |
-      Cele două handshake-uri (3-way each) confirmă arhitectura tunnel-ului:
-      (1) client stabilește conexiune cu tunnel-ul pe :9090
-      (2) tunnel-ul stabilește o conexiune NOUĂ cu serverul pe :8080
-      Serverul vede IP-ul tunnel-ului, nu al clientului original.
+      The two handshakes (3-way each) confirm the tunnel architecture:
+      (1) client establishes connection with tunnel on :9090
+      (2) tunnel establishes a NEW connection with server on :8080
+      The server sees the tunnel's IP, not the original client's.
     
     misconception_ref: "docs/misconceptions.md#misconception-7"
+    
+    lms_feedback:
+      correct: "Correct! Two handshakes indicate tunnel connection termination."
+      incorrect: "Analyse the sequence — two complete 3-way handshakes occur."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q14
@@ -406,23 +471,27 @@ questions:
     type: multiple_choice
     
     stem: |
-      Capturezi trafic cu filtrul `igmp` și observi:
+      You capture traffic with the filter `igmp` and observe:
       "IGMP Membership Report, Group: 239.1.1.1"
       
-      Ce acțiune tocmai a efectuat host-ul?
+      What action has the host just performed?
     
     options:
-      a: "A trimis date către grupul multicast"
-      b: "A părăsit grupul multicast"
-      c: "A făcut join la grupul multicast 239.1.1.1"
-      d: "A interogat routerul despre grupuri disponibile"
+      a: "It sent data to the multicast group"
+      b: "It left the multicast group"
+      c: "It joined multicast group 239.1.1.1"
+      d: "It queried the router about available groups"
     
     correct: c
     
     explanation: |
-      "Membership Report" este mesajul IGMP trimis când un host face join la
-      un grup multicast. Acest mesaj informează switch-urile/routerele că
-      host-ul dorește să primească traficul pentru acel grup.
+      "Membership Report" is the IGMP message sent when a host joins a
+      multicast group. This message informs switches/routers that the
+      host wishes to receive traffic for that group.
+    
+    lms_feedback:
+      correct: "Correct! Membership Report indicates a group join."
+      incorrect: "IGMP Membership Report is sent when joining a group."
 
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q15
@@ -433,59 +502,155 @@ questions:
     type: multiple_choice
     
     stem: |
-      Proiectezi un sistem de live video streaming către 10.000 de clienți
-      într-un campus universitar cu 5 subrețele. Ce metodă de comunicare
-      este CEA MAI POTRIVITĂ?
+      You are designing a live video streaming system for 10,000 clients
+      across a university campus with 5 subnets. Which communication method
+      is MOST APPROPRIATE?
     
     options:
-      a: "Broadcast — simplu de implementat"
-      b: "Unicast către fiecare client — garantează livrarea"
-      c: "Multicast — eficient pentru one-to-many, traversează subrețele"
-      d: "TCP tunnel — fiabil și securizat"
+      a: "Broadcast — simple to implement"
+      b: "Unicast to each client — guarantees delivery"
+      c: "Multicast — efficient for one-to-many, traverses subnets"
+      d: "TCP tunnel — reliable and secure"
     
     correct: c
     
     explanation: |
-      Multicast este ideal pentru streaming one-to-many:
-      - O singură transmisie servește toți clienții interesați
-      - Traversează subrețele (cu PIM/IGMP configurat)
-      - Eficient: bandwidth = 1 stream, nu 10.000
+      Multicast is ideal for one-to-many streaming:
+      - A single transmission serves all interested clients
+      - Traverses subnets (with PIM/IGMP configured)
+      - Efficient: bandwidth = 1 stream, not 10,000
       
-      Broadcast nu traversează routere. Unicast ar necesita 10.000 stream-uri
-      separate (ineficient). TCP tunnel nu e pentru streaming distribuit.
+      Broadcast cannot traverse routers. Unicast would require 10,000 separate
+      streams (inefficient). TCP tunnel is not designed for distributed streaming.
+    
+    lms_feedback:
+      correct: "Correct! Multicast is optimal for large-scale streaming."
+      incorrect: "Consider bandwidth efficiency and subnet traversal requirements."
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SCORING & FEEDBACK
+# QUESTIONS — BLOOM LEVEL 5: EVALUATE (LO6) — NEW QUESTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q16
+    lo_ref: LO6
+    bloom_level: evaluate
+    difficulty: advanced
+    points: 3
+    type: multiple_choice
+    
+    stem: |
+      A startup is designing a real-time notification system for a mobile app
+      with 50,000 users. The requirements are:
+      - Notifications must reach users within 500ms
+      - Users are distributed globally across multiple continents
+      - Some notifications are user-specific, others go to all users
+      
+      An engineer proposes: "We should use UDP multicast for all notifications
+      because it is the most efficient."
+      
+      Evaluate this proposal. What is the PRIMARY flaw?
+    
+    options:
+      a: "UDP multicast cannot traverse the internet backbone between continents"
+      b: "UDP multicast is too slow for 500ms latency"
+      c: "UDP multicast cannot handle 50,000 users"
+      d: "UDP multicast requires TCP for reliability"
+    
+    correct: a
+    
+    explanation: |
+      The PRIMARY flaw is that IP multicast does not work across the public
+      internet. Multicast routing (PIM, MSDP) is not deployed on most ISPs.
+      
+      For global distribution, alternatives include:
+      - CDN-based push notifications
+      - WebSocket connections with load balancers
+      - Application-layer multicast (overlay networks)
+      
+      The other options are secondary concerns or incorrect.
+    
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    
+    lms_feedback:
+      correct: "Correct! Multicast does not traverse the public internet."
+      incorrect: "Consider how multicast routing works (or does not work) across ISPs."
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q17
+    lo_ref: LO6
+    bloom_level: evaluate
+    difficulty: advanced
+    points: 3
+    type: multiple_choice
+    
+    stem: |
+      A network administrator has implemented the following architecture for
+      a corporate intranet service discovery system:
+      
+      - All services broadcast their availability every 5 seconds to 255.255.255.255
+      - 200 services across 15 subnets (connected by routers)
+      - Each broadcast packet is 512 bytes
+      
+      Identify the MOST CRITICAL problem with this design.
+    
+    options:
+      a: "Broadcasts do not traverse routers — services on other subnets will not be discovered"
+      b: "5-second intervals are too slow for service discovery"
+      c: "512 bytes is too large for UDP packets"
+      d: "Broadcasts should use TCP for reliability"
+    
+    correct: a
+    
+    explanation: |
+      The CRITICAL flaw is that 255.255.255.255 broadcasts are limited to the
+      local L2 domain and do not cross routers. With 15 subnets, services will
+      only discover others on their own subnet.
+      
+      Better alternatives:
+      - Multicast with IGMP (if routers support it)
+      - Centralised service registry (Consul, etcd, ZooKeeper)
+      - DNS-based service discovery
+      
+      The 5-second interval and 512-byte packets are reasonable; TCP is not
+      appropriate for periodic announcements.
+    
+    lms_feedback:
+      correct: "Correct! Broadcast cannot cross router boundaries."
+      incorrect: "Remember that 255.255.255.255 is limited to the local subnet."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCORING AND FEEDBACK
 # ═══════════════════════════════════════════════════════════════════════════════
 
 scoring:
-  total_points: 30
-  passing_threshold: 21  # 70%
+  total_points: 34
+  passing_threshold: 24  # ~70%
   
   grade_bands:
-    - range: [27, 30]
-      grade: "Excelent"
-      feedback: "Înțelegere solidă a tuturor conceptelor. Ești pregătit pentru laboratorul avansat."
+    - range: [31, 34]
+      grade: "Excellent"
+      feedback: "Solid understanding of all concepts. You are ready for the advanced laboratory."
     
-    - range: [21, 26]
-      grade: "Bine"
-      feedback: "Fundamente solide. Revizuiește conceptele marcate pentru consolidare."
+    - range: [24, 30]
+      grade: "Good"
+      feedback: "Solid foundations. Review the marked concepts for consolidation."
     
-    - range: [15, 20]
-      grade: "Suficient"
-      feedback: "Necesită studiu suplimentar. Consultă docs/theory_summary.md și docs/misconceptions.md."
+    - range: [17, 23]
+      grade: "Satisfactory"
+      feedback: "Additional study required. Consult docs/theory_summary.md and docs/misconceptions.md."
     
-    - range: [0, 14]
-      grade: "Insuficient"
-      feedback: "Revizuiește teoria din README.md și refă exercițiile de laborator înainte de a continua."
+    - range: [0, 16]
+      grade: "Insufficient"
+      feedback: "Review the theory in README.md and redo the laboratory exercises before continuing."
 
   lo_feedback:
-    LO1: "Revizuiește diferențele unicast/broadcast/multicast în docs/theory_summary.md"
-    LO2: "Consultă docs/misconceptions.md pentru clarificări despre L2 boundaries și IGMP"
-    LO3: "Practică exercițiile ex_3_01 și ex_3_02 din src/exercises/"
-    LO4: "Analizează codul din src/apps/tcp_tunnel.py și ex_3_03"
-    LO5: "Refă capturile din pcap/ și analizează cu Wireshark"
-    LO6: "Citește secțiunea 'Broadcast vs Multicast' din README.md"
+    LO1: "Review unicast/broadcast/multicast differences in docs/theory_summary.md"
+    LO2: "Consult docs/misconceptions.md for clarifications on L2 boundaries and IGMP"
+    LO3: "Practise exercises ex_3_01 and ex_3_02 in src/exercises/"
+    LO4: "Analyse the code in src/apps/tcp_tunnel.py and ex_3_03"
+    LO5: "Redo the captures from pcap/ and analyse with Wireshark"
+    LO6: "Read the case study in docs/case_study_communication_modes.md"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EOF

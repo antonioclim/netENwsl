@@ -1,19 +1,72 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# requirements.txt — Week 3 Network Programming Laboratory Kit
+# Requirements — Week 3 Network Programming Laboratory Kit
 # ═══════════════════════════════════════════════════════════════════════════════
 # NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
 #
-# Install: pip install -r setup/requirements.txt
+# Installation:
+#   pip install -r setup/requirements.txt
+#
+# For development (linting, testing):
+#   pip install -r setup/requirements.txt
+#   pip install ruff pytest pytest-cov pytest-timeout mypy pre-commit
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Core dependencies (required for all exercises)
-pyyaml>=6.0,<7.0              # Quiz YAML parsing
-requests>=2.28.0,<3.0         # HTTP utilities
+# ─────────────────────────────────────────────────────────────────────────────────
+# Core Dependencies
+# ─────────────────────────────────────────────────────────────────────────────────
 
-# Development dependencies (optional, for linting and testing)
-# Uncomment if needed:
-# ruff>=0.1.0                 # Fast Python linter
-# pytest>=7.4.0               # Testing framework
-# pytest-cov>=4.1.0           # Coverage reporting
-# pytest-timeout>=2.2.0       # Test timeouts
-# mypy>=1.5.0                 # Type checking
+# YAML parsing for quiz and configuration files
+pyyaml>=6.0.1
+
+# HTTP requests for network testing
+requests>=2.31.0
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Development and Testing (optional but recommended)
+# ─────────────────────────────────────────────────────────────────────────────────
+
+# Linting and code quality
+ruff>=0.1.0
+
+# Testing framework
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.2.0
+
+# Type checking
+mypy>=1.7.0
+
+# Pre-commit hooks for code quality
+pre-commit>=3.5.0
+
+# JSON Schema validation (for quiz structure)
+jsonschema>=4.20.0
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Network Analysis (optional)
+# ─────────────────────────────────────────────────────────────────────────────────
+
+# Packet crafting and analysis (requires libpcap)
+# Uncomment if you need programmatic packet analysis
+# scapy>=2.5.0
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Documentation (optional)
+# ─────────────────────────────────────────────────────────────────────────────────
+
+# Markdown linting
+# mdformat>=0.7.17
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Version Compatibility Notes
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Python version: >= 3.10 required (for match statements and type hints)
+# Tested on: Python 3.10, 3.11, 3.12
+#
+# System dependencies (install via apt/brew):
+#   - tcpdump (for packet capture)
+#   - docker (for container orchestration)
+#   - wireshark (optional, for GUI analysis)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
