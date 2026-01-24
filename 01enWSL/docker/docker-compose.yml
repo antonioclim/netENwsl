@@ -1,0 +1,81 @@
+# Week 1 Laboratory - Docker Compose Configuration
+# NETWORKING class - ASE, Informatics | by Revolvix
+#
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be started
+# or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+
+services:
+  # Main laboratory container with networking tools
+  lab:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.lab
+    container_name: week1_lab
+    hostname: netlab
+    working_dir: /work
+    volumes:
+      # Mount project directory for access to exercises and scripts
+      - ..:/work:rw
+      # Dedicated mounts for output directories
+      - ../pcap:/work/pcap:rw
+      - ../artifacts:/work/artifacts:rw
+    networks:
+      week1_network:
+        # Optional: assign a static IP for consistent addressing
+        # ipv4_address: 172.20.1.10
+    ports:
+      # TCP test server - used for netcat and socket exercises
+      - "9090:9090"
+      # UDP test server - used for datagram exercises
+      - "9091:9091"
+      # Alternative port for additional testing scenarios
+      - "9092:9092"
+      # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
+    environment:
+      # Python environment configuration
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      # Terminal settings for interactive sessions
+      - TERM=xterm-256color
+      # Laboratory identification
+      - LAB_WEEK=1
+    # Network capabilities required for packet capture and analysis
+    cap_add:
+      - NET_ADMIN    # Required for network configuration changes
+      - NET_RAW      # Required for raw socket operations (tcpdump, scapy)
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true
+    # Restart policy - container restarts unless explicitly stopped
+    restart: unless-stopped
+
+# Network Configuration
+# Each week uses a dedicated subnet to avoid conflicts
+networks:
+  week1_network:
+    name: week1_network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        # Week 1 uses 172.20.1.0/24 subnet
+        # Pattern: 172.20.N.0/24 where N = week number
+        - subnet: 172.20.1.0/24
+          gateway: 172.20.1.1
+
+# Volume definitions for persistent data
+# NOTE: Portainer data volume is managed globally, not here
+volumes:
+  # Add any week-specific volumes here if needed
+  # Example:
+  # week1_data:
+  #   name: week1_data
+  {}
