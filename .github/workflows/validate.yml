@@ -1,0 +1,113 @@
+name: Validate Repository
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate-structure:
+    name: Validate Repository Structure
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check Required Files Exist
+        run: |
+          echo "Checking required files..."
+          
+          REQUIRED_FILES=(
+            "README.md"
+            "LICENCE.md"
+          )
+          
+          MISSING=0
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing: $file"
+              MISSING=1
+            else
+              echo "✓ Found: $file"
+            fi
+          done
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "::error::Required files are missing"
+            exit 1
+          fi
+
+      - name: Check Week Folders Exist
+        run: |
+          echo "Checking week folders..."
+          
+          for week in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do
+            FOLDER="${week}enWSL"
+            if [ ! -d "$FOLDER" ]; then
+              echo "⚠️ Week folder missing: $FOLDER"
+            else
+              echo "✓ Found: $FOLDER"
+              
+              # Check for README in each week
+              if [ ! -f "$FOLDER/README.md" ]; then
+                echo "  ⚠️ Missing README.md in $FOLDER"
+              fi
+            fi
+          done
+
+  validate-yaml:
+    name: Validate YAML Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint Docker Compose Files
+        run: |
+          echo "Validating Docker Compose files..."
+          find . -name "docker-compose*.yml" -o -name "docker-compose*.yaml" | while read file; do
+            echo "Checking: $file"
+            yamllint -d relaxed "$file" || echo "⚠️ YAML issues in $file"
+          done
+
+  validate-python:
+    name: Validate Python Syntax
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Python Syntax
+        run: |
+          echo "Checking Python syntax..."
+          find . -name "*.py" -type f | while read file; do
+            python -m py_compile "$file" 2>&1 || echo "❌ Syntax error in: $file"
+          done
+          echo "Python syntax check complete"
+
+  validate-markdown:
+    name: Validate Markdown
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check Markdown Links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.github/markdown-link-check.json'
+        continue-on-error: true
