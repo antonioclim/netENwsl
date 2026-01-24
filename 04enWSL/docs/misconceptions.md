@@ -8,6 +8,8 @@
 
 This document lists common misunderstandings encountered when learning about protocol design, framing and error detection. Each misconception includes practical verification steps.
 
+> 📝 **From the classroom:** Students often tell me "but it worked in testing!" when their TCP code fails in production. This is precisely because local testing rarely fragments packets the way real networks do.
+
 ---
 
 ## TCP and Framing

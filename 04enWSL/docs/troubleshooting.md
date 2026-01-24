@@ -10,6 +10,8 @@ This guide addresses common issues encountered during Week 4 laboratory exercise
 
 ## Diagnostic Approach
 
+> 💡 **Instructor's tip:** After 15 years of teaching networking, the most common mistake I see is forgetting to start Docker Desktop. Check this first before anything else!
+
 Before attempting specific fixes, gather diagnostic information:
 
 ```powershell

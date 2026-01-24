@@ -1,0 +1,219 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Formative Quiz — Week 4: Physical Layer, Data Link Layer & Custom Protocols
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  week: 4
+  topic: "Physical Layer, Data Link Layer & Custom Protocols"
+  version: "1.0"
+  estimated_time: "15 minutes"
+  passing_score: 70
+  lo_coverage: [LO1, LO2, LO3, LO4, LO5, LO6]
+  bloom_distribution:
+    remember: 3
+    understand: 4
+    apply: 5
+    analyse: 2
+    evaluate: 1
+
+questions:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # REMEMBER (LO1) — Physical Layer Fundamentals
+  # ═══════════════════════════════════════════════════════════════════════════════
+  
+  - id: q01
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    stem: "Care este funcția principală a Physical Layer în modelul OSI?"
+    options:
+      a: "Rutarea pachetelor între rețele"
+      b: "Transmiterea biților prin mediul fizic"
+      c: "Controlul accesului la mediu"
+      d: "Criptarea datelor"
+    correct: b
+    explanation: "Physical Layer (Layer 1) transformă biții în semnale electrice, optice sau radio pentru transmisie prin mediul fizic."
+    
+  - id: q02
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    stem: "Ce tip de adresare folosește Data Link Layer?"
+    options:
+      a: "Adrese IP (32/128 biți)"
+      b: "Adrese MAC (48 biți)"
+      c: "Numere de port (16 biți)"
+      d: "URL-uri"
+    correct: b
+    explanation: "Data Link Layer folosește adrese MAC de 48 biți pentru identificarea dispozitivelor în rețeaua locală."
+
+  - id: q03
+    type: fill_blank
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    stem: "Ethernet folosește algoritmul ___ pentru detectarea coliziunilor."
+    correct: ["CSMA/CD", "csma/cd", "CSMA-CD"]
+    hint: "Carrier Sense Multiple Access with..."
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # UNDERSTAND (LO2) — Protocol Design Trade-offs
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - id: q04
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    stem: "De ce protocoalele text sunt mai ușor de depanat decât cele binare?"
+    options:
+      a: "Sunt mai rapide"
+      b: "Folosesc mai puțină bandă"
+      c: "Sunt human-readable și pot fi inspectate cu telnet/curl"
+      d: "Au overhead mai mic"
+    correct: c
+    explanation: "Protocoalele text permit inspectarea directă a mesajelor fără instrumente speciale de decodare."
+    misconception_ref: "docs/misconceptions.md#7"
+
+  - id: q05
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    stem: "Care este diferența fundamentală între TCP și UDP în ceea ce privește message boundaries?"
+    options:
+      a: "TCP păstrează message boundaries, UDP nu"
+      b: "UDP păstrează message boundaries (datagrams), TCP este byte stream"
+      c: "Ambele păstrează message boundaries"
+      d: "Niciuna nu păstrează message boundaries"
+    correct: b
+    explanation: "TCP este un byte stream fără concept de mesaje separate. UDP trimite datagrame discrete cu limite clare."
+    misconception_ref: "docs/misconceptions.md#1"
+
+  - id: q06
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    stem: "Ce se întâmplă dacă sender-ul folosește big-endian și receiver-ul așteaptă little-endian pentru valoarea 1000?"
+    options:
+      a: "Valoarea ajunge corect (1000)"
+      b: "Valoarea devine 59395"
+      c: "Conexiunea se închide cu eroare"
+      d: "Valoarea devine 0"
+    correct: b
+    explanation: "1000 = 0x03E8. Big-endian trimite: 03 E8. Interpretat ca little-endian devine: 0xE803 = 59395."
+    misconception_ref: "docs/misconceptions.md#4"
+
+  - id: q07
+    type: true_false
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: basic
+    stem: "Network byte order este întotdeauna big-endian (MSB first)."
+    correct: true
+    explanation: "Prin convenție, toate protocoalele de rețea folosesc big-endian, cunoscut și ca network byte order."
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # APPLY (LO3, LO4) — Implementation Skills
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - id: q08
+    type: fill_blank
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    stem: "Pentru a face un socket TCP să accepte conexiuni de la orice adresă, folosim bind(('___', port))."
+    correct: ["0.0.0.0", "''", '""']
+    hint: "Adresa specială care înseamnă 'toate interfețele'"
+
+  - id: q09
+    type: code_output
+    lo_ref: LO4
+    bloom_level: apply
+    difficulty: intermediate
+    stem: "Ce returnează struct.pack('>H', 1000).hex()?"
+    correct: ["03e8"]
+    explanation: "1000 decimal = 0x03E8. Format '>H' înseamnă big-endian unsigned short. MSB first: 03 e8."
+    misconception_ref: "docs/misconceptions.md#4"
+
+  - id: q10
+    type: code_output
+    lo_ref: LO4
+    bloom_level: apply
+    difficulty: intermediate
+    stem: "Ce returnează len(struct.pack('>2sBBHI', b'NP', 1, 1, 100, 42))?"
+    correct: ["10"]
+    explanation: "Calculul: 2s=2 bytes, B=1 byte, B=1 byte, H=2 bytes, I=4 bytes → Total: 2+1+1+2+4=10 bytes."
+
+  - id: q11
+    type: fill_blank
+    lo_ref: LO4
+    bloom_level: apply
+    difficulty: intermediate
+    stem: "Pentru a masca CRC32 la 32 biți unsigned în Python, folosim: zlib.crc32(data) & ___"
+    correct: ["0xFFFFFFFF", "4294967295", "0xffffffff"]
+    hint: "Masca pentru 32 de biți setați pe 1"
+
+  - id: q12
+    type: multiple_choice
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: advanced
+    stem: "De ce folosim SO_REUSEADDR la crearea unui server socket?"
+    options:
+      a: "Pentru a crește performanța"
+      b: "Pentru a permite rebind imediat după restart (evită TIME_WAIT)"
+      c: "Pentru a permite mai mulți clienți simultan"
+      d: "Pentru a activa encryption"
+    correct: b
+    explanation: "SO_REUSEADDR permite reutilizarea portului chiar dacă există conexiuni în starea TIME_WAIT după închiderea anterioară."
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # ANALYSE (LO5) — Traffic Analysis
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - id: q13
+    type: multiple_choice
+    lo_ref: LO5
+    bloom_level: analyse
+    difficulty: advanced
+    stem: "În Wireshark, observi secvența: [SYN] → [RST,ACK]. Ce indică acest pattern?"
+    options:
+      a: "Conexiune TCP stabilită cu succes"
+      b: "Portul destinație este închis sau blocat de firewall"
+      c: "Timeout de rețea"
+      d: "Handshake TCP complet"
+    correct: b
+    explanation: "RST,ACK ca răspuns la SYN indică faptul că portul destinație nu ascultă (closed) sau este blocat de firewall."
+
+  - id: q14
+    type: short_answer
+    lo_ref: LO5
+    bloom_level: analyse
+    difficulty: advanced
+    stem: "TEXT protocol overhead: 20 bytes. BINARY protocol overhead: 14 bytes (același payload). Care este economia procentuală?"
+    correct: ["30%", "30", "30 procente", "30 percent"]
+    explanation: "Calculul: (20-14)/20 × 100 = 30% economie de bandwidth folosind protocol binar."
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # EVALUATE (LO6) — Design Decisions
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - id: q15
+    type: multiple_choice
+    lo_ref: LO6
+    bloom_level: evaluate
+    difficulty: advanced
+    stem: "Pentru un sistem IoT cu mii de senzori care trimit temperatură la fiecare secundă, ce combinație de protocol este mai potrivită?"
+    options:
+      a: "JSON over HTTP/TCP (text, reliable)"
+      b: "Binary protocol over UDP cu CRC16 (compact, fast)"
+      c: "XML over TCP (structured, reliable)"
+      d: "Plain text over TCP (simple)"
+    correct: b
+    explanation: "Volume mare + frecvență mare favorizează: Binary (compact, low parsing overhead) + UDP (low latency, no connection overhead) + CRC (integritate minimală). Occasional packet loss acceptabil pentru date de temperatură."
+    misconception_ref: "docs/misconceptions.md#7"

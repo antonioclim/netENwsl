@@ -1,141 +1,124 @@
-# Packet Captures Directory
+# Packet Captures — Week 4
 
-> NETWORKING class - ASE, Informatics | Computer Networks Laboratory
->
-> by Revolvix
+> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
----
-
-## Purpose
-
-This directory stores packet capture files (.pcap) generated during laboratory exercises. These captures can be analysed using Wireshark or command-line tools like `tshark` and `tcpdump`.
+This directory contains packet capture files for protocol analysis exercises.
 
 ---
 
-## Naming Convention
+## Pre-captured Samples
 
-Please use the following naming convention for your captures:
+| File | LO | Description | Filter |
+|------|-----|-------------|--------|
+| `week04_lo3_text_proto.pcap` | LO3 | TEXT protocol session: PING, SET, GET, COUNT, QUIT | `tcp.port == 5400` |
+| `week04_lo4_binary_proto.pcap` | LO4 | BINARY protocol with valid and corrupted CRC packets | `tcp.port == 5401` |
+| `week04_lo5_udp_sensor.pcap` | LO5 | UDP sensor datagrams from multiple sensors | `udp.port == 5402` |
 
+---
+
+## Creating Your Own Captures
+
+### Using tcpdump (Recommended)
+
+```bash
+# Capture TEXT protocol traffic
+sudo tcpdump -i lo -w pcap/my_text_capture.pcap port 5400
+
+# Capture BINARY protocol traffic
+sudo tcpdump -i lo -w pcap/my_binary_capture.pcap port 5401
+
+# Capture UDP sensor traffic
+sudo tcpdump -i lo -w pcap/my_udp_capture.pcap port 5402
 ```
-week4_<exercise>_<description>_<timestamp>.pcap
-```
-
-**Examples:**
-- `week4_ex1_text_proto_20250106_1430.pcap`
-- `week4_ex2_binary_crc_test_20250106_1512.pcap`
-- `week4_demo_udp_sensor_20250106_1600.pcap`
-
----
-
-## Capturing Traffic
 
 ### Using the Capture Script
 
-```powershell
-# Capture all traffic on default interface
-python scripts/capture_traffic.py --output pcap/my_capture.pcap
-
-# Capture specific port
-python scripts/capture_traffic.py --port 5400 --output pcap/text_proto.pcap
-
-# Capture with duration limit
-python scripts/capture_traffic.py --duration 60 --output pcap/timed_capture.pcap
-```
-
-### Using Wireshark Directly
-
-1. Open Wireshark
-2. Select the appropriate interface:
-   - For Docker: `\\.\pipe\docker_engine` or `vEthernet (WSL)`
-   - For local traffic: `Loopback` or `Adapter for loopback traffic capture`
-3. Start capture
-4. Perform laboratory exercises
-5. Stop capture and save to this directory
-
-### Using tcpdump (inside WSL or container)
-
 ```bash
-# Capture all traffic
-sudo tcpdump -i any -w pcap/capture.pcap
+# Start lab environment first
+python scripts/start_lab.py
 
-# Capture specific ports
-sudo tcpdump -i any port 5400 or port 5401 or port 5402 -w pcap/protocols.pcap
+# In a separate terminal, start capture
+python scripts/capture_traffic.py --port 5400 --output pcap/my_capture.pcap
 
-# Capture with packet count limit
-sudo tcpdump -i any -c 1000 -w pcap/sample.pcap
+# Run client commands to generate traffic
+python src/apps/text_proto_client.py -c "PING" -c "SET key1 value1"
+
+# Stop capture with Ctrl+C
 ```
+
+### Using Wireshark
+
+1. Open Wireshark (from Windows)
+2. Select the **Loopback** or **\\Device\\NPF_Loopback** interface
+3. Apply filter: `tcp.port == 5400` or `tcp.port == 5401`
+4. Start capture
+5. Run client commands
+6. Stop capture and save as `.pcap`
 
 ---
 
 ## Analysis Tips
 
-### Wireshark Filters for Week 4
+### TEXT Protocol (Port 5400)
 
-**TEXT Protocol (TCP port 5400):**
+Look for the length prefix at the start of each message:
 ```
+Frame: 31 31 20 53 45 54 20 6e 61 6d 65
+       ^^ ^^  = "11" (length prefix in ASCII)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ = " SET name" (payload)
+```
+
+### BINARY Protocol (Port 5401)
+
+Identify the 14-byte header structure:
+```
+4e 50  01  01  00 05  00 00 00 2a  xx xx xx xx  [payload]
+^^^^^ ^^  ^^  ^^^^^  ^^^^^^^^^^   ^^^^^^^^^^^
+Magic V   T   Len    Seq          CRC32
+```
+
+### UDP Sensor (Port 5402)
+
+Each datagram is exactly 23 bytes:
+```
+01  00 00 03 e9  41 b0 00 00  54 65 73 74 4c 61 62 20 20 20  xx xx xx xx
+^^  ^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+V   Sensor ID    Temperature  Location (10 bytes padded)    CRC32
+```
+
+---
+
+## Useful Wireshark Filters
+
+```
+# Show only TEXT protocol
 tcp.port == 5400
-```
 
-**BINARY Protocol (TCP port 5401):**
-```
+# Show only BINARY protocol
 tcp.port == 5401
-```
 
-**UDP Sensor Protocol (port 5402):**
-```
+# Show only UDP sensor
 udp.port == 5402
-```
 
-**Follow TCP Stream:**
-- Right-click on a TCP packet → Follow → TCP Stream
+# Show packets with specific content
+frame contains "SET"
 
-**Filter by Payload Content:**
-```
-tcp contains "PING"
-tcp contains "SET"
-```
+# Show only TCP retransmissions
+tcp.analysis.retransmission
 
-### Useful tshark Commands
-
-```bash
-# Display summary of capture
-tshark -r capture.pcap -q -z io,stat,1
-
-# Show TCP conversations
-tshark -r capture.pcap -q -z conv,tcp
-
-# Extract payload data
-tshark -r capture.pcap -T fields -e data
-
-# Filter and display specific packets
-tshark -r capture.pcap -Y "tcp.port == 5400" -V
+# Show TCP connection establishment
+tcp.flags.syn == 1
 ```
 
 ---
 
-## Storage Guidelines
+## Exercise: Protocol Overhead Analysis
 
-- **Temporary captures:** Delete after analysis
-- **Exercise captures:** Keep until end of semester
-- **Reference captures:** Store in personal backup
-
-**Note:** This directory is cleaned during full cleanup operations. Back up important captures before running `python scripts/cleanup.py --full`.
-
----
-
-## Sample Captures (Reference)
-
-The following reference captures demonstrate expected behaviour:
-
-| File | Description | Exercise |
-|------|-------------|----------|
-| `sample_text_proto.pcap` | TEXT protocol PING/SET/GET | Exercise 1 |
-| `sample_binary_proto.pcap` | BINARY protocol with CRC | Exercise 2 |
-| `sample_udp_sensor.pcap` | UDP sensor datagrams | Exercise 3 |
-| `sample_crc_error.pcap` | Corrupted packet detection | Exercise 4 |
-
-*Note: Sample captures may be provided separately by your instructor.*
+1. Capture TEXT and BINARY protocol sessions with the same commands
+2. Compare total bytes transmitted for equivalent operations
+3. Calculate overhead ratio: `(TEXT bytes - BINARY bytes) / TEXT bytes × 100`
+4. Document your findings in the Exercise 4 report
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

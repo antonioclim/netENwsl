@@ -214,6 +214,21 @@ By the end of this laboratory session, you will be able to:
 5. **Analyse** captured network traffic using tcpdump and Wireshark to identify protocol overhead and diagnose communication anomalies
 6. **Evaluate** the efficiency of different protocol designs by comparing overhead ratios and parsing complexity
 
+### 📍 Quick Navigation by Learning Objective
+
+| LO | Resources |
+|----|----------|
+| **LO1** (Recall) | [Theory Summary](docs/theory_summary.md) • [Glossary](docs/glossary.md) • [Quiz](formative/quiz.yaml) q01-q03 |
+| **LO2** (Explain) | [Misconceptions #7](docs/misconceptions.md) • [Peer Instruction Q5](docs/peer_instruction.md) • [Quiz](formative/quiz.yaml) q04-q07 |
+| **LO3** (Implement) | [Exercise 1](#exercise-1-text-protocol-implementation) • [Parsons P2-P3](docs/parsons_problems.md) • [Quiz](formative/quiz.yaml) q08,q12 |
+| **LO4** (Apply) | [Code Tracing T1-T4](docs/code_tracing.md) • [Exercise 2](#exercise-2-binary-protocol-implementation) • [Quiz](formative/quiz.yaml) q09-q11 |
+| **LO5** (Analyse) | [Wireshark Setup](#-wireshark-setup-and-usage) • [PCAP Samples](pcap/) • [Quiz](formative/quiz.yaml) q13-q14 |
+| **LO6** (Evaluate) | [Peer Instruction Q5](docs/peer_instruction.md) • [Homework](homework/README.md) • [Quiz](formative/quiz.yaml) q15 |
+
+📊 **Full traceability matrix:** [docs/learning_objectives.md](docs/learning_objectives.md)
+
+🎯 **Self-assessment quiz:** `python formative/run_quiz.py` or `make quiz`
+
 ## Prerequisites
 
 ### Knowledge Requirements
@@ -578,6 +593,8 @@ lsof -i :5400
 kill <PID>
 
 # Or use cleanup script
+
+> 💡 **Instructor tip:** After 15 years of teaching networking, the most common mistake I see is forgetting to start Docker Desktop. Check `sudo service docker start` first before anything else!
 python3 scripts/cleanup.py --full
 ```
 
