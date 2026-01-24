@@ -1,168 +1,266 @@
-# COMPUTER NETWORKS PROJECTS
+# 00PROJ — Computer Networks Projects
 
-> **Course:** Computer Networks  
+> **Course:** Computer Networks (Rețele de Calculatoare)  
 > **Programme:** Economic Informatics, Year 3, Semester 2  
-> **Institution:** ASE Bucharest - CSIE
+> **Institution:** ASE Bucharest - CSIE  
+> **Version:** 2.0 (Enhanced)  
+> **Last Update:** January 2026
 
 ---
 
-## 📋 Project List
+## 📋 Overview
 
-### Main Projects (P01-P15)
+This archive contains specifications for **20 network programming projects** designed for the Computer Networks course. Each project applies concepts from laboratory work to build practical network applications.
 
-| Nr. | Project | Description |
-|-----|---------|-------------|
-| P01 | [SDN_Firewall_Mininet](PROJECTS/P01_SDN_Firewall_Mininet.md) | SDN Firewall in Mininet |
-| P02 | [Hybrid_Network_Mininet_Docker](PROJECTS/P02_Hybrid_Network_Mininet_Docker.md) | Hybrid network with Mininet and Docker containers |
-| P03 | [IDS_Traffic_Monitoring_Python](PROJECTS/P03_IDS_Traffic_Monitoring_Python.md) | Traffic monitoring and intrusion detection in Python |
-| P04 | [Secure_Messaging_Client_Server](PROJECTS/P04_Secure_Messaging_Client_Server.md) | Secure client-server messaging application |
-| P05 | [Custom_Routing_Protocol](PROJECTS/P05_Custom_Routing_Protocol.md) | Custom routing protocol implementation |
-| P06 | [SDN_Mininet_Controller_OpenFlow](PROJECTS/P06_SDN_Mininet_Controller_OpenFlow.md) | Software-defined network (SDN) with Mininet and OpenFlow controller |
-| P07 | [Firewall_IDS_Traffic_Monitoring](PROJECTS/P07_Firewall_IDS_Traffic_Monitoring.md) | Traffic monitoring and software firewall system |
-| P08 | [Web_Server_Reverse_Proxy](PROJECTS/P08_Web_Server_Reverse_Proxy.md) | Custom web server and reverse proxy |
-| P09 | [Multi_Client_FTP_Server](PROJECTS/P09_Multi_Client_FTP_Server.md) | Simplified FTP server with multi-client testing |
-| P10 | [DNS_SSH_FTP_Docker_Orchestration](PROJECTS/P10_DNS_SSH_FTP_Docker_Orchestration.md) | Network services orchestration (DNS, SSH, FTP) in Docker |
-| P11 | [Advanced_SDN_Mininet_OpenFlow](PROJECTS/P11_Advanced_SDN_Mininet_OpenFlow.md) | Advanced SDN with Mininet and OpenFlow |
-| P12 | [Docker_Microservices_Load_Balancing](PROJECTS/P12_Docker_Microservices_Load_Balancing.md) | Distributed web service in Docker with load balancing |
-| P13 | [Distributed_RPC_Application](PROJECTS/P13_Distributed_RPC_Application.md) | Distributed application based on RPC calls |
-| P14 | [Security_IDS_IPS_Simulation](PROJECTS/P14_Security_IDS_IPS_Simulation.md) | Network security – IDS/IPS system simulation |
-| P15 | [IoT_Edge_Computing_MQTT](PROJECTS/P15_IoT_Edge_Computing_MQTT.md) | IoT network simulation with Edge Computing |
+### Archive Contents
 
-### Reserve Projects (P16-P20)
-
-| Nr. | Project | Description |
-|-----|---------|-------------|
-| P16 | [HTTP_Analysis_Wireshark](RESERVE_individual/P16_HTTP_Analysis_Wireshark.md) | HTTP traffic analysis using Wireshark |
-| P17 | [LAN_NAT_DHCP_Network](RESERVE_individual/P17_LAN_NAT_DHCP_Network.md) | Local network design with NAT and DHCP in Cisco Packet Tracer |
-| P18 | [TCP_Chat_Client_Server](RESERVE_individual/P18_TCP_Chat_Client_Server.md) | Client-server chat application using TCP sockets |
-| P19 | [Port_Scanner_Security](RESERVE_individual/P19_Port_Scanner_Security.md) | Port scanning tool for security analysis |
-| P20 | [IoT_Smart_Home_Security](RESERVE_individual/P20_IoT_Smart_Home_Security.md) | IoT network for smart home – simulation and security measures |
+```
+00PROJ/
+├── README.md                    # This file
+├── docs/
+│   └── common/                  # Shared guides (5 files)
+│       ├── code_quality_standards.md
+│       ├── git_workflow_detailed.md
+│       ├── pair_programming_guide.md
+│       ├── presentation_guide.md
+│       └── troubleshooting_common.md
+├── PROJECTS/                    # Main projects (15 files)
+│   ├── P01_SDN_Firewall_Mininet.md
+│   ├── P02-P05...
+│   └── P06-P15...
+├── RESERVE_individual/          # Reserve projects (5 files)
+│   └── P16-P20...
+├── templates/                   # Starter kits and templates
+│   ├── PROJECT_TEMPLATE.md
+│   └── starter_kit/
+└── learning_objectives_matrix.md
+```
 
 ---
 
-## 📚 How to Use This Repository
+## 🗺️ Navigation Map
 
-### Before Starting Your Project
+### By Difficulty Level
 
-1. **Read your project specification** — Find your assigned project in the tables above
-2. **Review the common guides** — Essential reading before you begin:
-   - [Pair Programming Guide](docs/common/pair_programming_guide.md) — How to work effectively in teams
-   - [Code Quality Standards](docs/common/code_quality_standards.md) — Python code requirements
-   - [Git Workflow](docs/common/git_workflow_detailed.md) — Version control best practices
-3. **Set up your environment** — Follow the prerequisites in your project document
+| Level | Projects | Description |
+|-------|----------|-------------|
+| ★★☆☆☆ | P10, P16, P17 | Beginner-friendly |
+| ★★★☆☆ | P06, P07, P08, P09, P12, P15, P18 | Intermediate |
+| ★★★★☆ | P01, P02, P03, P04, P05, P11, P13, P14, P19, P20 | Advanced |
 
-### During Development
+### By Technology Stack
 
-- Follow the stage deadlines (E1 → E2 → E3 → E4)
-- Use the [Troubleshooting Guide](docs/common/troubleshooting_common.md) when stuck
-- Commit regularly to GitHub
-- Track pair programming sessions
+| Technology | Projects |
+|------------|----------|
+| **SDN/Mininet** | [P01](PROJECTS/P01_SDN_Firewall_Mininet.md), [P06](PROJECTS/P06_SDN_Mininet_Controller_OpenFlow.md), [P11](PROJECTS/P11_Advanced_SDN_Mininet_OpenFlow.md) |
+| **Security/IDS** | [P03](PROJECTS/P03_IDS_Traffic_Monitoring_Python.md), [P07](PROJECTS/P07_Firewall_IDS_Traffic_Monitoring.md), [P14](PROJECTS/P14_Security_IDS_IPS_Simulation.md) |
+| **Docker** | [P10](PROJECTS/P10_Docker_Network_Configuration.md), [P12](PROJECTS/P12_Docker_Microservices_Load_Balancing.md) |
+| **Web/HTTP** | [P08](PROJECTS/P08_Web_Server_Reverse_Proxy.md) |
+| **File Transfer** | [P09](PROJECTS/P09_Multi_Client_FTP_Server.md) |
+| **RPC/Protocols** | [P04](PROJECTS/P04_Secure_Communication_Channel.md), [P13](PROJECTS/P13_RPC_gRPC_Service.md) |
+| **IoT/MQTT** | [P15](PROJECTS/P15_MQTT_IoT_Client_Server.md), [P20](RESERVE_individual/P20_Reserve.md) |
+| **Analysis** | [P05](PROJECTS/P05_Traffic_Generation_Analysis.md), [P16](RESERVE_individual/P16_Network_Traffic_Analyzer.md) |
 
-### Before Presentation
+### By Laboratory Week Reference
 
-- Review the [Presentation Guide](docs/common/presentation_guide.md)
-- Test your demo on a clean environment
-- Prepare for Q&A
+| Week | Lab Topic | Related Projects |
+|------|-----------|------------------|
+| 2 | Socket Programming | P04, P08, P09 |
+| 6 | SDN Architecture | P01, P06, P11 |
+| 7 | Packet Capture | P03, P07, P14, P16 |
+| 8 | HTTP Protocol | P08, P12 |
+| 10 | Docker Networking | P10, P12 |
+| 12 | RPC | P13 |
+| 13 | MQTT/IoT | P15, P20 |
+| 14 | Security | P03, P07, P14, P19 |
 
 ---
 
-## 📖 Common Guides
+## 📅 Project Timeline
 
-| Guide | Purpose |
-|-------|---------|
-| [Pair Programming](docs/common/pair_programming_guide.md) | Team collaboration methodology |
-| [Code Quality Standards](docs/common/code_quality_standards.md) | Python style and documentation |
-| [Presentation Guide](docs/common/presentation_guide.md) | Stage E4 preparation |
-| [Git Workflow](docs/common/git_workflow_detailed.md) | Version control practices |
-| [Troubleshooting](docs/common/troubleshooting_common.md) | Common problems and solutions |
+| Stage | Week | Deadline | Deliverables | Weight |
+|-------|------|----------|--------------|--------|
+| **E1** - Design | 5 | Week 5 | Specifications + Diagrams | 20% |
+| **E2** - Prototype | 9 | Week 9 | Partial implementation | 25% |
+| **E3** - Final | 13 | Week 13 | Complete + Tests + Docs | 35% |
+| **E4** - Presentation | 14 | Week 14 | Live demo + Defence | 20% |
 
 ---
 
-## Prerequisites
+## 📚 Essential Guides
 
-Before starting any project, ensure you have:
+Before starting, read these guides:
+
+| Guide | Purpose | Required Reading |
+|-------|---------|-----------------|
+| [Code Quality Standards](docs/common/code_quality_standards.md) | Python code requirements | **MANDATORY** |
+| [Git Workflow](docs/common/git_workflow_detailed.md) | Version control process | **MANDATORY** |
+| [Pair Programming](docs/common/pair_programming_guide.md) | Team collaboration | For teams |
+| [Presentation Guide](docs/common/presentation_guide.md) | E4 preparation | Before Week 14 |
+| [Troubleshooting](docs/common/troubleshooting_common.md) | Common issues | Reference |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Choose Your Project
+
+Browse the [projects list](#projects-list) below and select based on:
+- Interest area
+- Difficulty level
+- Technology preference
+
+### 2. Set Up Environment
+
+```bash
+# Clone your repository
+git clone https://github.com/[username]/retele-proiect-XX.git
+cd retele-proiect-XX
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+# or: venv\Scripts\activate  # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run smoke tests
+make smoke
+```
+
+### 3. Follow Stage Calendar
+
+Each project specification contains:
+- Detailed requirements
+- Assessment rubric
+- Code examples
+- Expected outputs
+
+---
+
+## 📋 Projects List
+
+### Main Projects (Teams of 1-3)
+
+| # | Project | Technology | Difficulty |
+|---|---------|------------|------------|
+| P01 | [SDN Firewall with Mininet](PROJECTS/P01_SDN_Firewall_Mininet.md) | Mininet, POX | ★★★★☆ |
+| P02 | [SDN Learning Switch](PROJECTS/P02_SDN_Learning_Switch.md) | Mininet, Ryu | ★★★☆☆ |
+| P03 | [IDS Traffic Monitoring](PROJECTS/P03_IDS_Traffic_Monitoring_Python.md) | Scapy, Python | ★★★★☆ |
+| P04 | [Secure Communication Channel](PROJECTS/P04_Secure_Communication_Channel.md) | Cryptography | ★★★★☆ |
+| P05 | [Traffic Generation & Analysis](PROJECTS/P05_Traffic_Generation_Analysis.md) | Scapy, iperf | ★★★★☆ |
+| P06 | [SDN Controller OpenFlow](PROJECTS/P06_SDN_Mininet_Controller_OpenFlow.md) | Ryu, OpenFlow | ★★★☆☆ |
+| P07 | [Firewall & IDS Monitoring](PROJECTS/P07_Firewall_IDS_Traffic_Monitoring.md) | Scapy, iptables | ★★★☆☆ |
+| P08 | [Web Server & Reverse Proxy](PROJECTS/P08_Web_Server_Reverse_Proxy.md) | Sockets, HTTP | ★★★☆☆ |
+| P09 | [Multi-Client FTP Server](PROJECTS/P09_Multi_Client_FTP_Server.md) | Sockets, FTP | ★★★☆☆ |
+| P10 | [Docker Network Configuration](PROJECTS/P10_Docker_Network_Configuration.md) | Docker | ★★☆☆☆ |
+| P11 | [Advanced SDN QoS](PROJECTS/P11_Advanced_SDN_Mininet_OpenFlow.md) | Ryu, QoS | ★★★★☆ |
+| P12 | [Microservices Load Balancing](PROJECTS/P12_Docker_Microservices_Load_Balancing.md) | Docker, Flask | ★★★☆☆ |
+| P13 | [RPC/gRPC Service](PROJECTS/P13_RPC_gRPC_Service.md) | gRPC, Protobuf | ★★★★☆ |
+| P14 | [IDS/IPS Simulation](PROJECTS/P14_Security_IDS_IPS_Simulation.md) | Scapy, Security | ★★★★☆ |
+| P15 | [MQTT IoT Application](PROJECTS/P15_MQTT_IoT_Client_Server.md) | MQTT, paho | ★★★☆☆ |
+
+### Reserve Projects (Individual)
+
+| # | Project | Technology |
+|---|---------|------------|
+| P16 | [Network Traffic Analyzer](RESERVE_individual/P16_Network_Traffic_Analyzer.md) | Scapy |
+| P17 | [DNS Client/Server](RESERVE_individual/P17_Reserve.md) | DNS Protocol |
+| P18 | [Network Chat Application](RESERVE_individual/P18_Reserve.md) | Sockets |
+| P19 | [Port Scanner](RESERVE_individual/P19_Reserve.md) | Scapy |
+| P20 | [IoT Security](RESERVE_individual/P20_Reserve.md) | MQTT, TLS |
+
+---
+
+## 📦 Submission Format
+
+### Archive Naming Convention
+
+**Format:** `SURNAME_Firstname_GGGG_PXX_EY.zip`
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| SURNAME | Family name (UPPERCASE) | POPESCU |
+| Firstname | First name | Ion |
+| GGGG | Group number | 1098 |
+| PXX | Project number | P01 |
+| EY | Stage (E1-E4) | E1 |
+
+**Example:** `POPESCU_Ion_1098_P01_E1.zip`
+
+### Required Files
+
+| Stage | Required Contents |
+|-------|-------------------|
+| E1 | `docs/specificatii.md`, `docs/diagrame/`, `README.md`, `MANIFEST.txt` |
+| E2 | + `src/` (partial), `docker/`, `docs/raport_progres.md` |
+| E3 | + `tests/`, `docs/documentatie_finala.md`, `CHANGELOG.md` |
+| E4 | Complete repository + git tag `v1.0-final` |
+
+---
+
+## 🔧 Development Environment
+
+### Prerequisites
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| Windows 11 | 22H2+ | Host operating system |
-| WSL2 | Latest | Linux environment |
-| Ubuntu | 22.04 LTS | WSL distribution |
-| Docker Engine | 24.0+ | Container runtime |
-| Portainer CE | 2.19+ | Container management GUI |
-| Python | 3.10+ | Programming language |
-| Git | 2.40+ | Version control |
-| Wireshark | 4.0+ | Network analysis (Windows) |
+| **Python** | 3.10+ | Programming |
+| **Docker** | 24.0+ | Containerisation |
+| **Git** | 2.40+ | Version control |
+| **WSL2** | Latest | Windows users |
 
-**Default credentials:**
-- Ubuntu WSL: `stud` / `stud`
-- Portainer: `stud` / `studstudstud`
+### Recommended Setup
 
----
+```bash
+# Credentials for WSL Ubuntu (from netENwsl)
+user: stud
+pass: stud
 
-## Laboratory Materials
-
-All projects reference materials from the **netENwsl** laboratory archive:
-
-📦 **Repository:** https://github.com/antonioclim/netENwsl
-
-| Week | Folder | Topic |
-|------|--------|-------|
-| 1 | `01enWSL/` | Fundamentals of Computer Networks |
-| 2 | `02enWSL/` | Socket Programming |
-| 3 | `03enWSL/` | Network Programming |
-| 4 | `04enWSL/` | Physical/Data Link Layer, Custom Protocols |
-| 5 | `05enWSL/` | IP Addressing, Subnetting |
-| 6 | `06enWSL/` | NAT/PAT, SDN, OpenFlow |
-| 7 | `07enWSL/` | Packet Capture, Wireshark, Scapy |
-| 8 | `08enWSL/` | HTTP Server, Reverse Proxy |
-| 9 | `09enWSL/` | Session Layer, TLS/SSL |
-| 10 | `10enWSL/` | Application Protocols (HTTP/HTTPS, DNS) |
-| 11 | `11enWSL/` | FTP, DNS, SSH, Load Balancing |
-| 12 | `12enWSL/` | Email, RPC (gRPC, JSON-RPC) |
-| 13 | `13enWSL/` | IoT (MQTT), Network Security |
-| 14 | `14enWSL/` | Recap and Project Evaluation |
-
----
-
-## Important Reminders
-
-- **Assessment** takes place with physical attendance at the faculty
-- **GitHub** is mandatory for all stages
-- **Deadlines** are strict — check the calendar in each project
-- **All team members** must understand all the code
-
----
-
-## Project Structure Template
-
-Each project repository should follow this structure:
-
-```
-retele-proiect-XX/
-├── README.md                    # Project description and run instructions
-├── docs/
-│   ├── specificatii.md          # [E1] Technical specifications
-│   ├── diagrame/                # [E1] Architecture diagrams
-│   ├── raport_progres.md        # [E2] Progress report
-│   └── documentatie_finala.md   # [E3] Final documentation
-├── src/
-│   ├── main.py                  # Entry point
-│   ├── modules/                 # Application modules
-│   └── utils/                   # Utilities
-├── docker/
-│   ├── docker-compose.yml
-│   ├── Dockerfile
-│   └── configs/                 # Service configuration files
-├── tests/
-│   ├── test_basic.py
-│   └── expected_outputs/
-├── artifacts/                   # Outputs (captures, logs)
-├── MANIFEST.txt                 # Signature file
-├── CHANGELOG.md                 # Change history
-└── .gitignore
+# Portainer (localhost:9000)
+user: stud
+pass: studstudstud
 ```
 
 ---
 
-*Last update: January 2026*  
-*Computer Networks — ASE Bucharest*
+## ❓ Frequently Asked Questions
+
+**Q: Can I change project after E1?**  
+A: No, project assignment is final after E1 submission.
+
+**Q: Can I work alone on a team project?**  
+A: Yes, but you must complete all requirements for team size 1.
+
+**Q: What if I miss a deadline?**  
+A: Late submissions receive 10% penalty per day (max 3 days).
+
+**Q: Where do I submit?**  
+A: Upload to the course portal + push to GitHub.
+
+---
+
+## 📚 External Resources
+
+### Laboratory Materials
+- **netENwsl:** https://github.com/antonioclim/netENwsl
+
+### Documentation
+- **Python:** https://docs.python.org/3/
+- **Docker:** https://docs.docker.com/
+- **Scapy:** https://scapy.readthedocs.io/
+- **Ryu SDN:** https://ryu-sdn.org/
+
+---
+
+## 📞 Support
+
+- **Course Forum:** Check before asking
+- **Office Hours:** Posted on course page
+- **Troubleshooting Guide:** [troubleshooting_common.md](docs/common/troubleshooting_common.md)
+
+---
+
+*Computer Networks — ASE Bucharest, CSIE*  
+*Academic Year 2025-2026*

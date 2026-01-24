@@ -1,22 +1,47 @@
 # Reserve Projects (P16-P20)
 
-These are individual reserve projects for students who need alternative assignments.
+> 📍 **Navigation:** [00PROJ](../README.md) → RESERVE_individual
 
-## Project List
+---
 
-| # | Project | Focus Area |
-|---|---------|------------|
-| P16 | [HTTP Analysis Wireshark](P16_HTTP_Analysis_Wireshark.md) | Protocol Analysis |
-| P17 | [LAN NAT DHCP Network](P17_LAN_NAT_DHCP_Network.md) | Network Design |
-| P18 | [TCP Chat Client Server](P18_TCP_Chat_Client_Server.md) | Socket Programming |
-| P19 | [Port Scanner Security](P19_Port_Scanner_Security.md) | Security Tools |
-| P20 | [IoT Smart Home Security](P20_IoT_Smart_Home_Security.md) | IoT Security |
+## Overview
 
-## Notes
+This directory contains **5 reserve projects** for individual students.
 
-- Reserve projects are for **individual** work only
-- Same deadline structure as main projects
-- Use common guides from `docs/common/`
+Reserve projects are assigned when:
+- Main projects are fully allocated
+- Student requests individual work
+- Special circumstances require alternative assignment
+
+| # | Project | Technology | Difficulty |
+|---|---------|------------|------------|
+| P16 | [Network Traffic Analyzer](P16_Network_Traffic_Analyzer.md) | Scapy | ★★☆☆☆ |
+| P17 | [DNS Client/Server](P17_Reserve.md) | DNS Protocol | ★★★☆☆ |
+| P18 | [Network Chat App](P18_Reserve.md) | Sockets | ★★☆☆☆ |
+| P19 | [Port Scanner](P19_Reserve.md) | Scapy | ★★★☆☆ |
+| P20 | [IoT Security](P20_Reserve.md) | MQTT, TLS | ★★★★☆ |
+
+---
+
+## Individual Project Requirements
+
+Since reserve projects are individual:
+
+- **No team work** — all code must be your own
+- **Full documentation** required
+- **Same deadlines** as main projects
+- **Same rubric** applies
+
+---
+
+## Assessment Timeline
+
+| Stage | Week | Weight | Deliverables |
+|-------|------|--------|--------------|
+| E1 | 5 | 20% | Specifications + Diagrams |
+| E2 | 9 | 25% | Prototype (50% functional) |
+| E3 | 13 | 35% | Final + Tests + Docs |
+| E4 | 14 | 20% | Live Demo + Defence |
 
 ---
 

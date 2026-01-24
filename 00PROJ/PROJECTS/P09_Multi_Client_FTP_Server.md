@@ -1,90 +1,289 @@
 # Project 09: Multi-Client FTP Server
 
-> **Course:** Computer Networks | **Institution:** ASE Bucharest - CSIE | **Project type:** Main
+> **Course:** Computer Networks  
+> **Programme:** Economic Informatics, Year 3, Semester 2  
+> **Institution:** ASE Bucharest - CSIE  
+> **Project type:** Main
 
-**Common guides:** [Pair Programming](../docs/common/pair_programming_guide.md) | [Code Quality](../docs/common/code_quality_standards.md) | [Git Workflow](../docs/common/git_workflow_detailed.md)
+> 📍 **Navigation:** [00PROJ](../README.md) → [PROJECTS](./README.md) → P09
+
+---
+
+## 📋 Assessment and Delivery Guide
+
+### ⚠️ IMPORTANT: Assessment with Physical Attendance
+
+**Project assessment takes place EXCLUSIVELY at the faculty, with mandatory physical attendance.**
+
+**Common guides:** [Pair Programming](../docs/common/pair_programming_guide.md) | [Code Quality](../docs/common/code_quality_standards.md) | [Git Workflow](../docs/common/git_workflow_detailed.md) | [Troubleshooting](../docs/common/troubleshooting_common.md)
+
+---
 
 ### 📅 Stage Calendar
-| Stage | Week | Deliverables | Score |
-|-------|------|--------------|-------|
-| **E1** - Design | Week 5 | Specifications + Diagrams | 20% |
-| **E2** - Prototype | Week 9 | Partial implementation | 25% |
-| **E3** - Final | Week 13 | Complete version | 35% |
-| **E4** - Presentation | Week 14 | Live demo | 20% |
+
+| Stage | Week | Deadline | Deliverables | Score |
+|-------|------|----------|--------------|-------|
+| **E1** - Design | Week 5 | Week 5 (2026) | Specifications + Diagrams + Plan | 20% |
+| **E2** - Prototype | Week 9 | Week 9 (2026) | Partial functional implementation | 25% |
+| **E3** - Final | Week 13 | Week 13 (2026) | Complete version + Documentation | 35% |
+| **E4** - Presentation | Week 14 | Week 14 (2026) | Live demo + Oral defence | 20% |
 
 **Repository:** `https://github.com/[username]/retele-proiect-09`
 
 ---
 
+### 📊 Assessment Rubric
+
+#### Stage 1 — Design (100 points)
+
+| Criterion | Points | Description |
+|-----------|--------|-------------|
+| Complete specifications | 30 | FTP commands, modes, authentication |
+| Architecture diagrams | 20 | Control/data channels, state machine |
+| Implementation plan | 15 | Realistic timeline |
+| Repository initialised | 15 | GitHub configured |
+| MANIFEST.txt correct | 10 | Valid signature |
+| Archive naming | 10 | Follows convention |
+
+#### Stage 2 — Prototype (100 points)
+
+| Criterion | Points | Description |
+|-----------|--------|-------------|
+| Basic FTP commands work | 35 | LIST, RETR, STOR |
+| Code quality | 25 | Clean, typed, documented |
+| Multi-client support | 15 | Threading/async handling |
+| Progress report | 10 | Documents progress |
+| MANIFEST.txt | 10 | Valid signature |
+| On-time delivery | 5 | Meets deadline |
+
+#### Stage 3 — Final Version (100 points + 10 bonus)
+
+| Criterion | Points | Description |
+|-----------|--------|-------------|
+| Complete FTP implementation | 40 | All required commands |
+| Final code quality | 20 | Production-ready |
+| Tests | 15 | Unit and integration |
+| Documentation | 10 | Complete docs |
+| Performance analysis | 5 | Concurrent connections metrics |
+| MANIFEST.txt | 10 | Valid signature |
+| **Bonus: FTPS support** | +10 | TLS encryption (teams of 3) |
+
+#### Stage 4 — Presentation (100 points)
+
+| Criterion | Points | Description |
+|-----------|--------|-------------|
+| Live demo functional | 35 | File transfer works |
+| Technical presentation | 25 | Explains FTP protocol |
+| Answers to questions | 20 | Demonstrates understanding |
+| Team contribution | 15 | All members know code |
+| Time management | 5 | 10-15 minutes |
+
+---
+
+### 👥 Team Size
+
+| Team | Requirements |
+|------|--------------|
+| **1 person** | Basic commands (LIST, RETR, STOR, USER, PASS) |
+| **2 persons** | + Passive/Active modes + directory navigation |
+| **3 persons** | + FTPS + resume support + bandwidth limiting |
+
+---
+
 ## 📚 Project Description
 
-Implement a simplified FTP server supporting multiple concurrent clients. Handle basic FTP commands (USER, PASS, LIST, RETR, STOR, QUIT) with proper control and data channel separation.
+Implement a simplified FTP server that supports multiple concurrent clients. The server will handle standard FTP commands for file listing, upload, download, and directory navigation. This project provides deep understanding of the FTP protocol with its unique dual-channel architecture (control + data).
 
 ### 🎯 Learning Objectives
-- **Implement** FTP command protocol
-- **Handle** control and data channels separately
-- **Support** concurrent client connections
-- **Manage** file transfers with progress tracking
+
+- **LO1:** Implement FTP command/response protocol over control connection
+- **LO2:** Manage separate data connections for file transfers
+- **LO3:** Support both active and passive transfer modes
+- **LO4:** Handle multiple clients concurrently using threading
+- **LO5:** Implement user authentication
+- **LO6:** Parse and generate FTP protocol messages
+
+### 🛠️ Technologies and Tools
+
+| Technology | Purpose | Documentation |
+|------------|---------|---------------|
+| **Python sockets** | Network programming | [docs.python.org](https://docs.python.org/3/library/socket.html) |
+| **threading** | Concurrent clients | [docs.python.org](https://docs.python.org/3/library/threading.html) |
+| **FTP RFC 959** | Protocol specification | [RFC 959](https://tools.ietf.org/html/rfc959) |
+| **FileZilla** | FTP client testing | [filezilla-project.org](https://filezilla-project.org) |
+
+### 📖 Key Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Control Connection** | Port 21, sends commands/responses |
+| **Data Connection** | Transfers files and directory listings |
+| **Active Mode** | Server connects to client's data port |
+| **Passive Mode** | Client connects to server's data port |
+| **Response Codes** | 3-digit codes (220, 331, 230, 550) |
+| **ASCII/Binary Mode** | Text vs binary transfer |
+| **PWD/CWD** | Print/Change working directory |
+| **RETR/STOR** | Retrieve (download) / Store (upload) |
+
+---
+
+## ⛔ Constraints (MUST/MUST NOT)
+
+### MUST (Mandatory)
+- [ ] MUST implement USER, PASS, LIST, RETR, STOR, QUIT commands
+- [ ] MUST support passive mode (PASV)
+- [ ] MUST handle multiple concurrent clients
+- [ ] MUST return correct FTP response codes
+- [ ] MUST log all commands and transfers
+- [ ] MUST pass all smoke tests
+
+### MUST NOT (Forbidden)
+- [ ] MUST NOT use ftplib for server (only for testing)
+- [ ] MUST NOT allow directory traversal attacks (../)
+- [ ] MUST NOT crash on malformed commands
+- [ ] MUST NOT leave data connections open
+
+### SHOULD (Recommended)
+- [ ] SHOULD implement active mode (PORT)
+- [ ] SHOULD support binary and ASCII modes
+- [ ] SHOULD implement CWD, PWD, MKD, RMD
 
 ---
 
 ## 🎯 Concept Analogies
 
-### FTP Channels = Phone Call + Fax
-🏠 **Analogy:** You call someone (control channel) to discuss what documents to send. Then you use a separate fax line (data channel) to actually transfer the documents. The phone call coordinates, the fax transfers.
+### FTP = Phone Call with Fax
 
-💻 **Technical:** Port 21 for commands, port 20 (or dynamic) for data transfer.
+🏠 **Real-World Analogy:**  
+You call someone (control connection) to discuss what documents to send. When ready to transfer, you use a fax machine (data connection) to send the actual documents. The phone call stays open to coordinate, but the fax is a separate channel for the data.
 
-### Active vs Passive = Who Calls Back
-🏠 **Analogy:** 
-- **Active:** "I'll call you back on your fax number" (server connects to client)
-- **Passive:** "Use my fax number to send" (client connects to server)
+💻 **Technical Mapping:**
+- Phone call = Control connection (port 21)
+- Fax machine = Data connection (port 20 or random)
+- "Please send invoice" = RETR invoice.pdf
+- "Document received" = 226 Transfer complete
 
-💻 **Technical:** Passive mode works better with firewalls/NAT.
+⚠️ **Where the analogy breaks:** Modern fax doesn't require a separate phone call. FTP's dual-channel design is a historical artifact from when this made sense for network architecture.
+
+---
+
+### Active vs Passive = Who Calls Whom
+
+🏠 **Real-World Analogy:**  
+Active mode: "I'll call you back at this number" — server calls client. Passive mode: "Here's my direct line, call me" — client calls server.
+
+💻 **Technical Mapping:**
+- Active: Client sends PORT command with its IP:port, server connects
+- Passive: Client sends PASV, server replies with IP:port, client connects
 
 ---
 
 ## 🗳️ Peer Instruction Questions
 
-### Question 1: Two Channels
-**Question:** Why does FTP use separate control and data channels?
-- A) Security isolation
-- B) Allow commands during transfer and different transfer modes ✓
-- C) Historical accident
+### Question 1: Why Two Connections?
+
+> 💭 **PREDICTION:** Why does FTP use separate control and data connections?
+
+**Options:**
+- A) Security reasons
+- B) Allow commands while transferring ✓
+- C) Faster transfers
 - D) Protocol limitation
 
-**Explanation:** Separating channels allows sending commands (abort, status) during transfer and using different connection modes for data.
+**Correct answer:** B
 
-### Question 2: Passive Mode
-**Question:** In passive mode, who initiates the data connection?
-- A) Server
-- B) Client ✓
-- C) Both simultaneously
-- D) Neither (shared channel)
+**Explanation:** With separate channels, you can send commands (like ABOR to cancel) while a file transfer is in progress. The control connection remains responsive.
 
-**Explanation:** Client connects to server's data port. This works better through NAT/firewalls.
+---
+
+### Question 2: Passive Mode Purpose
+
+> 💭 **PREDICTION:** When is passive mode necessary?
+
+**Options:**
+- A) When server is behind firewall
+- B) When client is behind NAT/firewall ✓
+- C) For faster transfers
+- D) For secure transfers
+
+**Correct answer:** B
+
+**Explanation:** In active mode, the server connects TO the client — but if the client is behind NAT, the server can't reach it. Passive mode reverses this: client connects to server, which works through NAT.
+
+---
+
+### Question 3: Response Code Meaning
+
+> 💭 **PREDICTION:** What does response code 550 mean?
+
+**Options:**
+- A) Success
+- B) Need password
+- C) File not found/permission denied ✓
+- D) Transfer complete
+
+**Correct answer:** C
+
+**Explanation:** 5xx codes indicate permanent failures. 550 specifically means "Requested action not taken" — usually file not found or permission denied.
+
+---
+
+### Question 4: PORT Command
+
+> 💭 **PREDICTION:** What does PORT 192,168,1,5,4,1 mean?
+
+**Options:**
+- A) Server port 4.1
+- B) IP 192.168.1.5, port 1025 ✓
+- C) IP 192.168.1.54, port 1
+- D) Error format
+
+**Correct answer:** B
+
+**Explanation:** PORT format is h1,h2,h3,h4,p1,p2. Port = p1*256 + p2 = 4*256 + 1 = 1025. IP = 192.168.1.5.
 
 ---
 
 ## ❌ Common Misconceptions
 
 ### 🚫 "FTP is secure"
-**CORRECT:** Basic FTP sends passwords in plaintext! Use SFTP (SSH) or FTPS (TLS) for security.
 
-### 🚫 "Binary and ASCII modes are the same"
-**CORRECT:** ASCII mode converts line endings (CR/LF). Binary transfers exact bytes. Wrong mode corrupts files!
+**WRONG:** Standard FTP sends passwords in plain text.
+
+**CORRECT:** FTP has no encryption. Use FTPS (FTP over TLS) or SFTP (SSH File Transfer) for security. Your project can note this limitation.
+
+---
+
+### 🚫 "Port 21 transfers files"
+
+**WRONG:** All FTP traffic goes through port 21.
+
+**CORRECT:** Port 21 is only for commands. Files transfer on separate connections (port 20 for active, random high port for passive).
+
+---
+
+### 🚫 "Active mode is better"
+
+**WRONG:** Active mode is the original, so it's better.
+
+**CORRECT:** Passive mode works better with modern networks (NAT, firewalls). Most clients default to passive.
 
 ---
 
 ## 📖 Glossary
+
 | Term | Definition |
 |------|------------|
-| **Control Channel** | Port 21, sends commands and responses |
-| **Data Channel** | Transfers file content and listings |
-| **Active Mode** | Server connects to client for data |
-| **Passive Mode** | Client connects to server for data |
-| **RETR** | Retrieve (download) file command |
-| **STOR** | Store (upload) file command |
+| **Control Connection** | TCP connection on port 21 for commands |
+| **Data Connection** | Separate TCP connection for file data |
+| **Active Mode** | Server initiates data connection to client |
+| **Passive Mode** | Client initiates data connection to server |
+| **ASCII Mode** | Text transfer with line ending conversion |
+| **Binary Mode** | Raw byte transfer without conversion |
+| **RETR** | Retrieve (download) a file |
+| **STOR** | Store (upload) a file |
+| **PASV** | Request passive mode |
+| **Response Code** | 3-digit status (2xx success, 5xx error) |
 
 ---
 
@@ -92,113 +291,139 @@ Implement a simplified FTP server supporting multiple concurrent clients. Handle
 
 ```python
 #!/usr/bin/env python3
-"""FTP Server with Multi-Client Support"""
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# IMPORTS
-# ═══════════════════════════════════════════════════════════════════════════════
-import socket
-import threading
-import os
-from typing import Optional
+"""FTP Server - Command Handler"""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FTP_COMMANDS
 # ═══════════════════════════════════════════════════════════════════════════════
-class FTPSession:
-    """Handle single FTP client session."""
+class FTPHandler:
+    """Handle FTP commands for a single client."""
     
-    def __init__(self, control_socket: socket.socket, root_dir: str):
+    def __init__(self, control_socket, root_dir: str):
         self.control = control_socket
-        self.root = root_dir
-        self.cwd = "/"
+        self.root_dir = Path(root_dir)
+        self.cwd = self.root_dir
         self.authenticated = False
-        self.data_socket: Optional[socket.socket] = None
+        self.data_socket = None
+        self.transfer_mode = "passive"
     
-    def send_response(self, code: int, message: str) -> None:
-        """Send FTP response code and message."""
-        response = f"{code} {message}\r\n"
-        self.control.send(response.encode())
+    def handle_USER(self, username: str) -> str:
+        """Handle USER command."""
+        self.username = username
+        return "331 Username OK, need password"
     
-    def handle_LIST(self, args: str) -> None:
-        """List directory contents."""
-        if not self.data_socket:
-            self.send_response(425, "Use PASV first")
-            return
-        
-        # 💭 PREDICTION: What if directory doesn't exist?
-        self.send_response(150, "Opening data connection")
-        
-        path = os.path.join(self.root, self.cwd.lstrip('/'))
-        listing = "\r\n".join(os.listdir(path))
-        
-        conn, _ = self.data_socket.accept()
-        conn.send(listing.encode())
-        conn.close()
-        
-        self.send_response(226, "Transfer complete")
+    def handle_PASS(self, password: str) -> str:
+        """Handle PASS command."""
+        # 💭 PREDICTION: What if wrong password?
+        # Answer: Return 530 Login incorrect
+        if self._check_credentials(self.username, password):
+            self.authenticated = True
+            return "230 Login successful"
+        return "530 Login incorrect"
     
-    def handle_RETR(self, filename: str) -> None:
-        """Send file to client."""
-        filepath = os.path.join(self.root, self.cwd.lstrip('/'), filename)
+    def handle_PASV(self, args: str) -> str:
+        """Handle PASV command - enter passive mode."""
+        self.data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.data_socket.bind(('0.0.0.0', 0))
+        self.data_socket.listen(1)
         
-        if not os.path.exists(filepath):
-            self.send_response(550, "File not found")
-            return
+        ip = self.control.getsockname()[0]
+        port = self.data_socket.getsockname()[1]
         
-        self.send_response(150, "Opening binary data connection")
+        # Format: h1,h2,h3,h4,p1,p2
+        ip_parts = ip.split('.')
+        p1, p2 = port // 256, port % 256
         
-        conn, _ = self.data_socket.accept()
-        with open(filepath, 'rb') as f:
-            while chunk := f.read(8192):
-                conn.send(chunk)
-        conn.close()
+        return f"227 Entering Passive Mode ({','.join(ip_parts)},{p1},{p2})"
+    
+    def handle_LIST(self, path: str = "") -> str:
+        """Handle LIST command - directory listing."""
+        if not self.authenticated:
+            return "530 Not logged in"
         
-        self.send_response(226, "Transfer complete")
+        target = self.cwd / path if path else self.cwd
+        
+        # Accept data connection
+        data_conn, _ = self.data_socket.accept()
+        
+        try:
+            listing = self._format_listing(target)
+            data_conn.sendall(listing.encode())
+            return "226 Directory listing sent"
+        finally:
+            data_conn.close()
+    
+    def handle_RETR(self, filename: str) -> str:
+        """Handle RETR command - download file."""
+        if not self.authenticated:
+            return "530 Not logged in"
+        
+        file_path = self.cwd / filename
+        if not file_path.exists():
+            return "550 File not found"
+        
+        data_conn, _ = self.data_socket.accept()
+        
+        try:
+            with open(file_path, 'rb') as f:
+                data_conn.sendall(f.read())
+            return "226 Transfer complete"
+        finally:
+            data_conn.close()
+```
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
-def main():
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(('0.0.0.0', 21))
-    server.listen(5)
-    
-    print("FTP Server listening on port 21")
-    
-    while True:
-        client, addr = server.accept()
-        session = FTPSession(client, '/srv/ftp')
-        thread = threading.Thread(target=session.run)
-        thread.start()
+---
 
-if __name__ == "__main__":
-    main()
+## 📋 Expected Outputs
+
+### Scenario 1: Successful Login
+
+```
+USER student
+331 Username OK, need password
+PASS secret
+230 Login successful
+```
+
+### Scenario 2: Directory Listing
+
+```
+PASV
+227 Entering Passive Mode (192,168,1,1,4,1)
+LIST
+150 Opening data connection
+226 Directory listing sent
 ```
 
 ---
 
 ## ❓ Frequently Asked Questions
 
-**Q: Port 21 requires root**
-A: Use port 2121 for testing, or run with sudo.
+**Q: How do I test with FileZilla?**
 
-**Q: Data connection fails through NAT**
-A: Implement passive mode (PASV) — client connects to server.
+A: Connect to localhost:21 with your test credentials. Enable passive mode in settings if behind NAT.
+
+**Q: Why does active mode fail?**
+
+A: Your client is probably behind NAT. Server can't connect back. Use passive mode.
 
 ---
 
 ## 📚 Laboratory References
 
-Consult these resources from **netENwsl** (https://github.com/antonioclim/netENwsl):
-
 | Week | Folder | Relevant Content |
 |------|--------|------------------|
+| 11 | `11enWSL/` | FTP protocol, file transfer |
 | 2 | `02enWSL/` | Socket programming |
-| 3 | `03enWSL/` | Multi-threading, TCP tunneling |
-| 9 | `09enWSL/` | FTP implementation (ex_9_02_implement_pseudo_ftp.py) |
-| 11 | `11enWSL/` | FTP protocol in Docker context |
+| 9 | `09enWSL/` | Session layer protocols |
+
+---
+
+## 📚 Bibliography
+
+1. **[OFFICIAL]** FTP RFC 959  
+   URL: https://tools.ietf.org/html/rfc959  
+   Verified: 2026-01-24 ✓
 
 ---
 

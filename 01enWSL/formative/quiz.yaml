@@ -1,0 +1,426 @@
+# formative/quiz.yaml
+# Week 1 Formative Assessment — Machine-Readable Format
+# NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim
+# 
+# This file provides programmatically executable quiz questions
+# that map directly to Learning Objectives and misconceptions.
+#
+# Run with: python formative/run_quiz.py
+# Validate: python -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))"
+
+metadata:
+  week: 1
+  topic: "Network Fundamentals"
+  version: "1.0.0"
+  estimated_time_minutes: 15
+  passing_score: 70
+  total_questions: 15
+  bloom_levels:
+    remember: 5
+    understand: 5
+    apply: 5
+  lo_coverage:
+    - LO1  # ICMP ping și latency
+    - LO2  # TCP socket communication
+    - LO3  # Data parsing
+    - LO4  # PCAP analysis
+    - LO5  # Transmission delay
+    - LO6  # Docker containers
+    - LO7  # Wireshark capture
+
+sections:
+  - id: pre_lab
+    name: "Pre-Lab Quick Check"
+    description: "Answer these BEFORE starting the laboratory exercises"
+    time_limit_minutes: 5
+    questions: [q01, q02, q03, q04, q05]
+    
+  - id: during_lab
+    name: "During-Lab Checkpoints"
+    description: "Verify understanding at key points during the lab"
+    time_limit_minutes: 0  # No limit
+    questions: [q06, q07, q08, q09, q10]
+    
+  - id: exit_ticket
+    name: "Exit Ticket"
+    description: "Complete BEFORE leaving the laboratory"
+    time_limit_minutes: 10
+    questions: [q11, q12, q13, q14, q15]
+
+questions:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PRE-LAB SECTION (Remember level)
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  - id: q01
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "What is the difference between latency and bandwidth?"
+    options:
+      a: "Latency = data volume; Bandwidth = time delay"
+      b: "Latency = time delay; Bandwidth = data volume per second"
+      c: "They are the same thing measured differently"
+      d: "Latency is for TCP; Bandwidth is for UDP"
+    correct: b
+    explanation: |
+      Latency measures TIME (milliseconds) - how long a packet takes to travel.
+      Bandwidth measures THROUGHPUT (Mbps) - how much data flows per second.
+      Analogy: Latency = pipe length, Bandwidth = pipe width.
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    feedback:
+      correct: "✅ Exact! Latency = time, Bandwidth = volume/second"
+      incorrect: "❌ Review docs/misconceptions.md §1: Ping measures latency, not bandwidth"
+
+  - id: q02
+    type: fill_blank
+    lo_ref: LO6
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "The command to show IP addresses in Linux is: ip ___"
+    correct: ["addr", "addr show", "a", "address"]
+    case_sensitive: false
+    explanation: "'ip addr' or 'ip a' displays all network interfaces with their IP addresses"
+    hint: "Think about what you want to see - addresses!"
+    related_doc: "docs/glossary.md#commands-reference"
+
+  - id: q03
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "What does the LISTEN socket state mean?"
+    options:
+      a: "The socket is actively transferring data"
+      b: "The socket is waiting for incoming connections"
+      c: "The socket has encountered an error"
+      d: "The socket is in the process of closing"
+    correct: b
+    explanation: |
+      LISTEN means a server socket is ready and waiting for clients to connect.
+      No data is being transferred yet - it's just waiting.
+      After a client connects, the state changes to ESTABLISHED.
+    misconception_ref: "docs/misconceptions.md#misconception-11"
+    feedback:
+      correct: "✅ Correct! LISTEN = waiting, ESTABLISHED = communicating"
+      incorrect: "❌ LISTEN means waiting, not communicating. See socket states diagram."
+
+  - id: q04
+    type: multiple_choice
+    lo_ref: LO6
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "In Docker, what is the difference between an image and a container?"
+    options:
+      a: "Image = running instance; Container = read-only template"
+      b: "Image = read-only template; Container = running instance"
+      c: "They are the same thing with different names"
+      d: "Images are for Windows; Containers are for Linux"
+    correct: b
+    explanation: |
+      Image = Read-only template (like a class in programming)
+      Container = Running instance of an image (like an object)
+      You can create multiple containers from one image.
+    misconception_ref: "docs/misconceptions.md#misconception-7"
+    related_doc: "docs/glossary.md#docker-terms"
+
+  - id: q05
+    type: numeric
+    lo_ref: LO6
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "What port does Portainer use by default in our lab environment?"
+    correct: 9000
+    tolerance: 0
+    explanation: "Portainer runs on port 9000 (http://localhost:9000). This port is RESERVED!"
+    hint: "It's a 4-digit number starting with 9"
+    warning: "Never use port 9000 for lab services!"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DURING-LAB SECTION (Understand level)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q06
+    type: true_false
+    lo_ref: LO1
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "Ping measures bandwidth (data throughput)."
+    correct: false
+    explanation: |
+      FALSE! Ping measures LATENCY (round-trip time), not bandwidth.
+      The time=12.3ms in ping output is RTT, not speed.
+      To measure bandwidth, use tools like iperf3.
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    feedback:
+      correct: "✅ Correct! Ping measures latency (RTT), not bandwidth."
+      incorrect: "❌ This is Misconception #1! Ping measures latency, not bandwidth."
+
+  - id: q07
+    type: true_false
+    lo_ref: LO6
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "A Docker container's localhost (127.0.0.1) is the same as the host machine's localhost."
+    correct: false
+    explanation: |
+      FALSE! Containers have ISOLATED network namespaces.
+      Container's localhost ≠ Host's localhost
+      To reach host services from container, use host IP or special Docker DNS.
+    misconception_ref: "docs/misconceptions.md#misconception-7"
+    feedback:
+      correct: "✅ Correct! Container networking is isolated."
+      incorrect: "❌ Containers have isolated networking. See Misconception #7."
+
+  - id: q08
+    type: fill_blank
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "The TCP three-way handshake consists of: SYN → _______ → ACK"
+    correct: ["SYN-ACK", "SYN,ACK", "SYNACK", "SYN ACK"]
+    case_sensitive: false
+    explanation: |
+      TCP three-way handshake:
+      1. Client sends SYN (synchronize)
+      2. Server responds with SYN-ACK (synchronize-acknowledge)
+      3. Client sends ACK (acknowledge)
+      Connection is now ESTABLISHED.
+    related_doc: "docs/theory_summary.md#tcp-transmission-control-protocol"
+
+  - id: q09
+    type: matching
+    lo_ref: LO1
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "Match each command to its primary purpose:"
+    pairs:
+      - left: "ip addr"
+        right: "Show IP addresses and interfaces"
+      - left: "ss -tlnp"
+        right: "Show listening TCP ports with processes"
+      - left: "ping -c 4 host"
+        right: "Test connectivity and measure latency"
+      - left: "docker ps"
+        right: "List running containers"
+    explanation: |
+      ip addr: Network interface configuration
+      ss -tlnp: Socket statistics (-t=TCP, -l=listening, -n=numeric, -p=process)
+      ping: ICMP echo for connectivity testing
+      docker ps: Container management
+    related_doc: "docs/glossary.md#commands-reference"
+
+  - id: q10
+    type: short_answer
+    lo_ref: LO2
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "Why might you choose UDP instead of TCP for an application?"
+    keywords: ["speed", "fast", "real-time", "streaming", "gaming", "low latency", "no handshake", "less overhead"]
+    min_keywords: 2
+    explanation: |
+      UDP is preferred when:
+      - Speed matters more than guaranteed delivery
+      - Real-time applications (VoIP, gaming, streaming)
+      - Simple request-response (DNS)
+      - Broadcast/multicast needed
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # EXIT TICKET SECTION (Apply level)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - id: q11
+    type: command
+    lo_ref: LO1
+    bloom_level: apply
+    difficulty: intermediate
+    points: 3
+    stem: "Write the exact command to ping google.com exactly 4 times:"
+    correct: ["ping -c 4 google.com", "ping -c4 google.com", "ping google.com -c 4"]
+    validation_regex: "^ping\\s+(-c\\s*4\\s+google\\.com|google\\.com\\s+-c\\s*4)$"
+    explanation: |
+      The -c flag specifies the COUNT of packets to send.
+      Without -c, ping runs indefinitely on Linux.
+      Format: ping -c COUNT HOST
+    hint: "The flag for count is -c"
+
+  - id: q12
+    type: command
+    lo_ref: LO2
+    bloom_level: apply
+    difficulty: intermediate
+    points: 3
+    stem: "Write the command to show all listening TCP ports with process information:"
+    correct: ["ss -tlnp", "ss -tlpn", "ss -ltnp", "ss -lptn", "ss -ptnl", "ss -ntlp"]
+    explanation: |
+      ss flags:
+      -t = TCP only
+      -l = listening sockets only
+      -n = numeric (no DNS resolution)
+      -p = show process using socket
+      Order of flags doesn't matter.
+    related_doc: "docs/glossary.md#ss-flags"
+
+  - id: q13
+    type: command
+    lo_ref: LO6
+    bloom_level: apply
+    difficulty: intermediate
+    points: 3
+    stem: "You ran 'docker ps' and see nothing, but you know containers exist. What command shows ALL containers including stopped ones?"
+    correct: ["docker ps -a", "docker ps --all", "docker container ls -a", "docker container ls --all"]
+    explanation: |
+      docker ps shows only RUNNING containers by default.
+      The -a (or --all) flag shows ALL containers:
+      - Running
+      - Stopped
+      - Exited
+    misconception_ref: "docs/misconceptions.md#misconception-8"
+
+  - id: q14
+    type: code_trace
+    lo_ref: LO2
+    bloom_level: apply
+    difficulty: advanced
+    points: 3
+    stem: |
+      What will this code print? (Assume no server is listening on port 99999)
+      
+      ```python
+      import socket
+      sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      result = sock.connect_ex(("127.0.0.1", 99999))
+      print("OPEN" if result == 0 else "CLOSED")
+      sock.close()
+      ```
+    correct: ["CLOSED", "closed"]
+    explanation: |
+      connect_ex() returns:
+      - 0 on successful connection
+      - Error code (non-zero) on failure
+      
+      Since no server listens on port 99999:
+      - connect_ex returns error code (e.g., 111 = ECONNREFUSED)
+      - result != 0, so prints "CLOSED"
+    related_doc: "docs/code_tracing.md#exercise-t1"
+
+  - id: q15
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: apply
+    difficulty: advanced
+    points: 3
+    stem: |
+      In Wireshark, you capture traffic and see these packets in sequence:
+      
+      Packet 1: [SYN]
+      Packet 2: [SYN, ACK]
+      Packet 3: [ACK]
+      
+      What network event just occurred?
+    options:
+      a: "A TCP connection was terminated (closed)"
+      b: "A TCP connection was established (three-way handshake)"
+      c: "Data was transferred between client and server"
+      d: "An error occurred and connection was reset"
+    correct: b
+    explanation: |
+      SYN → SYN-ACK → ACK is the TCP three-way handshake.
+      This sequence ESTABLISHES a new TCP connection.
+      
+      Connection TERMINATION uses FIN flags, not SYN.
+      Data transfer comes AFTER the handshake.
+    related_doc: "docs/theory_summary.md#three-way-handshake"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCORING CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+scoring:
+  weights:
+    basic: 1
+    intermediate: 2
+    advanced: 3
+  
+  passing_thresholds:
+    pre_lab: 60
+    during_lab: 70
+    exit_ticket: 70
+    overall: 70
+  
+  max_points:
+    pre_lab: 5      # 5 questions × 1 point
+    during_lab: 10  # 5 questions × 2 points
+    exit_ticket: 15 # 5 questions × 3 points
+    total: 30
+
+grading_scale:
+  - range: [90, 100]
+    grade: "Excellent"
+    emoji: "🌟"
+    message: "Outstanding! Ready for advanced networking topics."
+    recommendation: "Proceed to homework assignments."
+    
+  - range: [80, 89]
+    grade: "Very Good"
+    emoji: "✅"
+    message: "Solid understanding with minor gaps."
+    recommendation: "Review weak areas before homework."
+    
+  - range: [70, 79]
+    grade: "Good"
+    emoji: "📗"
+    message: "Adequate understanding, some concepts need reinforcement."
+    recommendation: "Re-read theory_summary.md sections for weak LOs."
+    
+  - range: [60, 69]
+    grade: "Developing"
+    emoji: "📚"
+    message: "Partial understanding, significant review needed."
+    recommendation: "Review theory_summary.md and misconceptions.md completely."
+    
+  - range: [50, 59]
+    grade: "Needs Improvement"
+    emoji: "⚠️"
+    message: "Fundamental concepts not yet solid."
+    recommendation: "Seek instructor help. Review all Week 0 prerequisites."
+    
+  - range: [0, 49]
+    grade: "Incomplete"
+    emoji: "🔄"
+    message: "Major gaps in understanding."
+    recommendation: "Schedule office hours. Complete prerequisites before continuing."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METADATA FOR ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+analytics:
+  target_first_vote_accuracy: "40-60%"  # For peer instruction
+  expected_improvement_after_discussion: "20-30%"
+  
+  difficulty_distribution:
+    basic: 33%      # 5/15 questions
+    intermediate: 33%  # 5/15 questions  
+    advanced: 33%   # 5/15 questions
+  
+  lo_question_mapping:
+    LO1: [q01, q06, q11]
+    LO2: [q03, q08, q10, q12, q14]
+    LO3: []  # Covered in lab exercises, not quiz
+    LO4: [q15]
+    LO5: []  # Covered in lab exercises
+    LO6: [q02, q04, q05, q07, q13]
+    LO7: [q15]  # Combined with LO4

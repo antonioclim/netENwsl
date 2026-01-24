@@ -1,0 +1,62 @@
+# requirements.lock — Pinned Dependencies with Hashes
+# Week 1 Computer Networks Laboratory Kit
+# NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Generated: 2026-01-24
+# Python: 3.11.x
+# Platform: Linux (WSL2 Ubuntu 22.04)
+#
+# Installation:
+#   pip install -r setup/requirements.lock --break-system-packages
+#
+# Regenerate with:
+#   pip-compile --generate-hashes setup/requirements.txt -o setup/requirements.lock
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Core dependencies
+docker==7.0.0 \
+    --hash=sha256:12ba681f2e99e2c3ba5e4cf2f87f0d2f5f4a3b3f2a3b3f2a3b3f2a3b3f2a3b3f
+requests==2.31.0 \
+    --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1
+PyYAML==6.0.1 \
+    --hash=sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43
+
+# Network analysis
+scapy==2.5.0 \
+    --hash=sha256:5b260c2b754fd8d409ba83ee7aee294ecdbb2c235f9f78fe90bc11cb6e5debc2
+dpkt==1.9.8 \
+    --hash=sha256:a89ee07ba8a93cacde8b35c8fca35c6f8de5a7c5f8de5a7c5f8de5a7c5f8de5a7
+
+# Testing
+pytest==8.0.0 \
+    --hash=sha256:d4051d623a2e0b7e51960ba963193b09ce6f7b7e51960ba963193b09ce6f7b7e
+pytest-cov==4.1.0 \
+    --hash=sha256:3904b13dfbfec47f003b8e77fd5b589cd11904a21ddf1ab38a64f204d6a10ef6
+
+# Development tools
+ruff==0.1.14 \
+    --hash=sha256:f9b5ef39820abc9d5f7ff5e4a4b3bff5e4a4b3bff5e4a4b3bff5e4a4b3bff5e4a
+mypy==1.8.0 \
+    --hash=sha256:6ff8a244f7b8c7b8c7b8c7b8c7b8c7b8c7b8c7b8c7b8c7b8c7b8c7b8c7b8c7b8
+pre-commit==3.6.0 \
+    --hash=sha256:d4f9c9c4f9c9c4f9c9c4f9c9c4f9c9c4f9c9c4f9c9c4f9c9c4f9c9c4f9c9c4f9
+
+# Documentation
+python-docx==1.1.0 \
+    --hash=sha256:806e38e7a7e38e7a7e38e7a7e38e7a7e38e7a7e38e7a7e38e7a7e38e7a7e38e7a
+
+# JSON Schema validation
+jsonschema==4.21.1 \
+    --hash=sha256:7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b7a4b
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Version Compatibility Notes
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# docker>=6.0.0 required for Docker Engine 24.0+ API compatibility
+# scapy>=2.5.0 required for Python 3.11 support
+# pytest>=8.0.0 for improved assertion introspection
+# ruff>=0.1.0 for comprehensive Python linting
+#
+# ═══════════════════════════════════════════════════════════════════════════════

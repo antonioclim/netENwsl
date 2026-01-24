@@ -1,0 +1,266 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ase-csie.ro/netenwsl/quiz-schema.json",
+  "title": "Formative Quiz Schema — Week 1",
+  "description": "JSON Schema for validating quiz.yaml structure. Ensures machine-readable, verifiable quiz format.",
+  "type": "object",
+  "required": ["metadata", "questions", "sections"],
+  "additionalProperties": true,
+  
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["week", "topic", "version", "passing_score", "total_questions"],
+      "properties": {
+        "week": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 14,
+          "description": "Week number (1-14)"
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 3,
+          "description": "Topic name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version (e.g., 1.0.0)"
+        },
+        "passing_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Minimum passing percentage"
+        },
+        "total_questions": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of questions"
+        },
+        "estimated_time_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Estimated completion time"
+        },
+        "bloom_levels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "lo_coverage": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^LO[0-9]+$"
+          }
+        }
+      }
+    },
+    
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "questions"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z_]+$",
+            "description": "Section identifier (snake_case)"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "description": {
+            "type": "string"
+          },
+          "time_limit_minutes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^q[0-9]+$"
+            }
+          }
+        }
+      }
+    },
+    
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "stem", "correct"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^q[0-9]+$",
+            "description": "Question ID (q01, q02, etc.)"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "multiple_choice",
+              "fill_blank",
+              "true_false",
+              "numeric",
+              "command",
+              "code_trace",
+              "matching",
+              "short_answer"
+            ]
+          },
+          "lo_ref": {
+            "type": "string",
+            "pattern": "^LO[0-9]+$",
+            "description": "Learning Objective reference"
+          },
+          "bloom_level": {
+            "type": "string",
+            "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"]
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["basic", "intermediate", "advanced"]
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "stem": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Question text"
+          },
+          "options": {
+            "type": "object",
+            "description": "For multiple_choice questions",
+            "patternProperties": {
+              "^[a-d]$": {
+                "type": "string"
+              }
+            }
+          },
+          "correct": {
+            "description": "Correct answer(s) - string, array, boolean, or number"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "Explanation shown after answering"
+          },
+          "hint": {
+            "type": "string"
+          },
+          "feedback": {
+            "type": "object",
+            "properties": {
+              "correct": { "type": "string" },
+              "incorrect": { "type": "string" }
+            }
+          },
+          "misconception_ref": {
+            "type": "string",
+            "description": "Reference to docs/misconceptions.md"
+          },
+          "related_doc": {
+            "type": "string",
+            "description": "Reference to related documentation"
+          },
+          "keywords": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "For short_answer questions"
+          },
+          "min_keywords": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pairs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["left", "right"],
+              "properties": {
+                "left": { "type": "string" },
+                "right": { "type": "string" }
+              }
+            },
+            "description": "For matching questions"
+          },
+          "validation_regex": {
+            "type": "string",
+            "description": "Regex pattern for command validation"
+          },
+          "case_sensitive": {
+            "type": "boolean",
+            "default": false
+          },
+          "tolerance": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Numeric tolerance for numeric questions"
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "type": { "const": "multiple_choice" } } },
+            "then": { "required": ["options"] }
+          },
+          {
+            "if": { "properties": { "type": { "const": "matching" } } },
+            "then": { "required": ["pairs"] }
+          },
+          {
+            "if": { "properties": { "type": { "const": "short_answer" } } },
+            "then": { "required": ["keywords"] }
+          }
+        ]
+      }
+    },
+    
+    "scoring": {
+      "type": "object",
+      "properties": {
+        "weights": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        },
+        "passing_thresholds": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        }
+      }
+    },
+    
+    "grading_scale": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["range", "grade"],
+        "properties": {
+          "range": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "grade": { "type": "string" },
+          "emoji": { "type": "string" },
+          "message": { "type": "string" },
+          "recommendation": { "type": "string" }
+        }
+      }
+    }
+  }
+}
