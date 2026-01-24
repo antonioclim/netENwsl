@@ -1,72 +1,72 @@
-# Materiale Didactice pentru Rețele de Calculatoare în Universități de Top
-## O Analiză Comparativă Independentă
+# Computer Networks Teaching Materials at Top Universities
+## An Independent Comparative Analysis
 
 ---
 
 <div align="center">
 
-**Studiu Comparativ: Curricula de Computer Networks**  
-*Facultăți din Top 100 QS/THE/ARWU vs. Proiectul CLIM&TOMA/ASE-CSIE*
+**Comparative Study: Computer Networks Curricula**  
+*Top 100 QS/THE/ARWU Faculties vs. the CLIM&TOMA/ASE-CSIE Project*
 
 ---
 
-*„Dacă vrei să înveți cu adevărat ceva, încearcă să-l predai."*  
-— Richard Feynman (probabil la o cafea, ca și noi)
+*"If you want to truly learn something, try teaching it."*  
+— Richard Feynman (probably over coffee, much like us)
 
 </div>
 
 ---
 
-## Disclaimer și Conflict de Interese
+## Disclaimer and Conflict of Interest
 
-Prezentul raport a fost elaborat de autorii materialelor CLIM&TOMA/ASE-CSIE, ceea ce creează un evident conflict de interese. Recunoaștem cu onestitate că obiectivitatea absolută este un ideal către care tindem, nu o certitudine pe care o deținem. Cititorul este invitat să verifice independent sursele citate și să-și formeze propria opinie.
+This report was written by the authors of the CLIM&TOMA/ASE-CSIE materials, which creates an obvious conflict of interest. We acknowledge that absolute objectivity is an ideal we strive towards rather than a certainty we possess. Readers are encouraged to verify the cited sources independently and form their own opinions.
 
-Cu alte cuvinte: da, ne lăudăm puțin, dar încercăm să fim corecți în acest proces.
+In other words: yes, we are showing off a bit, but we are trying to be fair about it.
 
 ---
 
-## 1. Introducere și Metodologie
+## 1. Introduction and Methodology
 
-### 1.1. Contextul Cercetării
+### 1.1. Research Context
 
-Proiectul **CLIM&TOMA/ASE-CSIE** (denumit în continuare *proiectul de referință*) a luat naștere din colaborarea dintre **ing. dr. Antonio CLIM** și **conf. dr. Andrei TOMA** de la Academia de Studii Economice din București, Facultatea de Cibernetică, Statistică și Informatică Economică (ASE-CSIE).
+The **CLIM&TOMA/ASE-CSIE** project (hereafter referred to as the *reference project*) emerged from a collaboration between **ing. dr. Antonio CLIM** and **conf. dr. Andrei TOMA** at the Bucharest University of Economic Studies, Faculty of Economic Cybernetics, Statistics and Informatics (ASE-CSIE).
 
-Ideea inițială, scripturile de bază și numeroase sesiuni de brainstorming (desfășurate preponderent la cafeneaua **The Dose**, București — un loc care merită credit pentru cantitatea de cofeină investită în acest proiect) au condus la dezvoltarea unui kit de laborator pentru disciplina *Rețele de Calculatoare* care încearcă să îmbine:
+The initial concept, base scripts and countless brainstorming sessions (mostly held at **The Dose** coffee shop in Bucharest — a place that deserves credit for the sheer volume of caffeine invested in this endeavour) led to developing a laboratory kit for the *Computer Networks* course that attempts to combine:
 
-- Rigoarea academică cu accesibilitatea practică
-- Tehnologiile moderne (Docker, WSL2) cu pedagogia bazată pe evidență
-- Comprehensivitatea cu... păi, cu mai multă comprehensivitate
+- Academic rigour with practical accessibility
+- Modern technologies (Docker, WSL2) with evidence-based pedagogy
+- Comprehensiveness with... well, more comprehensiveness
 
-Conf. dr. Andrei TOMA aduce proiectului un talent rar: capacitatea de a reduce concepte complicate la esența lor reală — o abilitate care, în experiența noastră, valorează mai mult decât orice framework sofisticat.
+Conf. dr. Andrei TOMA brings a rare talent to this project: the ability to reduce complicated concepts to their actual essence — a skill that, in our experience, is worth more than any sophisticated framework.
 
-### 1.2. Metodologie
+### 1.2. Methodology
 
-Am analizat **peste 20 de cursuri de rețele** de la universități din Top 100 (conform QS World University Rankings, Times Higher Education și ARWU), concentrându-ne pe materialele disponibile public pe GitHub și platforme educaționale deschise.
+We analysed **over 20 networking courses** from Top 100 universities (according to QS World University Rankings, Times Higher Education and ARWU), focusing on materials publicly available on GitHub and open educational platforms.
 
-**Criterii de evaluare:**
+**Evaluation criteria:**
 
-| Cod | Dimensiune | Descriere |
+| Code | Dimension | Description |
 |:---:|:-----------|:----------|
-| **C1** | Comprehensivitate | Număr de săptămâni, acoperire tematică |
-| **C2** | Calitatea Codului | Type hints, docstrings, standarde |
-| **C3** | Sofisticare Pedagogică | Metode bazate pe evidență (peer instruction, misconceptions) |
-| **C4** | Infrastructură | Docker, virtualizare, verificare mediu |
-| **C5** | Documentație | README, ghiduri, cheatsheets, glosare |
-| **C6** | Proiecte | Varietate, scală, lucru în echipă |
-| **C7** | Elemente Interactive | Prezentări HTML, quiz-uri, demo-uri |
+| **C1** | Comprehensiveness | Number of weeks, topic coverage |
+| **C2** | Code Quality | Type hints, docstrings, standards |
+| **C3** | Pedagogical Sophistication | Evidence-based methods (peer instruction, misconceptions) |
+| **C4** | Infrastructure | Docker, virtualisation, environment verification |
+| **C5** | Documentation | README files, guides, cheatsheets, glossaries |
+| **C6** | Projects | Variety, scale, teamwork |
+| **C7** | Interactive Elements | HTML presentations, quizzes, demos |
 
 ---
 
-## 2. Peisajul Academic: Cine Face Ce și Cum
+## 2. The Academic Landscape: Who Does What and How
 
-### 2.1. Universități și Cursuri Analizate
+### 2.1. Universities and Courses Analysed
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    GEOGRAFÍA CURSURILOR ANALIZATE                       │
+│                    GEOGRAPHY OF ANALYSED COURSES                        │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│   🇺🇸 SUA                          🇪🇺 Europa                           │
+│   🇺🇸 USA                           🇪🇺 Europe                          │
 │   ├── Stanford CS144               ├── ETH Zürich (227-0120-00L)       │
 │   ├── UC Berkeley CS168            ├── EPFL (COM-208)                  │
 │   ├── CMU 15-441/641               ├── TU München                      │
@@ -78,159 +78,55 @@ Am analizat **peste 20 de cursuri de rețele** de la universități din Top 100 
 │   ├── Johns Hopkins EN.601.414     ├── NUS CS2105                      │
 │   └── UT Austin                    ├── Tsinghua                        │
 │                                    ├── CUHK CSCI 4430                  │
-│   🇷🇴 România                       └── Peking University               │
+│   🇷🇴 Romania                       └── Peking University               │
 │   └── ASE-CSIE (CLIM&TOMA)                                             │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2. Tabelul Comparativ Principal
+### 2.2. Main Comparison Table
 
-> **Legendă**: ✅ Complet implementat | ⚠️ Parțial/Comunitar | ❌ Absent/Nedocumentat
+> **Legend**: ✅ Fully implemented | ⚠️ Partial/Community-based | ❌ Absent/Undocumented
 
-<table>
-<thead>
-<tr style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); color: white;">
-<th>Universitate</th>
-<th>Curs</th>
-<th>Săpt.</th>
-<th>Docker</th>
-<th>Prezent. Interactive</th>
-<th>Pedagogie Explicită</th>
-<th>Proiecte</th>
-<th>Auto-test</th>
-</tr>
-</thead>
-<tbody>
-<tr style="background: #e8f5e9;">
-<td><strong>🇷🇴 ASE-CSIE</strong></td>
-<td><strong>CLIM&TOMA</strong></td>
-<td><strong>14</strong></td>
-<td>✅</td>
-<td>✅ HTML/CSS</td>
-<td>✅ Peer Instr., Misconc.</td>
-<td><strong>15+ grup</strong></td>
-<td>✅</td>
-</tr>
-<tr>
-<td>🇺🇸 Stanford</td>
-<td>CS144</td>
-<td>10</td>
-<td>⚠️</td>
-<td>❌ PDF</td>
-<td>⚠️ Lab hints</td>
-<td>8 individ.</td>
-<td>✅</td>
-</tr>
-<tr style="background: #f5f5f5;">
-<td>🇨🇭 ETH Zürich</td>
-<td>Comm. Networks</td>
-<td>15</td>
-<td>✅</td>
-<td>❌ Tradițional</td>
-<td>❌</td>
-<td>2 grup</td>
-<td>⚠️</td>
-</tr>
-<tr>
-<td>🇺🇸 Michigan</td>
-<td>EECS 489</td>
-<td>14-15</td>
-<td>⚠️</td>
-<td>❌ PDF slides</td>
-<td>⚠️ Quizzes</td>
-<td>4 grup</td>
-<td>✅</td>
-</tr>
-<tr style="background: #f5f5f5;">
-<td>🇺🇸 CMU</td>
-<td>15-441/641</td>
-<td>~14</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-<td>3 multi-săpt.</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>🇺🇸 Berkeley</td>
-<td>CS168</td>
-<td>17</td>
-<td>⚠️</td>
-<td>⚠️ Google Slides</td>
-<td>❌</td>
-<td>3 proiecte</td>
-<td>✅</td>
-</tr>
-<tr style="background: #f5f5f5;">
-<td>🇺🇸 Princeton</td>
-<td>COS 461</td>
-<td>12</td>
-<td>⚠️</td>
-<td>❌ Video flip.</td>
-<td>❌</td>
-<td>5 labs</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>🇰🇷 KAIST</td>
-<td>CS341 (KENSv3)</td>
-<td>16</td>
-<td>✅</td>
-<td>❌</td>
-<td>✅ PCAP/Wireshark</td>
-<td>4 individ.</td>
-<td>✅</td>
-</tr>
-<tr style="background: #f5f5f5;">
-<td>🇧🇪 UCLouvain</td>
-<td>CNP3</td>
-<td>Var.</td>
-<td>✅</td>
-<td>❌ PPT/Keynote</td>
-<td>✅ INGInious</td>
-<td>Multiple</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>🇺🇸 NPS</td>
-<td>Labtainers</td>
-<td>Modul.</td>
-<td>✅</td>
-<td>❌ PDF manuale</td>
-<td>✅ Individualizat</td>
-<td>50+ labs</td>
-<td>✅</td>
-</tr>
-</tbody>
-</table>
+| University | Course | Weeks | Docker | Interactive Slides | Explicit Pedagogy | Projects | Auto-test |
+|:-----------|:-------|:-----:|:------:|:------------------:|:-----------------:|:--------:|:---------:|
+| **🇷🇴 ASE-CSIE** | **CLIM&TOMA** | **14** | ✅ | ✅ HTML/CSS | ✅ Peer Instr., Misconc. | **15+ group** | ✅ |
+| 🇺🇸 Stanford | CS144 | 10 | ⚠️ | ❌ PDF | ⚠️ Lab hints | 8 individual | ✅ |
+| 🇨🇭 ETH Zürich | Comm. Networks | 15 | ✅ | ❌ Traditional | ❌ | 2 group | ⚠️ |
+| 🇺🇸 Michigan | EECS 489 | 14-15 | ⚠️ | ❌ PDF slides | ⚠️ Quizzes | 4 group | ✅ |
+| 🇺🇸 CMU | 15-441/641 | ~14 | ✅ | ❌ | ❌ | 3 multi-week | ✅ |
+| 🇺🇸 Berkeley | CS168 | 17 | ⚠️ | ⚠️ Google Slides | ❌ | 3 projects | ✅ |
+| 🇺🇸 Princeton | COS 461 | 12 | ⚠️ | ❌ Flipped video | ❌ | 5 labs | ✅ |
+| 🇰🇷 KAIST | CS341 (KENSv3) | 16 | ✅ | ❌ | ✅ PCAP/Wireshark | 4 individual | ✅ |
+| 🇧🇪 UCLouvain | CNP3 | Var. | ✅ | ❌ PPT/Keynote | ✅ INGInious | Multiple | ✅ |
+| 🇺🇸 NPS | Labtainers | Modular | ✅ | ❌ PDF manuals | ✅ Individualised | 50+ labs | ✅ |
 
 ---
 
-## 3. Analiza Detaliată pe Dimensiuni
+## 3. Detailed Analysis by Dimension
 
-### 3.1. Dimensiunea C1: Comprehensivitate
+### 3.1. Dimension C1: Comprehensiveness
 
 ```
-Număr de Săptămâni de Curs
+Number of Course Weeks
 
-Berkeley CS168     ████████████████████████████████░░  17 săpt.
-KAIST CS341        ███████████████████████████████░░░  16 săpt.
-ETH Zürich         █████████████████████████████░░░░░  15 săpt.
-Michigan EECS 489  ████████████████████████████░░░░░░  14-15 săpt.
-CLIM&TOMA/ASE-CSIE ███████████████████████████░░░░░░░  14 săpt.  ◄── Proiect referință
-CMU 15-441         ███████████████████████████░░░░░░░  ~14 săpt.
-Princeton COS 461  ███████████████████████░░░░░░░░░░░  12 săpt.
-Stanford CS144     ████████████████████░░░░░░░░░░░░░░  10 săpt. (trimestru)
+Berkeley CS168     ████████████████████████████████░░  17 weeks
+KAIST CS341        ███████████████████████████████░░░  16 weeks
+ETH Zürich         █████████████████████████████░░░░░  15 weeks
+Michigan EECS 489  ████████████████████████████░░░░░░  14-15 weeks
+CLIM&TOMA/ASE-CSIE ███████████████████████████░░░░░░░  14 weeks  ◄── Reference project
+CMU 15-441         ███████████████████████████░░░░░░░  ~14 weeks
+Princeton COS 461  ███████████████████████░░░░░░░░░░░  12 weeks
+Stanford CS144     ████████████████████░░░░░░░░░░░░░░  10 weeks (quarter system)
 ```
 
-**Observație**: Berkeley CS168 conduce la capitolul amploare (17 săptămâni), însă formatul trimestrial de la Stanford (10 săptămâni) compensează prin densitate. Cursul CLIM&TOMA/ASE-CSIE se poziționează în intervalul superior, alături de Michigan și CMU.
+**Observation**: Berkeley CS168 leads in terms of sheer breadth (17 weeks), though Stanford's quarter format (10 weeks) compensates through density. The CLIM&TOMA/ASE-CSIE course sits in the upper range alongside Michigan and CMU.
 
-**Acoperire tematică comparativă:**
+**Topic coverage comparison:**
 
 | Topic | Stanford | ETH | Michigan | Berkeley | CLIM&TOMA |
 |:------|:--------:|:---:|:--------:|:--------:|:---------:|
-| Fundamente TCP/IP | ✅ | ✅ | ✅ | ✅ | ✅ |
+| TCP/IP Fundamentals | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Socket Programming | ✅ | ✅ | ✅ | ✅ | ✅ |
 | HTTP/REST | ✅ | ⚠️ | ✅ | ✅ | ✅ |
 | DNS Deep Dive | ⚠️ | ✅ | ✅ | ✅ | ✅ |
@@ -238,76 +134,69 @@ Stanford CS144     ████████████████████�
 | SDN/OpenFlow | ❌ | ⚠️ | ✅ | ✅ | ✅ |
 | Load Balancing | ❌ | ⚠️ | ⚠️ | ✅ | ✅ |
 | IoT/MQTT | ❌ | ❌ | ❌ | ❌ | ✅ |
-| gRPC/RPC Modern | ❌ | ❌ | ⚠️ | ⚠️ | ✅ |
+| gRPC/Modern RPC | ❌ | ❌ | ⚠️ | ⚠️ | ✅ |
 | Security (TLS, VPN) | ⚠️ | ✅ | ⚠️ | ✅ | ✅ |
 
-### 3.2. Dimensiunea C2: Calitatea Codului
+### 3.2. Dimension C2: Code Quality
 
-Aici trebuie să fim onești: **Stanford CS144** stabilește standardul pentru cod C++ cu:
-- Clang-tidy linting
-- ASan/UBSan sanitizers  
-- CMake modern
-- Coding style guide explicit
+We must be honest here: **Stanford CS144** sets the standard for C++ code with clang-tidy linting, ASan/UBSan sanitisers, modern CMake and an explicit coding style guide.
 
-**Michigan EECS 489** oferă cel mai consistent cod Python (85.6% din repo).
+**Michigan EECS 489** offers the most consistent Python code (85.6% of the repository).
 
-Proiectul **CLIM&TOMA** folosește Python cu:
-- Type hints (parțial)
-- Docstrings extinse
-- Structură modulară standardizată pe săptămâni
+The **CLIM&TOMA** project uses Python with type hints (partial coverage), extensive docstrings and a standardised modular structure across weeks.
 
-> *Auto-critică*: Am învățat de la Stanford că linting-ul automat nu e un lux, ci o necesitate. Încă lucrăm la integrarea completă.
+> *Self-criticism*: Stanford taught us that automated linting is not a luxury but a necessity. We are still working on full integration.
 
-### 3.3. Dimensiunea C3: Sofisticare Pedagogică (ZONA CRITICĂ)
+### 3.3. Dimension C3: Pedagogical Sophistication (THE CRITICAL ZONE)
 
-Aceasta este dimensiunea unde diferențele devin cele mai vizibile:
+This is where the differences become most visible:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│           ELEMENTE PEDAGOGICE BAZATE PE EVIDENȚĂ                        │
+│              EVIDENCE-BASED PEDAGOGICAL ELEMENTS                        │
 ├──────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
-│  Element                        Prezent în cursuri universitare?         │
+│  Element                        Present in university courses?           │
 │  ─────────────────────────────────────────────────────────────────       │
 │                                                                          │
-│  Peer Instruction Questions     CLIM&TOMA ✅ | Restul ❌                 │
+│  Peer Instruction Questions     CLIM&TOMA ✅ | Rest ❌                   │
 │  (Mazur-style, 5 steps)                                                  │
 │                                                                          │
-│  Documented Misconceptions      CLIM&TOMA ✅ | Restul ❌                 │
+│  Documented Misconceptions      CLIM&TOMA ✅ | Rest ❌                   │
 │  (per topic, with corrections)                                           │
 │                                                                          │
-│  Prediction Prompts             CLIM&TOMA ✅ | Restul ❌                 │
+│  Prediction Prompts             CLIM&TOMA ✅ | Rest ❌                   │
 │  (Brown & Wilson Principle 4)                                            │
 │                                                                          │
-│  Parsons Problems               CLIM&TOMA ✅ | Restul ❌                 │
+│  Parsons Problems               CLIM&TOMA ✅ | Rest ❌                   │
 │  (code arrangement exercises)                                            │
 │                                                                          │
-│  Code Tracing Exercises         CLIM&TOMA ✅ | KAIST ⚠️ | Restul ❌     │
+│  Code Tracing Exercises         CLIM&TOMA ✅ | KAIST ⚠️ | Rest ❌       │
 │  (step-by-step execution)                                                │
 │                                                                          │
-│  Pair Programming Guides        CLIM&TOMA ✅ | Restul ❌                 │
+│  Pair Programming Guides        CLIM&TOMA ✅ | Rest ❌                   │
 │  (Driver/Navigator rotation)                                             │
 │                                                                          │
-│  Concept Analogies Doc          CLIM&TOMA ✅ | Restul ❌                 │
+│  Concept Analogies Doc          CLIM&TOMA ✅ | Rest ❌                   │
 │  (networking concepts mapped                                             │
 │   to everyday experiences)                                               │
 │                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Cele mai apropiate alternative:**
-- **UCLouvain CNP3**: Platforma INGInious pentru exerciții auto-evaluate
-- **KAIST KENSv3**: Generare PCAP pentru analiză Wireshark
-- **Labtainers (NPS)**: Parametri individualizați per student
+**Closest alternatives:**
+- **UCLouvain CNP3**: INGInious platform for auto-graded exercises
+- **KAIST KENSv3**: PCAP generation for Wireshark analysis
+- **Labtainers (NPS)**: Individualised parameters per student
 
-> *Notă*: Absența aproape totală a metodelor pedagogice explicite în curricula de elită ne-a surprins. Sau poate nu ar fi trebuit să ne surprindă — există o diferență între a fi un cercetător excelent în networking și a fi un pedagog informat de cercetarea educațională.
+> *Note*: The near-total absence of explicit pedagogical methods in elite curricula surprised us. Or perhaps it should not have — there is a difference between being an excellent networking researcher and being a pedagogue informed by educational research.
 
-### 3.4. Dimensiunea C4: Infrastructură Docker
+### 3.4. Dimension C4: Docker Infrastructure
 
 ```
-                        MATURITATEA INFRASTRUCTURII
+                        INFRASTRUCTURE MATURITY
 
-          Nimic    VM basic    Mininet    Docker    Full Stack
+          Nothing   Basic VM    Mininet    Docker    Full Stack
             │         │          │          │           │
 Stanford ───┼─────────┼──────────┼────⚫─────┼───────────┤  (community images)
             │         │          │          │           │
@@ -325,68 +214,60 @@ Labtainers ─┼─────────┼──────────┼
             │         │          │          │           │
 ```
 
-**ETH Zürich mini-Internet** merită mențiune specială:
-- Fiecare grup de studenți operează un Sistem Autonom (AS)
-- FRRouting pentru BGP/OSPF real
-- Suport MPLS și RPKI
-- 219 ⭐ pe GitHub
+**ETH Zürich mini-Internet** deserves special mention: each student group operates an Autonomous System (AS) with real FRRouting for BGP/OSPF, MPLS and RPKI support. It has 219 stars on GitHub.
 
-**Proiectul CLIM&TOMA** oferă:
-- `docker-compose.yml` standardizat per săptămână
-- Portainer (port 9000) pentru management vizual
-- Scheme IP consistente (172.20.X.0/24)
-- Scripturi `start_lab.py` / `stop_lab.py` / `cleanup.py`
+**The CLIM&TOMA project** provides a standardised `docker-compose.yml` per week, Portainer (port 9000) for visual management, consistent IP schemes (172.20.X.0/24) and utility scripts (`start_lab.py` / `stop_lab.py` / `cleanup.py`).
 
-### 3.5. Dimensiunea C5: Documentație
+### 3.5. Dimension C5: Documentation
 
 | Element | Stanford | Berkeley | Michigan | UCLouvain | CLIM&TOMA |
 |:--------|:--------:|:--------:|:--------:|:---------:|:---------:|
-| README comprehensiv | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Comprehensive README | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Troubleshooting Guide | ⚠️ | ⚠️ | ⚠️ | ✅ | ✅ |
 | Commands Cheatsheet | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Glossar termeni | ❌ | ✅* | ❌ | ✅* | ✅ |
-| Ghid instructor | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Glossary of terms | ❌ | ✅* | ❌ | ✅* | ✅ |
+| Instructor Guide | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Further Reading | ⚠️ | ✅ | ⚠️ | ✅ | ✅ |
 
-*\* În cadrul textbook-ului*
+*\* Within the textbook*
 
-**Berkeley CS168** câștigă la capitolul **manual deschis** — un textbook complet disponibil gratuit sub CC BY-SA 4.0 la `textbook.cs168.io`. Acesta este probabil cea mai valoroasă resursă de networking open-source pentru auto-didacți.
+**Berkeley CS168** wins when it comes to the **open textbook** — a complete, professionally edited networking textbook available free under CC BY-SA 4.0 at `textbook.cs168.io`. This is probably the most valuable open-source networking resource for self-learners.
 
-### 3.6. Dimensiunea C6: Proiecte
+### 3.6. Dimension C6: Projects
 
 ```
-Numărul și Tipul Proiectelor
+Number and Type of Projects
 
-CLIM&TOMA/ASE-CSIE  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  15+ proiecte grup
-                    ▒▒▒▒▒▒▒▒▒▒                        + 5 rezervă individ.
+CLIM&TOMA/ASE-CSIE  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  15+ group projects
+                    ▒▒▒▒▒▒▒▒▒▒                        + 5 individual reserve
 
 Labtainers (NPS)    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  50+ labs
-                    (modulare, focus security)
+                    (modular, security focus)
 
 Stanford CS144      ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓                  8 checkpoints
                     (progressive TCP/IP stack)
 
-KAIST KENSv3        ▓▓▓▓▓▓▓▓                          4 proiecte TCP
-                    (implementare completă)
+KAIST KENSv3        ▓▓▓▓▓▓▓▓                          4 TCP projects
+                    (full implementation)
 
 Michigan EECS 489   ▓▓▓▓▓▓▓▓                          4 assignments
                     (sockets → datacenter)
 
-CMU 15-441          ▓▓▓▓▓▓                            3 proiecte mari
+CMU 15-441          ▓▓▓▓▓▓                            3 large projects
                     (multi-week each)
 ```
 
-**Stanford CS144** câștigă la coerența narativă — cele 8 checkpoint-uri construiesc incremental un stack TCP/IP complet, culminând cu conectivitate end-to-end reală prin servere relay.
+**Stanford CS144** wins on narrative coherence — the 8 checkpoints incrementally build a complete TCP/IP stack, culminating in real end-to-end connectivity through relay servers.
 
-**Proiectul CLIM&TOMA** pune accent pe varietate și lucrul în echipă (SDN, microservicii, IDS/IPS, IoT, etc.).
+**The CLIM&TOMA project** emphasises variety and teamwork (SDN, microservices, IDS/IPS, IoT, etc.).
 
-### 3.7. Dimensiunea C7: Elemente Interactive
+### 3.7. Dimension C7: Interactive Elements
 
-Aceasta este probabil cea mai clară diferențiere:
+This is probably the clearest differentiator:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│              PREZENTĂRI INTERACTIVE HTML/CSS/JS                      │
+│              INTERACTIVE HTML/CSS/JS PRESENTATIONS                   │
 │                                                                      │
 │    ┌─────────────────────────────────────────────────────────┐      │
 │    │                                                         │      │
@@ -394,7 +275,7 @@ Aceasta este probabil cea mai clară diferențiere:
 │    │   ║  Progress Bar  ████████████░░░░░  Slide 7/14  ║     │      │
 │    │   ╠═══════════════════════════════════════════════╣     │      │
 │    │   ║                                               ║     │      │
-│    │   ║    Week 3: TCP Tunneling                      ║     │      │
+│    │   ║    Week 3: TCP Tunnelling                     ║     │      │
 │    │   ║                                               ║     │      │
 │    │   ║    [Interactive Diagram]  [Quiz Button]       ║     │      │
 │    │   ║                                               ║     │      │
@@ -406,258 +287,163 @@ Aceasta este probabil cea mai clară diferențiere:
 │    │                                                         │      │
 │    └─────────────────────────────────────────────────────────┘      │
 │                                                                      │
-│    Cursuri care oferă acest lucru:  CLIM&TOMA/ASE-CSIE              │
-│    Cursuri care NU oferă:           Toate celelalte analizate       │
+│    Courses that offer this:  CLIM&TOMA/ASE-CSIE                     │
+│    Courses that do NOT:      All others analysed                    │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-> *Nu e o glumă*: Am căutat în peste 20 de repository-uri și site-uri de curs. PDF-uri, PowerPoint-uri, Google Slides, înregistrări video — dar prezentări HTML interactive cu quiz-uri, animații și navigare keyboard? Zero.
+> *This is not a joke*: We searched through over 20 repositories and course websites. PDFs, PowerPoints, Google Slides, video recordings — but interactive HTML presentations with quizzes, animations and keyboard navigation? None.
 
 ---
 
-## 4. Studii de Caz: Ce Fac Bine Ceilalți
+## 4. Case Studies: What Others Do Well
 
-Pentru a nu părea că doar ne lăudăm, iată ce am învățat de la alții:
+To avoid sounding like we are just patting ourselves on the back, here is what we learnt from others:
 
-### 4.1. Stanford CS144: Maestrul Implementării
+### 4.1. Stanford CS144: The Implementation Master
 
-**Ce fac excelent:**
-- Progresia pedagogică perfectă: de la ByteStream → TCPReceiver → TCPSender → Router
-- Teste automate cu `make check_labN`
-- Documentație de înaltă calitate pentru fiecare lab
-- Video lectures disponibile public
+**What they do brilliantly:**
+- Perfect pedagogical progression: ByteStream → TCPReceiver → TCPSender → Router
+- Automated tests with `make check_labN`
+- High-quality documentation for each lab
+- Video lectures publicly available
 
-**Ce le lipsește:**
-- Infrastructură Docker oficială (doar imagini comunitare)
-- Metodologie pedagogică explicită
-- Proiecte de grup
+**What they lack:**
+- Official Docker infrastructure (only community images)
+- Explicit pedagogical methodology
+- Group projects
 
-**Lecție învățată**: Coerența narativă în proiecte contează enorm.
+**Lesson learnt**: Narrative coherence in projects matters enormously.
 
-### 4.2. ETH Zürich: Regele Infrastructurii
+### 4.2. ETH Zürich: The Infrastructure King
 
-**Ce fac excelent:**
-- mini-Internet project: simulare la scară Internet
-- Docker orchestration profesional
-- Studenții operează Sisteme Autonome reale
-- RPKI, MPLS, BGP — tehnologii actuale
+**What they do brilliantly:**
+- mini-Internet project: Internet-scale simulation
+- Professional Docker orchestration
+- Students operate real Autonomous Systems
+- RPKI, MPLS, BGP — current technologies
 
-**Ce le lipsește:**
-- Materialele pedagogice explicite
-- Prezentări interactive
-- Varietate în tipuri de proiecte
+**What they lack:**
+- Explicit pedagogical materials
+- Interactive presentations
+- Variety in project types
 
-**Lecție învățată**: Scala contează — a opera un AS e diferit de a scrie un socket client.
+**Lesson learnt**: Scale matters — operating an AS is different from writing a socket client.
 
-### 4.3. Berkeley CS168: Textbook-ul Deschis
+### 4.3. Berkeley CS168: The Open Textbook
 
-**Ce fac excelent:**
-- Textbook gratuit, profesional editat, CC BY-SA 4.0
-- 17 săptămâni de conținut
-- Acoperire modernă (datacenter networking, ML collective ops)
-- Glosar comprehensiv
+**What they do brilliantly:**
+- Free textbook, professionally edited, CC BY-SA 4.0
+- 17 weeks of content
+- Modern coverage (datacenter networking, ML collective ops)
+- Comprehensive glossary
 
-**Ce le lipsește:**
-- Infrastructură de laborator
-- Exerciții practice cu cod
-- Prezentări interactive
+**What they lack:**
+- Lab infrastructure
+- Practical coding exercises
+- Interactive presentations
 
-**Lecție învățată**: Un textbook bun valorează cât o mie de slide-uri PowerPoint.
+**Lesson learnt**: A good textbook is worth a thousand PowerPoint slides.
 
-### 4.4. KAIST KENSv3: Framework-ul Educațional
+### 4.4. KAIST KENSv3: The Educational Framework
 
-**Ce fac excelent:**
-- Framework custom pentru implementare TCP
-- PCAP logging pentru debugging cu Wireshark
-- Binare de referință pentru testare incrementală
-- API compatibil POSIX
+**What they do brilliantly:**
+- Custom framework for TCP implementation
+- PCAP logging for Wireshark debugging
+- Reference binaries for incremental testing
+- POSIX-compatible API
 
-**Ce le lipsește:**
-- Documentație pedagogică
-- Varietate tematică
-- Prezentări interactive
+**What they lack:**
+- Pedagogical documentation
+- Thematic variety
+- Interactive presentations
 
-**Lecție învățată**: Un framework educațional dedicat poate fi mai valoros decât tooling-ul industrial.
-
----
-
-## 5. Sinteza Concluziilor
-
-### 5.1. Matricea Finală de Evaluare
-
-<table>
-<thead>
-<tr style="background: #1a237e; color: white;">
-<th>Curs</th>
-<th>C1<br/>Compr.</th>
-<th>C2<br/>Cod</th>
-<th>C3<br/>Pedag.</th>
-<th>C4<br/>Docker</th>
-<th>C5<br/>Docs</th>
-<th>C6<br/>Proj.</th>
-<th>C7<br/>Interact.</th>
-<th>TOTAL</th>
-</tr>
-</thead>
-<tbody>
-<tr style="background: #c8e6c9; font-weight: bold;">
-<td>CLIM&TOMA/ASE-CSIE</td>
-<td>8</td>
-<td>7</td>
-<td>10</td>
-<td>8</td>
-<td>9</td>
-<td>9</td>
-<td>10</td>
-<td>61/70</td>
-</tr>
-<tr>
-<td>Stanford CS144</td>
-<td>7</td>
-<td>10</td>
-<td>4</td>
-<td>5</td>
-<td>8</td>
-<td>9</td>
-<td>2</td>
-<td>45/70</td>
-</tr>
-<tr style="background: #f5f5f5;">
-<td>ETH Zürich</td>
-<td>9</td>
-<td>7</td>
-<td>3</td>
-<td>10</td>
-<td>7</td>
-<td>6</td>
-<td>2</td>
-<td>44/70</td>
-</tr>
-<tr>
-<td>Berkeley CS168</td>
-<td>10</td>
-<td>5</td>
-<td>3</td>
-<td>4</td>
-<td>10</td>
-<td>5</td>
-<td>3</td>
-<td>40/70</td>
-</tr>
-<tr style="background: #f5f5f5;">
-<td>Michigan EECS 489</td>
-<td>8</td>
-<td>8</td>
-<td>4</td>
-<td>5</td>
-<td>8</td>
-<td>7</td>
-<td>2</td>
-<td>42/70</td>
-</tr>
-<tr>
-<td>CMU 15-441</td>
-<td>8</td>
-<td>8</td>
-<td>2</td>
-<td>8</td>
-<td>6</td>
-<td>7</td>
-<td>2</td>
-<td>41/70</td>
-</tr>
-<tr style="background: #f5f5f5;">
-<td>KAIST KENSv3</td>
-<td>9</td>
-<td>6</td>
-<td>6</td>
-<td>8</td>
-<td>5</td>
-<td>6</td>
-<td>2</td>
-<td>42/70</td>
-</tr>
-<tr>
-<td>Labtainers (NPS)</td>
-<td>7</td>
-<td>5</td>
-<td>7</td>
-<td>10</td>
-<td>8</td>
-<td>10</td>
-<td>2</td>
-<td>49/70</td>
-</tr>
-</tbody>
-</table>
-
-*Scor 1-10 per dimensiune, evaluat subiectiv de autori (cu toate bias-urile aferente)*
-
-### 5.2. Concluzii Principale
-
-1. **Golul Pedagogic**: Metodele de predare bazate pe evidență (peer instruction, misconceptions, Parsons problems) sunt practic absente din curricula universitară de elită disponibilă public. Aceasta este oportunitatea principală pe care proiectul CLIM&TOMA încearcă să o exploateze.
-
-2. **Fragmentarea Excelenței**: Niciun curs nu excelează la toate dimensiunile. Stanford domină la implementare, ETH la infrastructură, Berkeley la documentație, KAIST la framework educațional. Proiectul nostru încearcă să integreze punctele forte din fiecare.
-
-3. **Absența Prezentărilor Interactive**: Cu excepția proiectului de referință, toate cursurile analizate folosesc formate statice (PDF, PPT, video). Aceasta este o nișă neexplorată surprinzător de mare.
-
-4. **Docker ca Standard Emergent**: Containerizarea devine norma, dar implementarea variază enorm — de la imagini comunitare (Stanford) la orchestrații sofisticate (ETH, Labtainers).
-
-### 5.3. Limitări ale Acestei Analize
-
-- **Bias al autorilor**: Evident, ne evaluăm propriul proiect.
-- **Materialele private**: Multe universități nu publică toate materialele; am analizat doar ce e disponibil public.
-- **Snapshot temporal**: Curricula evoluează; analiza reflectă starea din ianuarie 2025.
-- **Subiectivitate în scoruri**: Ponderile și scorurile reflectă prioritățile noastre.
+**Lesson learnt**: A dedicated educational framework can be more valuable than industrial tooling.
 
 ---
 
-## 6. Recomandări și Direcții Viitoare
+## 5. Summary of Findings
 
-### 6.1. Ce Am Învățat pentru Proiectul CLIM&TOMA
+### 5.1. Final Evaluation Matrix
 
-| De la | Să adoptăm |
-|:------|:-----------|
-| Stanford | Coerența narativă în proiecte; C++ coding standards |
-| ETH Zürich | Scala infrastructurii (mini-Internet) |
-| Berkeley | Open textbook ca resursă paralelă |
-| KAIST | Framework educațional dedicat |
-| Labtainers | Parametrizare per-student |
+| Course | C1 Compr. | C2 Code | C3 Pedag. | C4 Docker | C5 Docs | C6 Proj. | C7 Interact. | TOTAL |
+|:-------|:---------:|:-------:|:---------:|:---------:|:-------:|:--------:|:------------:|:-----:|
+| **CLIM&TOMA/ASE-CSIE** | 8 | 7 | 10 | 8 | 9 | 9 | 10 | **61/70** |
+| Stanford CS144 | 7 | 10 | 4 | 5 | 8 | 9 | 2 | 45/70 |
+| ETH Zürich | 9 | 7 | 3 | 10 | 7 | 6 | 2 | 44/70 |
+| Berkeley CS168 | 10 | 5 | 3 | 4 | 10 | 5 | 3 | 40/70 |
+| Michigan EECS 489 | 8 | 8 | 4 | 5 | 8 | 7 | 2 | 42/70 |
+| CMU 15-441 | 8 | 8 | 2 | 8 | 6 | 7 | 2 | 41/70 |
+| KAIST KENSv3 | 9 | 6 | 6 | 8 | 5 | 6 | 2 | 42/70 |
+| Labtainers (NPS) | 7 | 5 | 7 | 10 | 8 | 10 | 2 | 49/70 |
 
-### 6.2. Roadmap Propus
+*Scores 1-10 per dimension, subjectively evaluated by the authors (with all associated biases)*
+
+### 5.2. Main Conclusions
+
+1. **The Pedagogical Gap**: Evidence-based teaching methods (peer instruction, misconceptions, Parsons problems) are practically absent from publicly available elite university curricula. This is the main opportunity the CLIM&TOMA project attempts to exploit.
+
+2. **Fragmented Excellence**: No single course excels across all dimensions. Stanford dominates implementation, ETH dominates infrastructure, Berkeley dominates documentation, KAIST dominates educational frameworks. Our project attempts to integrate the strengths from each.
+
+3. **Absence of Interactive Presentations**: Apart from the reference project, all courses analysed use static formats (PDF, PPT, video). This is a surprisingly large unexplored niche.
+
+4. **Docker as Emerging Standard**: Containerisation is becoming the norm, but implementation varies enormously — from community images (Stanford) to sophisticated orchestrations (ETH, Labtainers).
+
+### 5.3. Limitations of This Analysis
+
+- **Author bias**: Obviously, we are evaluating our own project.
+- **Private materials**: Many universities do not publish all materials; we analysed only what is publicly available.
+- **Temporal snapshot**: Curricula evolve; this analysis reflects the state as of January 2025.
+- **Subjectivity in scores**: Weights and scores reflect our priorities.
+
+---
+
+## 6. Recommendations and Future Directions
+
+### 6.1. What We Learnt for the CLIM&TOMA Project
+
+| From | To adopt |
+|:-----|:---------|
+| Stanford | Narrative coherence in projects; C++ coding standards |
+| ETH Zürich | Infrastructure scale (mini-Internet) |
+| Berkeley | Open textbook as parallel resource |
+| KAIST | Dedicated educational framework |
+| Labtainers | Per-student parameterisation |
+
+### 6.2. Proposed Roadmap
 
 ```
-2025 Q1  ─────► Integrare linting automat (flake8, mypy strict)
+2025 Q1  ─────► Automated linting integration (flake8, mypy strict)
               │
-2025 Q2  ─────► Traducere materiale RO ↔ EN completă
+2025 Q2  ─────► Complete RO ↔ EN materials translation
               │
-2025 Q3  ─────► Mini-proiect SDN la scară (inspirat ETH)
+2025 Q3  ─────► Mini SDN project at scale (ETH-inspired)
               │
-2025 Q4  ─────► Open textbook companion (inspirat Berkeley)
+2025 Q4  ─────► Open textbook companion (Berkeley-inspired)
               │
-2026+    ─────► Framework KENS-style pentru TCP implementation
+2026+    ─────► KENS-style framework for TCP implementation
 ```
 
 ---
 
-## 7. Mulțumiri
+## 7. Acknowledgements
 
-Acest proiect nu ar fi existat fără:
+This project would not exist without:
 
-- **conf. dr. Andrei TOMA** — pentru ideile inițiale, scripturile de bază, și nesfârșitele discuții la The Dose care au transformat concepte vagi în arhitectură concretă
-- **The Dose, București** — pentru cafeaua care a alimentat acest proiect (literal)
-- **Comunitatea Open Source** — pentru toate resursele pe care le-am studiat și din care am învățat
-- **Studenții ASE-CSIE** — pentru răbdarea de a fi cobai pentru versiunile timpurii
+- **conf. dr. Andrei TOMA** — for the initial ideas, base scripts and endless discussions at The Dose that transformed vague concepts into concrete architecture
+- **The Dose, Bucharest** — for the coffee that fuelled this project (literally)
+- **The Open Source Community** — for all the resources we studied and learnt from
+- **ASE-CSIE Students** — for their patience in being guinea pigs for early versions
 
 ---
 
-## Referințe și Resurse
+## References and Resources
 
-### Cursuri Analizate (în ordinea citării)
+### Courses Analysed (in order of citation)
 
-| # | Universitate | Curs | URL |
-|:-:|:-------------|:-----|:----|
+| # | University | Course | URL |
+|:-:|:-----------|:-------|:----|
 | 1 | Stanford | CS144 | `cs144.github.io` / `github.com/CS144` |
 | 2 | ETH Zürich | 227-0120-00L | `comm-net.ethz.ch` |
 | 3 | U. Michigan | EECS 489 | `github.com/mosharaf/eecs489` |
@@ -670,7 +456,7 @@ Acest proiect nu ar fi existat fără:
 | 10 | Johns Hopkins | EN.601.414 | `github.com/xinjin/course-net` |
 | 11 | CUHK | CSCI 4430 | `github.com/henryhxu/CSCI4430` |
 
-### Metodologie Pedagogică
+### Pedagogical Methodology
 
 - Brown, N. C. C. & Wilson, G. (2018). *Ten Quick Tips for Teaching Programming*
 - Mazur, E. (1997). *Peer Instruction: A User's Manual*
@@ -681,12 +467,12 @@ Acest proiect nu ar fi existat fără:
 <div align="center">
 
 **CLIM&TOMA/ASE-CSIE Networking Project**  
-*Academia de Studii Economice București*  
-*Facultatea de Cibernetică, Statistică și Informatică Economică*
+*Bucharest University of Economic Studies*  
+*Faculty of Economic Cybernetics, Statistics and Informatics*
 
 ---
 
-*Ultima actualizare: Ianuarie 2025*  
-*Versiune document: 1.0*
+*Last updated: January 2025*  
+*Document version: 1.0*
 
 </div>
