@@ -1,0 +1,123 @@
+name: 🔧 Environment Issue
+description: Report problems with WSL, Docker, Portainer or initial setup
+title: "[ENV] "
+labels: ["environment"]
+assignees:
+  - antonioclim
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for issues related to the laboratory environment rather than the exercises themselves. This includes WSL configuration, Docker problems, Portainer access and installation difficulties.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Issue Category
+      description: What type of environment issue are you experiencing?
+      options:
+        - WSL2 installation or configuration
+        - Docker installation or daemon issues
+        - Docker Compose problems
+        - Portainer access or login
+        - Network connectivity between containers
+        - Port conflicts or binding issues
+        - Permission or access denied errors
+        - Wireshark capture issues
+        - Python package installation
+        - Other environment issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem Description
+      description: Describe the environment issue you are experiencing.
+      placeholder: "Explain what is happening with your environment..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps Already Taken
+      description: What have you already tried to resolve this issue?
+      placeholder: |
+        1. Restarted WSL...
+        2. Ran docker system prune...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error Messages
+      description: Paste any error messages you see.
+      render: shell
+
+  - type: textarea
+    id: verify
+    attributes:
+      label: Environment Verification Output
+      description: Run `python3 setup/verify_environment.py` and paste the complete output.
+      render: shell
+      placeholder: |
+        Paste the output from verify_environment.py here...
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Windows Version
+      description: Run `winver` to find your exact Windows version.
+      placeholder: "e.g., Windows 11 Pro 23H2 (Build 22631.4169)"
+    validations:
+      required: true
+
+  - type: input
+    id: wsl
+    attributes:
+      label: WSL Version
+      description: Run `wsl --version` in PowerShell.
+      placeholder: "e.g., WSL version 2.3.26.0"
+    validations:
+      required: true
+
+  - type: input
+    id: distro
+    attributes:
+      label: WSL Distribution
+      description: Run `lsb_release -a` inside WSL.
+      placeholder: "e.g., Ubuntu 22.04.4 LTS"
+    validations:
+      required: true
+
+  - type: textarea
+    id: docker_info
+    attributes:
+      label: Docker Information
+      description: Run `docker info` and paste the relevant parts (or full output).
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other information that might help diagnose the issue.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have reviewed the troubleshooting guide in the README
+          required: true
+        - label: I have restarted WSL (`wsl --shutdown` then reopen terminal)
+          required: false
+        - label: Docker Desktop is running (if applicable)
+          required: false
+        - label: I have searched existing issues for similar problems
+          required: true
