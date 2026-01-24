@@ -1,0 +1,107 @@
+name: 📝 Documentation Issue
+description: Report typos, unclear instructions, missing information or suggest documentation improvements
+title: "[DOCS] "
+labels: ["documentation"]
+assignees:
+  - antonioclim
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve our documentation. Clear documentation is essential for effective learning.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Documentation Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Typo or grammatical error
+        - Unclear or confusing instructions
+        - Missing information
+        - Outdated information
+        - Broken link
+        - Code example error
+        - Formatting issue
+        - Translation suggestion
+        - General improvement suggestion
+    validations:
+      required: true
+
+  - type: dropdown
+    id: week
+    attributes:
+      label: Affected Week or Section
+      description: Where is this documentation issue located?
+      options:
+        - Main README
+        - Week 00 (Appendix/Setup)
+        - Week 01
+        - Week 02
+        - Week 03
+        - Week 04
+        - Week 05
+        - Week 06
+        - Week 07
+        - Week 08
+        - Week 09
+        - Week 10
+        - Week 11
+        - Week 12
+        - Week 13
+        - Week 14
+        - LICENCE
+        - Other documentation
+    validations:
+      required: true
+
+  - type: input
+    id: file
+    attributes:
+      label: File Path
+      description: Which file contains the documentation issue?
+      placeholder: "e.g., 05enWSL/README.md or docs/troubleshooting.md"
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Section or Line Reference
+      description: Specify the section heading or approximate line number.
+      placeholder: "e.g., Section 3.2 or line 145"
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Text
+      description: Quote the current text that needs attention.
+      placeholder: "Paste the problematic text here..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested Correction or Improvement
+      description: Provide the corrected or improved text.
+      placeholder: "Provide your suggested text here..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale
+      description: Explain why this change would improve the documentation.
+      placeholder: "This change would help because..."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have verified this is not already reported in existing issues
+          required: true
+        - label: I have checked that my suggestion follows British English spelling conventions
+          required: false
