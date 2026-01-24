@@ -1,0 +1,6 @@
+{
+    "status": "ok",
+    "service": "week8-laboratory",
+    "version": "1.0.0",
+    "endpoints": ["/", "/weighted/", "/least-conn/", "/sticky/", "/nginx-health"]
+}

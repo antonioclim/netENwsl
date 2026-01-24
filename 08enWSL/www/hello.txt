@@ -1,0 +1,3 @@
+Hello, World!
+This is a test file for Week 8 HTTP server exercises.
+NETWORKING class - ASE, Informatics | by Revolvix

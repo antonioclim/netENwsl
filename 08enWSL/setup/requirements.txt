@@ -1,0 +1,17 @@
+# Week 8 Laboratory Setup Requirements
+# NETWORKING class - ASE, Informatics | by Revolvix
+
+# Core dependencies
+docker>=6.0.0
+requests>=2.28.0
+pyyaml>=6.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# HTTP utilities
+httpx>=0.24.0
+
+# CLI output formatting (optional but recommended)
+rich>=13.0.0
