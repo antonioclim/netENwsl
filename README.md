@@ -67,7 +67,7 @@ Laboratory materials are available in **two languages**, organised in separate r
 
 | Repository | Language | URL | Naming Convention |
 |------------|----------|-----|-------------------|
-| **netENwsl** | 🇬🇧 English | https://github.com/antonioclim/netENwsl | `<N>enWSL` (e.g. `1enWSL`, `14enWSL`) |
+| **netENwsl** | 🇬🇧 English | https://github.com/antonioclim/netENwsl | `<NN>enWSL` (e.g. `01enWSL`, `14enWSL`) |
 | **netROwsl** | 🇷🇴 Romanian | https://github.com/antonioclim/netROwsl | `<NN>roWSL` (e.g. `01roWSL`, `14roWSL`) |
 
 ### Beta Repositories (Linux VM Edition — For Advanced Users)
