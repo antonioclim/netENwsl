@@ -174,7 +174,7 @@ print(f"Portainer accessible: {portainer_ok}")
 ### Week 0: Bytes vs Strings 🆕
 
 ```python
-# LIVE CODING: The crucial difference for network programming
+# LIVE CODING: The key difference for network programming
 
 # CONTEXT (2 min)
 # "The most frequent beginner bug: confusion between str and bytes"

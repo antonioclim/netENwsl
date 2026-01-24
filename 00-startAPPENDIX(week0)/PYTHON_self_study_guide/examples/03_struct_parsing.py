@@ -2,7 +2,7 @@
 """
 Example 3: Binary parsing with struct
 =====================================
-Demonlayeres data extraction from protocol headers.
+Demonstrates data extraction from protocol headers.
 
 Course: Computer Networks - ASE Bucharest, CSIE
 Author: ing. dr. Antonio Clim
@@ -21,7 +21,7 @@ Version: 2.1 — with subgoal labels and extended comments
 struct.unpack() = you open the envelope and read addresses in standard format
 
 Learning objectives:
-- Aderstanding binary format of protocol headers
+- Understanding binary format of protocol headers
 - Bit and byte manipulation in Python
 - Interpreting fields of an IP header
 """
@@ -34,6 +34,8 @@ import socket
 import logging
 from typing import Optional
 from dataclasses import dataclass
+
+__all__ = ['IPHeader', 'TCPHeader', 'parse_ip_header', 'parse_tcp_header']
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LOGGING_CONFIGURATION
@@ -289,10 +291,10 @@ def display_header(header: IPHeader) -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def demo() -> None:
-    """Complete demonlayerion of IP header parsing.
+    """Complete demonstration of IP header parsing.
     
     Generates a valid IP header, parses it and displays the result.
-    Also includes error handling demonlayerions.
+    Also includes error handling demonstrations.
     
     Returns:
         None. Displays output to console.
@@ -372,7 +374,7 @@ def demo() -> None:
     except TypeError as e:
         print(f"  ✅ Expected error: {e}")
     
-    print("\n✅ Demonlayerion completed!")
+    print("\n✅ Demonstration completed!")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -2,7 +2,7 @@
 """
 Example 1: Basic TCP Server and Client
 ======================================
-Demonlayeres fundamental socket programming concepts.
+Demonstrates fundamental socket programming concepts.
 
 Course: Computer Networks - ASE Bucharest, CSIE
 Author: ing. dr. Antonio Clim
@@ -10,7 +10,7 @@ Version: 2.1 — with subgoal labels and extended comments
 
 💡 ANALOGY: Socket as a Landline Telephone
 ------------------------------------------
-| Socket Operation | Telephone Equivaslow                  |
+| Socket Operation | Telephone Equivalent                  |
 |------------------|---------------------------------------|
 | socket()         | You buy a new telephone               |
 | bind()           | You get assigned a phone number (port)|
@@ -21,7 +21,7 @@ Version: 2.1 — with subgoal labels and extended comments
 | close()          | You hang up the phone                 |
 
 Learning objectives:
-- Aderstanding the client-server model
+- Understanding the client-server model
 - Proper handling of network errors
 - Context manager pattern for resources
 """
@@ -34,6 +34,8 @@ import sys
 import logging
 from typing import Optional
 
+__all__ = ['server', 'client', 'DEFAULT_HOST', 'DEFAULT_PORT', 'BUFFER_SIZE']
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # LOGGING_CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -42,7 +44,7 @@ from typing import Optional
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
-    datafmt='%H:%M:%S'
+    datefmt='%H:%M:%S'
 )
 logger = logging.getLogger(__name__)
 

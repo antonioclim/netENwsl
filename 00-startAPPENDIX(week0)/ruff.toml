@@ -1,0 +1,92 @@
+# ruff.toml — Linting Configuration for Week 0
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Ruff is an extremely fast Python linter, written in Rust.
+# Install: pip install ruff
+# Run: ruff check .
+# Fix: ruff check . --fix
+#
+# Documentation: https://docs.astral.sh/ruff/
+
+# Target Python version
+target-version = "py311"
+
+# Line length (same as Black default)
+line-length = 120
+
+# Exclude directories
+exclude = [
+    ".git",
+    ".github",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "*.egg-info",
+    "backup_*",
+]
+
+[lint]
+# Enable rule categories
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort (import sorting)
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "RUF",    # Ruff-specific rules
+]
+
+# Ignore specific rules
+ignore = [
+    "E501",   # Line too long — we handle this with line-length setting
+    "E402",   # Module level import not at top — needed for some scripts
+    "B008",   # Function calls in default arguments — intentional in argparse
+    "B904",   # raise from — not always needed
+    "SIM108", # Use ternary operator — readability preference
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Per-file rule ignores
+[lint.per-file-ignores]
+# Tests can have more relaxed rules
+"**/tests/*.py" = [
+    "B",      # bugbear — test assertions can be complex
+    "C4",     # comprehensions — tests prioritise clarity
+    "SIM",    # simplify — explicit is better in tests
+]
+# Example scripts may have educational verbose code
+"**/examples/*.py" = [
+    "SIM",    # simplify — educational code is intentionally verbose
+]
+
+[lint.isort]
+# Import sorting configuration
+known-first-party = ["formative"]
+force-single-line = false
+lines-after-imports = 2
+
+[lint.flake8-bugbear]
+# Allow default arguments like Path(__file__).parent
+extend-immutable-calls = ["pathlib.Path"]
+
+[format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+# Use Unix line endings
+line-ending = "lf"
+
+# Skip formatting magic trailing comma
+skip-magic-trailing-comma = false

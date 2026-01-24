@@ -265,3 +265,41 @@ When you encounter a problem:
 *Pair Programming Guide — Week 0: Lab Environment Setup*  
 *Computer Networks — ASE Bucharest, CSIE*  
 *Version: January 2025*
+
+---
+
+## 📊 Peer Evaluation Rubric
+
+Use this rubric for peer assessment at the end of each pair programming session.
+
+### Evaluation Criteria
+
+| Criterion | Excellent (3) | Good (2) | Needs Improvement (1) |
+|-----------|---------------|----------|----------------------|
+| **Communication** | Clear explanations, active listening, asks clarifying questions | Adequate explanations, generally listens | Minimal communication, doesn't explain thinking |
+| **Role Execution** | Smooth transitions, fully engages in both Driver and Navigator roles | Some hesitation in transitions, adequate role performance | Stuck in one role, doesn't adapt |
+| **Problem Solving** | Collaborative debugging, shared ownership of solutions | Some collaboration, occasional independent work | Works mostly independently, doesn't share approach |
+| **Time Management** | Completed exercises within estimated time | Slight overrun (10-15 min), still finished | Significant delays, didn't complete all exercises |
+| **Technical Accuracy** | Commands executed correctly, understands each step | Minor errors corrected quickly | Frequent errors, needs significant guidance |
+
+### Scoring Guide
+
+| Total Score | Rating | Feedback |
+|-------------|--------|----------|
+| 13-15 | ⭐⭐⭐ Excellent | Outstanding collaboration! Ready for advanced pair work. |
+| 10-12 | ⭐⭐ Good | Solid performance. Focus on communication during next session. |
+| 7-9 | ⭐ Satisfactory | Room for improvement. Review role responsibilities before next session. |
+| <7 | Needs Support | Consider additional practice or instructor guidance. |
+
+### Self-Reflection Questions
+
+After the session, each partner should answer:
+
+1. What did I learn from my partner today?
+2. What could I have explained more clearly?
+3. When did I feel most/least effective as Driver? As Navigator?
+4. What will I do differently next time?
+
+---
+
+*Peer Evaluation Rubric added: January 2026*

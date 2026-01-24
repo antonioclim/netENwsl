@@ -12,7 +12,7 @@
 
 **WRONG:** "WSL2 translates Linux commands into Windows commands, like an emulator."
 
-**CORRECT:** WSL2 runs a **real Linux kernel** (not emulated) in a lightweight virtual machine managed by Hyper-V. Alike WSL1 which translated system calls, WSL2 offers complete compatibility with Linux syscalls.
+**CORRECT:** WSL2 runs a **real Linux kernel** (not emulated) in a lightweight virtual machine managed by Hyper-V. Unlike WSL1 which translated system calls, WSL2 offers complete compatibility with Linux syscalls.
 
 | Aspect | WSL1 | WSL2 |
 |--------|------|------|
@@ -25,8 +25,8 @@
 **Practical verification:**
 ```bash
 uname -r
-# Output: 5.15.x.x-smallrosoft-standard-WSL2
-# Note "-smallrosoft-standard-WSL2" = real kernel, customised
+# Output: 5.15.x.x-microsoft-standard-WSL2
+# Note "-microsoft-standard-WSL2" = real kernel, customised
 ```
 
 ---
@@ -139,6 +139,140 @@ sudo service docker start
 
 ---
 
+## Python: Bytes and Strings
+
+### 🚫 Misconception 9: "encode() and decode() do the same thing"
+
+**WRONG:** "I'll just use encode() or decode() — they're interchangeable."
+
+**CORRECT:** These methods have **opposite directions**:
+- `encode()`: str → bytes (preparing text for network transmission)
+- `decode()`: bytes → str (interpreting received network data)
+
+```python
+# ✅ CORRECT usage
+text = "Hello"
+wire_data = text.encode('utf-8')      # str → bytes (for sending)
+received_text = wire_data.decode('utf-8')  # bytes → str (after receiving)
+
+# ❌ WRONG — this will raise AttributeError
+b"Hello".encode()  # bytes object has no encode()
+"Hello".decode()   # str object has no decode()
+```
+
+**Memory aid:** "ENcode puts data ON the wire, DEcode takes data OFF the wire"
+
+---
+
+### 🚫 Misconception 10: "All bytes can be decoded as UTF-8"
+
+**WRONG:** "I'll just call `.decode('utf-8')` on any bytes I receive."
+
+**CORRECT:** Network data may contain **invalid UTF-8 sequences** (binary protocols, corrupted data, different encodings). Always use error handling:
+
+```python
+# ❌ DANGEROUS — may raise UnicodeDecodeError
+text = data.decode('utf-8')
+
+# ✅ SAFE — replaces invalid bytes with �
+text = data.decode('utf-8', errors='replace')
+
+# ✅ SAFE — ignores invalid bytes
+text = data.decode('utf-8', errors='ignore')
+
+# ✅ FOR DEBUGGING — shows hex escapes
+text = data.decode('utf-8', errors='backslashreplace')
+```
+
+**Practical verification:**
+```python
+# This will crash without error handling:
+binary_data = b'\x80\x81\x82'  # Invalid UTF-8
+text = binary_data.decode('utf-8')  # UnicodeDecodeError!
+
+# Safe version:
+text = binary_data.decode('utf-8', errors='replace')  # Returns '���'
+```
+
+---
+
+## Python: Socket Programming
+
+### 🚫 Misconception 11: "Server and client use the same socket sequence"
+
+**WRONG:** "Both sides do socket → connect → send → recv."
+
+**CORRECT:** Server and client have **different sequences**:
+
+```
+SERVER SEQUENCE:              CLIENT SEQUENCE:
+┌─────────────────────┐      ┌─────────────────────┐
+│ socket()            │      │ socket()            │
+│       ↓             │      │       ↓             │
+│ setsockopt()        │      │ connect() ←─────────┼─── to server
+│       ↓             │      │       ↓             │
+│ bind()              │      │ send()/recv()       │
+│       ↓             │      │       ↓             │
+│ listen()            │      │ close()             │
+│       ↓             │      └─────────────────────┘
+│ accept() ←──────────┼─── blocks until client connects
+│       ↓             │
+│ send()/recv()       │
+│       ↓             │
+│ close()             │
+└─────────────────────┘
+```
+
+**Key difference:** Server needs `bind()` + `listen()` + `accept()`, client only needs `connect()`.
+
+**Common error:**
+```python
+# ❌ WRONG — client trying to bind and listen
+client_sock.bind(('', 0))      # Not needed for client!
+client_sock.listen(5)           # Client doesn't listen!
+client_sock.connect((host, port))
+
+# ✅ CORRECT — client just connects
+client_sock.connect((host, port))
+```
+
+---
+
+### 🚫 Misconception 12: "recv() always returns the complete message"
+
+**WRONG:** "If I send 1000 bytes, recv(1024) will get all 1000 at once."
+
+**CORRECT:** TCP is a **stream protocol** — it doesn't preserve message boundaries. `recv()` may return:
+- Less data than sent (partial read)
+- Data from multiple sends combined
+- Empty bytes (connection closed)
+
+```python
+# ❌ WRONG — assumes complete message
+data = sock.recv(1024)
+process(data)  # May be incomplete!
+
+# ✅ CORRECT — loop until complete message
+def recv_exactly(sock, n):
+    """Receive exactly n bytes."""
+    chunks = []
+    received = 0
+    while received < n:
+        chunk = sock.recv(n - received)
+        if not chunk:
+            raise ConnectionError("Socket closed prematurely")
+        chunks.append(chunk)
+        received += len(chunk)
+    return b''.join(chunks)
+```
+
+**Solution strategies:**
+1. **Length-prefix:** Send message length first, then message
+2. **Delimiter:** Use special character (e.g., `\n`) to mark end
+3. **Fixed-size:** All messages same length (pad if needed)
+
+---
+
 ## Quick Summary
 
 | # | Misconception | Reality |
@@ -151,9 +285,13 @@ sudo service docker start
 | 6 | Localhost is global | Each container has its own localhost |
 | 7 | Docker auto-starts | Must be configured manually in WSL2 |
 | 8 | Portainer = Docker | Portainer is just UI, Docker is the engine |
+| 9 | encode() = decode() | Opposite directions: str↔bytes |
+| 10 | All bytes are UTF-8 | Use errors='replace' for safety |
+| 11 | Same sequence client/server | Server: bind→listen→accept; Client: connect |
+| 12 | recv() returns complete msg | TCP is a stream, may return partial data |
 
 ---
 
 *Misconceptions Document — Week 0: Lab Environment Setup*  
 *Computer Networks — ASE Bucharest, CSIE*  
-*Version: January 2025*
+*Version: 1.5.0 | January 2026*

@@ -2,11 +2,11 @@
 """
 Example 2: Difference between bytes and str
 ===========================================
-Demonlayeres conversion between text and binary data in Python.
+Demonstrates conversion between text and binary data in Python.
 
 Course: Computer Networks - ASE Bucharest, CSIE
 Author: ing. dr. Antonio Clim
-Version: 2.1 — with subgoal labels and extended comments
+Version: 2.2 — with type hints, subgoal labels and extended comments
 
 💡 ANALOGY: Bytes and Strings as Letters and Telegrams
 ------------------------------------------------------
@@ -18,7 +18,7 @@ Version: 2.1 — with subgoal labels and extended comments
 The network "speaks" only in Morse (bytes). Your computer "thinks" in text (strings).
 
 Learning objectives:
-- Aderstanding the fundamental difference between str and bytes
+- Understanding the fundamental difference between str and bytes
 - Handling encoding errors for special characters
 - Patterns for working with binary files
 """
@@ -27,7 +27,11 @@ Learning objectives:
 # SETUP_IMPORTS
 # ═══════════════════════════════════════════════════════════════════════════════
 import logging
-from typing import Optional
+import os
+import tempfile
+from typing import Any, Union
+
+__all__ = ['safe_decode', 'hex_dump', 'demonstrate_encoding', 'demonstrate_decoding']
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LOGGING_CONFIGURATION
@@ -36,7 +40,7 @@ from typing import Optional
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
-    datafmt='%H:%M:%S'
+    datefmt='%H:%M:%S'
 )
 logger = logging.getLogger(__name__)
 
@@ -44,8 +48,8 @@ logger = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════════════════════════════════════
 # BASIC_CONVERSION_DEMONSTRATION
 # ═══════════════════════════════════════════════════════════════════════════════
-def demonlayere_conversion() -> None:
-    """Demonlayeres fundamental conversion between str and bytes.
+def demonstrate_conversion() -> None:
+    """Demonstrates fundamental conversion between str and bytes.
     
     Goes through basic conversion examples, including:
     - Visual difference between str and bytes
@@ -57,7 +61,7 @@ def demonlayere_conversion() -> None:
         None. Displays output to console.
         
     Example:
-        >>> demonlayere_conversion()
+        >>> demonstrate_conversion()
         String: Hello, Networks!
         Type: <class 'str'>
         ...
@@ -84,7 +88,7 @@ def demonlayere_conversion() -> None:
     print("\n📦 PART 2: Conversion str → bytes (encode)")
     print("-" * 40)
     
-    # NOTE: encode() transforms text into bytes for network transmission
+    # NOTE: encode() converts text to bytes for network transmission
     octets: bytes = text.encode('utf-8')
     print(f"Bytes: {octets}")
     print(f"Type: {type(octets)}")
@@ -104,7 +108,7 @@ def demonlayere_conversion() -> None:
     print("\n🔄 PART 3: Conversion bytes → str (decode)")
     print("-" * 40)
     
-    # NOTE: decode() transforms bytes back to readable text
+    # NOTE: decode() converts bytes back to readable text
     decoded_text: str = octets.decode('utf-8')
     print(f"Decoded: {decoded_text}")
     print(f"Original == Decoded: {text == decoded_text}")
@@ -144,19 +148,19 @@ def demonlayere_conversion() -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENCODING_ERRORS_DEMONSTRATION
 # ═══════════════════════════════════════════════════════════════════════════════
-def demonlayere_encoding_errors() -> None:
-    """Demonlayeres common encoding errors and how to handle them.
+def demonstrate_encoding_errors() -> None:
+    """Demonstrates common encoding errors and how to handle them.
     
     Shows what happens when:
     - You try to encode special characters in ASCII
     - You receive invalid bytes for UTF-8
-    - Different error handling layeregies
+    - Different error handling strategies
     
     Returns:
         None. Displays output to console.
         
     Example:
-        >>> demonlayere_encoding_errors()
+        >>> demonstrate_encoding_errors()
         ⚠️  Error during ASCII encoding: ...
     """
     print("\n" + "=" * 60)
@@ -175,7 +179,7 @@ def demonlayere_encoding_errors() -> None:
         # WARNING: ASCII does not support accented characters!
         ascii_bytes: bytes = text_special.encode('ascii')
         print(f"Result: {ascii_bytes}")  # Will not execute
-    except AicodeEncodeError as e:
+    except UnicodeEncodeError as e:
         logger.warning(f"ASCII encoding failed: {e}")
         print(f"⚠️  Error: {e}")
         print("  → ASCII does not support accented characters (é, ï, etc.)")
@@ -199,7 +203,7 @@ def demonlayere_encoding_errors() -> None:
     try:
         invalid_text: str = invalid_bytes.decode('utf-8')
         print(f"Result: {invalid_text}")  # Will not execute
-    except AicodeDecodeError as e:
+    except UnicodeDecodeError as e:
         logger.warning(f"UTF-8 decoding failed: {e}")
         print(f"⚠️  Error: {e}")
         print("  → These bytes do not represent valid UTF-8 characters")
@@ -207,7 +211,7 @@ def demonlayere_encoding_errors() -> None:
     # ─────────────────────────────────────────────────────────────────
     # ERROR_HANDLING_STRATEGIES
     # ─────────────────────────────────────────────────────────────────
-    print("\n🛠️  ERROR handling layeregies")
+    print("\n🛠️  ERROR handling strategies")
     print("-" * 40)
     
     mixed_bytes: bytes = b'Hello \x80\x81 World'
@@ -220,7 +224,7 @@ def demonlayere_encoding_errors() -> None:
     result_replace: str = mixed_bytes.decode('utf-8', errors='replace')
     print(f"errors='replace': '{result_replace}'")
     
-    # Layeregy 3: backslashreplace — displays escape code
+    # Strategy 3: backslashreplace — displays escape code
     result_backslash: str = mixed_bytes.decode('utf-8', errors='backslashreplace')
     print(f"errors='backslashreplace': '{result_backslash}'")
     
@@ -231,7 +235,7 @@ def demonlayere_encoding_errors() -> None:
 # BINARY_FILE_EXAMPLE
 # ═══════════════════════════════════════════════════════════════════════════════
 def binary_file_example() -> None:
-    """Demonlayeres binary reading/writing with context managers.
+    """Demonstrates binary reading/writing with context managers.
     
     Shows how to work with binary files for:
     - Saving network data (e.g.: packet captures)
@@ -246,9 +250,6 @@ def binary_file_example() -> None:
         Written 4 bytes to file
         Read: 45000028
     """
-    import os
-    import tempfile
-    
     print("\n" + "=" * 60)
     print("DEMONSTRATION: Binary files with context managers")
     print("=" * 60)
@@ -265,7 +266,7 @@ def binary_file_example() -> None:
         # ─────────────────────────────────────────────────────────────
         print(f"\n📝 Writing to {temp_path}")
         
-        # NOTE: 'wb' = write binary — crucial for network data
+        # NOTE: 'wb' = write binary — required for network data
         with open(temp_path, 'wb') as f:
             bytes_written: int = f.write(test_data)
             print(f"  Written {bytes_written} bytes")
@@ -306,12 +307,12 @@ def binary_file_example() -> None:
 # INTERACTIVE_QUIZ
 # ═══════════════════════════════════════════════════════════════════════════════
 def quiz_bytes_vs_str() -> None:
-    """Interactivee quiz to verify understanding.
+    """Interactive quiz to verify understanding.
     
     Tests knowledge about bytes vs str with practical questions.
     
     Returns:
-        None. Displays the interactivee quiz.
+        None. Displays the interactive quiz.
     """
     print("\n" + "=" * 60)
     print("🗳️  QUIZ: Bytes vs Strings")
@@ -346,7 +347,7 @@ Explanation:
 # ═══════════════════════════════════════════════════════════════════════════════
 # USEFUL_HELPER_FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════════
-def ensure_bytes(data) -> bytes:
+def ensure_bytes(data: Union[str, bytes, Any]) -> bytes:
     """Converts input to bytes, regardless of type.
     
     Args:
@@ -368,7 +369,7 @@ def ensure_bytes(data) -> bytes:
     return str(data).encode('utf-8')
 
 
-def ensure_str(data) -> str:
+def ensure_str(data: Union[str, bytes, Any]) -> str:
     """Converts input to str, regardless of type.
     
     Args:
@@ -390,22 +391,82 @@ def ensure_str(data) -> str:
     return str(data)
 
 
+def safe_decode(data: bytes, encoding: str = 'utf-8') -> str:
+    """Safely decode bytes to string with error handling.
+    
+    Args:
+        data: Bytes to decode
+        encoding: Target encoding (default: utf-8)
+        
+    Returns:
+        str: Decoded string with invalid characters replaced
+        
+    Example:
+        >>> safe_decode(b'Hello \\x80 World')
+        'Hello � World'
+    """
+    try:
+        return data.decode(encoding)
+    except UnicodeDecodeError:
+        return data.decode(encoding, errors='replace')
+
+
+def hex_dump(data: bytes, bytes_per_line: int = 16) -> str:
+    """Create a hex dump of binary data for debugging.
+    
+    Args:
+        data: Binary data to dump
+        bytes_per_line: Number of bytes per output line
+        
+    Returns:
+        str: Formatted hex dump string
+        
+    Example:
+        >>> print(hex_dump(b'Hello'))
+        0000: 48 65 6c 6c 6f                                   Hello
+    """
+    lines: list[str] = []
+    for i in range(0, len(data), bytes_per_line):
+        chunk: bytes = data[i:i + bytes_per_line]
+        hex_part: str = ' '.join(f'{b:02x}' for b in chunk)
+        # Printable ASCII characters only
+        ascii_part: str = ''.join(
+            chr(b) if 32 <= b < 127 else '.' 
+            for b in chunk
+        )
+        lines.append(f"{i:04x}: {hex_part:<{bytes_per_line * 3}} {ascii_part}")
+    return '\n'.join(lines)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN_ENTRY_POINT
 # ═══════════════════════════════════════════════════════════════════════════════
-if __name__ == "__main__":
+def main() -> int:
+    """Main entry point for the demonstration.
+    
+    Returns:
+        int: Exit code (0 for success, 1 for error)
+    """
     try:
-        demonlayere_conversion()
-        demonlayere_encoding_errors()
+        demonstrate_conversion()
+        demonstrate_encoding_errors()
         binary_file_example()
         quiz_bytes_vs_str()
         
         print("\n" + "=" * 60)
-        print("✅ All demonlayerions completed successfully!")
+        print("✅ All demonstrations completed successfully!")
         print("=" * 60)
+        return 0
         
     except KeyboardInterrupt:
         print("\n\n👋 Interrupted by user")
+        return 0
     except Exception as e:
-        logger.exception(f"Aexpected error: {e}")
-        print(f"\n❌ Aexpected error: {e}")
+        logger.exception(f"Unexpected error: {e}")
+        print(f"\n❌ Unexpected error: {e}")
+        return 1
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())

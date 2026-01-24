@@ -210,7 +210,7 @@ Students who have used Docker Desktop expect Docker to start automatically. In n
 
 - [docs/misconceptions.md](misconceptions.md) — Detailed common errors
 - [docs/concept_analogies.md](concept_analogies.md) — Concept analogies
-- [GLOSSARY.md](../GLOSSARY.md) — Technical term definitions
+- [glossary.md](glossary.md) — Technical term definitions
 
 ---
 

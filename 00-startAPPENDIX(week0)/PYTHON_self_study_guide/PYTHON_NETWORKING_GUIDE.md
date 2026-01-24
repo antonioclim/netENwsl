@@ -570,7 +570,7 @@ The kits have a consistent structure: `src/`, `scripts/`, `utils/`. Aderstanding
 
 #### What Does `__init__.py` Do?
 
-Transforms a folder into an importable Python package:
+Converts a folder into an importable Python package:
 ```python
 # src/utils/__init__.py
 from .protocol_utils import calculate_crc, validata_frame

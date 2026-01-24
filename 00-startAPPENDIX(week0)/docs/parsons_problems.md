@@ -1,365 +1,306 @@
 # 🧩 Parsons Problems — Week 0
 ## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
-> Reorder the code blocks to create a working solution.
-> Each problem includes one **distractor block** that should NOT be used.
+> **Parsons Problems** are code-ordering exercises where you arrange shuffled lines into the correct sequence.  
+> These build procedural knowledge without the cognitive load of syntax recall.
 
 ---
 
-## How to Use These Problems
+## Instructions
 
-1. Read the task description carefully
-2. Examine all code blocks (some are distractors!)
-3. Arrange the correct blocks in the proper order
-4. Check your solution against the hidden answer
-5. Discuss with a partner why certain blocks are distractors
+1. Read the problem description carefully
+2. Identify the **correct lines** (some may be distractors)
+3. Arrange them in the proper order
+4. Check your answer against the solution
+
+**Tip:** Think about what each line does before ordering. Consider dependencies between lines.
 
 ---
 
-## Problem P1: TCP Client Connection
+## Problem 1: TCP Server Setup (LO0.5)
 
-### Task
+**Objective:** Arrange the lines to create a TCP server that listens on port 8080.
 
-Create a TCP client that connects to a server, sends a message and receives a response.
-
-### Scrambled Blocks
-
+**Shuffled Lines:**
 ```python
-# Block A
-    response = sock.recv(1024)
-    print(f"Received: {response.decode()}")
-
-# Block B
-def tcp_client(host: str, port: int, message: str) -> None:
-
-# Block C
-    sock.connect((host, port))
-    sock.sendall(message.encode())
-
-# Block D
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block E
-    sock.close()
-
-# Block F (DISTRACTOR)
-    sock.bind(('', 0))
-
-# Block G (DISTRACTOR)
-    sock.listen(5)
+A: server_sock.listen(5)
+B: server_sock.bind(('0.0.0.0', 8080))
+C: import socket
+D: server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+E: server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+F: conn, addr = server_sock.accept()
+G: server_sock.connect(('0.0.0.0', 8080))  # DISTRACTOR
+H: socket.listen(5)  # DISTRACTOR
 ```
-
-### Correct Order
 
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+The server sequence is: import → create socket → set options → bind → listen → accept.
+Servers do NOT call connect() — that's for clients!
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order:** C → D → E → B → A → F
 
 ```python
-# Block B
-def tcp_client(host: str, port: int, message: str) -> None:
-
-# Block D
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block C
-    sock.connect((host, port))
-    sock.sendall(message.encode())
-
-# Block A
-    response = sock.recv(1024)
-    print(f"Received: {response.decode()}")
-
-# Block E
-    sock.close()
+import socket
+server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server_sock.bind(('0.0.0.0', 8080))
+server_sock.listen(5)
+conn, addr = server_sock.accept()
 ```
 
-**Distractors explained:**
-- **Block F** (`bind()`) — Used by servers to bind to a local address, not by clients
-- **Block G** (`listen()`) — Used by servers to start listening for connections, not by clients
+**Distractors:**
+- G: `connect()` is for clients, not servers
+- H: `socket.listen()` is wrong syntax — should be `server_sock.listen()`
 
-**Key concept:** TCP clients use `connect()` to reach the server; `bind()` and `listen()` are server-side operations.
-
+**Why this order:**
+1. Import the module first
+2. Create the socket object
+3. Set socket options before binding
+4. Bind to address/port
+5. Start listening for connections
+6. Accept incoming connections
 </details>
 
 ---
 
-## Problem P2: Binary Protocol Header Parsing
+## Problem 2: Bytes Encoding and Sending (LO0.4, LO0.5)
 
-### Task
+**Objective:** Arrange the lines to send an encoded message over a socket.
 
-Parse a simple binary protocol header using `struct.unpack()`. The header format is:
-- Version: 1 byte (unsigned)
-- Message type: 1 byte (unsigned)  
-- Payload length: 2 bytes (unsigned, big-endian)
-- Timestamp: 4 bytes (unsigned, big-endian)
-
-### Scrambled Blocks
-
+**Shuffled Lines:**
 ```python
-# Block A
-    return version, msg_type, length, timestamp
-
-# Block B
-def parse_header(data: bytes) -> tuple[int, int, int, int]:
-
-# Block C
-    version, msg_type, length, timestamp = struct.unpack('!BBHI', data[:8])
-
-# Block D
-    if len(data) < 8:
-        raise ValueError("Header too short")
-
-# Block E (DISTRACTOR)
-    version, msg_type, length, timestamp = struct.unpack('BBHI', data[:8])
-
-# Block F (DISTRACTOR)
-    header = data.decode('utf-8')[:8]
+A: sock.send(encoded_msg)
+B: message = "Hello, Server!"
+C: encoded_msg = message.encode('utf-8')
+D: sock.connect(('localhost', 8080))
+E: import socket
+F: sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+G: encoded_msg = message.decode('utf-8')  # DISTRACTOR
+H: sock.send(message)  # DISTRACTOR
 ```
-
-### Correct Order
 
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+You must encode a string to bytes BEFORE sending. 
+Remember: encode() converts str → bytes, decode() converts bytes → str.
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order:** E → F → D → B → C → A
 
 ```python
-# Block B
-def parse_header(data: bytes) -> tuple[int, int, int, int]:
-
-# Block D
-    if len(data) < 8:
-        raise ValueError("Header too short")
-
-# Block C
-    version, msg_type, length, timestamp = struct.unpack('!BBHI', data[:8])
-
-# Block A
-    return version, msg_type, length, timestamp
+import socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(('localhost', 8080))
+message = "Hello, Server!"
+encoded_msg = message.encode('utf-8')
+sock.send(encoded_msg)
 ```
 
-**Distractors explained:**
-- **Block E** — Missing `!` prefix for network byte order (big-endian). Without it, the system's native byte order is used, which may be wrong on little-endian machines.
-- **Block F** — Binary data cannot be decoded as UTF-8; protocol headers are binary, not text.
+**Distractors:**
+- G: `decode()` converts bytes→str, not str→bytes
+- H: Cannot send a string directly — must be bytes
 
-**Key concept:** Network protocols use big-endian byte order. The `!` in struct format strings ensures correct byte order regardless of the local machine's architecture.
-
+**Why this order:**
+1. Import socket module
+2. Create socket
+3. Connect to server (client-side)
+4. Prepare the message string
+5. Encode string to bytes
+6. Send the bytes
 </details>
 
 ---
 
-## Problem P3: TCP Server Socket Setup
+## Problem 3: Receiving and Decoding Data (LO0.4, LO0.5)
 
-### Task
+**Objective:** Arrange the lines to safely receive and decode data from a socket.
 
-Create and configure a TCP server socket that listens on a specified port and accepts one connection.
-
-### Scrambled Blocks
-
+**Shuffled Lines:**
 ```python
-# Block A
-    server_sock.listen(1)
-    print(f"Server listening on port {port}")
-
-# Block B
-def create_server(port: int) -> socket.socket:
-
-# Block C
-    server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# Block D
-    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block E
-    server_sock.bind(('', port))
-
-# Block F
-    return server_sock
-
-# Block G (DISTRACTOR)
-    server_sock.connect(('localhost', port))
+A: print(f"Received: {text}")
+B: data = conn.recv(1024)
+C: text = data.decode('utf-8', errors='replace')
+D: if not data:
+E:     break
+F: text = data.encode('utf-8')  # DISTRACTOR
+G: data = conn.send(1024)  # DISTRACTOR
+H: text = data.decode('utf-8')  # DISTRACTOR (unsafe)
 ```
-
-### Correct Order
 
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+Always use errors='replace' when decoding to handle invalid UTF-8 gracefully.
+recv() receives data, send() sends data.
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order:** B → D → E → C → A
 
 ```python
-# Block B
-def create_server(port: int) -> socket.socket:
-
-# Block D
-    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block C
-    server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# Block E
-    server_sock.bind(('', port))
-
-# Block A
-    server_sock.listen(1)
-    print(f"Server listening on port {port}")
-
-# Block F
-    return server_sock
+data = conn.recv(1024)
+if not data:
+    break
+text = data.decode('utf-8', errors='replace')
+print(f"Received: {text}")
 ```
 
-**Distractor explained:**
-- **Block G** (`connect()`) — This is a client operation. Servers do not connect to themselves; they `bind()` and `listen()`.
+**Distractors:**
+- F: `encode()` is wrong direction — we need decode() for received bytes
+- G: `send()` doesn't receive data, `recv()` does
+- H: Missing `errors='replace'` — could crash on invalid UTF-8
 
-**Key concept:** Server socket sequence is always: create → setsockopt → bind → listen. The `SO_REUSEADDR` option allows immediate port reuse after server restart.
-
+**Why this order:**
+1. Receive raw bytes from socket
+2. Check if data is empty (connection closed)
+3. Break if no data
+4. Safely decode bytes to string
+5. Use the decoded text
 </details>
 
 ---
 
-## Problem P4: Bytes to String Encoding
+## Problem 4: Complete Echo Server Handler (LO0.5)
 
-### Task
+**Objective:** Arrange the lines to handle a client connection in an echo server.
 
-Create a function that safely converts bytes to a string, handling potential encoding errors gracefully.
-
-### Scrambled Blocks
-
+**Shuffled Lines:**
 ```python
-# Block A
-    except UnicodeDecodeError:
-        return data.decode('utf-8', errors='replace')
-
-# Block B
-def safe_decode(data: bytes) -> str:
-
-# Block C
-    try:
-        return data.decode('utf-8')
-
-# Block D (DISTRACTOR)
-    return str(data)
-
-# Block E (DISTRACTOR)
-    return data.encode('utf-8')
+A: response = data.upper()
+B: conn.sendall(response)
+C: data = conn.recv(1024)
+D: with conn:
+E: conn, addr = server_sock.accept()
+F: print(f"Connected by {addr}")
+G: response = data.upper().decode()  # DISTRACTOR
+H: conn.send(response.encode())  # DISTRACTOR (partially wrong)
 ```
-
-### Correct Order
 
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+recv() returns bytes. The upper() method works on both str and bytes.
+sendall() is preferred over send() for complete transmission.
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order:** E → F → D → C → A → B
 
 ```python
-# Block B
-def safe_decode(data: bytes) -> str:
-
-# Block C
-    try:
-        return data.decode('utf-8')
-
-# Block A
-    except UnicodeDecodeError:
-        return data.decode('utf-8', errors='replace')
+conn, addr = server_sock.accept()
+print(f"Connected by {addr}")
+with conn:
+    data = conn.recv(1024)
+    response = data.upper()
+    conn.sendall(response)
 ```
 
-**Distractors explained:**
-- **Block D** (`str(data)`) — This produces `"b'...'"` representation, not the actual decoded string
-- **Block E** (`encode()`) — This converts strings TO bytes, not bytes to strings (opposite direction)
+**Distractors:**
+- G: `data` is already bytes, `upper()` returns bytes, no need for `decode()`
+- H: If response is bytes, don't encode again; also `sendall()` is preferred
 
-**Key concept:** `decode()` converts bytes→str, `encode()` converts str→bytes. Using `errors='replace'` substitutes invalid bytes with the Unicode replacement character (�).
-
+**Why this order:**
+1. Accept incoming connection
+2. Log the connection
+3. Use context manager for automatic cleanup
+4. Receive data from client
+5. Process data (uppercase)
+6. Send response back
 </details>
 
 ---
 
-## Problem P5: struct.pack() for Network Protocol
+## Problem 5: Struct Packing for Network Protocol (LO0.5)
 
-### Task
+**Objective:** Arrange the lines to pack a simple protocol header with version, type and length.
 
-Create a function that packs a network message with a 2-byte port number (big-endian) followed by a 4-byte IP address (as integer, big-endian).
-
-### Scrambled Blocks
-
+**Shuffled Lines:**
 ```python
-# Block A
-    return struct.pack('!HI', port, ip_int)
-
-# Block B
-def pack_address(port: int, ip_int: int) -> bytes:
-
-# Block C
-    if not (0 <= port <= 65535):
-        raise ValueError("Port must be 0-65535")
-
-# Block D (DISTRACTOR)
-    return struct.pack('HI', port, ip_int)
-
-# Block E (DISTRACTOR)
-    return f"{port}:{ip_int}".encode()
+A: header = struct.pack('!BBH', version, msg_type, length)
+B: import struct
+C: length = len(payload)
+D: version = 1
+E: msg_type = 0x02
+F: sock.sendall(header + payload)
+G: payload = b"Hello"
+H: header = struct.pack('BBH', version, msg_type, length)  # DISTRACTOR
+I: header = struct.pack('!HHH', version, msg_type, length)  # DISTRACTOR
 ```
-
-### Correct Order
 
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+The '!' prefix means network byte order (big-endian).
+'B' = unsigned byte (1 byte), 'H' = unsigned short (2 bytes).
+Always calculate length AFTER defining the payload.
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order:** B → G → D → E → C → A → F
 
 ```python
-# Block B
-def pack_address(port: int, ip_int: int) -> bytes:
-
-# Block C
-    if not (0 <= port <= 65535):
-        raise ValueError("Port must be 0-65535")
-
-# Block A
-    return struct.pack('!HI', port, ip_int)
+import struct
+payload = b"Hello"
+version = 1
+msg_type = 0x02
+length = len(payload)
+header = struct.pack('!BBH', version, msg_type, length)
+sock.sendall(header + payload)
 ```
 
-**Distractors explained:**
-- **Block D** — Missing `!` for network byte order. Would produce incorrect byte order on little-endian systems.
-- **Block E** — Creates a text representation, not binary protocol data. Network protocols need exact binary formats, not human-readable strings.
+**Distractors:**
+- H: Missing '!' for network byte order — will use native byte order
+- I: Wrong format — '!HHH' uses 2 bytes each for version and type (should be 1 byte each)
 
-**Key concept:** The `!` prefix in struct format is essential for network protocols. `H` = unsigned short (2 bytes), `I` = unsigned int (4 bytes).
-
+**Why this order:**
+1. Import struct module
+2. Define the payload first (needed for length)
+3. Define protocol constants
+4. Calculate payload length
+5. Pack header with correct format
+6. Send header + payload together
 </details>
 
 ---
 
-## Summary: Common Patterns
+## Difficulty Progression
 
-### Server vs Client Operations
-
-| Operation | Server | Client |
-|-----------|--------|--------|
-| `socket()` | ✅ | ✅ |
-| `bind()` | ✅ | ❌ (usually) |
-| `listen()` | ✅ | ❌ |
-| `accept()` | ✅ | ❌ |
-| `connect()` | ❌ | ✅ |
-
-### Encoding Direction
-
-| Operation | Direction | Example |
-|-----------|-----------|---------|
-| `encode()` | str → bytes | `"hello".encode()` → `b'hello'` |
-| `decode()` | bytes → str | `b'hello'.decode()` → `"hello"` |
-
-### struct Format Characters
-
-| Char | Type | Size | Network order |
-|------|------|------|---------------|
-| `B` | unsigned char | 1 byte | N/A |
-| `H` | unsigned short | 2 bytes | `!H` |
-| `I` | unsigned int | 4 bytes | `!I` |
-| `!` | network (big-endian) | prefix | Required for protocols |
+| Problem | LO | Difficulty | Key Concept |
+|---------|-----|------------|-------------|
+| P1 | LO0.5 | Basic | Server socket sequence |
+| P2 | LO0.4, LO0.5 | Basic | String encoding for network |
+| P3 | LO0.4, LO0.5 | Intermediate | Safe decoding with error handling |
+| P4 | LO0.5 | Intermediate | Complete connection handler |
+| P5 | LO0.5 | Advanced | Binary protocol with struct |
 
 ---
 
-## Self-Assessment
+## Common Mistakes to Avoid
 
-After completing these problems, you should be able to:
-
-- [ ] Distinguish between client and server socket operations
-- [ ] Use `struct.pack()` and `struct.unpack()` with correct byte order
-- [ ] Handle bytes↔string conversion safely
-- [ ] Identify common networking code mistakes
+1. **Calling connect() on a server socket** — Servers bind and listen, clients connect
+2. **Forgetting to encode strings before sending** — Sockets only accept bytes
+3. **Using decode() without error handling** — Network data may contain invalid UTF-8
+4. **Missing network byte order in struct** — Always use '!' prefix for protocols
+5. **Using send() instead of sendall()** — send() may not send all data
 
 ---
 
-*Parsons Problems — Week 0 | Computer Networks | ASE-CSIE*
+## JSON Export for LMS
+
+This file is also available as `formative/parsons_problems.json` for LMS import (Moodle/Canvas).
+
+---
+
+*Parsons Problems — Week 0 | Computer Networks | ASE-CSIE*  
+*Version: 1.5.0 | Date: 2026-01-24*

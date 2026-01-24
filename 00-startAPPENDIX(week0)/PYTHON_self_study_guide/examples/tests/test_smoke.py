@@ -2,7 +2,7 @@
 """
 Smoke Tests for Python Examples
 ===============================
-Verifies that all modulees import and function minimally.
+Verifies that all modules import and function minimally.
 
 Course: Computer Networks - ASE Bucharest, CSIE
 Author: ing. dr. Antonio Clim
@@ -72,7 +72,7 @@ def test_struct_parsing_imports() -> None:
 # TEST_EXECUTION
 # ═══════════════════════════════════════════════════════════════════════════════
 def test_bytes_demo_runs() -> None:
-    """Run the bytes demonlayerion without errors."""
+    """Run the bytes demonstration without errors."""
     script_path = EXAMPLES_DIR / "02_bytes_vs_str.py"
     if not script_path.exists():
         print(f"SKIP: {script_path} does not exist")
@@ -92,7 +92,7 @@ def test_bytes_demo_runs() -> None:
 
 
 def test_struct_parsing_runs() -> None:
-    """Run the struct demonlayerion without errors."""
+    """Run the struct demonstration without errors."""
     script_path = EXAMPLES_DIR / "03_struct_parsing.py"
     if not script_path.exists():
         print(f"SKIP: {script_path} does not exist")
@@ -129,12 +129,12 @@ def test_struct_pack_unpack() -> None:
     port = 8080
     packed = struct.pack('!H', port)  # Network byte order, unsigned short
     
-    assert len(packed) == 2, "Asigned short must be 2 bytes"
+    assert len(packed) == 2, "Unsigned short must be 2 bytes"
     assert packed == b'\x1f\x90', f"8080 in big-endian = 0x1F90, got {packed.hex()}"
     
-    # Apack
+    # Unpack
     unpacked, = struct.unpack('!H', packed)
-    assert unpacked == port, f"Apack must return {port}, got {unpacked}"
+    assert unpacked == port, f"Unpack must return {port}, got {unpacked}"
 
 
 def test_socket_creation() -> None:
