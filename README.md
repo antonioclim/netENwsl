@@ -89,8 +89,8 @@ Laboratory materials are available in **two languages**, organised in separate r
 | **Network Simulation** | Docker bridge networks | Mininet (complex topologies) |
 | **Traffic Capture** | Native Windows Wireshark | tcpdump in VM |
 | **Setup Complexity** | ⭐⭐ Accessible | ⭐⭐⭐⭐ Advanced |
-| **PlantUML Diagrams** | ✗ | ✓ |
-| **Presentation Slides** | ✗ | ✓ |
+| **PlantUML Diagrams** | ✓ | ✓ |
+| **Presentation Slides** | ✓ | ✓ |
 | **Completeness** | 14 complete kits | 14 weeks (variable structure) |
 | **Documentation** | 2,400+ lines | ~1,000 lines |
 | **Resource Usage** | ~500MB RAM base | ~2-4GB RAM (VM) |
