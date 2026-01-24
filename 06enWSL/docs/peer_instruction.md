@@ -24,7 +24,7 @@ Each question follows **5 mandatory steps**:
 
 ---
 
-## Question 1: NAT vs PAT
+## Question 1: NAT vs PAT (LO1, LO2)
 
 > 💭 **PREDICTION:** Before reading, write down what you think is the main difference between NAT and PAT.
 
@@ -45,7 +45,7 @@ How does the router distinguish return packets for each internal host?
 
 ### Correct Answer
 
-**B** — PAT (Port Address Translation) assigns unique source ports to each connection. Even though both connections share the same public IP (203.0.113.1), h1's traffic might use port 50001 while h2's uses port 50002. The conntrack table maps these back to the original internal addresses.
+**B** — PAT (Port Address Translation) assigns unique source ports to each connection. Even though both connections share the same public IP (203.0.113.1), h1's traffic might use port 50001 whilst h2's uses port 50002. The conntrack table maps these back to the original internal addresses.
 
 ### Targeted Misconception
 
@@ -60,7 +60,7 @@ Many students confuse static NAT (one-to-one mapping) with PAT (many-to-one). Th
 
 ---
 
-## Question 2: Source Port Preservation
+## Question 2: Source Port Preservation (LO2)
 
 > 💭 **PREDICTION:** When a private host uses source port 12345, what port will the public server see?
 
@@ -100,109 +100,106 @@ Students often assume the source port passes through unchanged. This leads to co
 
 ---
 
-## Question 3: SDN Flow Priority
+## Question 3: SDN Flow Priority (LO5)
 
-> 💭 **PREDICTION:** In OpenFlow, does a higher priority number mean more important or less important?
+> 💭 **PREDICTION:** In OpenFlow, does a higher priority number mean more or less important?
 
 ### Scenario
 
-An SDN switch has these flow rules installed:
-
-```
-priority=10,  ip, nw_dst=10.0.6.13, actions=drop
-priority=100, icmp, nw_src=10.0.6.11, nw_dst=10.0.6.13, actions=output:3
-```
+An SDN switch has two flow rules installed:
+- Rule A: priority=10, match=ip, action=drop
+- Rule B: priority=100, match=ip, action=output:2
 
 ### Question
 
-Host h1 (10.0.6.11) sends an ICMP ping to h3 (10.0.6.13). What happens?
+A packet arrives that matches both rules. Which rule is applied?
 
 ### Options
 
-- **A)** The packet is dropped because priority=10 was installed first
-- **B)** The packet is dropped because lower priority number means higher importance
-- **C)** The packet is forwarded to port 3 because higher priority number takes precedence — **CORRECT**
-- **D)** The packet matches both rules and is both dropped and forwarded
+- **A)** Rule A — it was installed first
+- **B)** Rule B — higher priority number wins — **CORRECT**
+- **C)** Both rules are applied in sequence
+- **D)** The packet is sent to the controller due to conflict
 
 ### Correct Answer
 
-**C** — In OpenFlow, **higher priority number = higher importance**. The ICMP packet matches both rules, but the rule with priority=100 takes precedence over priority=10. The packet is forwarded to port 3.
+**B** — In OpenFlow, higher priority numbers indicate higher importance. Rule B (priority=100) takes precedence over Rule A (priority=10). The packet is forwarded to port 2.
 
 ### Targeted Misconception
 
-Many systems use "priority 1 = highest" (like Unix nice values). OpenFlow uses the opposite convention, which catches students off guard.
+Students often assume "priority 1" means "first priority" (most important). OpenFlow uses the opposite convention: higher numbers = higher priority.
 
 ### Instructor Notes
 
-- **Target accuracy:** ~35% on first vote (this is a common trap!)
-- **Key concept:** OpenFlow priority semantics differ from other systems
-- **After discussion:** Show flow table sorted by priority, demonstrate matching
+- **Target accuracy:** ~35% on first vote
+- **Key concept:** OpenFlow priority semantics
+- **After discussion:** Compare with CSS specificity or iptables rule ordering
 - **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
 
 ---
 
-## Question 4: SDN Controller Role
+## Question 4: SDN Controller Role (LO4, LO6)
 
-> 💭 **PREDICTION:** Does the SDN controller forward packets, or does it do something else?
+> 💭 **PREDICTION:** Does every packet go through the SDN controller?
 
 ### Scenario
 
-In an SDN network, host h1 sends its first packet to h2. The switch has no matching flow rule.
+An SDN controller has installed flow rules on switch S1. Host h1 sends 1000 packets to host h2, all matching the same installed flow rule.
 
 ### Question
 
-What is the role of the SDN controller when this packet arrives?
+How many packets does the controller process?
 
 ### Options
 
-- **A)** The controller receives the packet, processes it and forwards it to h2
-- **B)** The controller installs a flow rule in the switch, then the switch forwards subsequent packets — **CORRECT**
-- **C)** The controller buffers the packet until h2 responds
-- **D)** The controller drops the packet and logs the attempt
+- **A)** 1000 — the controller processes every packet
+- **B)** 1 — only the first packet (table-miss) goes to the controller
+- **C)** 0 — if a matching rule exists, no packets go to the controller — **CORRECT**
+- **D)** 500 — the controller samples half the packets
 
 ### Correct Answer
 
-**B** — The controller's job is to *decide policy and install rules*, not to forward packets. When a table-miss occurs, the switch sends a packet-in to the controller. The controller analyses the situation, installs appropriate flow rules via flow-mod messages and the switch then forwards the packet (and subsequent matching packets) according to those rules.
+**C** — Once a flow rule is installed, matching packets are forwarded directly by the switch hardware at line rate. The controller is only involved during table-miss events (when no rule matches). This is what makes SDN scalable.
 
 ### Targeted Misconception
 
-Students often think the controller acts like a central router, forwarding every packet. This would be extremely slow and defeat the purpose of SDN's distributed data plane.
+Students often believe the controller is always in the forwarding path, making SDN seem inherently slower than traditional networking. In reality, the data plane operates independently once flows are installed.
 
 ### Instructor Notes
 
 - **Target accuracy:** ~45% on first vote
-- **Key concept:** Control plane decides, data plane executes
-- **After discussion:** Draw timeline showing packet-in → flow-mod → packet forwarding
+- **Key concept:** Data plane independence, reactive vs proactive flow installation
+- **After discussion:** Show Wireshark capture with packet-in only for first packet
 - **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
 
 ---
 
-## Question 5: NAT and Security
+## Question 5: NAT and Security (LO1)
 
-> 💭 **PREDICTION:** Does NAT make your network more secure? Why or why not?
+> 💭 **PREDICTION:** Does NAT provide security? Write down your reasoning.
 
 ### Scenario
 
-A company uses NAT to hide 500 internal workstations behind a single public IP address. The IT manager claims "We don't need a firewall because NAT protects us."
+A company uses NAT to connect 500 internal hosts to the internet through a single public IP address. The security team claims "NAT is our firewall."
 
 ### Question
 
-Is the IT manager's claim correct?
+Is NAT an adequate replacement for a firewall?
 
 ### Options
 
-- **A)** Yes — NAT hides internal addresses, making attacks impossible
-- **B)** Partially — NAT blocks unsolicited inbound connections but doesn't inspect traffic — **CORRECT**
+- **A)** Yes — NAT hides internal IPs and blocks all inbound attacks
+- **B)** Partially — NAT blocks unsolicited inbound traffic but is not a true firewall — **CORRECT**
 - **C)** No — NAT has no security benefits whatsoever
-- **D)** Yes — NAT encrypts all outbound traffic automatically
+- **D)** Yes — NAT encrypts all outbound traffic
 
 ### Correct Answer
 
-**B** — NAT provides *obscurity*, not *security*. It does block unsolicited inbound connections (since there's no conntrack entry to map them), which offers some protection. However, NAT does not inspect packet contents, block malware, prevent phishing, or stop attacks initiated from inside. A proper firewall with stateful inspection is still necessary.
+**B** — NAT provides *obscurity*, not *security*. It does block unsolicited inbound connections (since there is no conntrack entry to map them), which offers some protection. However, NAT does not inspect packet contents, block malware, prevent phishing, or stop attacks initiated from inside. A proper firewall with stateful inspection is still necessary.
 
 ### Targeted Misconception
 
-Many believe NAT is a security feature. While it incidentally blocks some attacks, relying on NAT for security is dangerous. It creates a false sense of protection.
+Many believe NAT is a security feature. Whilst it incidentally blocks some attacks, relying on NAT for security is dangerous. It creates a false sense of protection.
 
 ### Instructor Notes
 
@@ -213,16 +210,155 @@ Many believe NAT is a security feature. While it incidentally blocks some attack
 
 ---
 
-## Summary Table
+## Question 6: NAT Implementation (LO3)
 
-| Question | Topic | Target Accuracy | Key Misconception |
-|----------|-------|-----------------|-------------------|
-| Q1 | NAT vs PAT | ~50% | NAT requires multiple public IPs |
-| Q2 | Port preservation | ~40% | Source port always preserved |
-| Q3 | SDN priority | ~35% | Lower number = higher priority |
-| Q4 | Controller role | ~45% | Controller forwards packets |
-| Q5 | NAT security | ~55% | NAT = firewall |
+> 💭 **PREDICTION:** Which iptables chain handles outbound NAT translation?
+
+### Scenario
+
+You are configuring NAT on a Linux router. The private network is 192.168.1.0/24 connected to eth0, and the public interface is eth1 with a dynamic IP.
+
+### Question
+
+Which iptables command correctly enables MASQUERADE for outbound traffic from the private network?
+
+### Options
+
+- **A)** `iptables -t nat -A PREROUTING -o eth1 -j MASQUERADE`
+- **B)** `iptables -t nat -A POSTROUTING -o eth1 -s 192.168.1.0/24 -j MASQUERADE` — **CORRECT**
+- **C)** `iptables -t nat -A INPUT -i eth0 -j MASQUERADE`
+- **D)** `iptables -A FORWARD -o eth1 -j MASQUERADE`
+
+### Correct Answer
+
+**B** — MASQUERADE must be in the POSTROUTING chain (applied after the routing decision), on the outbound public interface (`-o eth1`), for traffic originating from the private subnet (`-s 192.168.1.0/24`).
+
+### Targeted Misconception
+
+Students frequently confuse PREROUTING (used for DNAT/port forwarding of inbound traffic) with POSTROUTING (used for SNAT/MASQUERADE of outbound traffic). The chain name indicates WHEN in the packet flow the rule is applied.
+
+### Instructor Notes
+
+- **Target accuracy:** ~35% on first vote
+- **Key concept:** Chain selection based on packet flow position
+- **After discussion:** Draw the netfilter packet flow diagram showing where each chain applies
+- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
 
 ---
 
-*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
+## Question 7: SDN Flow Installation (LO4)
+
+> 💭 **PREDICTION:** When does the SDN controller get involved in packet forwarding?
+
+### Scenario
+
+An OpenFlow SDN switch receives a packet from host h1. The switch has been running for 10 minutes and has some flow rules installed by the controller.
+
+### Question
+
+Under what condition does the switch send this packet to the controller?
+
+### Options
+
+- **A)** Always — every packet goes through the controller for approval
+- **B)** Never — once flows are installed, the controller is not needed
+- **C)** Only when the packet does not match any existing flow rule (table-miss) — **CORRECT**
+- **D)** Only for the first packet from each new source MAC address
+
+### Correct Answer
+
+**C** — The switch only contacts the controller when a packet does not match any installed flow rule (table-miss). The table-miss rule typically has lowest priority and action `CONTROLLER`. Once a flow is installed, subsequent matching packets are forwarded directly by the switch without controller involvement.
+
+### Targeted Misconception
+
+Students often believe the controller is always in the forwarding path, making SDN inherently slower. In reality, the controller only handles exceptions; normal traffic is forwarded at line rate by the switch hardware.
+
+### Instructor Notes
+
+- **Target accuracy:** ~45% on first vote
+- **Key concept:** Reactive vs proactive flow installation; data plane independence
+- **After discussion:** Show packet-in/flow-mod sequence in Wireshark, demonstrate that subsequent packets do not generate packet-in
+- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
+
+---
+
+## Question 8: OpenFlow Policy Design (LO7)
+
+> 💭 **PREDICTION:** How do you implement "allow specific, deny general" in OpenFlow?
+
+### Scenario
+
+You need to design an SDN security policy with these requirements:
+1. Allow SSH (TCP port 22) to server 10.0.6.12
+2. Block ALL other traffic to 10.0.6.12
+3. Allow all other traffic in the network
+
+### Question
+
+What priority ordering correctly implements this policy?
+
+### Options
+
+- **A)** SSH allow: priority=100, Block to .12: priority=50, Default allow: priority=10 — **CORRECT**
+- **B)** SSH allow: priority=10, Block to .12: priority=50, Default allow: priority=100
+- **C)** Block to .12: priority=100, SSH allow: priority=50, Default allow: priority=10
+- **D)** All rules at priority=100; order of installation determines matching
+
+### Correct Answer
+
+**A** — The most specific permit rule (SSH to .12) needs the highest priority (100) so it is checked first. The block rule (50) catches everything else destined for .12. The default allow (10) handles all remaining traffic. Remember: in OpenFlow, higher priority number = higher importance.
+
+### Targeted Misconception
+
+Students often place the block rule at highest priority, forgetting that specific permit rules must be able to override it. The design pattern is: "specific permit > general deny > default policy"
+
+### Instructor Notes
+
+- **Target accuracy:** ~30% on first vote
+- **Key concept:** Priority layering for security policies
+- **After discussion:** Walk through packet matching for SSH packet, HTTP packet, and packet to different host
+- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
+
+---
+
+## Summary Table
+
+| Question | Topic | LO | Target Accuracy | Key Misconception |
+|----------|-------|-----|-----------------|-------------------|
+| Q1 | NAT vs PAT | LO1, LO2 | ~50% | NAT requires multiple public IPs |
+| Q2 | Port preservation | LO2 | ~40% | Source port always preserved |
+| Q3 | SDN priority | LO5 | ~35% | Lower number = higher priority |
+| Q4 | Controller role | LO4, LO6 | ~45% | Controller forwards packets |
+| Q5 | NAT security | LO1 | ~55% | NAT = firewall |
+| Q6 | NAT implementation | LO3 | ~35% | PREROUTING vs POSTROUTING confusion |
+| Q7 | Flow installation | LO4 | ~45% | Controller always involved |
+| Q8 | Policy design | LO7 | ~30% | Block at highest priority |
+
+---
+
+## Using Peer Instruction Effectively
+
+### Before Class
+- Ensure students have completed the pre-lab reading
+- Prepare voting mechanism (hands, clickers, or online tool)
+- Have diagrams ready for explanation phase
+
+### During Voting
+- Enforce silence during individual thinking
+- Do not reveal vote distribution until after discussion
+- Encourage students to commit to an answer
+
+### During Discussion
+- Circulate and listen to student reasoning
+- Note common arguments to address in explanation
+- Pair students with different answers when possible
+
+### After Re-vote
+- Show vote change statistics
+- Explain correct answer with emphasis on common mistakes
+- Connect to upcoming lab exercises
+
+---
+
+*Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*
+*Contact: Issues: Open an issue in GitHub*

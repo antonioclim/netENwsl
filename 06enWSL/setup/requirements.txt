@@ -1,79 +1,62 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Python Dependencies — Week 6: NAT/PAT & SDN Laboratory
+# Requirements — Week 6: NAT/PAT & SDN Laboratory
 # ═══════════════════════════════════════════════════════════════════════════════
 # Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 #
-# Install: pip install -r requirements.txt --break-system-packages
+# Installation:
+#   pip install -r setup/requirements.txt --break-system-packages
 #
-# Version pinning policy:
-#   - Major.minor pinned for stability
-#   - Patch version flexible for security updates
-#   - Hashes omitted for educational simplicity (add --require-hashes for production)
+# Or using Make:
+#   make install-deps
+#
+# Contact: Issues: Open an issue in GitHub
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CORE DEPENDENCIES (Required)
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Docker API client for container management
-docker>=6.0.0,<8.0.0
-
-# HTTP client for health checks and API calls
-requests>=2.28.0,<3.0.0
-
-# YAML parsing for configuration and quiz files
-pyyaml>=6.0,<7.0
-
-# Type hints backport for Python 3.10 compatibility
-typing-extensions>=4.0.0,<5.0.0
+# YAML parsing for quiz and configuration files
+PyYAML>=6.0,<7.0
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SDN DEPENDENCIES (Optional — for controller exercises)
+# DEVELOPMENT DEPENDENCIES (Optional but Recommended)
 # ─────────────────────────────────────────────────────────────────────────────
 
-# OS-Ken SDN framework (successor to Ryu)
-# Note: Version 4.0+ removed CLI tools; use <4.0.0 if you need osken-manager
-# os-ken>=2.0.0,<4.0.0
+# Linting and code quality
+ruff>=0.1.0
 
-# Packet manipulation for network analysis
-# scapy>=2.5.0,<3.0.0
-
-# ─────────────────────────────────────────────────────────────────────────────
-# DEVELOPMENT DEPENDENCIES (Optional — for code quality)
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Linter and formatter
-# ruff>=0.1.0
-
-# Type checker
-# mypy>=1.0.0
+# Type checking
+mypy>=1.0.0
 
 # Testing framework
-# pytest>=7.0.0
+pytest>=7.0.0
+pytest-cov>=4.0.0
 
 # ─────────────────────────────────────────────────────────────────────────────
-# INSTALLATION NOTES
+# MININET DEPENDENCIES (Installed in Docker container)
 # ─────────────────────────────────────────────────────────────────────────────
-#
-# For WSL2/Ubuntu systems:
-#   pip install -r requirements.txt --break-system-packages
-#
-# For virtual environment (recommended for development):
-#   python -m venv .venv
-#   source .venv/bin/activate
-#   pip install -r requirements.txt
-#
-# For SDN exercises (optional):
-#   pip install os-ken scapy --break-system-packages
-#
-# For development tools:
-#   pip install ruff mypy pytest --break-system-packages
-#
+# Note: These are typically pre-installed in the Mininet Docker image
+# Uncomment if running outside Docker
+
+# mininet>=2.3.0
+# os-ken>=2.4.0
+
 # ─────────────────────────────────────────────────────────────────────────────
-# VERIFICATION
+# OPTIONAL DEPENDENCIES
 # ─────────────────────────────────────────────────────────────────────────────
-#
-# Verify installation with:
-#   python -c "import docker; import requests; import yaml; print('OK')"
-#
-# ═══════════════════════════════════════════════════════════════════════════════
+
+# For PCAP analysis (if analysing captures locally)
+# scapy>=2.5.0
+
+# For coloured terminal output
+# colorama>=0.4.6
+
+# For progress bars in long operations
+# tqdm>=4.65.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VERSION CONSTRAINTS
+# ─────────────────────────────────────────────────────────────────────────────
+# Python version: >=3.10,<4.0
+# Tested on: Python 3.10, 3.11, 3.12

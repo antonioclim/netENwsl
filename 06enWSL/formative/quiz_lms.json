@@ -1,0 +1,278 @@
+{
+  "metadata": {
+    "title": "Week 6: NAT/PAT & Software-Defined Networking",
+    "description": "Formative assessment quiz for Week 6 laboratory preparation",
+    "version": "1.2.0",
+    "language": "en-GB",
+    "week": 6,
+    "topic": "NAT/PAT, Network Support Protocols & Software-Defined Networking",
+    "estimated_time_minutes": 20,
+    "passing_score_percent": 70,
+    "total_questions": 16,
+    "total_points": 20,
+    "lo_coverage": ["LO1", "LO2", "LO3", "LO4", "LO5", "LO6", "LO7"],
+    "lms_compatibility": ["Moodle", "Canvas", "Blackboard", "Generic LTI"],
+    "export_formats": ["QTI 1.2", "QTI 2.1", "Moodle XML", "GIFT"],
+    "contact": "Issues: Open an issue in GitHub"
+  },
+  "settings": {
+    "shuffle_questions": false,
+    "shuffle_answers": true,
+    "show_correct_answers": true,
+    "show_feedback": true,
+    "time_limit_minutes": 25,
+    "allowed_attempts": 3,
+    "scoring_policy": "keep_highest"
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "type": "multiple_choice",
+      "learning_objective": "LO1",
+      "bloom_level": "Remember",
+      "difficulty": "basic",
+      "points": 1,
+      "question_text": "Which NAT variant allows multiple internal hosts to share a single public IP address by also translating port numbers?",
+      "answers": [
+        {"id": "a", "text": "Static NAT", "correct": false, "feedback": "Static NAT provides one-to-one mapping between internal and external addresses."},
+        {"id": "b", "text": "Dynamic NAT", "correct": false, "feedback": "Dynamic NAT assigns addresses from a pool but still requires one public IP per active host."},
+        {"id": "c", "text": "PAT (Port Address Translation)", "correct": true, "feedback": "Correct! PAT multiplexes connections through unique port numbers."},
+        {"id": "d", "text": "Proxy ARP", "correct": false, "feedback": "Proxy ARP is an ARP technique, not a NAT variant."}
+      ],
+      "general_feedback": "PAT (also called NAPT or NAT Overload) multiplexes connections through unique port numbers, enabling many-to-one address mapping."
+    },
+    {
+      "id": "q02",
+      "type": "multiple_choice",
+      "learning_objective": "LO1",
+      "bloom_level": "Remember",
+      "difficulty": "basic",
+      "points": 1,
+      "question_text": "Which protocol resolves IPv4 addresses to MAC addresses within a local network segment?",
+      "answers": [
+        {"id": "a", "text": "DHCP", "correct": false, "feedback": "DHCP assigns IP addresses dynamically but does not resolve IP to MAC."},
+        {"id": "b", "text": "ARP", "correct": true, "feedback": "Correct! ARP resolves IP addresses to MAC addresses."},
+        {"id": "c", "text": "ICMP", "correct": false, "feedback": "ICMP is for error reporting and diagnostics."},
+        {"id": "d", "text": "NDP", "correct": false, "feedback": "NDP is the IPv6 equivalent of ARP."}
+      ],
+      "general_feedback": "ARP (Address Resolution Protocol) broadcasts a request asking 'Who has IP X?' and the host responds with its MAC address."
+    },
+    {
+      "id": "q03",
+      "type": "multiple_choice",
+      "learning_objective": "LO1",
+      "bloom_level": "Remember",
+      "difficulty": "basic",
+      "points": 1,
+      "question_text": "What does the acronym DORA represent in DHCP?",
+      "answers": [
+        {"id": "a", "text": "Data, Operation, Request, Acknowledge", "correct": false},
+        {"id": "b", "text": "Discover, Offer, Request, Acknowledge", "correct": true},
+        {"id": "c", "text": "Destination, Origin, Route, Address", "correct": false},
+        {"id": "d", "text": "Dynamic, Obtain, Renew, Assign", "correct": false}
+      ],
+      "general_feedback": "DORA describes the four-step DHCP handshake: Discover, Offer, Request, Acknowledge."
+    },
+    {
+      "id": "q04",
+      "type": "multiple_choice",
+      "learning_objective": "LO2",
+      "bloom_level": "Understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "question_text": "Host h1 (192.168.1.10:45678) connects to server 8.8.8.8:443 through a NAT router with public IP 203.0.113.1. The NAT assigns external port 50001. What 5-tuple information does the conntrack table store?",
+      "answers": [
+        {"id": "a", "text": "src=192.168.1.10, dst=8.8.8.8, sport=45678, dport=443", "correct": false},
+        {"id": "b", "text": "src=203.0.113.1, dst=8.8.8.8, sport=50001, dport=443", "correct": false},
+        {"id": "c", "text": "Both the original tuple AND the translated tuple", "correct": true},
+        {"id": "d", "text": "Only the translated tuple with a timestamp", "correct": false}
+      ],
+      "general_feedback": "Conntrack stores BOTH tuples: original (internal) and translated (external) to enable bidirectional reverse translation."
+    },
+    {
+      "id": "q05",
+      "type": "short_answer",
+      "learning_objective": "LO2",
+      "bloom_level": "Understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "question_text": "When two internal hosts both use local port 12345 to connect to the same external server, the NAT router assigns them different ___ ports to distinguish return traffic.",
+      "acceptable_answers": ["external", "translated", "public", "source"],
+      "case_sensitive": false,
+      "general_feedback": "PAT assigns unique external/translated ports even when internal ports are identical."
+    },
+    {
+      "id": "q06",
+      "type": "multiple_choice",
+      "learning_objective": "LO2",
+      "bloom_level": "Understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "question_text": "Why does NAT create challenges for peer-to-peer applications and inbound connections?",
+      "answers": [
+        {"id": "a", "text": "NAT encrypts all traffic, preventing direct connections", "correct": false},
+        {"id": "b", "text": "NAT blocks all UDP traffic by default", "correct": false},
+        {"id": "c", "text": "Without an existing conntrack entry, NAT cannot route unsolicited inbound packets", "correct": true},
+        {"id": "d", "text": "NAT requires all applications to use TCP", "correct": false}
+      ],
+      "general_feedback": "NAT relies on conntrack entries created by outbound connections. Unsolicited inbound packets have no matching entry and are dropped."
+    },
+    {
+      "id": "q07",
+      "type": "multiple_choice",
+      "learning_objective": "LO3",
+      "bloom_level": "Apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "question_text": "You need to configure NAT on a Linux router with eth0 connected to private network 192.168.1.0/24 and eth1 connected to public network. Which iptables command correctly enables MASQUERADE?",
+      "answers": [
+        {"id": "a", "text": "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE", "correct": false, "feedback": "Wrong interface: eth0 is private, MASQUERADE should be on the public interface."},
+        {"id": "b", "text": "iptables -t nat -A POSTROUTING -o eth1 -s 192.168.1.0/24 -j MASQUERADE", "correct": true, "feedback": "Correct! POSTROUTING chain, public interface (-o eth1), from private subnet."},
+        {"id": "c", "text": "iptables -t nat -A PREROUTING -i eth1 -j MASQUERADE", "correct": false, "feedback": "Wrong chain: PREROUTING is for DNAT, not SNAT."},
+        {"id": "d", "text": "iptables -A FORWARD -o eth1 -j MASQUERADE", "correct": false, "feedback": "Wrong table: MASQUERADE must be in the nat table."}
+      ],
+      "general_feedback": "MASQUERADE goes in POSTROUTING chain, applied to traffic leaving the public interface, from the private subnet."
+    },
+    {
+      "id": "q08",
+      "type": "short_answer",
+      "learning_objective": "LO3",
+      "bloom_level": "Apply",
+      "difficulty": "basic",
+      "points": 1,
+      "question_text": "Before configuring NAT rules, you must enable IP forwarding with the command: sysctl -w net.ipv4.ip_forward=___",
+      "acceptable_answers": ["1"],
+      "case_sensitive": false,
+      "general_feedback": "Setting ip_forward=1 enables the kernel to forward packets between interfaces."
+    },
+    {
+      "id": "q09",
+      "type": "multiple_choice",
+      "learning_objective": "LO4",
+      "bloom_level": "Apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "question_text": "You want to install a flow rule on switch s1 that forwards all ICMP traffic from 10.0.6.11 to 10.0.6.12 out port 2, with priority 100. Which ovs-ofctl command is correct?",
+      "answers": [
+        {"id": "a", "text": "ovs-ofctl add-flow s1 \"priority=100,icmp,nw_src=10.0.6.11,nw_dst=10.0.6.12,actions=output:2\"", "correct": false, "feedback": "Missing -O OpenFlow13 flag."},
+        {"id": "b", "text": "ovs-ofctl add-flow s1 \"priority=100,ip,actions=output:2\"", "correct": false, "feedback": "Too generic: matches all IP traffic."},
+        {"id": "c", "text": "ovs-ofctl -O OpenFlow13 add-flow s1 \"priority=100,icmp,nw_src=10.0.6.11,nw_dst=10.0.6.12,actions=output:2\"", "correct": true, "feedback": "Correct! Includes OpenFlow version, protocol, addresses, and action."},
+        {"id": "d", "text": "ovs-ofctl del-flows s1 \"priority=100,icmp\"", "correct": false, "feedback": "del-flows removes rules, does not add them."}
+      ],
+      "general_feedback": "The -O OpenFlow13 flag specifies the protocol version. Match includes icmp, source/destination IPs, and output action."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "learning_objective": "LO4",
+      "bloom_level": "Understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "question_text": "When does the SDN controller receive a Packet-In message from a switch?",
+      "answers": [
+        {"id": "a", "text": "For every packet that passes through the switch", "correct": false},
+        {"id": "b", "text": "Only when a packet matches no flow rule (table-miss)", "correct": true},
+        {"id": "c", "text": "Only for TCP packets", "correct": false},
+        {"id": "d", "text": "When the switch runs out of memory", "correct": false}
+      ],
+      "general_feedback": "Packet-In is sent on table-miss. The controller then decides what to do and may install a new flow."
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "learning_objective": "LO5",
+      "bloom_level": "Analyse",
+      "difficulty": "advanced",
+      "points": 2,
+      "question_text": "An SDN switch has these flow rules: priority=10 ip nw_dst=10.0.6.13 actions=drop; priority=100 icmp nw_src=10.0.6.11 nw_dst=10.0.6.13 actions=output:3. What happens when h1 (10.0.6.11) sends an ICMP ping to h3 (10.0.6.13)?",
+      "answers": [
+        {"id": "a", "text": "Dropped — the drop rule was installed first", "correct": false},
+        {"id": "b", "text": "Dropped — priority 10 is higher than priority 100", "correct": false},
+        {"id": "c", "text": "Forwarded to port 3 — priority 100 is higher than priority 10", "correct": true},
+        {"id": "d", "text": "Sent to controller — no matching rule", "correct": false}
+      ],
+      "general_feedback": "In OpenFlow, HIGHER priority number = HIGHER importance. Priority 100 beats priority 10."
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "learning_objective": "LO5",
+      "bloom_level": "Analyse",
+      "difficulty": "advanced",
+      "points": 2,
+      "question_text": "Using the same flow rules, what happens when h1 sends a TCP packet to h3?",
+      "answers": [
+        {"id": "a", "text": "Forwarded to port 3 — matches the priority 100 rule", "correct": false},
+        {"id": "b", "text": "Dropped — matches the priority 10 rule (TCP is IP but not ICMP)", "correct": true},
+        {"id": "c", "text": "Sent to controller — TCP doesn't match any rule", "correct": false},
+        {"id": "d", "text": "Error — conflicting rules", "correct": false}
+      ],
+      "general_feedback": "TCP packets match 'ip, nw_dst=10.0.6.13' (priority 10) but NOT 'icmp' (priority 100). The drop rule applies."
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "learning_objective": "LO6",
+      "bloom_level": "Understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "question_text": "What is the PRIMARY architectural difference between traditional networking and SDN?",
+      "answers": [
+        {"id": "a", "text": "SDN uses faster hardware for packet forwarding", "correct": false},
+        {"id": "b", "text": "SDN separates the control plane from the data plane", "correct": true},
+        {"id": "c", "text": "SDN encrypts all traffic by default", "correct": false},
+        {"id": "d", "text": "SDN eliminates the need for IP addresses", "correct": false}
+      ],
+      "general_feedback": "SDN's key innovation is decoupling control logic (centralised controller) from forwarding hardware (distributed switches)."
+    },
+    {
+      "id": "q14",
+      "type": "multiple_choice",
+      "learning_objective": "LO7",
+      "bloom_level": "Analyse",
+      "difficulty": "advanced",
+      "points": 2,
+      "question_text": "You need an SDN policy that: 1) Allows HTTP (port 80) to h2 (10.0.6.12), 2) Blocks all other traffic to h2, 3) Allows all other traffic. What priority ordering is correct?",
+      "answers": [
+        {"id": "a", "text": "HTTP allow: priority=50, Block h2: priority=100, Default allow: priority=10", "correct": false},
+        {"id": "b", "text": "HTTP allow: priority=100, Block h2: priority=50, Default allow: priority=10", "correct": true},
+        {"id": "c", "text": "Block h2: priority=100, HTTP allow: priority=50, Default allow: priority=10", "correct": false},
+        {"id": "d", "text": "Default allow: priority=100, Block h2: priority=50, HTTP allow: priority=10", "correct": false}
+      ],
+      "general_feedback": "Specific permit rules need highest priority to override block rules. Pattern: specific permit > general deny > default."
+    },
+    {
+      "id": "q15_live",
+      "type": "essay",
+      "learning_objective": "LO3",
+      "bloom_level": "Apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "question_text": "🔴 LIVE VERIFICATION — Run in your NAT topology: rnat iptables -t nat -L POSTROUTING -n -v | grep MASQ | awk '{print $1, $2}'. Enter the TWO numbers shown (packets and bytes):",
+      "grading_type": "manual",
+      "grading_notes": "Accept any two positive integers. Values are unique per lab execution.",
+      "word_limit": 50
+    },
+    {
+      "id": "q16_live",
+      "type": "essay",
+      "learning_objective": "LO4",
+      "bloom_level": "Apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "question_text": "🔴 LIVE VERIFICATION — After running SDN topology with --install-flows: ovs-ofctl -O OpenFlow13 dump-flows s1 | wc -l. How many lines of output?",
+      "grading_type": "manual",
+      "grading_notes": "Accept integers in range 3-25. Values vary based on controller state.",
+      "word_limit": 20
+    }
+  ],
+  "learning_objectives_summary": {
+    "LO1": {"description": "Recall NAT variants and supporting protocols", "questions": ["q01", "q02", "q03"]},
+    "LO2": {"description": "Explain PAT translation tables", "questions": ["q04", "q05", "q06"]},
+    "LO3": {"description": "Implement NAT/MASQUERADE", "questions": ["q07", "q08", "q15_live"]},
+    "LO4": {"description": "Demonstrate SDN flow installation", "questions": ["q09", "q10", "q16_live"]},
+    "LO5": {"description": "Analyse permitted/blocked traffic", "questions": ["q11", "q12"]},
+    "LO6": {"description": "Compare traditional vs SDN", "questions": ["q13"]},
+    "LO7": {"description": "Design OpenFlow policies", "questions": ["q14"]}
+  }
+}

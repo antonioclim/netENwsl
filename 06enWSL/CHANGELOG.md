@@ -1,9 +1,80 @@
 # Changelog
 
-All notable changes to the Week 6 WSL Kit will be documented in this file.
+All notable changes to the Week 6 Laboratory Kit will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.2.0] - 2026-01-24
+
+### Added
+
+#### Anti-AI/Anti-Plagiarism Features
+- Session token generator (`scripts/generate_session_token.py`) for unique student identification
+- Live verification questions in quiz (q15_live, q16_live) requiring actual lab execution
+- `make session-token` target for easy token generation
+- Unique submission IDs tied to username, timestamp and machine
+
+#### Pedagogical Enhancements
+- Peer instruction questions Q6, Q7, Q8 for LO3, LO4, LO7 (full 6/6 LO coverage)
+- Comprehensive Learning Objectives traceability matrix (`docs/learning_objectives.md`)
+- 5 Parsons problems with distractors (P1-P5) covering all LOs
+- PCAP samples documentation (`pcap/SAMPLES_README.md`)
+- Wireshark display filters collection (`pcap/week06_example_filters.txt`)
+
+#### Assessment
+- Formative quiz expanded to 16 questions (was 12)
+- LMS-compatible JSON export (`formative/quiz_lms.json`)
+- Moodle GIFT and XML export support via `run_quiz.py --export`
+- Quiz runner supports filtering by LO and difficulty
+
+#### CI/CD Pipeline
+- GitHub Actions workflow (`.github/workflows/ci.yml`)
+- Automated syntax checking, linting, smoke tests
+- Quiz YAML/JSON validation
+- Documentation completeness validation
+- CI setup documentation (`docs/ci_setup.md`)
+
+#### Build System
+- Comprehensive Makefile with 20+ targets
+- `make quiz`, `make test`, `make lint`, `make ci` commands
+- `make quiz-export` for LMS export generation
+- Linting configuration in `pyproject.toml` (ruff, mypy, pytest)
+
+### Fixed
+
+- Test file paths in `tests/test_exercises.py`
+  - `topo_nat.py` → `ex_6_01_nat_topology.py`
+  - `topo_sdn.py` → `ex_6_02_sdn_topology.py`
+
+### Changed
+
+- Quiz version updated to 1.2.0 with 16 questions
+- Updated traceability matrix showing 6/6 coverage for ALL LOs
+- Requirements.txt updated with development dependencies
+- British English standardised throughout (colour → colour, etc.)
+
+### Removed
+
+- All email addresses replaced with "Issues: Open an issue in GitHub"
+
+---
+
+## [1.1.0] - 2026-01-24
+
+### Added
+
+- Session token generator (initial version)
+- Live verification questions in quiz
+- Basic peer instruction questions
+
+### Fixed
+
+- Test file paths
+
+---
 
 ## [1.0.1] - 2025-01-24
 
@@ -14,6 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added subgoal labels to all Python scripts
 - Expanded pair programming guide with common mistakes section
 - Improved code tracing exercises with clearer state tables
+
+---
 
 ## [1.0.0] - 2025-2026
 
@@ -44,7 +117,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Commands cheatsheet for common operations
 - Expected outputs documentation
 - Further reading references
+- Misconceptions document with common errors
+- Glossary of networking terms
+- Code tracing exercises
 
 ---
 
-NETWORKING class - ASE, Informatics | by Revolvix
+## Version History Summary
+
+| Version | Date | Major Changes |
+|---------|------|---------------|
+| 1.2.0 | 2026-01-24 | Full LO coverage, CI/CD, LMS export, anti-AI features |
+| 1.1.0 | 2026-01-24 | Session tokens, live verification |
+| 1.0.1 | 2025-01-24 | British English, pedagogical improvements |
+| 1.0.0 | 2025-2026 | Initial release |
+
+---
+
+*Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*
+*Contact: Issues: Open an issue in GitHub*

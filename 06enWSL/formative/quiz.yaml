@@ -1,38 +1,62 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# FORMATIVE QUIZ — Week 6: NAT/PAT & SDN
+# FORMATIVE QUIZ — Week 6: NAT/PAT & Software-Defined Networking
 # ═══════════════════════════════════════════════════════════════════════════════
 # Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 #
-# Usage: python formative/run_quiz.py
-#        python formative/run_quiz.py --random --limit 5
+# Usage:
+#   python formative/run_quiz.py                    # Run full quiz
+#   python formative/run_quiz.py --random           # Randomise question order
+#   python formative/run_quiz.py --limit 5          # Limit to 5 questions
+#   python formative/run_quiz.py --lo LO1 LO2       # Filter by Learning Objectives
+#   python formative/run_quiz.py --export json      # Export to LMS-compatible JSON
+#   python formative/run_quiz.py --export moodle    # Export to Moodle XML
 #
 # This quiz is designed for SELF-ASSESSMENT before the laboratory session.
 # Target: 70% passing score indicates readiness for lab exercises.
+#
+# LMS Export: Use run_quiz.py --export to generate Moodle/Canvas compatible files.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 metadata:
   week: 6
   topic: "NAT/PAT, Network Support Protocols & Software-Defined Networking"
-  version: "1.0.0"
-  estimated_time: "12-15 minutes"
+  version: "1.2.0"
+  language: "en-GB"
+  estimated_time: "18-22 minutes"
   passing_score: 70
-  total_questions: 12
+  total_questions: 16
+  live_verification_questions: 2
   lo_coverage: [LO1, LO2, LO3, LO4, LO5, LO6, LO7]
   difficulty_distribution:
-    basic: 4
-    intermediate: 5
-    advanced: 3
-  bloom_levels: ["Remember", "Understand", "Apply", "Analyse"]
+    basic: 5
+    intermediate: 7
+    advanced: 4
+  bloom_levels: ["Remember", "Understand", "Apply", "Analyse", "Create"]
+  anti_ai_features:
+    - "Live verification questions (q15, q16)"
+    - "Session token required for submission"
+    - "Values unique per lab execution"
+  lms_compatibility:
+    - "Moodle GIFT format"
+    - "Moodle XML format"
+    - "Canvas QTI format"
+    - "Generic JSON"
+  contact: "Issues: Open an issue in GitHub"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 questions:
   # ─────────────────────────────────────────────────────────────────────────────
-  # LO1: Recall NAT variants and supporting protocols
+  # LO1: Recall NAT variants and supporting protocols (Remember)
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q01
     type: multiple_choice
     lo_ref: LO1
     bloom_level: Remember
     difficulty: basic
+    points: 1
     stem: "Which NAT variant allows multiple internal hosts to share a single public IP address by also translating port numbers?"
     options:
       a: "Static NAT"
@@ -40,14 +64,19 @@ questions:
       c: "PAT (Port Address Translation)"
       d: "Proxy ARP"
     correct: c
-    explanation: "PAT (also called NAPT or NAT Overload) multiplexes connections through unique port numbers, enabling many-to-one address mapping."
+    explanation: "PAT (also called NAPT or NAT Overload) multiplexes connections through unique port numbers, enabling many-to-one address mapping. This is the most common form of NAT in home routers."
     misconception_ref: "docs/misconceptions.md#misconception-1"
+    feedback:
+      a: "Static NAT provides one-to-one mapping between internal and external addresses."
+      b: "Dynamic NAT assigns addresses from a pool but still requires one public IP per active host."
+      d: "Proxy ARP is an ARP technique, not a NAT variant."
 
   - id: q02
     type: multiple_choice
     lo_ref: LO1
     bloom_level: Remember
     difficulty: basic
+    points: 1
     stem: "Which protocol resolves IPv4 addresses to MAC addresses within a local network segment?"
     options:
       a: "DHCP"
@@ -55,14 +84,18 @@ questions:
       c: "ICMP"
       d: "NDP"
     correct: b
-    explanation: "ARP (Address Resolution Protocol) broadcasts a request asking 'Who has IP X?' and the host with that IP responds with its MAC address."
-    misconception_ref: null
+    explanation: "ARP (Address Resolution Protocol) broadcasts a request asking 'Who has IP X?' and the host with that IP responds with its MAC address. This enables Layer 2 frame delivery."
+    feedback:
+      a: "DHCP assigns IP addresses dynamically but does not resolve IP to MAC."
+      c: "ICMP is for error reporting and diagnostics (e.g. ping)."
+      d: "NDP (Neighbour Discovery Protocol) is the IPv6 equivalent of ARP."
 
   - id: q03
     type: multiple_choice
     lo_ref: LO1
     bloom_level: Remember
     difficulty: basic
+    points: 1
     stem: "What does the acronym DORA represent in DHCP?"
     options:
       a: "Data, Operation, Request, Acknowledge"
@@ -70,29 +103,29 @@ questions:
       c: "Destination, Origin, Route, Address"
       d: "Dynamic, Obtain, Renew, Assign"
     correct: b
-    explanation: "DORA describes the four-step DHCP handshake: client Discovers servers, servers Offer configurations, client Requests one, server Acknowledges."
-    misconception_ref: null
+    explanation: "DORA describes the four-step DHCP handshake: client Discovers servers, servers Offer configurations, client Requests one specific offer, server Acknowledges the assignment."
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # LO2: Explain PAT translation tables
+  # LO2: Explain PAT translation tables (Understand)
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q04
     type: multiple_choice
     lo_ref: LO2
     bloom_level: Understand
     difficulty: intermediate
+    points: 1
     stem: |
       Host h1 (192.168.1.10:45678) connects to server 8.8.8.8:443 through a NAT router 
       with public IP 203.0.113.1. The NAT assigns external port 50001.
       
-      What 5-tuple does the conntrack table store for this connection?
+      What 5-tuple information does the conntrack table store for this connection?
     options:
       a: "src=192.168.1.10, dst=8.8.8.8, sport=45678, dport=443"
       b: "src=203.0.113.1, dst=8.8.8.8, sport=50001, dport=443"
       c: "Both the original tuple AND the translated tuple"
       d: "Only the translated tuple with a timestamp"
     correct: c
-    explanation: "Conntrack stores BOTH tuples: the original (internal) and the translated (external) to enable bidirectional reverse translation."
+    explanation: "Conntrack stores BOTH tuples: the original (internal) and the translated (external) to enable bidirectional reverse translation. This is essential for return traffic routing."
     misconception_ref: "docs/misconceptions.md#misconception-4"
 
   - id: q05
@@ -100,20 +133,37 @@ questions:
     lo_ref: LO2
     bloom_level: Understand
     difficulty: intermediate
+    points: 1
     stem: "When two internal hosts both use local port 12345 to connect to the same external server, the NAT router assigns them different ___ ports to distinguish return traffic."
     correct: ["external", "translated", "public", "source"]
     hint: "The NAT must uniquely identify each connection from its public interface."
-    explanation: "PAT assigns unique external/translated ports even when internal ports are identical, enabling connection multiplexing."
+    explanation: "PAT assigns unique external/translated ports even when internal ports are identical, enabling connection multiplexing through a single public IP."
     misconception_ref: "docs/misconceptions.md#misconception-2"
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # LO3: Implement NAT/MASQUERADE
-  # ─────────────────────────────────────────────────────────────────────────────
   - id: q06
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: Understand
+    difficulty: intermediate
+    points: 1
+    stem: "Why does NAT create challenges for peer-to-peer applications and inbound connections?"
+    options:
+      a: "NAT encrypts all traffic, preventing direct connections"
+      b: "NAT blocks all UDP traffic by default"
+      c: "Without an existing conntrack entry, NAT cannot route unsolicited inbound packets"
+      d: "NAT requires all applications to use TCP"
+    correct: c
+    explanation: "NAT relies on conntrack entries created by outbound connections. Unsolicited inbound packets have no matching entry and are dropped. This is why techniques like STUN/TURN exist for P2P."
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO3: Implement NAT/MASQUERADE (Apply)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q07
     type: multiple_choice
     lo_ref: LO3
     bloom_level: Apply
     difficulty: intermediate
+    points: 1
     stem: |
       You need to configure NAT on a Linux router with:
       - eth0: connected to private network 192.168.1.0/24
@@ -126,28 +176,32 @@ questions:
       c: "iptables -t nat -A PREROUTING -i eth1 -j MASQUERADE"
       d: "iptables -A FORWARD -o eth1 -j MASQUERADE"
     correct: b
-    explanation: "MASQUERADE goes in POSTROUTING chain, on the outbound public interface (-o eth1), for traffic from the private subnet (-s 192.168.1.0/24)."
-    misconception_ref: null
+    explanation: "MASQUERADE goes in POSTROUTING chain (after routing decision), applied to traffic leaving (-o) the public interface, from the private subnet (-s). MASQUERADE automatically uses the outgoing interface's IP."
+    feedback:
+      a: "Wrong interface: eth0 is private, MASQUERADE should be on the public interface."
+      c: "Wrong chain: PREROUTING is for DNAT (inbound), not SNAT (outbound)."
+      d: "Wrong table: MASQUERADE must be in the nat table, not filter."
 
-  - id: q07
+  - id: q08
     type: fill_blank
     lo_ref: LO3
     bloom_level: Apply
     difficulty: basic
+    points: 1
     stem: "Before configuring NAT rules, you must enable IP forwarding with the command: sysctl -w net.ipv4.ip_forward=___"
     correct: ["1"]
     hint: "IP forwarding is a boolean setting."
-    explanation: "Setting ip_forward=1 enables the kernel to forward packets between interfaces, which is required for routing and NAT."
-    misconception_ref: null
+    explanation: "Setting ip_forward=1 enables the kernel to forward packets between interfaces, which is required for routing and NAT functionality."
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # LO4: Demonstrate SDN flow installation
+  # LO4: Demonstrate SDN flow installation (Apply)
   # ─────────────────────────────────────────────────────────────────────────────
-  - id: q08
+  - id: q09
     type: multiple_choice
     lo_ref: LO4
     bloom_level: Apply
     difficulty: intermediate
+    points: 1
     stem: |
       You want to install a flow rule on switch s1 that forwards all ICMP traffic 
       from 10.0.6.11 to 10.0.6.12 out port 2, with priority 100.
@@ -159,17 +213,37 @@ questions:
       c: 'ovs-ofctl -O OpenFlow13 add-flow s1 "priority=100,icmp,nw_src=10.0.6.11,nw_dst=10.0.6.12,actions=output:2"'
       d: 'ovs-ofctl del-flows s1 "priority=100,icmp"'
     correct: c
-    explanation: "The -O OpenFlow13 flag specifies the protocol version. The match includes icmp, source and destination IPs, and action outputs to port 2."
-    misconception_ref: null
+    explanation: "The -O OpenFlow13 flag specifies the protocol version (required for modern OVS). The match includes icmp protocol, source and destination IPs, and action outputs to port 2."
+    feedback:
+      a: "Missing -O OpenFlow13 flag which is required for OpenFlow 1.3 features."
+      b: "Too generic: matches all IP traffic, not specifically ICMP between the two hosts."
+      d: "del-flows removes rules, does not add them."
+
+  - id: q10
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: Understand
+    difficulty: intermediate
+    points: 1
+    stem: "When does the SDN controller receive a Packet-In message from a switch?"
+    options:
+      a: "For every packet that passes through the switch"
+      b: "Only when a packet matches no flow rule (table-miss)"
+      c: "Only for TCP packets"
+      d: "When the switch runs out of memory"
+    correct: b
+    explanation: "Packet-In is sent when a packet doesn't match any flow rule (table-miss). The controller then decides what to do and may install a new flow. This is called reactive flow installation."
+    misconception_ref: "docs/misconceptions.md#misconception-5"
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # LO5: Analyse permitted/blocked traffic
+  # LO5: Analyse permitted/blocked traffic (Analyse)
   # ─────────────────────────────────────────────────────────────────────────────
-  - id: q09
+  - id: q11
     type: multiple_choice
     lo_ref: LO5
     bloom_level: Analyse
     difficulty: advanced
+    points: 2
     stem: |
       An SDN switch has these flow rules:
         priority=10,  ip, nw_dst=10.0.6.13, actions=drop
@@ -182,14 +256,15 @@ questions:
       c: "Forwarded to port 3 — priority 100 is higher than priority 10"
       d: "Sent to controller — no matching rule"
     correct: c
-    explanation: "In OpenFlow, HIGHER priority number = HIGHER importance. Priority 100 beats priority 10, so the ICMP packet is forwarded."
+    explanation: "In OpenFlow, HIGHER priority number = HIGHER importance. Priority 100 beats priority 10, so the ICMP packet matches the permit rule and is forwarded to port 3."
     misconception_ref: "docs/misconceptions.md#misconception-6"
 
-  - id: q10
+  - id: q12
     type: multiple_choice
     lo_ref: LO5
     bloom_level: Analyse
     difficulty: advanced
+    points: 2
     stem: |
       Using the same flow rules as above, what happens when h1 sends a TCP packet to h3?
     options:
@@ -198,17 +273,17 @@ questions:
       c: "Sent to controller — TCP doesn't match any rule"
       d: "Error — conflicting rules"
     correct: b
-    explanation: "TCP packets match 'ip, nw_dst=10.0.6.13' (priority 10) but NOT 'icmp' (priority 100). The drop rule applies."
-    misconception_ref: "docs/misconceptions.md#misconception-6"
+    explanation: "TCP packets match 'ip, nw_dst=10.0.6.13' (priority 10) but do NOT match 'icmp' (priority 100). Since TCP is not ICMP, the drop rule applies."
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # LO6: Compare traditional vs SDN
+  # LO6: Compare traditional vs SDN (Understand/Analyse)
   # ─────────────────────────────────────────────────────────────────────────────
-  - id: q11
+  - id: q13
     type: multiple_choice
     lo_ref: LO6
     bloom_level: Understand
     difficulty: intermediate
+    points: 1
     stem: "What is the PRIMARY architectural difference between traditional networking and SDN?"
     options:
       a: "SDN uses faster hardware for packet forwarding"
@@ -216,17 +291,18 @@ questions:
       c: "SDN encrypts all traffic by default"
       d: "SDN eliminates the need for IP addresses"
     correct: b
-    explanation: "SDN's key innovation is decoupling control logic (centralised controller) from forwarding hardware (distributed switches)."
+    explanation: "SDN's key innovation is decoupling control logic (centralised controller) from forwarding hardware (distributed switches). This enables programmability and centralised network management."
     misconception_ref: "docs/misconceptions.md#misconception-5"
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # LO7: Design OpenFlow policies
+  # LO7: Design OpenFlow policies (Create/Analyse)
   # ─────────────────────────────────────────────────────────────────────────────
-  - id: q12
+  - id: q14
     type: multiple_choice
     lo_ref: LO7
     bloom_level: Analyse
     difficulty: advanced
+    points: 2
     stem: |
       You need to design an SDN policy that:
       1. Allows HTTP (port 80) to server h2 (10.0.6.12)
@@ -240,8 +316,49 @@ questions:
       c: "Block h2: priority=100, HTTP allow: priority=50, Default allow: priority=10"
       d: "Default allow: priority=100, Block h2: priority=50, HTTP allow: priority=10"
     correct: b
-    explanation: "Specific permit rules (HTTP to h2) need highest priority (100) to override the block rule (50). Default allow has lowest priority (10)."
+    explanation: "Specific permit rules (HTTP to h2) need highest priority (100) to override the block rule (50). Default allow has lowest priority (10). Pattern: specific permit > general deny > default."
     misconception_ref: "docs/misconceptions.md#misconception-6"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LIVE VERIFICATION QUESTIONS (Anti-AI — require actual lab execution)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q15_live
+    type: open_response
+    lo_ref: LO3
+    bloom_level: Apply
+    difficulty: intermediate
+    points: 2
+    stem: |
+      🔴 LIVE VERIFICATION — Run this command in your NAT topology Mininet CLI:
+      
+      rnat iptables -t nat -L POSTROUTING -n -v | grep MASQ | awk '{print $1, $2}'
+      
+      Enter the TWO numbers shown (packets and bytes), separated by a space:
+    correct: ["LIVE_RESPONSE"]
+    validation_type: "numeric_pair"
+    explanation: "This verifies you actually ran the NAT lab. Values depend on YOUR traffic patterns."
+    anti_ai_note: "⚠️ Values are unique per session — AI cannot predict these."
+    hint: "Run some pings first to generate traffic, then check the counters."
+    grading_note: "Accept any two positive integers. Manual verification recommended."
+
+  - id: q16_live
+    type: open_response
+    lo_ref: LO4
+    bloom_level: Apply
+    difficulty: intermediate
+    points: 2
+    stem: |
+      🔴 LIVE VERIFICATION — After running SDN topology with --install-flows:
+      
+      ovs-ofctl -O OpenFlow13 dump-flows s1 | wc -l
+      
+      How many lines of output (including header)?
+    correct: ["LIVE_RESPONSE"]
+    validation_type: "single_integer"
+    explanation: "This verifies SDN topology execution. Count depends on installed policies."
+    anti_ai_note: "⚠️ Flow count varies based on controller state and your actions."
+    hint: "The number should be between 5-20 depending on what policies are active."
+    grading_note: "Accept integers in range 3-25. Values outside may indicate issues."
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ANSWER KEY (for instructor reference)
@@ -252,26 +369,54 @@ answer_key:
   q03: b
   q04: c
   q05: ["external", "translated", "public", "source"]
-  q06: b
-  q07: ["1"]
-  q08: c
+  q06: c
+  q07: b
+  q08: ["1"]
   q09: c
   q10: b
-  q11: b
+  q11: c
   q12: b
+  q13: b
+  q14: b
+  q15_live: "VERIFY_MANUALLY"
+  q16_live: "VERIFY_MANUALLY"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SCORING RUBRIC
 # ═══════════════════════════════════════════════════════════════════════════════
 scoring:
-  points_per_question: 1
-  total_points: 12
-  passing_threshold: 70  # percent
+  total_points: 20
+  passing_threshold: 70
+  live_verification_points: 4
   grade_boundaries:
-    excellent: 90   # 11-12 correct
-    good: 80        # 10 correct
-    satisfactory: 70  # 8-9 correct
-    needs_review: 0   # <8 correct
+    excellent: 90    # 18-20 points
+    good: 80         # 16-17 points
+    satisfactory: 70 # 14-15 points
+    needs_review: 0  # <14 points
+  weight_by_difficulty:
+    basic: 1
+    intermediate: 1
+    advanced: 2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LMS EXPORT CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+lms_export:
+  moodle:
+    category: "Week 6 - NAT/PAT & SDN"
+    question_type_mapping:
+      multiple_choice: "multichoice"
+      fill_blank: "shortanswer"
+      open_response: "essay"
+    include_feedback: true
+    shuffle_answers: true
+  canvas:
+    quiz_type: "practice_quiz"
+    time_limit: 25
+    allowed_attempts: 3
+  generic_json:
+    include_explanations: false
+    include_feedback: true
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # POST-QUIZ GUIDANCE
@@ -282,8 +427,13 @@ post_quiz:
     - docs/theory_summary.md for conceptual understanding
     - docs/misconceptions.md for common errors
     - docs/glossary.md for terminology
+    Focus especially on questions you answered incorrectly.
   if_above_passing: |
     You're ready for the laboratory! Focus on:
     - Prediction prompts (💭) in exercises
     - Hands-on verification of concepts
     - Troubleshooting scenarios
+  live_verification_note: |
+    Questions q15 and q16 require ACTUAL lab execution.
+    These cannot be answered without running the topology.
+    Include your session token with your answers.

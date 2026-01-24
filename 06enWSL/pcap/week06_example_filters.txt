@@ -1,0 +1,182 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Wireshark Display Filters — Week 6: NAT/PAT & SDN
+# ═══════════════════════════════════════════════════════════════════════════════
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Usage in Wireshark:
+#   1. Open your PCAP file
+#   2. Copy a filter from below
+#   3. Paste into the display filter bar
+#   4. Press Enter to apply
+#
+# Tip: Save frequently used filters as bookmarks in Wireshark
+#
+# Contact: Issues: Open an issue in GitHub
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NAT TOPOLOGY FILTERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# All traffic involving the NAT public IP
+ip.addr == 203.0.113.1
+
+# All traffic from private network (pre-NAT)
+ip.src == 192.168.1.0/24
+
+# All traffic to private network (post-NAT reverse)
+ip.dst == 192.168.1.0/24
+
+# Traffic between private host h1 and public server h3
+(ip.addr == 192.168.1.10 || ip.addr == 203.0.113.1) && ip.addr == 203.0.113.2
+
+# TCP handshake packets only (SYN, SYN-ACK, ACK)
+tcp.flags.syn == 1 || (tcp.flags.syn == 1 && tcp.flags.ack == 1)
+
+# Complete TCP connection setup
+tcp.flags.syn == 1
+
+# NAT observer application traffic (port 5000)
+tcp.port == 5000
+
+# Show only packets that would be translated by NAT
+ip.src == 192.168.1.0/24 && ip.dst == 203.0.113.0/24
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SDN TOPOLOGY FILTERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# All SDN subnet traffic
+ip.addr == 10.0.6.0/24
+
+# Traffic from h1 (full access host)
+ip.src == 10.0.6.11
+
+# Traffic to h3 (restricted host)
+ip.dst == 10.0.6.13
+
+# Traffic between h1 and h2 (should be permitted)
+ip.addr == 10.0.6.11 && ip.addr == 10.0.6.12
+
+# Traffic from h1 to h3 (should be blocked/limited)
+ip.src == 10.0.6.11 && ip.dst == 10.0.6.13
+
+# ICMP only (ping tests)
+icmp
+
+# ICMP echo requests
+icmp.type == 8
+
+# ICMP echo replies
+icmp.type == 0
+
+# TCP echo server traffic (port 9090)
+tcp.port == 9090
+
+# UDP echo server traffic (port 9091)
+udp.port == 9091
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OPENFLOW PROTOCOL FILTERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# All OpenFlow 1.3 traffic
+openflow_v4
+
+# OpenFlow on legacy port
+tcp.port == 6633
+
+# OpenFlow on standard port
+tcp.port == 6653
+
+# OpenFlow PACKET_IN messages (switch → controller)
+openflow_v4.type == 10
+
+# OpenFlow FLOW_MOD messages (controller → switch)
+openflow_v4.type == 14
+
+# OpenFlow PACKET_OUT messages
+openflow_v4.type == 13
+
+# OpenFlow HELLO messages (connection setup)
+openflow_v4.type == 0
+
+# OpenFlow FEATURES_REQUEST/REPLY
+openflow_v4.type == 5 || openflow_v4.type == 6
+
+# OpenFlow ERROR messages (debugging)
+openflow_v4.type == 1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ARP PROTOCOL FILTERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# All ARP traffic
+arp
+
+# ARP requests only
+arp.opcode == 1
+
+# ARP replies only
+arp.opcode == 2
+
+# ARP for specific IP (replace with target)
+arp.dst.proto_ipv4 == 192.168.1.1
+
+# ARP from specific MAC (replace with target)
+eth.src == 00:00:00:00:00:01
+
+# Gratuitous ARP (sender IP == target IP)
+arp.src.proto_ipv4 == arp.dst.proto_ipv4
+
+# ─────────────────────────────────────────────────────────────────────────────
+# COMBINED ANALYSIS FILTERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# NAT translation pair (see same packet before and after NAT)
+# Run on capture from rnat with both interfaces
+(ip.src == 192.168.1.10 || ip.src == 203.0.113.1) && tcp
+
+# SDN permitted vs blocked comparison
+# Filter for permitted path (h1 → h2)
+(ip.src == 10.0.6.11 && ip.dst == 10.0.6.12) || (ip.src == 10.0.6.12 && ip.dst == 10.0.6.11)
+
+# SDN control plane activity during ping
+openflow_v4 || icmp
+
+# Connection tracking relevant packets
+tcp.flags.syn == 1 || tcp.flags.fin == 1 || tcp.flags.rst == 1
+
+# Anomaly detection: duplicate responses (possible MITM)
+arp.duplicate-address-detected
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STATISTICS & ANALYSIS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# For conversation statistics (Statistics → Conversations):
+# No filter needed, but useful to apply subnet filters first
+
+# For IO graphs, useful time-based filter:
+# frame.time_relative < 30
+
+# Large packets (possible fragmentation issues)
+ip.len > 1400
+
+# Retransmissions (network issues)
+tcp.analysis.retransmission
+
+# Out-of-order packets
+tcp.analysis.out_of_order
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TIPS
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 1. Combine filters with && (AND) and || (OR)
+# 2. Negate with ! (NOT): !arp excludes ARP
+# 3. Use parentheses for complex expressions
+# 4. Right-click → Apply as Filter → Selected for quick filtering
+# 5. Use "contains" for string matching: http contains "password"
+#
+# ═══════════════════════════════════════════════════════════════════════════════
