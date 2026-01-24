@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-spath=1.0">
+    <title>Python for Networks | 3. Data Types for Networking</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #121a2b;
+            --bg-tertiary: #1a2438;
+            --accent-primary: #00d4aa;
+            --accent-secondary: #7c3aed;
+            --accent-warning: #f59e0b;
+            --accent-error: #ef4444;
+            --accent-success: #10b981;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d3a4f;
+            --code-bg: #0d1117;
+            --font-display: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-display); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow: hidden; }
+        .progress-container { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--bg-tertiary); z-index: 1000; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); transition: width 0.3s ease; }
+        .nav-header { position: fixed; top: 4px; left: 0; right: 0; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(180deg, var(--bg-primary) 0%, transparent 100%); z-index: 100; }
+        .nav-title { font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; }
+        .nav-title .modulee { color: var(--accent-primary); font-weight: 600; }
+        .slide-counter { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); background: var(--bg-tertiary); padding: 0.4rem 0.8rem; border-radius: 20px; }
+        .slides-container { height: 100vh; overflow: hidden; position: relative; }
+        .slide { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 5rem 2rem 6rem; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateX(100px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; }
+        .slide.active { opacity: 1; visibility: visible; transform: translateX(0); }
+        .slide.exit { transform: translateX(-100px); }
+        .slide-content { max-width: 1200px; margin: 0 auto; width: 100%; }
+        h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); }
+        h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent-primary); }
+        h4 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary); }
+        p { font-size: 1.1rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 1rem; }
+        .lead { font-size: 1.3rem; color: var(--text-primary); font-weight: 500; }
+        code { font-family: var(--font-mono); background: var(--bg-tertiary); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.9em; color: var(--accent-primary); }
+        .badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .badge-time { background: rgba(0, 212, 170, 0.15); color: var(--accent-primary); }
+        .badge-week { background: rgba(124, 58, 237, 0.15); color: var(--accent-secondary); }
+        .badge-critical { background: rgba(239, 68, 68, 0.15); color: var(--accent-error); }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
+        .card-highlight { border-left: 4px solid var(--accent-primary); }
+        .card-warning { border-left: 4px solid var(--accent-warning); background: rgba(245, 158, 11, 0.05); }
+        .card-danger { border-left: 4px solid var(--accent-error); background: rgba(239, 68, 68, 0.05); }
+        .card-info { border-left: 4px solid var(--accent-secondary); background: rgba(124, 58, 237, 0.05); }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .objectives-box { background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; margin: 1.5rem 0; }
+        .objective-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+        .objective-icon { width: 32px; height: 32px; background: var(--accent-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .objective-text { flex: 1; }
+        .objective-text strong { display: block; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .objective-text span { font-size: 0.95rem; color: var(--text-secondary); }
+        .code-container { background: var(--code-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin: 1.5rem 0; }
+        .code-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-color); }
+        .code-filename { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary); }
+        .code-actions { display: flex; gap: 0.5rem; }
+        .btn-code { padding: 0.4rem 0.8rem; border-radius: 6px; border: none; font-family: var(--font-mono); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .btn-run { background: var(--accent-primary); color: var(--bg-primary); }
+        .btn-run:hover { background: #00e6b8; }
+        .btn-copy { background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .code-body { padding: 1rem; overflow-x: auto; }
+        .code-body pre { font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.6; color: var(--text-primary); margin: 0; }
+        .code-output { padding: 1rem; background: rgba(0, 212, 170, 0.05); border-top: 1px solid var(--border-color); display: none; }
+        .code-output.visible { display: block; }
+        .code-output-header { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-primary); margin-bottom: 0.5rem; text-transform: uppercase; }
+        .code-output pre { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-primary); }
+        .kw { color: #ff79c6; } .fn { color: #50fa7b; } .str { color: #f1fa8c; } .num { color: #bd93f9; } .cmt { color: #6272a4; font-style: italic; } .cls { color: #8be9fd; } .type { color: #8be9fd; font-style: italic; } .bytes { color: #ff5555; }
+        .visual-diagram { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .diagram-row { display: flex; justify-content: center; align-items: center; gap: 1rem; margin: 1rem 0; flex-wrap: wrap; }
+        .diagram-box { padding: 1rem 1.5rem; border-radius: 12px; font-family: var(--font-mono); font-weight: 600; }
+        .diagram-str { background: rgba(124, 58, 237, 0.2); border: 2px solid var(--accent-secondary); color: var(--accent-secondary); }
+        .diagram-bytes { background: rgba(0, 212, 170, 0.2); border: 2px solid var(--accent-primary); color: var(--accent-primary); }
+        .diagram-arrow { font-size: 1.5rem; color: var(--text-muted); }
+        .diagram-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
+        .quiz-container { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; margin: 1.5rem 0; }
+        .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .quiz-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .quiz-question { font-size: 1.15rem; color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.6; }
+        .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
+        .quiz-option { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+        .quiz-option:hover { border-color: var(--accent-primary); }
+        .quiz-option.selected { border-color: var(--accent-secondary); background: rgba(124, 58, 237, 0.1); }
+        .quiz-option.correct { border-color: var(--accent-success); background: rgba(16, 185, 129, 0.1); }
+        .quiz-option.incorrect { border-color: var(--accent-error); background: rgba(239, 68, 68, 0.1); }
+        .option-marker { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; }
+        .quiz-option.selected .option-marker { background: var(--accent-secondary); border-color: var(--accent-secondary); color: white; }
+        .quiz-option.correct .option-marker { background: var(--accent-success); border-color: var(--accent-success); }
+        .quiz-option.incorrect .option-marker { background: var(--accent-error); border-color: var(--accent-error); }
+        .quiz-actions { display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .btn-quiz { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-check { background: var(--accent-primary); color: var(--bg-primary); }
+        .btn-hint { background: transparent; color: var(--accent-warning); border: 1px solid var(--accent-warning); }
+        .hint-box { margin-top: 1rem; padding: 1rem 1.25rem; background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent-warning); border-radius: 0 8px 8px 0; display: none; }
+        .hint-box.visible { display: block; animation: fadeIn 0.3s ease; }
+        .hint-level { font-size: 0.8rem; color: var(--accent-warning); text-transform: uppercase; margin-bottom: 0.5rem; }
+        .feedback-box { margin-top: 1rem; padding: 1rem 1.25rem; border-radius: 8px; display: none; }
+        .feedback-box.visible { display: block; }
+        .feedback-box.success { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-success); }
+        .feedback-box.error { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--accent-error); }
+        .experiment-box { background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(0, 212, 170, 0.1) 100%); border: 2px dashed var(--accent-secondary); border-radius: 16px; padding: 2rem; margin: 1.5rem 0; }
+        .experiment-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .experiment-icon { font-size: 2rem; }
+        .experiment-title { font-size: 1.3rem; font-weight: 700; color: var(--accent-secondary); }
+        .experiment-steps { margin-top: 1rem; }
+        .experiment-step { display: flex; gap: 1rem; margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 12px; }
+        .step-number { width: 32px; height: 32px; background: var(--accent-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+        .step-content h4 { color: var(--text-primary); margin-bottom: 0.5rem; }
+        .step-content p { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .step-why { font-size: 0.85rem; color: var(--accent-primary); font-style: italic; }
+        .callout { display: flex; gap: 1rem; padding: 1.25rem; border-radius: 12px; margin: 1rem 0; }
+        .callout-networking { background: rgba(0, 212, 170, 0.1); border: 1px solid rgba(0, 212, 170, 0.3); }
+        .callout-icon { font-size: 1.5rem; }
+        .callout-content h4 { color: var(--accent-primary); margin-bottom: 0.5rem; }
+        .callout-content p { margin: 0; font-size: 0.95rem; }
+        .nav-buttons { position: fixed; bottom: 0; left: 0; right: 0; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(0deg, var(--bg-primary) 0%, transparent 100%); z-index: 100; }
+        .btn-nav { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-family: var(--font-display); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-prev { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .btn-prev:hover:not(:disabled) { background: var(--bg-secondary); color: var(--text-primary); }
+        .btn-next { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; }
+        .btn-next:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0, 212, 170, 0.3); }
+        .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
+        .page-dots { display: flex; gap: 0.5rem; }
+        .page-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-color); cursor: pointer; transition: all 0.3s; }
+        .page-dot.active { background: var(--accent-primary); transform: spath(1.3); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) { .slide { padding: 4rem 1rem 5rem; } .grid-2 { grid-template-columns: 1fr; } .diagram-row { flex-direction: column; } }
+        .title-slide { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .title-meta { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin: 2rem 0; }
+        .python-logo { font-size: 4rem; margin-bottom: 1rem; }
+        .hex-display { font-family: var(--font-mono); background: var(--code-bg); padding: 0.5rem 1rem; border-radius: 8px; display: inline-block; margin: 0.5rem; }
+        .hex-byte { color: var(--accent-primary); margin: 0 2px; }
+    </style>
+</head>
+<body>
+    <div class="progress-container"><div class="progress-bar" role="progressbar" id="progressBar"></div></div>
+    <nav class="nav-header">
+        <div class="nav-title"><span class="modulee">Module 3/10</span><span>•</span><span>Data Types for Networking</span></div>
+        <div class="slide-counter" aria-live="polite" id="slideCounter">1 / 14</div>
+    </nav>
+
+    <div class="slides-container" id="slidesContainer">
+        
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide" data-slide="1">
+            <div class="slide-content">
+                <div class="python-logo">🔤</div>
+                <h1>Data Types for Networking</h1>
+                <p class="lead">bytes vs str — Distinctia Critica</p>
+                <div class="title-meta">
+                    <span class="badge badge-time">⏱️ ~25 minutess</span>
+                    <span class="badge badge-week">📅 Week 2-3</span>
+                    <span class="badge badge-critical">⚠️ Esential for Sockets</span>
+                </div>
+                <div class="callout callout-networking" style="max-width: 600px; margin: 2rem auto; text-align: left;">
+                    <span class="callout-icon">🌐</span>
+                    <div class="callout-content">
+                        <h4>Networking Correlation</h4>
+                        <p>In weekamanile 2-3 vei lucra with <strong>socket programming TCP/UDP</strong>. Sockets trimit and primesc <code>bytes</code>, not <code>str</code>. Aceast distinctie e fundamentala!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Objectives -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2>🎯 What we will learn in this module?</h2>
+                <div class="objectives-box">
+                    <div class="objective-item">
+                        <div class="objective-icon">🔤</div>
+                        <div class="objective-text">
+                            <strong>bytes vs str — Diferenta Fundamentala</strong>
+                            <span>De ce networksle transport bytes, not text, and ce inseamn asta for cod</span>
+                        </div>
+                    </div>
+                    <div class="objective-item">
+                        <div class="objective-icon">🔄</div>
+                        <div class="objective-text">
+                            <strong>encode() and decode()</strong>
+                            <span>Cum convertesti between text (str) and data binare (bytes)</span>
+                        </div>
+                    </div>
+                    <div class="objective-item">
+                        <div class="objective-icon">📝</div>
+                        <div class="objective-text">
+                            <strong>List and Dict Comprehensions</strong>
+                            <span>Procesarea compact a datalor — esential for parsarea responseslor of network</span>
+                        </div>
+                    </div>
+                    <div class="objective-item">
+                        <div class="objective-icon">🌐</div>
+                        <div class="objective-text">
+                            <strong>Aplicatii in Networking</strong>
+                            <span>Cum se folosesc aceste concepte in exercitiile reof from 02roWSL and 03roWSL</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-danger">
+                    <h3>⚠️ De ce e CRITIC?</h3>
+                    <p>Cea mhours comun error at socket programming: <code>TypeError: a bytes-like object is required, not 'str'</code>. Dup this module, not vei mhours vedea this error!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: The Fundamental Problem -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h2>🤔 De ce bytes and not str?</h2>
+                <p>Networks transport <strong>secvente of bytes</strong> (bytes), not characters umane. A "A" for tine is <code>01000001</code> for network.</p>
+                
+                <div class="visual-diagram">
+                    <h3 style="margin-bottom: 1.5rem;">Fluxul Datelor in Networking</h3>
+                    <div class="diagram-row">
+                        <div class="diagram-box diagram-str">
+                            "Hello"<br>
+                            <span class="diagram-label">Text (str)</span>
+                        </div>
+                        <div class="diagram-arrow">→ encode() →</div>
+                        <div class="diagram-box diagram-bytes">
+                            b'Hello'<br>
+                            <span class="diagram-label">Bytes for network</span>
+                        </div>
+                        <div class="diagram-arrow">→ 🌐 →</div>
+                        <div class="diagram-box diagram-bytes">
+                            b'Hello'<br>
+                            <span class="diagram-label">Bytes primite</span>
+                        </div>
+                        <div class="diagram-arrow">→ decode() →</div>
+                        <div class="diagram-box diagram-str">
+                            "Hello"<br>
+                            <span class="diagram-label">Text (str)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>📝 str (String)</h3>
+                        <p><strong>Ce este:</strong> Secvent of characters Aicode (text for oameni)</p>
+                        <p><strong>Example:</strong> <code>"Salut"</code>, <code>"192.168.1.1"</code></p>
+                        <p><strong>Folosit pentru:</strong> Afisare, input utilizator, loguri</p>
+                    </div>
+                    <div class="card">
+                        <h3>🔢 bytes</h3>
+                        <p><strong>Ce este:</strong> Secvent of bytes (valori 0-255)</p>
+                        <p><strong>Example:</strong> <code>b"Salut"</code>, <code>b'\xc0\xa8\x01\x01'</code></p>
+                        <p><strong>Folosit pentru:</strong> Sendre/primire on socket, files binare</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: encode() and decode() -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2>🔄 Conversia: encode() and decode()</h2>
+                
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 conversie_demo.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-run" onclick="simulateRun(this, 'output1')">▶ Run</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="cmt"># ═══════════════════════════════════════════════</span>
+<span class="cmt"># str → bytes: folosim encode()</span>
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+
+message_text = <span class="str">"GET /index.html HTTP/1.1"</span>    <span class="cmt"># str</span>
+message_bytes = message_text.<span class="fn">encode</span>(<span class="str">'utf-8'</span>)     <span class="cmt"># bytes</span>
+
+<span class="fn">print</span>(<span class="str">f"Text (str):  </span>{message_text}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Bytes:       </span>{message_bytes}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Tip text:    </span>{<span class="fn">type</span>(message_text)}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Tip bytes:   </span>{<span class="fn">type</span>(message_bytes)}<span class="str">"</span>)
+
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+<span class="cmt"># bytes → str: folosim decode()</span>
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+
+raspuns_bytes = <span class="bytes">b"HTTP/1.1 200 OK"</span>             <span class="cmt"># bytes of on network</span>
+raspuns_text = raspuns_bytes.<span class="fn">decode</span>(<span class="str">'utf-8'</span>)   <span class="cmt"># str for procesare</span>
+
+<span class="fn">print</span>(<span class="str">f"\nBytes primite: </span>{raspuns_bytes}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Text decodat:  </span>{raspuns_text}<span class="str">"</span>)</pre>
+                    </div>
+                    <div class="code-output" id="output1">
+                        <div class="code-output-header">Output</div>
+<pre>Text (str):  GET /index.html HTTP/1.1
+Bytes:       b'GET /index.html HTTP/1.1'
+Tip text:    &lt;class 'str'&gt;
+Tip bytes:   &lt;class 'bytes'&gt;
+
+Bytes primite: b'HTTP/1.1 200 OK'
+Text decodat:  HTTP/1.1 200 OK</pre>
+                    </div>
+                </div>
+
+                <div class="card card-highlight">
+                    <h3>🔑 Regula of Aur</h3>
+                    <p>
+                        <strong>Inainte of socket.send():</strong> <code>text.encode('utf-8')</code><br>
+                        <strong>Dup socket.recv():</strong> <code>data.decode('utf-8')</code>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Bytes Literal -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h2>📦 Bytes Literal — Writerea Directa</h2>
+                
+                <p>In networking, often scrii bytes direct (mai ofs for protocols binare):</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 bytes_literal.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-run" onclick="simulateRun(this, 'output2')">▶ Run</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="cmt"># Bytes literal with prefix b""</span>
+http_request = <span class="bytes">b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"</span>
+<span class="fn">print</span>(<span class="str">"HTTP Request:"</span>)
+<span class="fn">print</span>(http_request)
+
+<span class="cmt"># Bytes with valori hexazecimof (pentru IP-uri, headere binare)</span>
+ip_bytes = <span class="bytes">b'\xC0\xA8\x01\x01'</span>   <span class="cmt"># 192.168.1.1 in binar</span>
+<span class="fn">print</span>(<span class="str">f"\nIP ca bytes: </span>{ip_bytes}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"IP ca hex:   </span>{ip_bytes.<span class="fn">hex</span>()}<span class="str">"</span>)
+
+<span class="cmt"># Decodare IP from bytes</span>
+bytei = <span class="fn">list</span>(ip_bytes)
+ip_str = <span class="str">"."</span>.<span class="fn">join</span>(<span class="fn">str</span>(b) <span class="kw">for</span> b <span class="kw">in</span> bytei)
+<span class="fn">print</span>(<span class="str">f"IP decodat:  </span>{ip_str}<span class="str">"</span>)
+
+<span class="cmt"># Lungime</span>
+<span class="fn">print</span>(<span class="str">f"\nLungime request: </span>{<span class="fn">len</span>(http_request)}<span class="str"> bytes"</span>)
+<span class="fn">print</span>(<span class="str">f"Lungime IP:      </span>{<span class="fn">len</span>(ip_bytes)}<span class="str"> bytes"</span>)</pre>
+                    </div>
+                    <div class="code-output" id="output2">
+                        <div class="code-output-header">Output</div>
+<pre>HTTP Request:
+b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n'
+
+IP ca bytes: b'\xc0\xa8\x01\x01'
+IP ca hex:   c0a80101
+IP decodat:  192.168.1.1
+
+Lungime request: 37 bytes
+Lungime IP:      4 bytes</pre>
+                    </div>
+                </div>
+
+                <div class="callout callout-networking">
+                    <span class="callout-icon">🌐</span>
+                    <div class="callout-content">
+                        <h4>De ce <code>\xC0\xA8\x01\x01</code> = 192.168.1.1?</h4>
+                        <p>Fiecare byte: <code>\xC0</code> = 192 (in hex), <code>\xA8</code> = 168, <code>\x01</code> = 1, <code>\x01</code> = 1</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Common Error -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2>❌ Eroarea Clasic and Cum o Eviti</h2>
+
+                <div class="card card-danger">
+                    <h3>TypeError: a bytes-like object is required, not 'str'</h3>
+                    <p>Aceasta apare when incerci to trimiti <code>str</code> on un socket which waits <code>bytes</code>.</p>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <h3 style="color: var(--accent-error);">❌ GRESIT</h3>
+                        <div class="code-container">
+                            <div class="code-body">
+<pre><span class="kw">import</span> socket
+
+sock = socket.socket(...)
+sock.connect((<span class="str">"127.0.0.1"</span>, <span class="num">8080</span>))
+
+<span class="cmt"># ❌ EROARE! str in loc of bytes</span>
+message = <span class="str">"Hello Server"</span>
+sock.<span class="fn">send</span>(message)  <span class="cmt"># TypeError!</span></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="color: var(--accent-success);">✅ CORECT</h3>
+                        <div class="code-container">
+                            <div class="code-body">
+<pre><span class="kw">import</span> socket
+
+sock = socket.socket(...)
+sock.connect((<span class="str">"127.0.0.1"</span>, <span class="num">8080</span>))
+
+<span class="cmt"># ✅ Convertim at bytes</span>
+message = <span class="str">"Hello Server"</span>
+sock.<span class="fn">send</span>(message.<span class="fn">encode</span>(<span class="str">'utf-8'</span>))  <span class="cmt"># OK!</span>
+
+<span class="cmt"># SAU direct bytes literal</span>
+sock.<span class="fn">send</span>(<span class="bytes">b"Hello Server"</span>)  <span class="cmt"># OK!</span></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-container" style="margin-top: 1.5rem;">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 pattern_complet.py (din exercitii)</span>
+                    </div>
+                    <div class="code-body">
+<pre><span class="cmt"># Pattern-ul correct for client TCP</span>
+<span class="kw">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="kw">as</span> sock:
+    sock.connect((<span class="str">"127.0.0.1"</span>, <span class="num">9090</span>))
+    
+    <span class="cmt"># Sendre: str → bytes</span>
+    message = <span class="str">"Cerere of at client"</span>
+    sock.<span class="fn">sendall</span>(message.<span class="fn">encode</span>(<span class="str">'utf-8'</span>))
+    
+    <span class="cmt"># Primire: bytes → str</span>
+    raspuns_bytes = sock.<span class="fn">recv</span>(<span class="num">1024</span>)
+    raspuns_text = raspuns_bytes.<span class="fn">decode</span>(<span class="str">'utf-8'</span>)
+    
+    <span class="fn">print</span>(<span class="str">f"Answer: </span>{raspuns_text}<span class="str">"</span>)</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: List Comprehensions -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h2>📋 List Comprehensions — Procesare Compacta</h2>
+                
+                <p>Cand parsezi responses of network, ai nevoie to processeszi liste fast. List comprehensions fac asta elegant:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 comprehensions_networking.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-run" onclick="simulateRun(this, 'output3')">▶ Run</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="cmt"># ═══════════════════════════════════════════════</span>
+<span class="cmt"># Mod clasic (ca in C/Java)</span>
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+porturi_deschise = []
+<span class="kw">for</span> port <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">1001</span>):
+    <span class="kw">if</span> port % <span class="num">100</span> == <span class="num">0</span>:  <span class="cmt"># simulam verification</span>
+        porturi_deschise.<span class="fn">append</span>(port)
+
+<span class="fn">print</span>(<span class="str">"Mod clasic:"</span>, porturi_deschise)
+
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+<span class="cmt"># List comprehension (Python idiomatic)</span>
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+porturi_deschise = [port <span class="kw">for</span> port <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">1001</span>) <span class="kw">if</span> port % <span class="num">100</span> == <span class="num">0</span>]
+
+<span class="fn">print</span>(<span class="str">"Comprehension:"</span>, porturi_deschise)
+
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+<span class="cmt"># Aplicatie reala: parsare IP-uri from response</span>
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+raspuns = <span class="str">"192.168.1.1,10.0.0.1,8.8.8.8,invalid,172.16.0.1"</span>
+
+<span class="cmt"># Extrage only IP-urile valide (simplist: cele with 3 puncte)</span>
+ip_uri = [ip.<span class="fn">strip</span>() <span class="kw">for</span> ip <span class="kw">in</span> raspuns.<span class="fn">split</span>(<span class="str">','</span>) <span class="kw">if</span> ip.<span class="fn">count</span>(<span class="str">'.'</span>) == <span class="num">3</span>]
+
+<span class="fn">print</span>(<span class="str">"IP-uri extrase:"</span>, ip_uri)</pre>
+                    </div>
+                    <div class="code-output" id="output3">
+                        <div class="code-output-header">Output</div>
+<pre>Mod clasic: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+Comprehension: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+IP-uri extrase: ['192.168.1.1', '10.0.0.1', '8.8.8.8', '172.16.0.1']</pre>
+                    </div>
+                </div>
+
+                <div class="card card-info">
+                    <h3>📐 Sintaxa</h3>
+                    <p><code>[expresie <span style="color: var(--accent-secondary);">for</span> element <span style="color: var(--accent-secondary);">in</span> iterabil <span style="color: var(--accent-secondary);">if</span> condition]</code></p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Partea <code>if condition</code> is optionala.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Dict Comprehensions -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h2>📚 Dict Comprehensions — Parsare Headers</h2>
+                
+                <p>Perfect for a parsa headers HTTP or configurari in format <code>key: value</code>:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 dict_comprehension_http.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-run" onclick="simulateRun(this, 'output4')">▶ Run</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="cmt"># Headers HTTP primite ca string</span>
+headers_raw = <span class="str">"""Host: localhost
+Content-Type: text/html
+Content-Length: 1234
+Connection: keep-alive"""</span>
+
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+<span class="cmt"># Mod clasic</span>
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+headers_dict = {}
+<span class="kw">for</span> line <span class="kw">in</span> headers_raw.<span class="fn">split</span>(<span class="str">'\n'</span>):
+    <span class="kw">if</span> <span class="str">':'</span> <span class="kw">in</span> line:
+        key, value = line.<span class="fn">split</span>(<span class="str">':'</span>, <span class="num">1</span>)
+        headers_dict[key.<span class="fn">strip</span>().<span class="fn">lower</span>()] = value.<span class="fn">strip</span>()
+
+<span class="fn">print</span>(<span class="str">"Headers (mod clasic):"</span>)
+<span class="kw">for</span> k, v <span class="kw">in</span> headers_dict.<span class="fn">items</span>():
+    <span class="fn">print</span>(<span class="str">f"  </span>{k}<span class="str">: </span>{v}<span class="str">"</span>)
+
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+<span class="cmt"># Dict comprehension (o linie!)</span>
+<span class="cmt"># ═══════════════════════════════════════════════</span>
+headers = {
+    k.<span class="fn">strip</span>().<span class="fn">lower</span>(): v.<span class="fn">strip</span>()
+    <span class="kw">for</span> line <span class="kw">in</span> headers_raw.<span class="fn">split</span>(<span class="str">'\n'</span>)
+    <span class="kw">if</span> <span class="str">':'</span> <span class="kw">in</span> line
+    <span class="kw">for</span> k, v <span class="kw">in</span> [line.<span class="fn">split</span>(<span class="str">':'</span>, <span class="num">1</span>)]
+}
+
+<span class="fn">print</span>(<span class="str">f"\nContent-Length: </span>{headers[<span class="str">'content-length'</span>]}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Host: </span>{headers[<span class="str">'host'</span>]}<span class="str">"</span>)</pre>
+                    </div>
+                    <div class="code-output" id="output4">
+                        <div class="code-output-header">Output</div>
+<pre>Headers (mod clasic):
+  host: localhost
+  content-type: text/html
+  content-length: 1234
+  connection: keep-alive
+
+Content-Length: 1234
+Host: localhost</pre>
+                    </div>
+                </div>
+
+                <div class="callout callout-networking">
+                    <span class="callout-icon">🌐</span>
+                    <div class="callout-content">
+                        <h4>Ade vei folosi asta?</h4>
+                        <p>In <code>08roWSL/src/exercises/ex_8_01_server_http.py</code> must to parsezi exact this fel of headers!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Experiment -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h2>🧪 Experiment: bytes in Exercisel Real</h2>
+
+                <div class="experiment-box">
+                    <div class="experiment-header">
+                        <span class="experiment-icon">🔬</span>
+                        <span class="experiment-title">Explhoursaz Conversia in ex_2_01_tcp.py</span>
+                    </div>
+
+                    <div class="experiment-steps">
+                        <div class="experiment-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Open exercitiul TCP</h4>
+                                <p><code>code 02roWSL/src/exercises/ex_2_01_tcp.py</code></p>
+                                <p class="step-why">🎯 De ce: Acesta implement un server and client TCP complet</p>
+                            </div>
+                        </div>
+
+                        <div class="experiment-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Caut <code>encode</code> and <code>decode</code></h4>
+                                <p>Use Ctrl+F and caut aceste cuvinte cheie</p>
+                                <p class="step-why">🎯 Ce vei vedea: Locurile where se face conversia str ↔ bytes</p>
+                            </div>
+                        </div>
+
+                        <div class="experiment-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Identific pattern-ul</h4>
+                                <p>Observ c <code>sendall()</code> receives bytes and <code>recv()</code> returneaz bytes</p>
+                                <p class="step-why">🎯 Ce invatam: Sockets DOAR lucreaz with bytes, never with str direct</p>
+                            </div>
+                        </div>
+
+                        <div class="experiment-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Experimenteaz the error</h4>
+                                <p>Temptimer, elimin <code>.encode('utf-8')</code> dintr-un <code>sendall()</code> and runs</p>
+                                <p class="step-why">🎯 Ce invatam: Vei vedea exact the error TypeError discutata!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Quiz 1 -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <h2>📝 Quiz: Check-ti Aderstandrea</h2>
+
+                <div class="quiz-container" id="quiz1">
+                    <div class="quiz-header">
+                        <div class="quiz-icon">🧠</div>
+                        <div>
+                            <h3 style="margin: 0;">Quiz 1: bytes vs str</h3>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        Ce method folosesti to convert un string in bytes befhours of a-l sends on un socket?
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')">
+                            <span class="option-marker">A</span>
+                            <span><code>str.bytes()</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')" data-correct="true">
+                            <span class="option-marker">B</span>
+                            <span><code>str.encode('utf-8')</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')">
+                            <span class="option-marker">C</span>
+                            <span><code>bytes(str)</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')">
+                            <span class="option-marker">D</span>
+                            <span><code>str.tobytes()</code></span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-quiz btn-check" onclick="checkAnswer('quiz1')">Check</button>
+                        <button class="btn-quiz btn-hint" onclick="showHint('quiz1', 1)">💡 Hint</button>
+                    </div>
+
+                    <div class="hint-box" id="quiz1-hint1">
+                        <div class="hint-level">Hint 1/3</div>
+                        <p>Gandeste-te: when trimiti text on network, must sa-l "codezi" intr-un format binar. Ce cuvant englezesc dewrites this proces?</p>
+                    </div>
+                    <div class="hint-box" id="quiz1-hint2">
+                        <div class="hint-level">Hint 2/3</div>
+                        <p>Metoda se numeste <code>encode</code> and receives ca parameter encoding-ul (de obicei 'utf-8').</p>
+                    </div>
+                    <div class="hint-box" id="quiz1-hint3">
+                        <div class="hint-level">Hint 3/3</div>
+                        <p>Optiunea B: <code>"text".encode('utf-8')</code> returneaz <code>b'text'</code></p>
+                    </div>
+
+                    <div class="feedback-box" id="quiz1-feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Quiz 2 -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <div class="quiz-container" id="quiz2">
+                    <div class="quiz-header">
+                        <div class="quiz-icon">🧠</div>
+                        <div>
+                            <h3 style="margin: 0;">Quiz 2: List Comprehension</h3>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        Care is the result acestui cod?<br><br>
+                        <code>[x * 2 for x in [1, 2, 3, 4] if x > 2]</code>
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')">
+                            <span class="option-marker">A</span>
+                            <span><code>[2, 4, 6, 8]</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')">
+                            <span class="option-marker">B</span>
+                            <span><code>[3, 4]</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')" data-correct="true">
+                            <span class="option-marker">C</span>
+                            <span><code>[6, 8]</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')">
+                            <span class="option-marker">D</span>
+                            <span><code>[1, 2, 6, 8]</code></span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-quiz btn-check" onclick="checkAnswer('quiz2')">Check</button>
+                        <button class="btn-quiz btn-hint" onclick="showHint('quiz2', 1)">💡 Hint</button>
+                    </div>
+
+                    <div class="hint-box" id="quiz2-hint1">
+                        <div class="hint-level">Hint 1/3</div>
+                        <p>Mai intai se aplic filtrul <code>if x > 2</code>. Care elemente from [1,2,3,4] are mhours mari ca 2?</p>
+                    </div>
+                    <div class="hint-box" id="quiz2-hint2">
+                        <div class="hint-level">Hint 2/3</div>
+                        <p>Elementele which trec filtrul are 3 and 4. Apoi se aplic expresia <code>x * 2</code> on fiecare.</p>
+                    </div>
+                    <div class="hint-box" id="quiz2-hint3">
+                        <div class="hint-level">Hint 3/3</div>
+                        <p>3 * 2 = 6, 4 * 2 = 8 → Rezultat: [6, 8]</p>
+                    </div>
+
+                    <div class="feedback-box" id="quiz2-feedback"></div>
+                </div>
+
+                <div class="quiz-container" id="quiz3" style="margin-top: 2rem;">
+                    <div class="quiz-header">
+                        <div class="quiz-icon">🧠</div>
+                        <div>
+                            <h3 style="margin: 0;">Quiz 3: Bytes Literal</h3>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        Care is valoarea lui <code>b'\xC0'</code> in zecimal?
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')">
+                            <span class="option-marker">A</span>
+                            <span>12</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')">
+                            <span class="option-marker">B</span>
+                            <span>160</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')" data-correct="true">
+                            <span class="option-marker">C</span>
+                            <span>192</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')">
+                            <span class="option-marker">D</span>
+                            <span>255</span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-quiz btn-check" onclick="checkAnswer('quiz3')">Check</button>
+                        <button class="btn-quiz btn-hint" onclick="showHint('quiz3', 1)">💡 Hint</button>
+                    </div>
+
+                    <div class="hint-box" id="quiz3-hint1">
+                        <div class="hint-level">Hint 1/3</div>
+                        <p><code>\xC0</code> is notatie hexazecimala. C in hex = 12 in zecimal, 0 in hex = 0 in zecimal.</p>
+                    </div>
+                    <div class="hint-box" id="quiz3-hint2">
+                        <div class="hint-level">Hint 2/3</div>
+                        <p>Formula: C0 (hex) = C×16 + 0 = 12×16 + 0</p>
+                    </div>
+                    <div class="hint-box" id="quiz3-hint3">
+                        <div class="hint-level">Hint 3/3</div>
+                        <p>12 × 16 = 192. Aceasta e prima parte a IP-ului 192.168.x.x!</p>
+                    </div>
+
+                    <div class="feedback-box" id="quiz3-feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Sandbox -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h2>💻 Sandbox: Experimenteaza</h2>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 sandbox_bytes.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-run" onclick="simulateRun(this, 'sandbox-output')">▶ Run</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="cmt"># Experiment 1: Conversie IP in bytes and inapoi</span>
+ip = <span class="str">"192.168.1.100"</span>
+
+<span class="cmt"># Split and convertire at bytes (cum face socket-ul intern)</span>
+bytei = [<span class="fn">int</span>(x) <span class="kw">for</span> x <span class="kw">in</span> ip.<span class="fn">split</span>(<span class="str">'.'</span>)]
+ip_bytes = <span class="fn">bytes</span>(bytei)
+
+<span class="fn">print</span>(<span class="str">f"IP original:  </span>{ip}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Octeti:       </span>{bytei}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Ca bytes:     </span>{ip_bytes}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"Ca hex:       </span>{ip_bytes.<span class="fn">hex</span>()}<span class="str">"</span>)
+
+<span class="cmt"># Reconstructie</span>
+ip_reconstructed = <span class="str">'.'</span>.<span class="fn">join</span>(<span class="fn">str</span>(b) <span class="kw">for</span> b <span class="kw">in</span> ip_bytes)
+<span class="fn">print</span>(<span class="str">f"Reconstruit:  </span>{ip_reconstructed}<span class="str">"</span>)
+
+<span class="cmt"># Experiment 2: HTTP Request complet</span>
+<span class="fn">print</span>(<span class="str">"\n--- HTTP Request ---"</span>)
+request = <span class="str">f"GET /api/data HTTP/1.1\r\nHost: </span>{ip}<span class="str">\r\n\r\n"</span>
+request_bytes = request.<span class="fn">encode</span>(<span class="str">'utf-8'</span>)
+
+<span class="fn">print</span>(<span class="str">f"Lungime text:  </span>{<span class="fn">len</span>(request)}<span class="str"> characters"</span>)
+<span class="fn">print</span>(<span class="str">f"Lungime bytes: </span>{<span class="fn">len</span>(request_bytes)}<span class="str"> bytes"</span>)
+<span class="fn">print</span>(<span class="str">f"Request bytes: </span>{request_bytes[:50]}<span class="str">..."</span>)</pre>
+                    </div>
+                    <div class="code-output" id="sandbox-output">
+                        <div class="code-output-header">Output</div>
+<pre>IP original:  192.168.1.100
+Octeti:       [192, 168, 1, 100]
+Ca bytes:     b'\xc0\xa8\x01d'
+Ca hex:       c0a80164
+Reconstruit:  192.168.1.100
+
+--- HTTP Request ---
+Lungime text:  46 characters
+Lungime bytes: 46 bytes
+Request bytes: b'GET /api/data HTTP/1.1\r\nHost: 192.168.1.100\r\n'...</pre>
+                    </div>
+                </div>
+
+                <div class="card card-highlight">
+                    <h3>💡 Observatii</h3>
+                    <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                        <li>IP-ul 192.168.1.100 becomes <code>\xc0\xa8\x01d</code> (d = 100 in ASCII)</li>
+                        <li>Pentru text ASCII simplu, lungimea in characters = lungimea in bytes</li>
+                        <li>Pentru characters Aicode (a, i), lungimea difera!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Real Files Reference -->
+        <div class="slide" data-slide="13">
+            <div class="slide-content">
+                <h2>📂 Ade Gasesti Aceste Concepte in Labtimetor</h2>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>📁 02roWSL</h3>
+                        <p><strong>ex_2_01_tcp.py</strong></p>
+                        <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem;">
+                            <li><code>encode()</code> at sendsre message</li>
+                            <li><code>decode()</code> at primire response</li>
+                            <li>Pattern client-server TCP</li>
+                        </ul>
+                        <p style="margin-top: 1rem;"><strong>ex_2_02_udp.py</strong></p>
+                        <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem;">
+                            <li>Acelasi pattern for UDP</li>
+                            <li><code>sendto()</code> and <code>recvfrom()</code></li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>📁 03roWSL</h3>
+                        <p><strong>ex_3_01_udp_broadcast.py</strong></p>
+                        <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem;">
+                            <li>Bytes for broadcast UDP</li>
+                            <li>SO_BROADCAST socket option</li>
+                        </ul>
+                        <p style="margin-top: 1rem;"><strong>ex_3_03_tcp_tunnel.py</strong></p>
+                        <ul style="color: var(--text-secondary); font-size: 0.95rem; margin-left: 1rem;">
+                            <li>Forward bytes between connections</li>
+                            <li>Far encode/decode (data binare!)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="callout callout-networking">
+                    <span class="callout-icon">🌐</span>
+                    <div class="callout-content">
+                        <h4>Regul Importanta</h4>
+                        <p>Cand faci <strong>forwarding of data</strong> (proxy, tunnel), NU decoda and recoda! Send bytes-urile exact how le-ai primit for a not corupe data binare.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Summary -->
+        <div class="slide" data-slide="14">
+            <div class="slide-content">
+                <h2>✅ Summary & Pasii Urmatori</h2>
+
+                <div class="grid-2">
+                    <div class="card card-highlight">
+                        <h3>📌 What we learnt</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ <code>str</code> = text for oameni, <code>bytes</code> = data for network
+                            </li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ <code>str.encode('utf-8')</code> → bytes (inainte of send)
+                            </li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ <code>bytes.decode('utf-8')</code> → str (dup recv)
+                            </li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ Bytes literal: <code>b"text"</code> or <code>b'\xHH'</code>
+                            </li>
+                            <li style="padding: 0.5rem 0;">
+                                ✓ List/Dict comprehensions for parsare
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>🚀 Next Module</h3>
+                        <p style="font-size: 1.1rem; color: var(--accent-primary); font-weight: 600;">
+                            Modul 4: Socket Programming
+                        </p>
+                        <p>Vei invata:</p>
+                        <ul style="color: var(--text-secondary);">
+                            <li>TCP vs UDP sockets</li>
+                            <li>Server and client complet</li>
+                            <li>Context managers (<code>with</code>)</li>
+                        </ul>
+                        <span class="badge badge-week">📅 Chourslat with Week 2-4</span>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="color: var(--text-muted);">
+                        Modulul 3 complet! 🎉<br>
+                        Acum stii how to lucrezi with bytes and str in networking.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn-nav btn-prev" id="btnPrev" onclick="prevSlide()" disabled>← Back</button>
+        <div class="page-dots" id="pageDots"></div>
+        <button class="btn-nav btn-next" id="btnNext" onclick="nextSlide()">Continue →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 14;
+        const quizHintCounts = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updataUI();
+            createPageDots();
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+                else if (e.key === 'ArrowLeft') { prevSlide(); }
+            });
+        });
+
+        function createPageDots() {
+            const container = document.getElementById('pageDots');
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'page-dot' + (i === 1 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function updataUI() {
+            document.getElementById('progressBar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+            document.getElementById('slideCounter').textContent = `${currentSlide} / ${totalSlides}`;
+            document.getElementById('btnPrev').disabled = currentSlide === 1;
+            document.getElementById('btnNext').textContent = currentSlide === totalSlides ? 'Finish ✓' : 'Continue →';
+            document.querySelectorAll('.page-dot').forEach((dot, i) => dot.classList.toggle('active', i + 1 === currentSlide));
+        }
+
+        function goToSlide(n) {
+            if (n < 1 || n > totalSlides || n === currentSlide) return;
+            const currentEl = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+            const nextEl = document.querySelector(`.slide[data-slide="${n}"]`);
+            currentEl.classList.remove('active'); currentEl.classList.add('exit');
+            setTimeout(() => { currentEl.classList.remove('exit'); nextEl.classList.add('active'); currentSlide = n; updataUI(); }, 100);
+        }
+
+        function nextSlide() { if (currentSlide < totalSlides) goToSlide(currentSlide + 1); }
+        function prevSlide() { if (currentSlide > 1) goToSlide(currentSlide - 1); }
+
+        function simulateRun(btn, outputId) {
+            const output = document.getElementById(outputId);
+            btn.textContent = '⏳ Run...'; btn.disabled = true;
+            setTimeout(() => { output.classList.add('visible'); btn.textContent = '▶ Run'; btn.disabled = false; }, 800);
+        }
+
+        function copyCode(btn) {
+            const code = btn.closest('.code-container').querySelector('pre').textContent;
+            navigator.clipboard.writeText(code);
+            const orig = btn.textContent; btn.textContent = '✓ Copiat!'; setTimeout(() => btn.textContent = orig, 1500);
+        }
+
+        function selectOption(el, quizId) {
+            document.getElementById(quizId).querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected','correct','incorrect'));
+            el.classList.add('selected');
+            document.getElementById(`${quizId}-feedback`).classList.remove('visible');
+        }
+
+        function checkAnswer(quizId) {
+            const container = document.getElementById(quizId);
+            const selected = container.querySelector('.quiz-option.selected');
+            const feedback = document.getElementById(`${quizId}-feedback`);
+            if (!selected) { feedback.innerHTML = '<p style="color:var(--accent-warning)">⚠️ Selecteaz un response!</p>'; feedback.className = 'feedback-box visible'; return; }
+            container.querySelectorAll('.quiz-option').forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); else if (o.classList.contains('selected')) o.classList.add('incorrect'); });
+            if (selected.dataset.correct === 'true') { feedback.innerHTML = '<p style="color:var(--accent-success)">🎉 Correct!</p>'; feedback.className = 'feedback-box success visible'; }
+            else { feedback.innerHTML = '<p style="color:var(--accent-error)">❌ Answerul correct e marcat with verde.</p>'; feedback.className = 'feedback-box error visible'; }
+        }
+
+        function showHint(quizId, level) {
+            if (!quizHintCounts[quizId]) quizHintCounts[quizId] = 0;
+            const cur = quizHintCounts[quizId] + 1; if (cur > 3) return;
+            const hint = document.getElementById(`${quizId}-hint${cur}`);
+            if (hint) { hint.classList.add('visible'); quizHintCounts[quizId] = cur;
+                const btn = document.querySelector(`#${quizId} .btn-hint`);
+                btn.textContent = cur >= 3 ? '✓ Toate hint-urile' : `💡 Hint (${cur}/3)`; if (cur >= 3) btn.disabled = true;
+            }
+        }
+    </script>
+</body>
+</html>

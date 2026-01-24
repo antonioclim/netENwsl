@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-spath=1.0">
+    <title>Cerinte Prealabile - Labtimetor Computer Networks | ASE Bucuresti</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111820;
+            --bg-card: #151d28;
+            --bg-code: #0d1117;
+            --accent-blue: #39bae6;
+            --accent-green: #7fd962;
+            --accent-timenge: #ff9940;
+            --accent-red: #f07178;
+            --accent-purple: #d4bfff;
+            --accent-yellow: #ffb454;
+            --accent-cyan: #95e6cb;
+            --accent-pink: #ff79c6;
+            --text-primary: #e6e8eb;
+            --text-secondary: #8b949e;
+            --text-muted: #565f69;
+            --border-color: #21262d;
+            --gradient-1: linear-gradient(135deg, #39bae6 0%, #7fd962 100%);
+            --gradient-2: linear-gradient(135deg, #ff9940 0%, #f07178 100%);
+            --shadow-glow: 0 0 40px rgba(57, 186, 230, 0.15);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            line-height: 1.7; 
+            min-height: 100vh; 
+        }
+        .bg-pattern { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            pointer-events: none; 
+            z-index: 0; 
+            opacity: 0.4; 
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(57, 186, 230, 0.08) 0%, transparent 50%), 
+                radial-gradient(circle at 80% 80%, rgba(127, 217, 98, 0.08) 0%, transparent 50%), 
+                radial-gradient(circle at 40% 70%, rgba(255, 153, 64, 0.05) 0%, transparent 40%); 
+        }
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 40px 24px; 
+            position: relative; 
+            z-index: 1; 
+        }
+        
+        /* Header */
+        header { 
+            text-align: center; 
+            margin-bottom: 60px; 
+            padding: 40px 0; 
+        }
+        .logo-badge { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            padding: 8px 16px; 
+            border-radius: 100px; 
+            font-size: 0.85rem; 
+            color: var(--text-secondary); 
+            margin-bottom: 24px; 
+            animation: fadeInDown 0.6s ease-out; 
+        }
+        .logo-badge svg { width: 18px; height: 18px; }
+        h1 { 
+            font-size: clamp(2.2rem, 5vw, 3.2rem); 
+            font-weight: 700; 
+            background: var(--gradient-1); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text; 
+            margin-bottom: 16px; 
+            animation: fadeInUp 0.6s ease-out 0.1s both; 
+        }
+        .subtitle { 
+            font-size: 1.15rem; 
+            color: var(--text-secondary); 
+            font-weight: 300; 
+            max-width: 750px; 
+            margin: 0 auto; 
+            animation: fadeInUp 0.6s ease-out 0.2s both; 
+        }
+        
+        /* Alerts and Info Boxes */
+        .ofrt { 
+            background: linear-gradient(135deg, rgba(255, 153, 64, 0.1) 0%, rgba(240, 113, 120, 0.1) 100%); 
+            border: 1px solid rgba(255, 153, 64, 0.3); 
+            border-radius: 12px; 
+            padding: 20px 24px; 
+            margin-bottom: 24px; 
+            display: flex; 
+            gap: 16px; 
+            align-items: flex-start; 
+            animation: fadeInUp 0.6s ease-out 0.3s both; 
+        }
+        .ofrt-critical {
+            background: linear-gradient(135deg, rgba(240, 113, 120, 0.15) 0%, rgba(255, 79, 198, 0.1) 100%);
+            border: 2px solid rgba(240, 113, 120, 0.5);
+        }
+        .ofrt-icon { 
+            flex-shrink: 0; 
+            width: 24px; 
+            height: 24px; 
+            color: var(--accent-timenge); 
+        }
+        .ofrt-critical .ofrt-icon { color: var(--accent-red); }
+        .ofrt-content h3 { 
+            font-size: 1rem; 
+            font-weight: 600; 
+            color: var(--accent-timenge); 
+            margin-bottom: 4px; 
+        }
+        .ofrt-critical .ofrt-content h3 { color: var(--accent-red); }
+        .ofrt-content p { 
+            font-size: 0.95rem; 
+            color: var(--text-secondary); 
+        }
+        
+        .info-box { 
+            background: linear-gradient(135deg, rgba(57, 186, 230, 0.1) 0%, rgba(149, 230, 203, 0.1) 100%); 
+            border: 1px solid rgba(57, 186, 230, 0.3); 
+            border-radius: 12px; 
+            padding: 20px 24px; 
+            margin-bottom: 24px; 
+            animation: fadeInUp 0.6s ease-out 0.35s both; 
+        }
+        .info-box h3 { 
+            font-size: 1rem; 
+            font-weight: 600; 
+            color: var(--accent-blue); 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .info-box h3 svg { width: 20px; height: 20px; }
+        
+        /* Credentials Grid */
+        .credentials-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 16px; 
+        }
+        .credential-item { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 14px 18px; 
+        }
+        .credential-item .label { 
+            font-size: 0.8rem; 
+            color: var(--text-muted); 
+            margin-bottom: 4px; 
+        }
+        .credential-item .value { 
+            font-family: 'JetBrains Mono', monospace; 
+            color: var(--accent-green); 
+            font-size: 0.95rem; 
+        }
+        .credential-item .note { 
+            font-size: 0.75rem; 
+            color: var(--text-muted); 
+            margin-top: 4px; 
+        }
+        
+        /* Port Reserved Box */
+        .port-reserved {
+            background: linear-gradient(135deg, rgba(240, 113, 120, 0.1) 0%, rgba(212, 191, 255, 0.1) 100%);
+            border: 2px dashed rgba(240, 113, 120, 0.5);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .port-reserved h4 {
+            color: var(--accent-red);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .port-reserved .port-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-red);
+            margin: 12px 0;
+        }
+        .port-reserved p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Timeline */
+        .timeline { 
+            position: relative; 
+            padding-left: 0; 
+        }
+        .timeline::befhours { 
+            content: ''; 
+            position: absolute; 
+            left: 28px; 
+            top: 60px; 
+            bottom: 60px; 
+            width: 2px; 
+            background: linear-gradient(to bottom, 
+                var(--accent-blue), 
+                var(--accent-green), 
+                var(--accent-timenge), 
+                var(--accent-purple), 
+                var(--accent-cyan), 
+                var(--accent-yellow),
+                var(--accent-red),
+                var(--accent-pink)); 
+            border-radius: 2px; 
+        }
+        
+        .step { 
+            position: relative; 
+            margin-bottom: 32px; 
+            padding-left: 72px; 
+            animation: fadeInUp 0.6s ease-out both; 
+        }
+        .step:nth-child(1) { animation-delay: 0.4s; } 
+        .step:nth-child(2) { animation-delay: 0.5s; } 
+        .step:nth-child(3) { animation-delay: 0.6s; } 
+        .step:nth-child(4) { animation-delay: 0.7s; } 
+        .step:nth-child(5) { animation-delay: 0.8s; } 
+        .step:nth-child(6) { animation-delay: 0.9s; } 
+        .step:nth-child(7) { animation-delay: 1.0s; }
+        .step:nth-child(8) { animation-delay: 1.1s; }
+        .step:nth-child(9) { animation-delay: 1.2s; }
+        .step:nth-child(10) { animation-delay: 1.3s; }
+        
+        .step-number { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 56px; 
+            height: 56px; 
+            border-radius: 16px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            color: var(--bg-primary); 
+            z-index: 2; 
+        }
+        .step:nth-child(1) .step-number { background: var(--accent-blue); } 
+        .step:nth-child(2) .step-number { background: var(--accent-green); } 
+        .step:nth-child(3) .step-number { background: var(--accent-timenge); } 
+        .step:nth-child(4) .step-number { background: var(--accent-purple); } 
+        .step:nth-child(5) .step-number { background: var(--accent-cyan); } 
+        .step:nth-child(6) .step-number { background: var(--accent-yellow); } 
+        .step:nth-child(7) .step-number { background: var(--accent-red); }
+        .step:nth-child(8) .step-number { background: var(--accent-pink); }
+        .step:nth-child(9) .step-number { background: var(--accent-blue); }
+        .step:nth-child(10) .step-number { background: var(--accent-green); }
+        
+        .step-card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            padding: 28px; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2); 
+        }
+        .step-card:hover { 
+            border-color: var(--accent-blue); 
+            box-shadow: var(--shadow-glow); 
+            transform: translateY(-2px); 
+        }
+        
+        .step-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 16px; 
+            flex-wrap: wrap; 
+        }
+        .step-icon { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            flex-shrink: 0; 
+        }
+        .step:nth-child(1) .step-icon { background: rgba(57, 186, 230, 0.15); color: var(--accent-blue); } 
+        .step:nth-child(2) .step-icon { background: rgba(127, 217, 98, 0.15); color: var(--accent-green); } 
+        .step:nth-child(3) .step-icon { background: rgba(255, 153, 64, 0.15); color: var(--accent-timenge); } 
+        .step:nth-child(4) .step-icon { background: rgba(212, 191, 255, 0.15); color: var(--accent-purple); } 
+        .step:nth-child(5) .step-icon { background: rgba(149, 230, 203, 0.15); color: var(--accent-cyan); } 
+        .step:nth-child(6) .step-icon { background: rgba(255, 180, 84, 0.15); color: var(--accent-yellow); } 
+        .step:nth-child(7) .step-icon { background: rgba(240, 113, 120, 0.15); color: var(--accent-red); }
+        .step:nth-child(8) .step-icon { background: rgba(255, 121, 198, 0.15); color: var(--accent-pink); }
+        .step:nth-child(9) .step-icon { background: rgba(57, 186, 230, 0.15); color: var(--accent-blue); }
+        .step:nth-child(10) .step-icon { background: rgba(127, 217, 98, 0.15); color: var(--accent-green); }
+        .step-icon svg { width: 22px; height: 22px; }
+        .step-title { font-size: 1.35rem; font-weight: 600; }
+        
+        .step-badge { 
+            font-size: 0.75rem; 
+            padding: 4px 10px; 
+            border-radius: 100px; 
+            font-weight: 500; 
+            margin-left: auto; 
+        }
+        .badge-required { background: rgba(240, 113, 120, 0.15); color: var(--accent-red); } 
+        .badge-restart { background: rgba(255, 153, 64, 0.15); color: var(--accent-timenge); } 
+        .badge-optional { background: rgba(127, 217, 98, 0.15); color: var(--accent-green); } 
+        .badge-wsl { background: rgba(149, 230, 203, 0.15); color: var(--accent-cyan); } 
+        .badge-windows { background: rgba(57, 186, 230, 0.15); color: var(--accent-blue); }
+        .badge-critical { background: rgba(240, 113, 120, 0.25); color: var(--accent-red); border: 1px solid rgba(240, 113, 120, 0.4); }
+        
+        .step-description { 
+            color: var(--text-secondary); 
+            margin-bottom: 20px; 
+            font-size: 0.95rem; 
+        }
+        
+        /* Instructions List */
+        .instructions { 
+            list-style: none; 
+            margin-bottom: 20px; 
+        }
+        .instructions li { 
+            position: relative; 
+            padding-left: 28px; 
+            margin-bottom: 12px; 
+            color: var(--text-secondary); 
+        }
+        .instructions li::befhours { 
+            content: ''; 
+            position: absolute; 
+            left: 0; 
+            top: 8px; 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            background: var(--accent-blue); 
+        }
+        .instructions li strong { color: var(--text-primary); }
+        .instructions li a { 
+            color: var(--accent-blue); 
+            text-dectimetion: none; 
+            border-bottom: 1px dashed rgba(57, 186, 230, 0.4); 
+            transition: all 0.2s ease; 
+        }
+        .instructions li a:hover { border-bottom-style: solid; }
+        .instructions li code { 
+            background: var(--bg-code); 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 0.85rem; 
+            color: var(--accent-green); 
+        }
+        
+        /* Numbered Steps */
+        .numbered-steps {
+            counter-reset: step-counter;
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        .numbered-steps li {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            counter-increment: step-counter;
+        }
+        .numbered-steps li::befhours {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+        
+        /* Code Blocks */
+        .code-block { 
+            background: var(--bg-code); 
+            border: 1px solid var(--border-color); 
+            border-radius: 10px; 
+            overflow: hidden; 
+            margin-bottom: 16px; 
+        }
+        .code-header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 10px 16px; 
+            background: rgba(255, 255, 255, 0.03); 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        .code-lang { 
+            font-size: 0.8rem; 
+            color: var(--text-muted); 
+            font-family: 'JetBrains Mono', monospace; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .code-lang svg { width: 14px; height: 14px; }
+        .copy-btn { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            background: transparent; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-secondary); 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-size: 0.8rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            font-family: 'Outfit', sans-serif; 
+        }
+        .copy-btn:hover { 
+            border-color: var(--accent-blue); 
+            color: var(--accent-blue); 
+        }
+        .copy-btn svg { width: 14px; height: 14px; }
+        pre { 
+            padding: 16px; 
+            overflow-x: auto; 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 0.9rem; 
+            line-height: 1.6; 
+        }
+        code { color: var(--text-primary); }
+        .code-comment { color: var(--text-muted); }
+        .code-command { color: var(--accent-blue); }
+        .code-flag { color: var(--accent-timenge); }
+        .code-string { color: var(--accent-green); }
+        .code-var { color: var(--accent-purple); }
+        
+        /* Verification Box */
+        .verification-box { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 10px; 
+            padding: 16px; 
+            margin-top: 16px; 
+        }
+        .verification-box h4 { 
+            font-size: 0.9rem; 
+            color: var(--accent-green); 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .verification-box h4 svg { width: 16px; height: 16px; }
+        .verification-list { 
+            list-style: none; 
+        }
+        .verification-list li { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 8px 0; 
+            border-bottom: 1px solid var(--border-color); 
+            font-size: 0.9rem; 
+            color: var(--text-secondary); 
+        }
+        .verification-list li:last-child { border-bottom: none; }
+        .verification-list li svg { 
+            width: 18px; 
+            height: 18px; 
+            color: var(--accent-green); 
+            flex-shrink: 0; 
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: linear-gradient(135deg, rgba(255, 153, 64, 0.1) 0%, rgba(240, 113, 120, 0.1) 100%);
+            border: 1px solid rgba(255, 153, 64, 0.3);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .warning-box h4 {
+            font-size: 0.9rem;
+            color: var(--accent-timenge);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .warning-box p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Section Divider */
+        .section-divider {
+            margin: 48px 0;
+            text-align: center;
+            position: relative;
+        }
+        .section-divider::befhours {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-color);
+        }
+        .section-divider span {
+            background: var(--bg-primary);
+            padding: 0 20px;
+            position: relative;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table th {
+            background: var(--bg-code);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .data-table td {
+            color: var(--text-secondary);
+        }
+        .data-table code {
+            background: var(--bg-code);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+        }
+        
+        /* Footer */
+        footer { 
+            margin-top: 60px; 
+            padding: 32px 0; 
+            border-top: 1px solid var(--border-color); 
+            text-align: center; 
+        }
+        .footer-brand { 
+            color: var(--text-muted); 
+            font-size: 0.9rem; 
+            margin-bottom: 16px; 
+        }
+        .footer-links { 
+            display: flex; 
+            justify-content: center; 
+            gap: 24px; 
+            flex-wrap: wrap; 
+        }
+        .footer-links a { 
+            color: var(--text-secondary); 
+            text-dectimetion: none; 
+            font-size: 0.85rem; 
+            transition: color 0.2s ease; 
+        }
+        .footer-links a:hover { color: var(--accent-blue); }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* TOC */
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 40px;
+        }
+        .toc h3 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        .toc-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 8px;
+            list-style: none;
+        }
+        .toc-list a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-dectimetion: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .toc-list a:hover {
+            background: var(--bg-code);
+            color: var(--accent-blue);
+        }
+        .toc-list .step-num {
+            width: 24px;
+            height: 24px;
+            background: var(--bg-code);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+        
+        /* Progress indicator */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: var(--gradient-1);
+            z-index: 1000;
+            transition: width 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <path d="M8 21h8"/><path d="M12 17v4"/>
+                    <path d="M7 8h2m4 0h4"/>
+                </svg>
+                ASE Bucuresti — CSIE — Informatic Econosmall & IA
+            </div>
+            <h1>🖧 Cerinte Prealabile</h1>
+            <p class="subtitle">
+                Ghid complet pas with pas for configurarea mediului of labtimetor <strong>Computer Networks</strong>.<br>
+                WSL2 + Ubuntu 22.04 + Docker + Portainer + Wireshark + Python
+            </p>
+        </header>
+
+        <!-- Alert Important -->
+        <div class="ofrt ofrt-critical">
+            <svg class="ofrt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <div class="ofrt-content">
+                <h3>⚠️ ATENTIE CRITICA: Portul 9000 is REZERVAT!</h3>
+                <p>
+                    <strong>Portainer uses EXCLUSIV portul 9000</strong>. Niciun serviciu of labtimetor not must to utilizeze this port! 
+                    If intampinati conflicte (ex: the server Echo in Week 14), verificati c not folositi portul 9000 for alte services.
+                </p>
+            </div>
+        </div>
+
+        <!-- Info Box: Repository-uri -->
+        <div class="info-box">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                </svg>
+                Dou Repository-uri Disponibile
+            </h3>
+            <div class="credentials-grid">
+                <div class="credential-item">
+                    <div class="label">🇬🇧 Versiunea Engleza</div>
+                    <div class="value">netENwsl</div>
+                    <div class="note">github.com/antonioclim/netENwsl</div>
+                </div>
+                <div class="credential-item">
+                    <div class="label">🇷🇴 Versiunea Romana</div>
+                    <div class="value">netROwsl</div>
+                    <div class="note">github.com/antonioclim/netROwsl</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>📋 Cuprins — 10 Pasi spre Configurationa Completa</h3>
+            <ul class="toc-list">
+                <li><a href="#step1"><span class="step-num">1</span> Verification System Requirements</a></li>
+                <li><a href="#step2"><span class="step-num">2</span> Activare WSL2</a></li>
+                <li><a href="#step3"><span class="step-num">3</span> Installation Ubuntu 22.04</a></li>
+                <li><a href="#step4"><span class="step-num">4</span> Installation Docker Engine</a></li>
+                <li><a href="#step5"><span class="step-num">5</span> Installation Portainer CE</a></li>
+                <li><a href="#step6"><span class="step-num">6</span> Installation Wireshark</a></li>
+                <li><a href="#step7"><span class="step-num">7</span> Pachete Python Esentiof</a></li>
+                <li><a href="#step8"><span class="step-num">8</span> Pachete Python Avansate</a></li>
+                <li><a href="#step9"><span class="step-num">9</span> Configuration Auto-start</a></li>
+                <li><a href="#step10"><span class="step-num">10</span> Verification Finala</a></li>
+            </ul>
+        </div>
+
+        <!-- Credentials Box -->
+        <div class="info-box">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Credentiof Standard — Memtimeti-le!
+            </h3>
+            <div class="credentials-grid">
+                <div class="credential-item">
+                    <div class="label">Ubuntu WSL</div>
+                    <div class="value">stud / stud</div>
+                    <div class="note">Utilizator with privilegii sudo</div>
+                </div>
+                <div class="credential-item">
+                    <div class="label">Portainer (http://localhost:9000)</div>
+                    <div class="value">stud / studstudstud</div>
+                    <div class="note">Minim 12 characters necesare</div>
+                </div>
+                <div class="credential-item">
+                    <div class="label">DVWA (Week 13)</div>
+                    <div class="value">admin / password</div>
+                    <div class="note">Aplicatie web vulnerabila</div>
+                </div>
+                <div class="credential-item">
+                    <div class="label">FTP Anonymous</div>
+                    <div class="value">anonymous / (gol)</div>
+                    <div class="note">Diverse weekamani</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Port Reserved Warning -->
+        <div class="port-reserved">
+            <h4>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                PORT REZERVAT PERMANENT
+            </h4>
+            <div class="port-number">:9000</div>
+            <p>Portainer CE uses EXCLUSIV this port. Serviciile of labtimetor folosesc porturile <strong>8080-8089</strong> (HTTP) and <strong>9001-9099</strong> (TCP/UDP test).</p>
+        </div>
+
+        <!-- Timeline Steps -->
+        <div class="timeline">
+            
+            <!-- STEP 1: System Requirements -->
+            <div class="step" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8"/><path d="M12 17v4"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Verification System Requirements</span>
+                        <span class="step-badge badge-required">Obligatoriu</span>
+                    </div>
+                    <p class="step-description">
+                        Inainte of a starts instalarea, verificati c the system vostru indeplineste cerintele minime. 
+                        WSL2 requires Windows 10 build 19041+ or Windows 11, with virtualizarea activeat in BIOS.
+                    </p>
+                    
+                    <h4 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 12px;">Cerinte Hardware</h4>
+                    <table class="data-table">
+                        <tr>
+                            <th>Componenta</th>
+                            <th>Minim</th>
+                            <th>Rethe commandt</th>
+                        </tr>
+                        <tr>
+                            <td>Procesor</td>
+                            <td>Intel Chours i5 / AMD Ryzen 5</td>
+                            <td>Intel Chours i7 / AMD Ryzen 7</td>
+                        </tr>
+                        <tr>
+                            <td>RAM Memory</td>
+                            <td>8 GB</td>
+                            <td>16 GB</td>
+                        </tr>
+                        <tr>
+                            <td>Spatiu disc</td>
+                            <td>20 GB liber</td>
+                            <td>50 GB liber (SSD)</td>
+                        </tr>
+                        <tr>
+                            <td>Virtualizare</td>
+                            <td>VT-x / AMD-V activeat</td>
+                            <td>VT-x / AMD-V + IOMMU</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+                                </svg>
+                                PowerShell (Windows)
+                            </span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Verificati versiunea Windows</span>
+<span class="code-command">winver</span>
+
+<span class="code-comment"># Verificati if virtualizarea is activeata</span>
+<span class="code-command">systeminfo</span> | <span class="code-command">findstr</span> <span class="code-string">"Hyper-V"</span></code></pre>
+                    </div>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Lista of Verification
+                        </h4>
+                        <ul class="verification-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Windows 10 build 19041+ or Windows 11
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Minim 8 GB RAM available
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                20+ GB spatiu liber on disc
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Virtualizare activeat in BIOS
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: WSL2 -->
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Activare WSL2</span>
+                        <span class="step-badge badge-restart">Necesit Restart</span>
+                    </div>
+                    <p class="step-description">
+                        <strong>Windows Subsystem for Linux 2 (WSL2)</strong> allows rularea unui kernel Linux autentic direct on Windows. 
+                        Ofer compatibilitate complet with apelurile of system Linux and suport nativ for Docker.
+                    </p>
+                    
+                    <ol class="numbered-steps">
+                        <li><strong>Openti PowerShell ca Adminilayeror:</strong> Apasati <code>Win + X</code> and selectati "Windows Terminal (Admin)" or "PowerShell (Admin)"</li>
+                        <li><strong>Confirmati at promptul UAC:</strong> Click on "Da" for a allows modificarile</li>
+                        <li><strong>Rulati the command of instalare:</strong></li>
+                    </ol>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+                                </svg>
+                                PowerShell (Adminilayeror)
+                            </span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Installation WSL2 with all components necesare</span>
+<span class="code-command">wsl</span> <span class="code-flag">--install</span>
+
+<span class="code-comment"># Aceast comand activeaza:</span>
+<span class="code-comment">#   ✓ Windows Subsystem for Linux</span>
+<span class="code-comment">#   ✓ Virtual Machine Platform</span>
+<span class="code-comment">#   ✓ Kernel-ul Linux WSL2</span>
+<span class="code-comment">#   ✓ WSL2 ca versiune implicita</span></code></pre>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/><path d="M12 8h.01"/>
+                            </svg>
+                            Restart OBLIGATORIU
+                        </h4>
+                        <p>Salvati tot lucrul and reporniti the computer. Comanda: <code>Restart-Computer</code></p>
+                    </div>
+                    
+                    <p style="color: var(--text-secondary); margin: 16px 0;">Dup restart, verificati instalarea:</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">PowerShell</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Verification status WSL</span>
+<span class="code-command">wsl</span> <span class="code-flag">--status</span>
+
+<span class="code-comment"># Output asteptat:</span>
+<span class="code-comment"># Default Version: 2</span>
+<span class="code-comment"># Kernel version: 5.15.x.x-smallrosoft-standard-WSL2</span></code></pre>
+                    </div>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Lista of Verification
+                        </h4>
+                        <ul class="verification-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                <code>wsl --status</code> arat "Default Version: 2"
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Nu apar errors despre virtualizare
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Ubuntu -->
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="4"/>
+                                <line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/>
+                                <line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/>
+                                <line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/>
+                                <line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Installation Ubuntu 22.04 LTS</span>
+                        <span class="step-badge badge-required">Obligatoriu</span>
+                    </div>
+                    <p class="step-description">
+                        <strong>Ubuntu 22.04 LTS (Jammy Jellyfish)</strong> offers suport on termen lung pan in 2027, stabilitate exceslow and compatibilitate 
+                        complet with Docker. Este distributia rethe commandt for mediul of labtimetor.
+                    </p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">PowerShell (Adminilayeror)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Installation Ubuntu 22.04</span>
+<span class="code-command">wsl</span> <span class="code-flag">--install</span> <span class="code-flag">-d</span> Ubuntu-22.04 <span class="code-flag">--web-download</span>
+
+<span class="code-comment"># Asteptati finalizarea descarcarii (~500 MB)</span></code></pre>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/><path d="M12 8h.01"/>
+                            </svg>
+                            IMPORTANT: Folositi credentiofle standard!
+                        </h4>
+                        <p>Cand vi se cere to creati un utilizator, introduceti exact: <strong>stud</strong> / <strong>stud</strong></p>
+                    </div>
+                    
+                    <p style="color: var(--text-secondary); margin: 16px 0;">Cand apare promptul of configurare:</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Ubuntu Setup</span>
+                        </div>
+                        <pre><code>Introduceti newl nume of utilizator UNIX: <span class="code-string">stud</span>
+Parol new: <span class="code-string">stud</span>
+Reintroduceti parola new: <span class="code-string">stud</span>
+
+<span class="code-comment"># Note: Parola NU se afiseaz when tastati - comportament normal Linux</span></code></pre>
+                    </div>
+                    
+                    <p style="color: var(--text-secondary); margin: 16px 0;">Dup configurare, actualizati the system:</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Actualizare system (poate dura 2-5 minutes)</span>
+<span class="code-command">sudo</span> apt updata && <span class="code-command">sudo</span> apt upgrade <span class="code-flag">-y</span>
+
+<span class="code-comment"># Installation instrumente esentiof</span>
+<span class="code-command">sudo</span> apt install <span class="code-flag">-y</span> git curl wget vim nano htop tree net-tools</code></pre>
+                    </div>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Lista of Verification
+                        </h4>
+                        <ul class="verification-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                <code>wsl -l -v</code> arat Ubuntu-22.04 with VERSION 2
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                <code>lsb_release -a</code> arat Ubuntu 22.04.x LTS
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                <code>whoami</code> returneaz "stud"
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Docker -->
+            <div class="step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Installation Docker Engine</span>
+                        <span class="step-badge badge-wsl">In WSL</span>
+                    </div>
+                    <p class="step-description">
+                        <strong>Docker Engine</strong> allows rularea applicationslor in containere izolate. Instalam Docker direct in Ubuntu WSL2 
+                        (NU Docker Desktop!) for performance optim and control complet.
+                    </p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># 1. Installation dependente</span>
+<span class="code-command">sudo</span> apt install <span class="code-flag">-y</span> ca-certificates curl gnupg lsb-release
+
+<span class="code-comment"># 2. Adaugare cheie GPG Docker</span>
+<span class="code-command">sudo</span> mkdir <span class="code-flag">-p</span> /etc/apt/keyrings
+curl <span class="code-flag">-fsSL</span> https://download.docker.com/linux/ubuntu/gpg | <span class="code-command">sudo</span> gpg <span class="code-flag">--dearmor</span> <span class="code-flag">-o</span> /etc/apt/keyrings/docker.gpg
+
+<span class="code-comment"># 3. Adaugare repository Docker</span>
+<span class="code-command">echo</span> \
+  <span class="code-string">"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable"</span> | <span class="code-command">sudo</span> tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+<span class="code-comment"># 4. Installation Docker Engine</span>
+<span class="code-command">sudo</span> apt updata
+<span class="code-command">sudo</span> apt install <span class="code-flag">-y</span> docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+<span class="code-comment"># 5. Adaugare utilizator in grupul docker (pentru a rula far sudo)</span>
+<span class="code-command">sudo</span> usermod <span class="code-flag">-aG</span> docker <span class="code-var">$USER</span>
+
+<span class="code-comment"># 6. Pornire serviciu Docker</span>
+<span class="code-command">sudo</span> service docker start
+
+<span class="code-comment"># 7. Aplicare modificari of grup (sau relogati-va)</span>
+<span class="code-command">newgrp</span> docker</code></pre>
+                    </div>
+                    
+                    <p style="color: var(--text-secondary); margin: 16px 0;">Verificati instalarea:</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Verification versiune Docker</span>
+<span class="code-command">docker</span> <span class="code-flag">--version</span>
+<span class="code-comment"># Output: Docker version 28.x.x, build ...</span>
+
+<span class="code-comment"># Verification Docker Compose</span>
+<span class="code-command">docker</span> compose version
+<span class="code-comment"># Output: Docker Compose version v2.x.x</span>
+
+<span class="code-comment"># Test functionalitate</span>
+<span class="code-command">docker</span> run <span class="code-flag">--rm</span> hello-world</code></pre>
+                    </div>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Lista of Verification
+                        </h4>
+                        <ul class="verification-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                <code>docker --version</code> returneaz versiune 24.0+
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                <code>docker ps</code> works FARA sudo
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                <code>docker run --rm hello-world</code> afiseaz the message of succes
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 5: Portainer -->
+            <div class="step" id="step5">
+                <div class="step-number">5</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <path d="M3 9h18"/><path d="M9 21V9"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Installation Portainer CE</span>
+                        <span class="step-badge badge-critical">Port 9000 REZERVAT!</span>
+                    </div>
+                    <p class="step-description">
+                        <strong>Portainer Community Edition</strong> offers o interfat web for gestionarea containerelor Docker. 
+                        Este instrumentul main for managementul vizual al mediului of labtimetor.
+                    </p>
+                    
+                    <div class="ofrt ofrt-critical" style="margin: 16px 0;">
+                        <svg class="ofrt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <div class="ofrt-content">
+                            <h3>⚠️ PORTUL 9000 ESTE REZERVAT PERMANENT!</h3>
+                            <p>Niciun serviciu of labtimetor not must to foloseasc portul 9000! Scripturile of labtimetor NU must to opreasc or to reporneasc Portainer.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># 1. Creare volum for data persistente</span>
+<span class="code-command">docker</span> volume create portainer_data
+
+<span class="code-comment"># 2. Rulare container Portainer (PORTUL 9000!)</span>
+<span class="code-command">docker</span> run <span class="code-flag">-d</span> \
+  <span class="code-flag">-p</span> 9000:9000 \
+  <span class="code-flag">--name</span> portainer \
+  <span class="code-flag">--restart=always</span> \
+  <span class="code-flag">-v</span> /var/run/docker.sock:/var/run/docker.sock \
+  <span class="code-flag">-v</span> portainer_data:/data \
+  portainer/portainer-ce:latest
+
+<span class="code-comment"># 3. Verification c Portainer runs</span>
+<span class="code-command">docker</span> ps | grep portainer</code></pre>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/><path d="M12 8h.01"/>
+                            </svg>
+                            Aveti 5 MINUTE for configurare!
+                        </h4>
+                        <p>Dup prima pornire, must to creati contul of adminilayeror in 5 minutes. Altfel, va trebui to recreati containerul.</p>
+                    </div>
+                    
+                    <ol class="numbered-steps">
+                        <li>Openti browserul and navigati la: <a href="http://localhost:9000" target="_blank" style="color: var(--accent-blue);">http://localhost:9000</a></li>
+                        <li>Creati contul of adminilayeror:
+                            <ul style="margin-top: 8px; list-style: disc; padding-left: 20px;">
+                                <li><strong>Username:</strong> <code>stud</code></li>
+                                <li><strong>Password:</strong> <code>studstudstud</code> (minim 12 characters!)</li>
+                            </ul>
+                        </li>
+                        <li>Click on <strong>"Create user"</strong></li>
+                        <li>Selectati <strong>"Get Started"</strong></li>
+                        <li>Alegeti mediul <strong>"local"</strong> and click <strong>"Connect"</strong></li>
+                    </ol>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Lista of Verification
+                        </h4>
+                        <ul class="verification-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Portainer accesibil at http://localhost:9000
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Autentificare with stud / studstudstud works
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Dashboard-ul afiseaz mediul "local"
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 6: Wireshark -->
+            <div class="step" id="step6">
+                <div class="step-number">6</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/><path d="M12 8h.01"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Installation Wireshark</span>
+                        <span class="step-badge badge-windows">Windows</span>
+                    </div>
+                    <p class="step-description">
+                        <strong>Wireshark</strong> is analizorul of protocols utilizat for capturarea and analiza traficului of network. 
+                        Se installs on Windows and captureaz traficul WSL2 through interface virtual <code>vEthernet (WSL)</code>.
+                    </p>
+                    
+                    <ol class="numbered-steps">
+                        <li>Descarcati Wireshark of la: <a href="https://www.wireshark.org/download.html" target="_blank" style="color: var(--accent-blue);">https://www.wireshark.org/download.html</a></li>
+                        <li>Selectati <strong>Windows x64 Installer</strong></li>
+                        <li>Rulati installer-ul descarcat</li>
+                        <li>La componente, asecureati-v c <strong>Npcap</strong> is selectat</li>
+                        <li>La optiunile Npcap:
+                            <ul style="margin-top: 8px; list-style: disc; padding-left: 20px;">
+                                <li>✅ Bifati <strong>"Install Npcap in WinPcap API-compatible Mode"</strong></li>
+                                <li>✅ Bifati <strong>"Support raw 802.11 traffic"</strong> (optional)</li>
+                            </ul>
+                        </li>
+                        <li>Finalizati instalarea and lansati Wireshark</li>
+                    </ol>
+                    
+                    <div class="warning-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/><path d="M12 8h.01"/>
+                            </svg>
+                            Interfata correct: vEthernet (WSL)
+                        </h4>
+                        <p>Pentru a captura traficul containerelor Docker, selectati interface <strong>vEthernet (WSL)</strong>. WSL must to ruleze for a vedea this interfata!</p>
+                    </div>
+                    
+                    <h4 style="color: var(--text-primary); font-size: 1rem; margin: 20px 0 12px;">Filtre Wireshark Utile for Labtimetoare</h4>
+                    <table class="data-table">
+                        <tr>
+                            <th>Filtru</th>
+                            <th>Dewritesre</th>
+                            <th>Week</th>
+                        </tr>
+                        <tr>
+                            <td><code>icmp</code></td>
+                            <td>Pachete ping</td>
+                            <td>1-14</td>
+                        </tr>
+                        <tr>
+                            <td><code>tcp.port == 8080</code></td>
+                            <td>HTTP / Load Balancer</td>
+                            <td>8, 11, 14</td>
+                        </tr>
+                        <tr>
+                            <td><code>tcp.port == 9090</code></td>
+                            <td>Echo Server</td>
+                            <td>14</td>
+                        </tr>
+                        <tr>
+                            <td><code>tcp.port == 1883</code></td>
+                            <td>MQTT plaintext</td>
+                            <td>13</td>
+                        </tr>
+                        <tr>
+                            <td><code>tcp.port == 2525</code></td>
+                            <td>SMTP test</td>
+                            <td>12</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Lista of Verification
+                        </h4>
+                        <ul class="verification-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Wireshark starts far errors
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Interfata "vEthernet (WSL)" apare in lista
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                </svg>
+                                Captura on vEthernet (WSL) works
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 7: Python Essential -->
+            <div class="step" id="step7">
+                <div class="step-number">7</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Pachete Python Esentiof</span>
+                        <span class="step-badge badge-required">Obligatoriu</span>
+                    </div>
+                    <p class="step-description">
+                        Acestea are packageele Python <strong>obligatorii</strong> for all labtimetoarele. Far ele, exercitiile of basic not vor functiona.
+                    </p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Installation pip and venv</span>
+<span class="code-command">sudo</span> apt install <span class="code-flag">-y</span> python3-pip python3-venv
+
+<span class="code-comment"># Pachete OBLIGATORII for all labtimetoarele</span>
+pip3 install <span class="code-flag">--break-system-packages</span> \
+    docker \
+    scapy \
+    dpkt \
+    requests \
+    flask \
+    PyYAML \
+    coltimema \
+    pytest</code></pre>
+                    </div>
+                    
+                    <h4 style="color: var(--text-primary); font-size: 1rem; margin: 20px 0 12px;">Dewritesrea Pachetelor</h4>
+                    <table class="data-table">
+                        <tr>
+                            <th>Pachet</th>
+                            <th>Scop</th>
+                            <th>Utilizare in</th>
+                        </tr>
+                        <tr>
+                            <td><code>docker</code></td>
+                            <td>Client API Docker for Python</td>
+                            <td>Toate labtimetoarele</td>
+                        </tr>
+                        <tr>
+                            <td><code>scapy</code></td>
+                            <td>Manipulare and construire packagee</td>
+                            <td>Week 1-7, 13</td>
+                        </tr>
+                        <tr>
+                            <td><code>dpkt</code></td>
+                            <td>Parsare PCAP and packagee</td>
+                            <td>Week 1-7, 14</td>
+                        </tr>
+                        <tr>
+                            <td><code>requests</code></td>
+                            <td>Client HTTP</td>
+                            <td>Week 8-14</td>
+                        </tr>
+                        <tr>
+                            <td><code>flask</code></td>
+                            <td>Server HTTP</td>
+                            <td>Week 8, 11, 12</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Verification Installation
+                        </h4>
+                        <div class="code-block" style="margin-top: 12px;">
+                            <pre><code><span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import docker; print('docker OK')"</span>
+<span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import scapy.all; print('scapy OK')"</span>
+<span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import dpkt; print('dpkt OK')"</span>
+<span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import requests; print('requests OK')"</span>
+<span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import flask; print('flask OK')"</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 8: Python Advanced -->
+            <div class="step" id="step8">
+                <div class="step-number">8</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                                <polyline points="2 17 12 22 22 17"/>
+                                <polyline points="2 12 12 17 22 12"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Pachete Python Avansate</span>
+                        <span class="step-badge badge-optional">Rethe commandt</span>
+                    </div>
+                    <p class="step-description">
+                        Acestea are packageele necesare for labtimetoarele avansate (Weeksle 9-14). 
+                        Instalati-le now for a evita delays in timeul sesiunilor of labtimetor.
+                    </p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Pachete for Week 9-10 (FTP, SSH, DNS)</span>
+pip3 install <span class="code-flag">--break-system-packages</span> \
+    paramiko \
+    pyftpdlib \
+    dnspython
+
+<span class="code-comment"># Pachete for Week 12 (RPC)</span>
+pip3 install <span class="code-flag">--break-system-packages</span> \
+    grpcio \
+    grpcio-tools \
+    protobuf \
+    xmlrpc-client
+
+<span class="code-comment"># Pachete for Week 13 (IoT / MQTT)</span>
+pip3 install <span class="code-flag">--break-system-packages</span> \
+    paho-mqtt
+
+<span class="code-comment"># Instrumente of network suplimentare</span>
+<span class="code-command">sudo</span> apt install <span class="code-flag">-y</span> tcpdump tshark netcat-openbsd nmap iperf3 traceroute mtr</code></pre>
+                    </div>
+                    
+                    <h4 style="color: var(--text-primary); font-size: 1rem; margin: 20px 0 12px;">Utilizare on Weeks</h4>
+                    <table class="data-table">
+                        <tr>
+                            <th>Pachet</th>
+                            <th>Scop</th>
+                            <th>Week</th>
+                        </tr>
+                        <tr>
+                            <td><code>paramiko</code></td>
+                            <td>Client SSH for Python</td>
+                            <td>9, 10</td>
+                        </tr>
+                        <tr>
+                            <td><code>pyftpdlib</code></td>
+                            <td>Server FTP</td>
+                            <td>9</td>
+                        </tr>
+                        <tr>
+                            <td><code>dnspython</code></td>
+                            <td>Interogari DNS</td>
+                            <td>10, 11</td>
+                        </tr>
+                        <tr>
+                            <td><code>grpcio</code></td>
+                            <td>Framework gRPC</td>
+                            <td>12</td>
+                        </tr>
+                        <tr>
+                            <td><code>paho-mqtt</code></td>
+                            <td>Client MQTT</td>
+                            <td>13</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Verification Installation
+                        </h4>
+                        <div class="code-block" style="margin-top: 12px;">
+                            <pre><code><span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import paramiko; print('paramiko OK')"</span>
+<span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import paho.mqtt.client; print('paho-mqtt OK')"</span>
+<span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import grpc; print('grpcio OK')"</span>
+<span class="code-command">python3</span> <span class="code-flag">-c</span> <span class="code-string">"import dns.resolver; print('dnspython OK')"</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 9: Auto-start -->
+            <div class="step" id="step9">
+                <div class="step-number">9</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Configuration Auto-start Docker</span>
+                        <span class="step-badge badge-optional">Optional</span>
+                    </div>
+                    <p class="step-description">
+                        Configurati Docker to porneasc automat when opensti terminalul Ubuntu. 
+                        Aceasta elimin necesitatea of a rula manual <code>sudo service docker start</code> of each data.
+                    </p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># 1. Configuration sudo far parol for the service Docker</span>
+<span class="code-command">echo</span> <span class="code-string">"$USER ALL=(ALL) NOPASSWD: /usr/sbin/service docker *"</span> | <span class="code-command">sudo</span> tee /etc/sudoers.d/docker-service
+
+<span class="code-comment"># 2. Adaugare auto-start in .bashrc</span>
+<span class="code-command">cat</span> >> ~/.bashrc << <span class="code-string">'EOF'</span>
+
+<span class="code-comment"># Auto-start Docker service</span>
+if service docker status 2>&1 | grep -q "is not running"; then
+    sudo service docker start > /dev/null 2>&1
+fi
+<span class="code-string">EOF</span>
+
+<span class="code-comment"># 3. Aplicare modificari</span>
+<span class="code-command">source</span> ~/.bashrc</code></pre>
+                    </div>
+                    
+                    <div class="verification-box">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Test Auto-start
+                        </h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 8px 0;">
+                            Closeti all terminofle Ubuntu, then opensti unul new and verificati:
+                        </p>
+                        <div class="code-block" style="margin-top: 12px;">
+                            <pre><code><span class="code-comment"># Docker ar trebui to ruleze automat</span>
+<span class="code-command">docker</span> ps
+<span class="code-comment"># Output: Portainer and alte containere (dac exista)</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 10: Final Verification -->
+            <div class="step" id="step10">
+                <div class="step-number">10</div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <span class="step-title">Verification Final Completa</span>
+                        <span class="step-badge badge-required">Obligatoriu</span>
+                    </div>
+                    <p class="step-description">
+                        Executati scriptul of verification for a confirma c all components are instalate and configurate correct. 
+                        Descarcati scriptul or copiati-l manual.
+                    </p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL) — Descarcare Script</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Descarcati scriptul of verification</span>
+<span class="code-command">curl</span> <span class="code-flag">-o</span> verify_lab_environment.sh \
+  https://raw.githubusercontent.com/antonioclim/netROwsl/main/00INAINTEdeORICE/verify_lab_environment.sh
+
+<span class="code-comment"># Faceti-l executabil</span>
+<span class="code-command">chmod</span> +x verify_lab_environment.sh
+
+<span class="code-comment"># Rulati verificationa</span>
+<span class="code-command">./verify_lab_environment.sh</span></code></pre>
+                    </div>
+                    
+                    <h4 style="color: var(--text-primary); font-size: 1rem; margin: 20px 0 12px;">Test Manual Captur Wireshark</h4>
+                    <ol class="numbered-steps">
+                        <li>Openti <strong>Wireshark</strong> on Windows</li>
+                        <li>Selectati interface <strong>vEthernet (WSL)</strong> and porniti captura</li>
+                        <li>In terminalul Ubuntu, rulati the command of mhours jos:</li>
+                    </ol>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">Terminal Ubuntu (WSL)</span>
+                            <button class="copy-btn" onclick="copyCode(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                                Copiaza
+                            </button>
+                        </div>
+                        <pre><code><span class="code-comment"># Generare trafic ICMP of test dintr-un container Docker</span>
+<span class="code-command">docker</span> run <span class="code-flag">--rm</span> alpine ping <span class="code-flag">-c</span> 5 8.8.8.8</code></pre>
+                    </div>
+                    
+                    <ol class="numbered-steps" start="4">
+                        <li>In Wireshark, aplicati filtrul: <code>icmp</code></li>
+                        <li>Verificati c vedeti packageele <strong>Echo Request</strong> and <strong>Echo Reply</strong></li>
+                    </ol>
+                    
+                    <div style="margin-top: 20px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                        <img src="wireshark_capture_example.png" alt="Example captur ICMP Wireshark" style="width: 100%; display: block;" onerror="this.style.display='none'">
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 12px; text-align: center;">
+                        Example: Pachete ICMP between containerul Docker and Google DNS (8.8.8.8)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Complete -->
+        <div class="setup-complete" style="margin-top: 48px; animation: fadeInUp 0.6s ease-out 1.5s both;">
+            <div style="background: var(--bg-card); border: 2px solid var(--accent-green); border-radius: 20px; padding: 36px; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 16px;">🎉</div>
+                <h2 style="font-size: 1.75rem; margin-bottom: 12px; color: var(--accent-green);">Configuration Completa!</h2>
+                <p style="color: var(--text-secondary); max-width: 700px; margin: 0 auto;">
+                    Mediul of labtimetor is complet configurat. Acum puteti rula orice exercitiu of labtimetor of networks folosind containere Docker with analiz of trafic in Wireshark and management vizual through Portainer.
+                </p>
+                
+                <div style="display: flex; justify-content: center; gap: 20px; margin-top: 28px; flex-wrap: wrap;">
+                    <div style="background: var(--bg-code); padding: 14px 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Docker</div>
+                        <div style="color: var(--accent-green); font-weight: 600;">v28.2.2+</div>
+                    </div>
+                    <div style="background: var(--bg-code); padding: 14px 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Portainer</div>
+                        <div style="color: var(--accent-blue); font-weight: 600;">CE 2.33.6</div>
+                    </div>
+                    <div style="background: var(--bg-code); padding: 14px 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Wireshark</div>
+                        <div style="color: var(--accent-timenge); font-weight: 600;">4.4.x</div>
+                    </div>
+                    <div style="background: var(--bg-code); padding: 14px 24px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Python SDK</div>
+                        <div style="color: var(--accent-purple); font-weight: 600;">docker, scapy, dpkt, mqtt</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 16px; color: var(--text-primary);">📚 Repository-uri Disponibile</h3>
+                    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                        <a href="https://github.com/antonioclim/netENwsl" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(57, 186, 230, 0.15); border: 1px solid rgba(57, 186, 230, 0.3); padding: 10px 20px; border-radius: 8px; color: var(--accent-blue); text-dectimetion: none; transition: all 0.2s ease;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                            </svg>
+                            🇬🇧 netENwsl (Engleza)
+                        </a>
+                        <a href="https://github.com/antonioclim/netROwsl" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(127, 217, 98, 0.15); border: 1px solid rgba(127, 217, 98, 0.3); padding: 10px 20px; border-radius: 8px; color: var(--accent-green); text-dectimetion: none; transition: all 0.2s ease;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                            </svg>
+                            🇷🇴 netROwsl (Romana)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Port Reminder -->
+        <div style="margin-top: 32px; background: linear-gradient(135deg, rgba(240, 113, 120, 0.1) 0%, rgba(255, 153, 64, 0.1) 100%); border: 1px solid rgba(240, 113, 120, 0.3); border-radius: 16px; padding: 24px; text-align: center;">
+            <h3 style="color: var(--accent-red); font-size: 1.1rem; margin-bottom: 12px;">⚠️ RETINETI: Portul 9000 = Portainer</h3>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                In all labtimetoarele, <strong>portul 9000 is rezervat for Portainer</strong>. 
+                Serviciile of labtimetor folosesc porturile <strong>8080-8089</strong> (HTTP) and <strong>9001-9099</strong> (TCP/UDP).
+                <br><br>
+                Example: In Week 14, the server Echo uses portul <strong>9090</strong>, NU 9000!
+            </p>
+        </div>
+
+        <footer>
+            <div class="footer-brand">
+                <strong>Labtimetor Computer Networks</strong> – ASE Bucuresti, CSIE | by Revolvix
+            </div>
+            <div class="footer-links">
+                <a href="https://docs.docker.com/" target="_blank">Documentatie Docker</a>
+                <a href="https://www.portainer.io/documentation" target="_blank">Documentatie Portainer</a>
+                <a href="https://www.wireshark.org/docs/" target="_blank">Documentatie Wireshark</a>
+                <a href="https://learn.smallrosoft.com/en-us/windows/wsl/" target="_blank">Documentatie WSL</a>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 16px;">
+                Versiune documentatie: Ianuarie 2025 | Actualizat for netROwsl & netENwsl
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Copy code functionality
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const code = codeBlock.querySelector('code').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Copiat!';
+                button.style.color = 'var(--accent-green)';
+                button.style.borderColor = 'var(--accent-green)';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.color = '';
+                    button.style.borderColor = '';
+                }, 2000);
+            });
+        }
+        
+        // Progress bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+        });
+        
+        // Smooth scroll for TOC links
+        document.querySelectorAll('.toc-list a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-spath=1.0">
+    <title>Python for Networks | 2. Reading Python Code</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #121a2b;
+            --bg-tertiary: #1a2438;
+            --accent-primary: #00d4aa;
+            --accent-secondary: #7c3aed;
+            --accent-warning: #f59e0b;
+            --accent-error: #ef4444;
+            --accent-success: #10b981;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d3a4f;
+            --code-bg: #0d1117;
+            --font-display: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-display);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--bg-tertiary);
+            z-index: 1000;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.3s ease;
+        }
+
+        .nav-header {
+            position: fixed;
+            top: 4px;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, transparent 100%);
+            z-index: 100;
+        }
+
+        .nav-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-title .modulee { color: var(--accent-primary); font-weight: 600; }
+
+        .slide-counter {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        .slides-container {
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 5rem 2rem 6rem;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(100px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .slide.exit { transform: translateX(-100px); }
+
+        .slide-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent-primary);
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .lead { font-size: 1.3rem; color: var(--text-primary); font-weight: 500; }
+
+        code {
+            font-family: var(--font-mono);
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--accent-primary);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-time { background: rgba(0, 212, 170, 0.15); color: var(--accent-primary); }
+        .badge-week { background: rgba(124, 58, 237, 0.15); color: var(--accent-secondary); }
+        .badge-file { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-highlight { border-left: 4px solid var(--accent-primary); }
+        .card-warning { border-left: 4px solid var(--accent-warning); background: rgba(245, 158, 11, 0.05); }
+        .card-info { border-left: 4px solid var(--accent-secondary); background: rgba(124, 58, 237, 0.05); }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .objectives-box {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .objective-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .objective-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .objective-text { flex: 1; }
+        .objective-text strong { display: block; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .objective-text span { font-size: 0.95rem; color: var(--text-secondary); }
+
+        /* Code Block */
+        .code-container {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-filename {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .code-actions { display: flex; gap: 0.5rem; }
+
+        .btn-code {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: none;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-run { background: var(--accent-primary); color: var(--bg-primary); }
+        .btn-run:hover { background: #00e6b8; transform: translateY(-1px); }
+        .btn-copy { background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .btn-copy:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+
+        .code-body {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-body pre {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .code-output {
+            padding: 1rem;
+            background: rgba(0, 212, 170, 0.05);
+            border-top: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .code-output.visible { display: block; }
+
+        .code-output-header {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-output pre {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+
+        /* Syntax highlighting */
+        .kw { color: #ff79c6; }
+        .fn { color: #50fa7b; }
+        .str { color: #f1fa8c; }
+        .num { color: #bd93f9; }
+        .cmt { color: #6272a4; font-style: italic; }
+        .op { color: #ff79c6; }
+        .var { color: #f8f8f2; }
+        .cls { color: #8be9fd; }
+        .dec { color: #ff79c6; }
+        .type { color: #8be9fd; font-style: italic; }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .quiz-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .quiz-question {
+            font-size: 1.15rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
+
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover { border-color: var(--accent-primary); background: rgba(0, 212, 170, 0.05); }
+        .quiz-option.selected { border-color: var(--accent-secondary); background: rgba(124, 58, 237, 0.1); }
+        .quiz-option.correct { border-color: var(--accent-success); background: rgba(16, 185, 129, 0.1); }
+        .quiz-option.incorrect { border-color: var(--accent-error); background: rgba(239, 68, 68, 0.1); }
+
+        .option-marker {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-option.selected .option-marker { background: var(--accent-secondary); border-color: var(--accent-secondary); color: white; }
+        .quiz-option.correct .option-marker { background: var(--accent-success); border-color: var(--accent-success); }
+        .quiz-option.incorrect .option-marker { background: var(--accent-error); border-color: var(--accent-error); }
+
+        .quiz-actions { display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+
+        .btn-quiz {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-check { background: var(--accent-primary); color: var(--bg-primary); }
+        .btn-check:hover { background: #00e6b8; }
+        .btn-hint { background: transparent; color: var(--accent-warning); border: 1px solid var(--accent-warning); }
+        .btn-hint:hover { background: rgba(245, 158, 11, 0.1); }
+
+        .hint-box {
+            margin-top: 1rem;
+            padding: 1rem 1.25rem;
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--accent-warning);
+            border-radius: 0 8px 8px 0;
+            display: none;
+        }
+
+        .hint-box.visible { display: block; animation: fadeIn 0.3s ease; }
+
+        .hint-level {
+            font-size: 0.8rem;
+            color: var(--accent-warning);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-box {
+            margin-top: 1rem;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-box.visible { display: block; animation: fadeIn 0.3s ease; }
+        .feedback-box.success { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent-success); }
+        .feedback-box.error { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--accent-error); }
+
+        /* Experiment Box */
+        .experiment-box {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(0, 212, 170, 0.1) 100%);
+            border: 2px dashed var(--accent-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-icon { font-size: 2rem; }
+        .experiment-title { font-size: 1.3rem; font-weight: 700; color: var(--accent-secondary); }
+
+        .experiment-steps { margin-top: 1rem; }
+
+        .experiment-step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 { color: var(--text-primary); margin-bottom: 0.5rem; }
+        .step-content p { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .step-why { font-size: 0.85rem; color: var(--accent-primary); font-style: italic; }
+        .step-what { font-size: 0.85rem; color: var(--accent-secondary); }
+
+        /* Callout */
+        .callout {
+            display: flex;
+            gap: 1rem;
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        .callout-networking {
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+        }
+
+        .callout-icon { font-size: 1.5rem; }
+        .callout-content h4 { color: var(--accent-primary); margin-bottom: 0.5rem; }
+        .callout-content p { margin: 0; font-size: 0.95rem; }
+
+        /* Navigation */
+        .nav-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(0deg, var(--bg-primary) 0%, transparent 100%);
+            z-index: 100;
+        }
+
+        .btn-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-prev { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .btn-prev:hover:not(:disabled) { background: var(--bg-secondary); color: var(--text-primary); }
+        .btn-next { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; }
+        .btn-next:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0, 212, 170, 0.3); }
+        .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .page-dots { display: flex; gap: 0.5rem; }
+
+        .page-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .page-dot.active { background: var(--accent-primary); transform: spath(1.3); }
+        .page-dot:hover { background: var(--accent-secondary); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: spath(1); }
+            50% { transform: spath(1.05); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide { padding: 4rem 1rem 5rem; }
+            .nav-header { padding: 0.75rem 1rem; }
+            .nav-buttons { padding: 1rem; }
+            .btn-nav { padding: 0.6rem 1rem; font-size: 0.9rem; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .experiment-step { flex-direction: column; }
+            .comparison-table { font-size: 0.8rem; }
+            .comparison-table td { padding: 0.5rem; }
+        }
+
+        .title-slide {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+
+        .title-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .modulee-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+        }
+
+        .python-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        /* Annotation */
+        .code-annotation {
+            background: rgba(124, 58, 237, 0.2);
+            border-left: 3px solid var(--accent-secondary);
+            padding: 0.5rem 1rem;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .code-annotation strong {
+            color: var(--accent-secondary);
+        }
+
+        /* Line highlight */
+        .line-highlight {
+            background: rgba(0, 212, 170, 0.15);
+            display: block;
+            margin: 0 -1rem;
+            padding: 0 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="progress-bar" role="progressbar" id="progressBar"></div>
+    </div>
+
+    <nav class="nav-header">
+        <div class="nav-title">
+            <span class="modulee">Module 2/10</span>
+            <span>•</span>
+            <span>Reading Python Code</span>
+        </div>
+        <div class="slide-counter" aria-live="polite" id="slideCounter">1 / 12</div>
+    </nav>
+
+    <div class="slides-container" id="slidesContainer">
+        
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide" data-slide="1">
+            <div class="slide-content">
+                <div class="python-logo">📖</div>
+                <h1>Reading Python Code</h1>
+                <p class="lead">De at sintax at understandre profunda</p>
+                
+                <div class="title-meta">
+                    <span class="badge badge-time">⏱️ ~25 minutess</span>
+                    <span class="badge badge-week">📅 Weeks 1-2</span>
+                    <span class="badge badge-file">📁 01roWSL, 02roWSL</span>
+                </div>
+
+                <div class="modulee-badge">
+                    Modul 2: Aderstandrea Structurii and Sintaxei Python
+                </div>
+
+                <div class="callout callout-networking" style="max-width: 600px; margin: 2rem auto; text-align: left;">
+                    <span class="callout-icon">🌐</span>
+                    <div class="callout-content">
+                        <h4>Networking Correlation</h4>
+                        <p>In weekamanile 1-2 vei lucra with exercitii despre <strong>fundamente networks</strong>: latency ping, TCP/UDP basics. Acest module te pregateste to citesti and to intelegi acele scripturi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Objectives -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2>🎯 What we will learn in this module?</h2>
+                
+                <div class="objectives-box">
+                    <div class="objective-item">
+                        <div class="objective-icon">📝</div>
+                        <div class="objective-text">
+                            <strong>Structura unui fisier Python</strong>
+                            <span>Shebang, docstrings, imports - ce mean each linie of at inceput</span>
+                        </div>
+                    </div>
+                    
+                    <div class="objective-item">
+                        <div class="objective-icon">🏷️</div>
+                        <div class="objective-text">
+                            <strong>Type Hints and Dataclasses</strong>
+                            <span>Cum Python documenteaz tipurile and creates structuri of data clare</span>
+                        </div>
+                    </div>
+                    
+                    <div class="objective-item">
+                        <div class="objective-icon">🔄</div>
+                        <div class="objective-text">
+                            <strong>Comparatie with C/JavaScript</strong>
+                            <span>Echivofnte faste for programmeri with experient in alte limbaje</span>
+                        </div>
+                    </div>
+                    
+                    <div class="objective-item">
+                        <div class="objective-icon">🔍</div>
+                        <div class="objective-text">
+                            <strong>Citirea exercitiilor reof</strong>
+                            <span>Analizam impreun <code>ex_1_01_latenta_ping.py</code> linie with linie</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-highlight">
+                    <h3>💡 Why it matters?</h3>
+                    <p>Exercitiile of labtimetor contin cod functional with sectiuni <code>TODO</code>. Pentru a le completa, must mhours intai to intelegi ce face codul existent. Aceast abilitate te va ajuta and when citesti documentatie or examples online.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: File Structure -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h2>📄 Anatomia unui Fisier Python</h2>
+                
+                <p>Fiecare exercitiu from kit-uri urmeaz o structur standard. S analizam components:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 ex_1_01_latenta_ping.py (structura)</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-copy" onclick="copyCode(this)">📋 Copiaza</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="line-highlight"><span class="cmt">#!/usr/bin/env python3</span>                           <span class="cmt"># ① Shebang</span></span>
+<span class="str">"""
+Exercisel 1.01: Masurarea Latentei with Ping      <span class="cmt"># ② Docstring</span>
+Curs RETELE DE CALCULATOARE - ASE, Informatica
+
+Concepte cheie: ICMP, RTT, latency, jitter
+"""</span>
+
+<span class="kw">from</span> __future__ <span class="kw">import</span> annotations              <span class="cmt"># ③ Imports</span>
+<span class="kw">import</span> subprocess
+<span class="kw">import</span> argparse
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+<span class="kw">from</span> typing <span class="kw">import</span> Optional, List
+
+<span class="dec">@dataclass</span>                                        <span class="cmt"># ④ Data classes</span>
+<span class="kw">class</span> <span class="cls">RezultatPing</span>:
+    secventa: <span class="type">int</span>
+    rtt_ms: <span class="type">Optional[float]</span>
+    reusit: <span class="type">bool</span>
+
+<span class="kw">def</span> <span class="fn">masoara_latenta</span>(gazda: <span class="type">str</span>) -> <span class="type">float</span>:       <span class="cmt"># ⑤ Functii</span>
+    <span class="str">"""Masoar latenta medie to un host."""</span>
+    <span class="cmt"># implementare...</span>
+    <span class="kw">pass</span>
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:                        <span class="cmt"># ⑥ Entry point</span>
+    main()</pre>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h4>① Shebang</h4>
+                        <p><code>#!/usr/bin/env python3</code></p>
+                        <p class="step-why">Spune the systemui to foloseasc Python 3 for a rula scriptul</p>
+                    </div>
+                    <div class="card">
+                        <h4>② Docstring</h4>
+                        <p>Text between <code>"""triple quotes"""</code></p>
+                        <p class="step-why">Documentatia moduleului - dewrites scopul and conceptele</p>
+                    </div>
+                    <div class="card">
+                        <h4>③ Imports</h4>
+                        <p>Import modulee necesare</p>
+                        <p class="step-why">Standard library first, then third-party, then lopath</p>
+                    </div>
+                    <div class="card">
+                        <h4>⑥ Entry Point</h4>
+                        <p><code>if __name__ == "__main__"</code></p>
+                        <p class="step-why">Codul of aici runs only when the file e executat direct</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Dataclasses -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2>🏷️ Dataclasses - Structuri of Date Elegante</h2>
+                
+                <p>Python uses <code>@dataclass</code> for a crea structuri similare with <code>struct</code> from C. Dectimetorul genereaz automat <code>__init__</code>, <code>__repr__</code>, and alte metode.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>Python with @dataclass</h3>
+                        <div class="code-container">
+                            <div class="code-header">
+                                <span class="code-filename">🐍 Python</span>
+                            </div>
+                            <div class="code-body">
+<pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="cls">RezultatPing</span>:
+    <span class="str">"""Rezultatul unui ping."""</span>
+    secventa: <span class="type">int</span>
+    rtt_ms: <span class="type">Optional[float]</span>
+    reusit: <span class="type">bool</span>
+    message: <span class="type">str</span> = <span class="str">""</span>  <span class="cmt"># valoare implicita</span>
+
+<span class="cmt"># Utilizare</span>
+r = RezultatPing(
+    secventa=<span class="num">1</span>,
+    rtt_ms=<span class="num">0.42</span>,
+    reusit=<span class="kw">True</span>
+)
+<span class="fn">print</span>(r.secventa)  <span class="cmt"># 1</span>
+<span class="fn">print</span>(r)  <span class="cmt"># RezultatPing(secventa=1, ...)</span></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Echivaslow in C</h3>
+                        <div class="code-container">
+                            <div class="code-header">
+                                <span class="code-filename">📄 C</span>
+                            </div>
+                            <div class="code-body">
+<pre><span class="kw">typedef struct</span> {
+    <span class="type">int</span> secventa;
+    <span class="type">float</span> rtt_ms;     <span class="cmt">// not can fi NULL</span>
+    <span class="type">bool</span> reusit;
+    <span class="type">char</span> message[<span class="num">256</span>];
+} RezultatPing;
+
+<span class="cmt">// Utilizare</span>
+RezultatPing r;
+r.secventa = <span class="num">1</span>;
+r.rtt_ms = <span class="num">0.42</span>;
+r.reusit = <span class="kw">true</span>;
+strcpy(r.message, <span class="str">""</span>);
+
+printf(<span class="str">"%d"</span>, r.secventa);  <span class="cmt">// 1</span>
+<span class="cmt">// Nu exist print automat!</span></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-info">
+                    <h3>🔑 Concepte Cheie</h3>
+                    <p><strong>Optional[float]</strong> = valoarea can fi <code>float</code> or <code>None</code> (echivaslow with nullable in alte limbaje)</p>
+                    <p><strong>@dataclass</strong> = dectimetor which adaug automat constructor, <code>__repr__</code>, comparatii</p>
+                    <p><strong>message: str = ""</strong> = parameter with valoare implicit (nu must specificat at creare)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Type Hints -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h2>📐 Type Hints - Documentare Tipuri</h2>
+                
+                <p>Python is <strong>dinasmall tipizat</strong> (nu check tipurile at compilare), but allows <strong>adnotari of tip</strong> for documentare and tool-uri of verification.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 type_hints_example.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-run" onclick="simulateRun(this, 'output-types')">▶ Run</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="cmt"># Functie far type hints (greu of inteles)</span>
+<span class="kw">def</span> <span class="fn">processesaza</span>(data, numar):
+    <span class="kw">return</span> data * numar
+
+<span class="cmt"># Functie CU type hints (clar!)</span>
+<span class="kw">def</span> <span class="fn">processesaza_clar</span>(data: <span class="type">str</span>, numar: <span class="type">int</span> = <span class="num">1</span>) -> <span class="type">str</span>:
+    <span class="str">"""Repet string-ul of 'numar' ori."""</span>
+    <span class="kw">return</span> data * numar
+
+<span class="cmt"># Tipuri complexe</span>
+<span class="kw">from</span> typing <span class="kw">import</span> List, Dict, Optional, Tuple
+
+<span class="kw">def</span> <span class="fn">analizeaza_retea</span>(
+    ip_uri: <span class="type">List[str]</span>,                    <span class="cmt"># List of string-uri</span>
+    config: <span class="type">Dict[str, int]</span>,               <span class="cmt"># Dictionar str→int</span>
+    timeout: <span class="type">Optional[float]</span> = <span class="kw">None</span>       <span class="cmt"># Float or None</span>
+) -> <span class="type">Tuple[int, List[str]]</span>:              <span class="cmt"># Returns tuplu</span>
+    <span class="str">"""Analizeaz o list of IP-uri."""</span>
+    <span class="kw">pass</span>
+
+<span class="cmt"># Test</span>
+rezultat = processesaza_clar(<span class="str">"test"</span>, <span class="num">3</span>)
+<span class="fn">print</span>(<span class="str">f"Rezultat: </span>{rezultat}<span class="str">"</span>)</pre>
+                    </div>
+                    <div class="code-output" id="output-types">
+                        <div class="code-output-header">Output</div>
+<pre>Rezultat: testtesttest</pre>
+                    </div>
+                </div>
+
+                <div class="card card-warning">
+                    <h3>⚠️ Important</h3>
+                    <p>Type hints are <strong>only documentatie</strong> - Python NU le check at runtime! Poti trece orice tip and codul va rula. Tool-uri such as <code>mypy</code> le check static.</p>
+                </div>
+
+                <div class="callout callout-networking">
+                    <span class="callout-icon">🌐</span>
+                    <div class="callout-content">
+                        <h4>In contextul Networking</h4>
+                        <p>Vei vedea des: <code>host: str</code>, <code>port: int</code>, <code>data: bytes</code>, <code>timeout: Optional[float]</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Syntax Comparison -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2>🔄 Comparatie Rapida: Python vs C vs JavaScript</h2>
+                
+                <p>If ai experient in alte limbaje, this tabel te ajut to "traduci" fast:</p>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Concept</th>
+                            <th>C / Java</th>
+                            <th>JavaScript</th>
+                            <th>Python</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Variabila</td>
+                            <td><span class="type">int</span> x = <span class="num">5</span>;</td>
+                            <td><span class="kw">let</span> x = <span class="num">5</span>;</td>
+                            <td>x = <span class="num">5</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Functie</td>
+                            <td><span class="type">int</span> <span class="fn">f</span>(<span class="type">int</span> x) {...}</td>
+                            <td><span class="kw">function</span> <span class="fn">f</span>(x) {...}</td>
+                            <td><span class="kw">def</span> <span class="fn">f</span>(x):</td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Conditie</td>
+                            <td><span class="kw">if</span> (x > <span class="num">0</span>) {...}</td>
+                            <td><span class="kw">if</span> (x > <span class="num">0</span>) {...}</td>
+                            <td><span class="kw">if</span> x > <span class="num">0</span>:</td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Bucl for</td>
+                            <td><span class="kw">for</span>(<span class="type">int</span> i=<span class="num">0</span>; i&lt;n; i++)</td>
+                            <td><span class="kw">for</span>(<span class="kw">let</span> i=<span class="num">0</span>; i&lt;n; i++)</td>
+                            <td><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):</td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Array/Lista</td>
+                            <td><span class="type">int</span> arr[] = {<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>}</td>
+                            <td><span class="kw">let</span> arr = [<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>]</td>
+                            <td>arr = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]</td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Dictionar</td>
+                            <td>HashMap&lt;&gt;</td>
+                            <td>{key: value}</td>
+                            <td>{key: value}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Null</td>
+                            <td><span class="kw">NULL</span> / <span class="kw">null</span></td>
+                            <td><span class="kw">null</span> / <span class="kw">undefined</span></td>
+                            <td><span class="kw">None</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Boolean</td>
+                            <td><span class="kw">true</span> / <span class="kw">false</span></td>
+                            <td><span class="kw">true</span> / <span class="kw">false</span></td>
+                            <td><span class="kw">True</span> / <span class="kw">False</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">AND / OR</td>
+                            <td>&& / ||</td>
+                            <td>&& / ||</td>
+                            <td><span class="kw">and</span> / <span class="kw">or</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: var(--font-display); color: var(--text-secondary);">Lungime</td>
+                            <td>strlen(s) / arr.length</td>
+                            <td>s.length / arr.length</td>
+                            <td><span class="fn">len</span>(s) / <span class="fn">len</span>(arr)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="card card-highlight">
+                    <h3>🔑 Diferenta Esentiala</h3>
+                    <p>Python uses <strong>indentarea</strong> for a delimita blocurile of cod, not acolade <code>{}</code>. Indentarea wrong = error of sintaxa!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Real Code Analysis -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h2>🔍 Analiz Cod Real: ex_1_01_latenta_ping.py</h2>
+                
+                <p>S analizam un fragment real from exercitiul of week 1:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 01roWSL/src/exercises/ex_1_01_latenta_ping.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-copy" onclick="copyCode(this)">📋 Copiaza</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="cls">RezultatPing</span>:
+    <span class="str">"""Stocheaz the result unui singur ping."""</span>
+    secventa: <span class="type">int</span>                 <span class="cmt"># Numarul packageului (1, 2, 3...)</span>
+    rtt_ms: <span class="type">Optional[float]</span>       <span class="cmt"># Round-Trip Time in milisecunde</span>
+    reusit: <span class="type">bool</span>                  <span class="cmt"># True if packageul a ajuns</span>
+    message: <span class="type">str</span> = <span class="str">""</span>               <span class="cmt"># Message optional of error</span>
+
+
+<span class="kw">def</span> <span class="fn">ruleaza_ping</span>(gazda: <span class="type">str</span>, numar: <span class="type">int</span> = <span class="num">3</span>) -> <span class="type">List[RezultatPing]</span>:
+    <span class="str">"""
+    Execut ping to o gazd and colecteaz resultsle.
+    
+    Args:
+        gazda: IP Address or hostname (ex: "8.8.8.8", "google.com")
+        numar: Cate packagee ICMP to trimit (implicit 3)
+    
+    Returns:
+        List of RezultatPing for each package
+    """</span>
+    results = []  <span class="cmt"># List goal for results</span>
+    
+    <span class="cmt"># Construieste the command ping</span>
+    cmd = [<span class="str">"ping"</span>, <span class="str">"-c"</span>, <span class="fn">str</span>(numar), gazda]
+    
+    <span class="cmt"># Execut the command and captureaz output-ul</span>
+    proces = subprocess.<span class="fn">run</span>(cmd, capture_output=<span class="kw">True</span>, text=<span class="kw">True</span>)
+    
+    <span class="cmt"># Parseaz output-ul (detalii in exercitiu)</span>
+    <span class="cmt"># TODO: Implementeaz parsarea</span>
+    
+    <span class="kw">return</span> results</pre>
+                    </div>
+                </div>
+
+                <div class="code-annotation">
+                    <strong>📌 Ce observam:</strong> Functia are un docstring which explain parametrii (<code>Args:</code>) and ce returneaz (<code>Returns:</code>). Aceasta is conventia standard in Python.
+                </div>
+
+                <div class="grid-2" style="margin-top: 1.5rem;">
+                    <div class="card">
+                        <h4>🌐 Linka with Networking</h4>
+                        <p><code>rtt_ms</code> = Round-Trip Time - timeul for packageul ICMP to ajung at destinatie and inapoi</p>
+                        <p><code>subprocess.run(["ping", ...])</code> = execut the command <code>ping</code> from terminal</p>
+                    </div>
+                    <div class="card">
+                        <h4>🐍 Linka with Python</h4>
+                        <p><code>List[RezultatPing]</code> = the function returns o list of obiecte RezultatPing</p>
+                        <p><code>numar: int = 3</code> = parameter optional with valoare implicita</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Experiment -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h2>🧪 Experiment: Explhoursaz Codul</h2>
+
+                <div class="experiment-box">
+                    <div class="experiment-header">
+                        <span class="experiment-icon">🔬</span>
+                        <span class="experiment-title">Citirea and Modificarea unui Exercise</span>
+                    </div>
+                    <p>Vom opens un exercitiu real, vom identifica components and vom face o small modificare.</p>
+
+                    <div class="experiment-steps">
+                        <div class="experiment-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Open the file in editor</h4>
+                                <p><code>code /mnt/d/NETWORKING/netROwsl/01roWSL/src/exercises/ex_1_01_latenta_ping.py</code></p>
+                                <p class="step-why">🎯 De ce: VS Code can opens files direct from WSL</p>
+                                <p class="step-what">👀 Ce vei vedea: Fisierul Python with syntax highlighting</p>
+                            </div>
+                        </div>
+
+                        <div class="experiment-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Identific sectiunile</h4>
+                                <p>Gaseste: shebang (linia 1), docstring (primele linii with """), imports, @dataclass, functiile</p>
+                                <p class="step-why">🎯 De ce: Exersezi pattern recognition on cod real</p>
+                                <p class="step-what">👀 Ce vei vedea: Structura on which am discutat-o in slide-urile anterioare</p>
+                            </div>
+                        </div>
+
+                        <div class="experiment-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Gaseste TODO-urile</h4>
+                                <p>Caut in fisier <code># TODO</code> or <code># COMPLETEAZA</code></p>
+                                <p class="step-why">🎯 De ce: Acestea are sectiunile on which must to le completezi in labtimetor</p>
+                                <p class="step-what">👀 Ce vei vedea: Locurile where must to scrii cod</p>
+                            </div>
+                        </div>
+
+                        <div class="experiment-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Modific valoarea implicita</h4>
+                                <p>Gaseste <code>numar: int = 3</code> and schimb in <code>numar: int = 5</code></p>
+                                <p class="step-why">🎯 De ce: Experimentezi c poti modifica comportamentul implicit</p>
+                                <p class="step-what">👀 Ce vei invata: Cum parametrii impliciti afecteaz executia</p>
+                            </div>
+                        </div>
+
+                        <div class="experiment-step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>Run and observ diferenta</h4>
+                                <p><code>python3 src/exercises/ex_1_01_latenta_ping.py --gazda 127.0.0.1</code></p>
+                                <p class="step-why">🎯 De ce: Verifici c modificarea a avut efect</p>
+                                <p class="step-what">👀 Ce vei vedea: Acum sends 5 packagee in loc of 3</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Quiz 1 -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h2>📝 Quiz: Check-ti Aderstandrea</h2>
+
+                <div class="quiz-container" id="quiz1">
+                    <div class="quiz-header">
+                        <div class="quiz-icon">🧠</div>
+                        <div>
+                            <h3 style="margin: 0;">Quiz 1: Dataclasses</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Questiona 1 from 3</p>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        What does dectimetorul <code>@dataclass</code> in Python?
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')">
+                            <span class="option-marker">A</span>
+                            <span>Transform clasa intr-o function</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')" data-correct="true">
+                            <span class="option-marker">B</span>
+                            <span>Genereaz automat __init__, __repr__ and alte metode for clasa of data</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')">
+                            <span class="option-marker">C</span>
+                            <span>Check tipurile at runtime and arunc errors</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz1')">
+                            <span class="option-marker">D</span>
+                            <span>Converteste clasa in format JSON automat</span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-quiz btn-check" onclick="checkAnswer('quiz1')">Check</button>
+                        <button class="btn-quiz btn-hint" onclick="showHint('quiz1', 1)">💡 Hint</button>
+                    </div>
+
+                    <div class="hint-box" id="quiz1-hint1">
+                        <div class="hint-level">Hint 1/3</div>
+                        <p>Gandeste-te at ce scrii in mod normal when creezi o class. Ce metode must to implementezi manual for a putea crea instante and a le afisa?</p>
+                    </div>
+                    <div class="hint-box" id="quiz1-hint2">
+                        <div class="hint-level">Hint 2/3</div>
+                        <p>In C, when folosesti <code>struct</code>, must to initializezi manual each camp. <code>@dataclass</code> elimin this necesitate in Python.</p>
+                    </div>
+                    <div class="hint-box" id="quiz1-hint3">
+                        <div class="hint-level">Hint 3/3</div>
+                        <p><code>@dataclass</code> = "data class" = class for data. Genereaz constructor (<code>__init__</code>), reprezentare text (<code>__repr__</code>), comparatii (<code>__eq__</code>) automat.</p>
+                    </div>
+
+                    <div class="feedback-box" id="quiz1-feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Quiz 2 -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <div class="quiz-container" id="quiz2">
+                    <div class="quiz-header">
+                        <div class="quiz-icon">🧠</div>
+                        <div>
+                            <h3 style="margin: 0;">Quiz 2: Type Hints</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Questiona 2 from 3</p>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        What does <code>Optional[float]</code> in contextul type hints?
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')">
+                            <span class="option-marker">A</span>
+                            <span>Valoarea is obligatoriu un float</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')">
+                            <span class="option-marker">B</span>
+                            <span>Parametrul is optional and can fi omis</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')" data-correct="true">
+                            <span class="option-marker">C</span>
+                            <span>Valoarea can fi fie float, fie None</span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz2')">
+                            <span class="option-marker">D</span>
+                            <span>Valoarea va fi convertit automat at float</span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-quiz btn-check" onclick="checkAnswer('quiz2')">Check</button>
+                        <button class="btn-quiz btn-hint" onclick="showHint('quiz2', 1)">💡 Hint</button>
+                    </div>
+
+                    <div class="hint-box" id="quiz2-hint1">
+                        <div class="hint-level">Hint 1/3</div>
+                        <p>In contextul networking, of ce ar fi <code>rtt_ms</code> (Round-Trip Time) optional? Ce se intampl when un package not ajunge?</p>
+                    </div>
+                    <div class="hint-box" id="quiz2-hint2">
+                        <div class="hint-level">Hint 2/3</div>
+                        <p>"Optional" in type hints not mean c parameterl can fi omis. Se refer at tipul valorii. <code>Optional[X]</code> = <code>Aion[X, None]</code></p>
+                    </div>
+                    <div class="hint-box" id="quiz2-hint3">
+                        <div class="hint-level">Hint 3/3</div>
+                        <p>If ping-ul fails, not avem un RTT valid. In loc to folosim o valoare magic (-1), folosim <code>None</code> for a indica "far valoare".</p>
+                    </div>
+
+                    <div class="feedback-box" id="quiz2-feedback"></div>
+                </div>
+
+                <div class="quiz-container" id="quiz3" style="margin-top: 2rem;">
+                    <div class="quiz-header">
+                        <div class="quiz-icon">🧠</div>
+                        <div>
+                            <h3 style="margin: 0;">Quiz 3: Sintax Python</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Questiona 3 from 3</p>
+                        </div>
+                    </div>
+
+                    <div class="quiz-question">
+                        Care is echivaslowul Python for <code>for (int i = 0; i < 10; i++)</code> from C?
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')">
+                            <span class="option-marker">A</span>
+                            <span><code>for (i = 0; i < 10; i++):</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')">
+                            <span class="option-marker">B</span>
+                            <span><code>for i = 0 to 10:</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')" data-correct="true">
+                            <span class="option-marker">C</span>
+                            <span><code>for i in range(10):</code></span>
+                        </div>
+                        <div class="quiz-option" onclick="selectOption(this, 'quiz3')">
+                            <span class="option-marker">D</span>
+                            <span><code>fhoursach i in [0..10]:</code></span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-actions">
+                        <button class="btn-quiz btn-check" onclick="checkAnswer('quiz3')">Check</button>
+                        <button class="btn-quiz btn-hint" onclick="showHint('quiz3', 1)">💡 Hint</button>
+                    </div>
+
+                    <div class="hint-box" id="quiz3-hint1">
+                        <div class="hint-level">Hint 1/3</div>
+                        <p>Python uses the word cheie <code>for ... in ...</code> for all iteratiile. Nu are sintax with paranteze and punct-virgula.</p>
+                    </div>
+                    <div class="hint-box" id="quiz3-hint2">
+                        <div class="hint-level">Hint 2/3</div>
+                        <p><code>range(n)</code> genereaz numerele of at 0 at n-1. Deci <code>range(10)</code> produce 0, 1, 2, ..., 9</p>
+                    </div>
+                    <div class="hint-box" id="quiz3-hint3">
+                        <div class="hint-level">Hint 3/3</div>
+                        <p>Blocul of cod se delimiteaz through indentare (spatii), not through acolade. Linia <code>for</code> se finishes with <code>:</code></p>
+                    </div>
+
+                    <div class="feedback-box" id="quiz3-feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Code Sandbox -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <h2>💻 Sandbox: Experimenteaz with Codul</h2>
+                
+                <p>Modific codul and observ resultsle. Aceasta is o simulare - in practica, rulezi in terminal.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">🐍 sandbox_dataclass.py</span>
+                        <div class="code-actions">
+                            <button class="btn-code btn-run" onclick="simulateRun(this, 'sandbox-output')">▶ Run</button>
+                            <button class="btn-code btn-copy" onclick="copyCode(this)">📋 Copiaza</button>
+                        </div>
+                    </div>
+                    <div class="code-body">
+<pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="cls">InfoPachet</span>:
+    <span class="str">"""Informatii despre un package of network."""</span>
+    ip_sursa: <span class="type">str</span>
+    ip_dest: <span class="type">str</span>
+    protocol: <span class="type">str</span>
+    dimensiune: <span class="type">int</span>
+    ttl: <span class="type">Optional[int]</span> = <span class="kw">None</span>
+
+<span class="cmt"># Creaz un package TCP</span>
+package_tcp = InfoPachet(
+    ip_sursa=<span class="str">"192.168.1.100"</span>,
+    ip_dest=<span class="str">"8.8.8.8"</span>,
+    protocol=<span class="str">"TCP"</span>,
+    dimensiune=<span class="num">1500</span>,
+    ttl=<span class="num">64</span>
+)
+
+<span class="cmt"># Creaz un package UDP far TTL specificat</span>
+package_udp = InfoPachet(
+    ip_sursa=<span class="str">"192.168.1.100"</span>,
+    ip_dest=<span class="str">"1.1.1.1"</span>,
+    protocol=<span class="str">"UDP"</span>,
+    dimensiune=<span class="num">512</span>
+)
+
+<span class="fn">print</span>(<span class="str">"Pachet TCP:"</span>)
+<span class="fn">print</span>(<span class="str">f"  De la: </span>{package_tcp.ip_sursa}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"  Catre: </span>{package_tcp.ip_dest}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"  TTL: </span>{package_tcp.ttl}<span class="str">"</span>)
+
+<span class="fn">print</span>(<span class="str">f"\nPachet UDP (TTL neinitializat): </span>{package_udp.ttl}<span class="str">"</span>)
+<span class="fn">print</span>(<span class="str">f"\nReprezentare completa:\n</span>{package_tcp}<span class="str">"</span>)</pre>
+                    </div>
+                    <div class="code-output" id="sandbox-output">
+                        <div class="code-output-header">Output</div>
+<pre>Pachet TCP:
+  De la: 192.168.1.100
+  Catre: 8.8.8.8
+  TTL: 64
+
+Pachet UDP (TTL neinitializat): None
+
+Reprezentare completa:
+InfoPachet(ip_sursa='192.168.1.100', ip_dest='8.8.8.8', protocol='TCP', dimensiune=1500, ttl=64)</pre>
+                    </div>
+                </div>
+
+                <div class="card card-highlight">
+                    <h3>💡 Ce observam?</h3>
+                    <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                        <li><code>@dataclass</code> a generat automat constructorul - not am scris <code>__init__</code></li>
+                        <li><code>print(package_tcp)</code> afiseaz all campurile automat - not am scris <code>__repr__</code></li>
+                        <li><code>ttl</code> are valoare implicit <code>None</code> - can fi omis at creare</li>
+                        <li>Codul is clar and expresiv - structura datalor e evidenta</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Summary -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h2>✅ Summary & Pasii Urmatori</h2>
+
+                <div class="grid-2">
+                    <div class="card card-highlight">
+                        <h3>📌 What we learnt</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ Structura standard a unui fisier Python (shebang, docstring, imports)
+                            </li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ <code>@dataclass</code> for structuri of data elegante
+                            </li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ Type hints (<code>str</code>, <code>int</code>, <code>Optional</code>, <code>List</code>)
+                            </li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                ✓ Echivofnte sintactice C/JS → Python
+                            </li>
+                            <li style="padding: 0.5rem 0;">
+                                ✓ Cum to citesti and analizezi un exercitiu real
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>🚀 Next Module</h3>
+                        <p style="font-size: 1.1rem; color: var(--accent-primary); font-weight: 600;">
+                            Modul 3: Data Types for Networking
+                        </p>
+                        <p>Vei invata despre:</p>
+                        <ul style="color: var(--text-secondary); margin-top: 0.5rem;">
+                            <li><code>bytes</code> vs <code>str</code> - esential for sockets</li>
+                            <li><code>encode()</code> and <code>decode()</code></li>
+                            <li>List/Dict comprehensions</li>
+                        </ul>
+                        <p style="margin-top: 1rem;">
+                            <span class="badge badge-week">📅 Correlated with Week 2-3</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="callout callout-networking" style="margin-top: 2rem;">
+                    <span class="callout-icon">🌐</span>
+                    <div class="callout-content">
+                        <h4>Aplicatie Practic in Labtimetor</h4>
+                        <p>Acum poti opens orice exercitiu from <code>01roWSL</code> or <code>02roWSL</code> and to intelegi structura. Identific dataclasses folosite for a reprezenta packagee, results ping, connections.</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p style="color: var(--text-muted);">
+                        Modulul 2 complet! 🎉<br>
+                        Cand esti pregatit, continu with Modulul 3.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn-nav btn-prev" id="btnPrev" onclick="prevSlide()" disabled>← Back</button>
+        <div class="page-dots" id="pageDots"></div>
+        <button class="btn-nav btn-next" id="btnNext" onclick="nextSlide()">Continue →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 12;
+        const quizHintCounts = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updataUI();
+            createPageDots();
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+                else if (e.key === 'ArrowLeft') { prevSlide(); }
+            });
+        });
+
+        function createPageDots() {
+            const container = document.getElementById('pageDots');
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'page-dot' + (i === 1 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function updataUI() {
+            document.getElementById('progressBar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+            document.getElementById('slideCounter').textContent = `${currentSlide} / ${totalSlides}`;
+            document.getElementById('btnPrev').disabled = currentSlide === 1;
+            document.getElementById('btnNext').textContent = currentSlide === totalSlides ? 'Finish ✓' : 'Continue →';
+            document.querySelectorAll('.page-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i + 1 === currentSlide);
+            });
+        }
+
+        function goToSlide(n) {
+            if (n < 1 || n > totalSlides || n === currentSlide) return;
+            const currentEl = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+            const nextEl = document.querySelector(`.slide[data-slide="${n}"]`);
+            currentEl.classList.remove('active');
+            currentEl.classList.add('exit');
+            setTimeout(() => {
+                currentEl.classList.remove('exit');
+                nextEl.classList.add('active');
+                currentSlide = n;
+                updataUI();
+            }, 100);
+        }
+
+        function nextSlide() { if (currentSlide < totalSlides) goToSlide(currentSlide + 1); }
+        function prevSlide() { if (currentSlide > 1) goToSlide(currentSlide - 1); }
+
+        function simulateRun(btn, outputId) {
+            const output = document.getElementById(outputId);
+            btn.textContent = '⏳ Run...';
+            btn.disabled = true;
+            setTimeout(() => {
+                output.classList.add('visible');
+                btn.textContent = '▶ Run';
+                btn.disabled = false;
+            }, 800);
+        }
+
+        function copyCode(btn) {
+            const container = btn.closest('.code-container');
+            const code = container.querySelector('pre').textContent;
+            navigator.clipboard.writeText(code);
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Copiat!';
+            setTimeout(() => btn.textContent = originalText, 1500);
+        }
+
+        function selectOption(el, quizId) {
+            const container = document.getElementById(quizId);
+            container.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+            el.classList.add('selected');
+            document.getElementById(`${quizId}-feedback`).classList.remove('visible');
+        }
+
+        function checkAnswer(quizId) {
+            const container = document.getElementById(quizId);
+            const selected = container.querySelector('.quiz-option.selected');
+            const feedback = document.getElementById(`${quizId}-feedback`);
+            
+            if (!selected) {
+                feedback.innerHTML = '<p style="color: var(--accent-warning);">⚠️ Selecteaz un response!</p>';
+                feedback.className = 'feedback-box visible';
+                return;
+            }
+            
+            const isCorrect = selected.dataset.correct === 'true';
+            container.querySelectorAll('.quiz-option').forEach(opt => {
+                if (opt.dataset.correct === 'true') opt.classList.add('correct');
+                else if (opt.classList.contains('selected')) opt.classList.add('incorrect');
+            });
+            
+            if (isCorrect) {
+                feedback.innerHTML = '<p style="color: var(--accent-success);">🎉 Exceslow! Answer correct!</p>';
+                feedback.className = 'feedback-box success visible';
+            } else {
+                feedback.innerHTML = '<p style="color: var(--accent-error);">❌ Nu e correct. Answerul correct e marcat with verde.</p>';
+                feedback.className = 'feedback-box error visible';
+            }
+        }
+
+        function showHint(quizId, level) {
+            if (!quizHintCounts[quizId]) quizHintCounts[quizId] = 0;
+            const currentHint = quizHintCounts[quizId] + 1;
+            if (currentHint > 3) return;
+            
+            const hintEl = document.getElementById(`${quizId}-hint${currentHint}`);
+            if (hintEl) {
+                hintEl.classList.add('visible');
+                quizHintCounts[quizId] = currentHint;
+                const btn = document.querySelector(`#${quizId} .btn-hint`);
+                if (currentHint >= 3) {
+                    btn.textContent = '✓ Toate hint-urile';
+                    btn.disabled = true;
+                } else {
+                    btn.textContent = `💡 Hint (${currentHint}/3)`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
