@@ -2,15 +2,19 @@
 ## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
 > **Topic:** Email Protocols and Remote Procedure Call  
-> Reorder the code blocks to create a working solution.
+> Reorder the code blocks to create a working solution.  
+> **Note:** Some problems include distractor blocks (marked with ❌) that should NOT be used.
 
 ---
 
-## Problem P1: SMTP Client Dialogue
+## Problem P1: SMTP Client Dialogue (LO1)
 
 ### Task
 
-Arrange the code blocks to create a function that sends an email via SMTP. The function should connect, send the envelope and message, then disconnect properly.
+Arrange the code blocks to create a function that sends an email via SMTP.
+
+**Difficulty:** ⭐⭐ Intermediate  
+**Estimated time:** 5 minutes
 
 ### Scrambled Blocks
 
@@ -26,459 +30,322 @@ def send_email(host, port, sender, recipient, subject, body):
     sock.connect((host, port))
 
 # Block C
-    # Send message body and terminator
     message = f"Subject: {subject}\r\n\r\n{body}\r\n.\r\n"
     sock.sendall(message.encode())
-    sock.recv(1024)  # 250 OK
+    sock.recv(1024)
 
 # Block D
-    # Receive greeting
     sock.recv(1024)  # 220 greeting
 
 # Block E
-    # Send envelope
     sock.sendall(f"MAIL FROM:<{sender}>\r\n".encode())
-    sock.recv(1024)  # 250 OK
+    sock.recv(1024)
     sock.sendall(f"RCPT TO:<{recipient}>\r\n".encode())
-    sock.recv(1024)  # 250 OK
+    sock.recv(1024)
 
 # Block F
-    # Start data transfer
     sock.sendall(b"DATA\r\n")
     sock.recv(1024)  # 354 Start mail input
 
 # Block G
-    # Send EHLO
     sock.sendall(b"EHLO client.local\r\n")
-    sock.recv(1024)  # 250 OK
+    sock.recv(1024)
 
-# Block H (DISTRACTOR - not needed)
-    # Send HELO instead of EHLO
+# Block H (DISTRACTOR ❌)
     sock.sendall(b"HELO client\r\n")
     sock.recv(1024)
+
+# Block I (DISTRACTOR ❌)
+    sock.sendall(b"DATA\r\n")
+    sock.sendall(f"MAIL FROM:<{sender}>\r\n".encode())
 ```
 
 ### Correct Order
 
 <details>
-<summary>Click to reveal</summary>
+<summary>Click to reveal solution</summary>
 
-```python
-# Block B — Function definition and connection
-def send_email(host, port, sender, recipient, subject, body):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((host, port))
+**Correct sequence: B → D → G → E → F → C → A**
 
-# Block D — Receive greeting
-    # Receive greeting
-    sock.recv(1024)  # 220 greeting
+**Why Block H is wrong:** HELO is legacy; EHLO enables extended features.
 
-# Block G — Send EHLO
-    # Send EHLO
-    sock.sendall(b"EHLO client.local\r\n")
-    sock.recv(1024)  # 250 OK
-
-# Block E — Send envelope
-    # Send envelope
-    sock.sendall(f"MAIL FROM:<{sender}>\r\n".encode())
-    sock.recv(1024)  # 250 OK
-    sock.sendall(f"RCPT TO:<{recipient}>\r\n".encode())
-    sock.recv(1024)  # 250 OK
-
-# Block F — Start DATA
-    # Start data transfer
-    sock.sendall(b"DATA\r\n")
-    sock.recv(1024)  # 354 Start mail input
-
-# Block C — Send message body
-    # Send message body and terminator
-    message = f"Subject: {subject}\r\n\r\n{body}\r\n.\r\n"
-    sock.sendall(message.encode())
-    sock.recv(1024)  # 250 OK
-
-# Block A — QUIT and close
-    sock.sendall(b"QUIT\r\n")
-    sock.recv(1024)
-    sock.close()
-```
-
-**Note:** Block H is a distractor — EHLO (Block G) is preferred over HELO as it enables SMTP extensions.
-
-**SMTP Sequence:** Connect → Greeting → EHLO → MAIL FROM → RCPT TO → DATA → Message → QUIT
+**Why Block I is wrong:** DATA must come AFTER MAIL FROM and RCPT TO.
 
 </details>
 
 ---
 
-## Problem P2: JSON-RPC Request Builder
+## Problem P2: JSON-RPC Request Construction (LO2)
 
 ### Task
 
-Arrange the code blocks to create a function that builds and sends a JSON-RPC request, handling both success and error responses.
+Arrange the code blocks to construct and send a valid JSON-RPC 2.0 request.
+
+**Difficulty:** ⭐ Basic  
+**Estimated time:** 3 minutes
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-    if "error" in response:
-        raise Exception(f"RPC Error: {response['error']['message']}")
-    return response.get("result")
+def call_jsonrpc(url, method, params):
 
 # Block B
-def call_rpc(url, method, params):
-    request_id = random.randint(1, 10000)
+    return response.json()
 
 # Block C
-    response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
-
-# Block D
     payload = {
         "jsonrpc": "2.0",
         "method": method,
         "params": params,
-        "id": request_id
+        "id": 1
     }
 
+# Block D
+    headers = {"Content-Type": "application/json"}
+
 # Block E
-    response = response.json()
+    response = requests.post(url, json=payload, headers=headers)
+
+# Block F (DISTRACTOR ❌)
+    payload = {
+        "jsonrpc": "1.0",
+        "method": method,
+        "params": params
+    }
+
+# Block G (DISTRACTOR ❌)
+    payload = {
+        "method": method,
+        "params": params,
+        "id": 1
+    }
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**Correct sequence: A → C → D → E → B**
+
+**Why Block F is wrong:** Version must be "2.0", not "1.0".
+
+**Why Block G is wrong:** Missing required "jsonrpc" field.
+
+</details>
+
+---
+
+## Problem P3: RPC Server Setup (LO3)
+
+### Task
+
+Arrange the code blocks to create a simple JSON-RPC server.
+
+**Difficulty:** ⭐⭐⭐ Advanced  
+**Estimated time:** 7 minutes
+
+### Scrambled Blocks
+
+```python
+# Block A
+if __name__ == "__main__":
+    server = HTTPServer(("", 6200), JSONRPCHandler)
+    server.serve_forever()
+
+# Block B
+class JSONRPCHandler(BaseHTTPRequestHandler):
+
+# Block C
+    def do_POST(self):
+        content_length = int(self.headers["Content-Length"])
+        body = self.rfile.read(content_length)
+        request = json.loads(body)
+
+# Block D
+        method = request.get("method")
+        params = request.get("params", [])
+        result = self.dispatch(method, params)
+
+# Block E
+        response = {"jsonrpc": "2.0", "result": result, "id": request.get("id")}
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(response).encode())
 
 # Block F
-    headers = {"Content-Type": "application/json"}
+    def dispatch(self, method, params):
+        if method == "add":
+            return params[0] + params[1]
+        raise ValueError(f"Unknown method: {method}")
 
-# Block G (DISTRACTOR - not needed)
-    # Add authentication header
-    headers["Authorization"] = "Bearer token123"
+# Block G
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
 
-# Block H (DISTRACTOR - not needed)
-    payload["version"] = "1.0"  # Wrong field name
+# Block H (DISTRACTOR ❌)
+    def do_GET(self):
+        content_length = int(self.headers["Content-Length"])
+
+# Block I (DISTRACTOR ❌)
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(json.dumps(response).encode())
 ```
 
 ### Correct Order
 
 <details>
-<summary>Click to reveal</summary>
+<summary>Click to reveal solution</summary>
 
-```python
-# Block B — Function definition
-def call_rpc(url, method, params):
-    request_id = random.randint(1, 10000)
+**Correct sequence: G → B → C → D → E → F → A**
 
-# Block D — Build payload
-    payload = {
-        "jsonrpc": "2.0",
-        "method": method,
-        "params": params,
-        "id": request_id
-    }
+**Why Block H is wrong:** JSON-RPC uses POST, not GET.
 
-# Block F — Set headers
-    headers = {"Content-Type": "application/json"}
-
-# Block C — Send request
-    response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
-
-# Block E — Parse JSON response
-    response = response.json()
-
-# Block A — Handle result or error
-    if "error" in response:
-        raise Exception(f"RPC Error: {response['error']['message']}")
-    return response.get("result")
-```
-
-**Distractors:**
-- Block G: Authentication is not part of JSON-RPC spec (transport concern)
-- Block H: `"version"` is wrong — JSON-RPC uses `"jsonrpc": "2.0"`
+**Why Block I is wrong:** Missing Content-Type header.
 
 </details>
 
 ---
 
-## Problem P3: gRPC Service Definition
+## Problem P4: curl JSON-RPC Call (LO4)
 
 ### Task
 
-Arrange the blocks to create a valid Protocol Buffer definition for a calculator service with Add, Subtract, Multiply and Divide methods.
+Arrange the command-line arguments to construct a valid curl command.
+
+**Difficulty:** ⭐ Basic  
+**Estimated time:** 2 minutes
 
 ### Scrambled Blocks
 
-```protobuf
-// Block A
-service Calculator {
-    rpc Add(CalcRequest) returns (CalcResponse);
-    rpc Subtract(CalcRequest) returns (CalcResponse);
-    rpc Multiply(CalcRequest) returns (CalcResponse);
-    rpc Divide(CalcRequest) returns (CalcResponse);
-}
+```bash
+# Block A
+curl
 
-// Block B
-message CalcResponse {
-    double result = 1;
-    string error = 2;
-}
+# Block B
+-X POST
 
-// Block C
-syntax = "proto3";
+# Block C
+http://localhost:6200
 
-// Block D
-message CalcRequest {
-    double a = 1;
-    double b = 2;
-}
+# Block D
+-H "Content-Type: application/json"
 
-// Block E
-package calculator;
+# Block E
+-d '{"jsonrpc":"2.0","method":"add","params":[10,32],"id":1}'
 
-// Block F (DISTRACTOR - not needed)
-option java_package = "com.example.calculator";
+# Block F (DISTRACTOR ❌)
+-X GET
 
-// Block G (DISTRACTOR - wrong syntax)
-message CalcRequest {
-    required double a = 1;  // 'required' is proto2, not proto3
-    required double b = 2;
-}
+# Block G (DISTRACTOR ❌)
+-H "Content-Type: text/plain"
 ```
 
 ### Correct Order
 
 <details>
-<summary>Click to reveal</summary>
+<summary>Click to reveal solution</summary>
 
-```protobuf
-// Block C — Syntax declaration (must be first)
-syntax = "proto3";
+**Correct sequence: A → B → C → D → E**
 
-// Block E — Package declaration
-package calculator;
-
-// Block D — Request message
-message CalcRequest {
-    double a = 1;
-    double b = 2;
-}
-
-// Block B — Response message
-message CalcResponse {
-    double result = 1;
-    string error = 2;
-}
-
-// Block A — Service definition
-service Calculator {
-    rpc Add(CalcRequest) returns (CalcResponse);
-    rpc Subtract(CalcRequest) returns (CalcResponse);
-    rpc Multiply(CalcRequest) returns (CalcResponse);
-    rpc Divide(CalcRequest) returns (CalcResponse);
-}
+```bash
+curl -X POST http://localhost:6200 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"add","params":[10,32],"id":1}'
 ```
-
-**Distractors:**
-- Block F: Java-specific option, not needed for basic definition
-- Block G: `required` keyword is proto2 syntax; proto3 has no required/optional
-
-**Key rules:**
-1. `syntax` must be the first non-comment line
-2. Messages must be defined before the service that uses them
-3. Field tags (1, 2) are wire format identifiers, not defaults
 
 </details>
 
 ---
 
-## Problem P4: SMTP Response Parser
+## Problem P5: Protocol Comparison Analysis (LO5)
 
 ### Task
 
-Arrange the code blocks to create a function that parses SMTP responses, handling both single-line and multi-line responses.
+Arrange the code blocks to create a function that compares response times between JSON-RPC and gRPC.
+
+**Difficulty:** ⭐⭐⭐ Advanced  
+**Estimated time:** 8 minutes
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-def parse_smtp_response(sock):
-    lines = []
-    
+def compare_protocols(iterations=100):
+    results = {"jsonrpc": [], "grpc": []}
+
 # Block B
-    while True:
-        line = sock.recv(1024).decode().strip()
-        lines.append(line)
+    for _ in range(iterations):
+        start = time.perf_counter()
+        call_jsonrpc("http://localhost:6200", "add", [10, 32])
+        elapsed = time.perf_counter() - start
+        results["jsonrpc"].append(elapsed)
 
 # Block C
-        # Check if this is the last line (no hyphen after code)
-        if len(line) >= 4 and line[3] != '-':
-            break
+    channel = grpc.insecure_channel("localhost:6251")
+    stub = calculator_pb2_grpc.CalculatorStub(channel)
+    for _ in range(iterations):
+        start = time.perf_counter()
+        stub.Add(calculator_pb2.CalcRequest(a=10, b=32))
+        elapsed = time.perf_counter() - start
+        results["grpc"].append(elapsed)
 
 # Block D
-    # Extract code from first line
-    code = int(lines[0][:3])
-    
+    for protocol, times in results.items():
+        avg = sum(times) / len(times)
+        print(f"{protocol}: avg={avg*1000:.2f}ms")
+
 # Block E
-    # Combine all message text
-    message = '\n'.join(line[4:] for line in lines)
-    return code, message
+    return results
 
-# Block F (DISTRACTOR - incomplete)
-    return lines[0][:3]  # Only returns code as string, loses message
+# Block F
+import time
+import grpc
 
-# Block G (DISTRACTOR - wrong logic)
-        if line.endswith('\n'):  # Wrong check for multi-line
-            break
+# Block G (DISTRACTOR ❌)
+    for _ in range(iterations):
+        call_jsonrpc("http://localhost:6200", "add", [10, 32])
+    elapsed = time.perf_counter() - start
+
+# Block H (DISTRACTOR ❌)
+    for _ in range(iterations):
+        channel = grpc.insecure_channel("localhost:6251")
+        stub = calculator_pb2_grpc.CalculatorStub(channel)
 ```
 
 ### Correct Order
 
 <details>
-<summary>Click to reveal</summary>
+<summary>Click to reveal solution</summary>
 
-```python
-# Block A — Function definition and initialise list
-def parse_smtp_response(sock):
-    lines = []
-    
-# Block B — Receive loop
-    while True:
-        line = sock.recv(1024).decode().strip()
-        lines.append(line)
+**Correct sequence: F → A → B → C → D → E**
 
-# Block C — Check for continuation (hyphen means more lines)
-        # Check if this is the last line (no hyphen after code)
-        if len(line) >= 4 and line[3] != '-':
-            break
+**Why Block G is wrong:** Timer start is outside the loop.
 
-# Block D — Extract numeric code
-    # Extract code from first line
-    code = int(lines[0][:3])
-    
-# Block E — Combine messages
-    # Combine all message text
-    message = '\n'.join(line[4:] for line in lines)
-    return code, message
-```
-
-**Distractors:**
-- Block F: Returns only code string, loses the message content
-- Block G: Checking for `\n` is wrong; multi-line is indicated by hyphen after code
-
-**SMTP Multi-line Response Format:**
-```
-250-First line of response
-250-Second line continues
-250 Last line (space instead of hyphen)
-```
+**Why Block H is wrong:** Channel creation inside loop adds overhead.
 
 </details>
 
 ---
 
-## Problem P5: RPC Benchmark Function
+## Summary Table
 
-### Task
-
-Arrange the code blocks to create a function that benchmarks RPC call latency.
-
-### Scrambled Blocks
-
-```python
-# Block A
-def benchmark_rpc(url, method, params, iterations=100):
-    latencies = []
-
-# Block B
-    for _ in range(iterations):
-        start = time.perf_counter()
-
-# Block C
-        # Make the RPC call
-        response = requests.post(url, json={
-            "jsonrpc": "2.0",
-            "method": method,
-            "params": params,
-            "id": 1
-        })
-
-# Block D
-        end = time.perf_counter()
-        latencies.append((end - start) * 1000)  # Convert to ms
-
-# Block E
-    return {
-        "min": min(latencies),
-        "max": max(latencies),
-        "avg": sum(latencies) / len(latencies),
-        "iterations": iterations
-    }
-
-# Block F (DISTRACTOR - wrong timing)
-        latencies.append(response.elapsed.total_seconds())
-        # Wrong: measures server time, not round-trip
-
-# Block G (DISTRACTOR - missing conversion)
-        latencies.append(end - start)  # Seconds, not milliseconds
-```
-
-### Correct Order
-
-<details>
-<summary>Click to reveal</summary>
-
-```python
-# Block A — Function definition
-def benchmark_rpc(url, method, params, iterations=100):
-    latencies = []
-
-# Block B — Start iteration and timing
-    for _ in range(iterations):
-        start = time.perf_counter()
-
-# Block C — Make the RPC call
-        # Make the RPC call
-        response = requests.post(url, json={
-            "jsonrpc": "2.0",
-            "method": method,
-            "params": params,
-            "id": 1
-        })
-
-# Block D — End timing and record
-        end = time.perf_counter()
-        latencies.append((end - start) * 1000)  # Convert to ms
-
-# Block E — Return statistics
-    return {
-        "min": min(latencies),
-        "max": max(latencies),
-        "avg": sum(latencies) / len(latencies),
-        "iterations": iterations
-    }
-```
-
-**Distractors:**
-- Block F: `response.elapsed` only measures server processing time, not network round-trip
-- Block G: Missing millisecond conversion makes results hard to interpret
-
-**Key insight:** Use `time.perf_counter()` for high-resolution timing and measure the complete round-trip including network latency.
-
-</details>
-
----
-
-## Tips for Parsons Problems
-
-1. **Identify the entry point:** Look for function definitions or required first statements (like `syntax` in protobuf)
-2. **Follow data flow:** Variables must be defined before use
-3. **Look for control flow:** Loops need setup before the body, cleanup after
-4. **Spot distractors:** Wrong syntax, incomplete logic, or unnecessary code
-5. **Check language conventions:** Proto3 vs proto2, Python 3 vs 2, etc.
+| Problem | LO | Difficulty | Blocks | Distractors | Key Concept |
+|---------|-----|------------|--------|-------------|-------------|
+| P1 | LO1 | ⭐⭐ | 7 | 2 | SMTP command sequence |
+| P2 | LO2 | ⭐ | 5 | 2 | JSON-RPC 2.0 structure |
+| P3 | LO3 | ⭐⭐⭐ | 7 | 2 | HTTP server implementation |
+| P4 | LO4 | ⭐ | 5 | 2 | curl command construction |
+| P5 | LO5 | ⭐⭐⭐ | 6 | 2 | Protocol benchmarking |
 
 ---
 
 ## See Also
 
-- `code_tracing.md` — Trace execution exercises
-- `misconceptions.md` — Common errors explained
-- `pair_programming_guide.md` — Collaborative exercises
+- `docs/code_tracing.md` — Trace execution exercises
+- `docs/misconceptions.md` — Common errors
+- `formative/quiz.yaml` — Self-assessment quiz
 
 ---
 

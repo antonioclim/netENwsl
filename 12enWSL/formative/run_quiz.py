@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """
 Formative Quiz Runner — Week 12
-================================
+===============================
 Computer Networks - ASE, CSIE | by ing. dr. Antonio Clim
 
-Interactive quiz for self-assessment of learning objectives.
+Interactive quiz runner for self-assessment.
 
 Usage:
-    python formative/run_quiz.py                    # Run full quiz
-    python formative/run_quiz.py --random           # Randomise questions
+    python formative/run_quiz.py                    # Run all questions
+    python formative/run_quiz.py --random           # Randomise question order
     python formative/run_quiz.py --limit 5          # Run only 5 questions
-    python formative/run_quiz.py --lo LO1 LO5       # Filter by LO
+    python formative/run_quiz.py --lo LO1 LO2       # Filter by Learning Objectives
+    python formative/run_quiz.py --difficulty basic # Filter by difficulty
+    make quiz                                       # Via Makefile
 """
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -19,33 +21,132 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import random
 import sys
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Dict, List, Any, Optional
 
 try:
     import yaml
+    YAML_AVAILABLE = True
 except ImportError:
-    print("Error: PyYAML not installed. Run: pip install pyyaml")
-    sys.exit(1)
+    YAML_AVAILABLE = False
+
+try:
+    from colorama import Fore, Style, init as colorama_init
+    colorama_init()
+    COLORAMA_AVAILABLE = True
+except ImportError:
+    COLORAMA_AVAILABLE = False
+    class Fore:
+        GREEN = RED = YELLOW = CYAN = BLUE = MAGENTA = WHITE = RESET = ""
+    class Style:
+        BRIGHT = RESET_ALL = ""
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+SCRIPT_DIR = Path(__file__).parent
+QUIZ_YAML_PATH = SCRIPT_DIR / "quiz.yaml"
+QUIZ_JSON_PATH = SCRIPT_DIR / "quiz.json"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # QUIZ_LOADER
 # ═══════════════════════════════════════════════════════════════════════════════
-def load_quiz(path: Path) -> Dict[str, Any]:
-    """
-    Load quiz from YAML file.
+def load_quiz(path: Optional[Path] = None) -> Dict[str, Any]:
+    """Load quiz from YAML or JSON file."""
+    if path is not None:
+        quiz_path = path
+    elif YAML_AVAILABLE and QUIZ_YAML_PATH.exists():
+        quiz_path = QUIZ_YAML_PATH
+    elif QUIZ_JSON_PATH.exists():
+        quiz_path = QUIZ_JSON_PATH
+    else:
+        raise FileNotFoundError(
+            f"Quiz file not found. Expected: {QUIZ_YAML_PATH} or {QUIZ_JSON_PATH}"
+        )
     
-    Args:
-        path: Path to quiz YAML file
-        
-    Returns:
-        Quiz dictionary with metadata and questions
-    """
-    with open(path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    with open(quiz_path, "r", encoding="utf-8") as f:
+        if quiz_path.suffix in (".yaml", ".yml"):
+            if not YAML_AVAILABLE:
+                raise ImportError("PyYAML not installed. Run: pip install pyyaml")
+            return yaml.safe_load(f)
+        return json.load(f)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUIZ_FILTER
+# ═══════════════════════════════════════════════════════════════════════════════
+def filter_questions(
+    questions: List[Dict[str, Any]],
+    lo_filter: Optional[List[str]] = None,
+    difficulty_filter: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """Filter questions by LO or difficulty."""
+    filtered = questions
+    if lo_filter:
+        filtered = [q for q in filtered if q.get("lo_ref") in lo_filter]
+    if difficulty_filter:
+        filtered = [q for q in filtered if q.get("difficulty") == difficulty_filter]
+    return filtered
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTION_DISPLAY
+# ═══════════════════════════════════════════════════════════════════════════════
+def display_question(q: Dict[str, Any], index: int, total: int) -> None:
+    """Display a single question."""
+    print(f"\n{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Question {index}/{total}{Style.RESET_ALL} "
+          f"[{q.get('lo_ref', '?')}] [{q.get('difficulty', '?')}] "
+          f"[{q.get('bloom_level', '?')}]")
+    print(f"{Fore.CYAN}{'─' * 70}{Style.RESET_ALL}")
+    print(f"\n{Style.BRIGHT}{q['stem']}{Style.RESET_ALL}\n")
+    
+    if q["type"] == "multiple_choice":
+        for key, text in q["options"].items():
+            print(f"  {Fore.BLUE}{key}){Style.RESET_ALL} {text}")
+    elif q["type"] == "fill_blank" and "hint" in q:
+        print(f"  {Fore.MAGENTA}Hint: {q['hint']}{Style.RESET_ALL}")
+
+
+def get_answer(q: Dict[str, Any]) -> str:
+    """Get user answer for a question."""
+    if q["type"] == "multiple_choice":
+        while True:
+            answer = input(f"\n{Fore.WHITE}Your answer (a/b/c/d): {Style.RESET_ALL}").strip().lower()
+            if answer in ["a", "b", "c", "d"]:
+                return answer
+            print(f"{Fore.RED}Invalid input. Please enter a, b, c or d.{Style.RESET_ALL}")
+    return input(f"\n{Fore.WHITE}Your answer: {Style.RESET_ALL}").strip()
+
+
+def check_answer(q: Dict[str, Any], answer: str) -> bool:
+    """Check if answer is correct."""
+    if q["type"] == "multiple_choice":
+        return answer == q["correct"]
+    return answer in q["correct"]
+
+
+def display_result(q: Dict[str, Any], is_correct: bool) -> None:
+    """Display result for a single question."""
+    if is_correct:
+        print(f"\n{Fore.GREEN}✓ Correct!{Style.RESET_ALL}")
+    else:
+        print(f"\n{Fore.RED}✗ Incorrect.{Style.RESET_ALL}")
+        if q["type"] == "multiple_choice":
+            correct_text = q["options"].get(q["correct"], q["correct"])
+            print(f"  {Fore.YELLOW}Correct answer: {q['correct']}) {correct_text}{Style.RESET_ALL}")
+        else:
+            print(f"  {Fore.YELLOW}Accepted answers: {', '.join(q['correct'])}{Style.RESET_ALL}")
+    
+    if "explanation" in q:
+        print(f"\n  {Fore.CYAN}📖 {q['explanation']}{Style.RESET_ALL}")
+    if "misconception_ref" in q:
+        print(f"  {Fore.MAGENTA}📚 See: {q['misconception_ref']}{Style.RESET_ALL}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -55,204 +156,129 @@ def run_quiz(
     quiz: Dict[str, Any],
     randomise: bool = False,
     limit: Optional[int] = None,
-    lo_filter: Optional[List[str]] = None
+    lo_filter: Optional[List[str]] = None,
+    difficulty_filter: Optional[str] = None
 ) -> float:
-    """
-    Run interactive quiz and return score percentage.
+    """Run interactive quiz and return score percentage."""
+    questions = filter_questions(
+        quiz.get("questions", []),
+        lo_filter=lo_filter,
+        difficulty_filter=difficulty_filter
+    )
     
-    Args:
-        quiz: Loaded quiz dictionary
-        randomise: Shuffle question order
-        limit: Maximum questions to ask
-        lo_filter: Only include questions for these LOs
-    
-    Returns:
-        Score as percentage (0-100)
-    """
-    questions = list(quiz.get("questions", []))
-    
-    # Filter by LO if specified
-    if lo_filter:
-        questions = [q for q in questions if q.get("lo_ref") in lo_filter]
+    if not questions:
+        print(f"{Fore.RED}No questions match the selected filters.{Style.RESET_ALL}")
+        return 0.0
     
     if randomise:
         random.shuffle(questions)
-    
-    if limit and limit > 0:
+    if limit and limit < len(questions):
         questions = questions[:limit]
     
-    if not questions:
-        print("No questions match the specified criteria.")
-        return 0.0
-    
-    metadata = quiz.get("metadata", {})
-    correct = 0
     total = len(questions)
+    correct = 0
+    metadata = quiz.get("metadata", {})
     
-    # ═══════════════════════════════════════════════════════════════════════════
-    # DISPLAY_HEADER
-    # ═══════════════════════════════════════════════════════════════════════════
-    print("\n" + "═" * 70)
-    print(f"  QUIZ: {metadata.get('topic', 'Week 12')}")
-    print(f"  Questions: {total} | Passing: {metadata.get('passing_score', 70)}%")
-    print(f"  Time estimate: {metadata.get('estimated_time', '15 minutes')}")
-    print("═" * 70)
+    print(f"\n{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"{Style.BRIGHT}WEEK {metadata.get('week', '?')} FORMATIVE QUIZ{Style.RESET_ALL}")
+    print(f"{metadata.get('topic', 'Unknown Topic')}")
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"\nQuestions: {total}")
+    print(f"Passing score: {metadata.get('passing_score', 70)}%")
     
-    # ═══════════════════════════════════════════════════════════════════════════
-    # RUN_QUESTIONS
-    # ═══════════════════════════════════════════════════════════════════════════
+    if lo_filter:
+        print(f"Filtered by LOs: {', '.join(lo_filter)}")
+    if difficulty_filter:
+        print(f"Filtered by difficulty: {difficulty_filter}")
+    
+    input(f"\n{Fore.WHITE}Press Enter to start...{Style.RESET_ALL}")
+    
     for i, q in enumerate(questions, 1):
-        print(f"\n{'─' * 60}")
-        difficulty = q.get("difficulty", "?").upper()
-        lo_ref = q.get("lo_ref", "?")
-        print(f"Q{i}/{total} [{difficulty}] [LO: {lo_ref}]")
-        print(f"\n    {q['stem']}\n")
-        
-        if q["type"] == "multiple_choice":
-            # Display options
-            for key, val in q.get("options", {}).items():
-                print(f"    {key}) {val}")
-            
-            # Get answer
-            while True:
-                answer = input("\n    Your answer (a/b/c/d): ").strip().lower()
-                if answer in ["a", "b", "c", "d"]:
-                    break
-                print("    Please enter a, b, c or d.")
-            
-            # Check answer
-            if answer == q["correct"]:
-                print("    ✅ Correct!")
-                correct += 1
-            else:
-                print(f"    ❌ Incorrect. Correct answer: {q['correct']}")
-                if "explanation" in q:
-                    print(f"\n    📖 {q['explanation']}")
-                if "misconception_ref" in q:
-                    print(f"    📚 See: {q['misconception_ref']}")
-        
-        elif q["type"] == "fill_blank":
-            # Get answer
-            answer = input("\n    Your answer: ").strip()
-            
-            # Check answer (case-insensitive for fill-blank)
-            correct_answers = [str(a).lower() for a in q.get("correct", [])]
-            if answer.lower() in correct_answers:
-                print("    ✅ Correct!")
-                correct += 1
-            else:
-                acceptable = ", ".join(str(a) for a in q.get("correct", []))
-                print(f"    ❌ Incorrect. Accepted answers: {acceptable}")
-                if "hint" in q:
-                    print(f"    💡 Hint: {q['hint']}")
+        display_question(q, i, total)
+        answer = get_answer(q)
+        is_correct = check_answer(q, answer)
+        if is_correct:
+            correct += 1
+        display_result(q, is_correct)
+        if i < total:
+            input(f"\n{Fore.WHITE}Press Enter for next question...{Style.RESET_ALL}")
     
-    # ═══════════════════════════════════════════════════════════════════════════
-    # DISPLAY_RESULTS
-    # ═══════════════════════════════════════════════════════════════════════════
     score = (correct / total) * 100 if total > 0 else 0
     passing = metadata.get("passing_score", 70)
     passed = score >= passing
     
-    print("\n" + "═" * 70)
-    print(f"  RESULTS: {correct}/{total} correct ({score:.1f}%)")
-    print(f"  STATUS:  {'✅ PASSED' if passed else '❌ NEEDS REVIEW'}")
-    print("═" * 70)
+    print(f"\n{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"{Style.BRIGHT}FINAL RESULTS{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"\nScore: {correct}/{total} ({score:.1f}%)")
     
-    # Display feedback
-    feedback = quiz.get("feedback", {})
-    if score >= 90:
-        msg = feedback.get("excellent", "Excellent work!")
-    elif score >= passing:
-        msg = feedback.get("good", "Good job!")
+    if passed:
+        print(f"\n{Fore.GREEN}✓ PASSED{Style.RESET_ALL}")
+        feedback = quiz.get("feedback", {})
+        if score >= 90:
+            print(f"\n{feedback.get('excellent', 'Excellent work!')}")
+        else:
+            print(f"\n{feedback.get('good', 'Good work!')}")
     else:
-        msg = feedback.get("needs_review", "Keep practising!")
+        print(f"\n{Fore.RED}✗ NEEDS REVIEW{Style.RESET_ALL}")
+        print(f"\n{quiz.get('feedback', {}).get('needs_review', 'Please review the material.')}")
     
-    print(f"\n  {msg}\n")
-    
+    print(f"\n{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
     return score
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAIN_ENTRY_POINT
+# CLI_INTERFACE
+# ═══════════════════════════════════════════════════════════════════════════════
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description="Week 12 Formative Quiz Runner")
+    parser.add_argument("--quiz", "-q", type=Path, help="Path to quiz file")
+    parser.add_argument("--random", "-r", action="store_true", help="Randomise order")
+    parser.add_argument("--limit", "-n", type=int, help="Max questions")
+    parser.add_argument("--lo", nargs="+", help="Filter by LOs (e.g. --lo LO1 LO2)")
+    parser.add_argument("--difficulty", "-d", choices=["basic", "intermediate", "advanced"])
+    parser.add_argument("--list-lo", action="store_true", help="List LOs and exit")
+    return parser.parse_args()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MAIN_FUNCTION
 # ═══════════════════════════════════════════════════════════════════════════════
 def main() -> int:
-    """Main entry point for CLI usage."""
-    parser = argparse.ArgumentParser(
-        description="Week 12 Formative Quiz Runner",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python formative/run_quiz.py                  # Full quiz
-  python formative/run_quiz.py --random         # Randomised order
-  python formative/run_quiz.py --limit 5        # Only 5 questions
-  python formative/run_quiz.py --lo LO1 LO5     # Filter by LO
-        """
-    )
-    parser.add_argument(
-        "--quiz", "-q",
-        type=Path,
-        default=None,
-        help="Path to quiz YAML file (default: formative/quiz.yaml)"
-    )
-    parser.add_argument(
-        "--random", "-r",
-        action="store_true",
-        help="Randomise question order"
-    )
-    parser.add_argument(
-        "--limit", "-l",
-        type=int,
-        default=None,
-        help="Maximum number of questions to ask"
-    )
-    parser.add_argument(
-        "--lo",
-        nargs="+",
-        metavar="LOx",
-        help="Filter by Learning Objectives (e.g., --lo LO1 LO5)"
-    )
+    """Main entry point."""
+    args = parse_args()
     
-    args = parser.parse_args()
-    
-    # Determine quiz path
-    if args.quiz:
-        quiz_path = args.quiz
-    else:
-        # Try relative to script location first
-        script_dir = Path(__file__).parent
-        quiz_path = script_dir / "quiz.yaml"
-        if not quiz_path.exists():
-            # Try current directory
-            quiz_path = Path("formative/quiz.yaml")
-    
-    if not quiz_path.exists():
-        print(f"Error: Quiz file not found: {quiz_path}")
-        print("Run this script from the 12enWSL directory or specify --quiz path")
-        return 1
-    
-    # Load and run quiz
     try:
-        quiz = load_quiz(quiz_path)
-    except yaml.YAMLError as e:
-        print(f"Error: Invalid YAML in quiz file: {e}")
+        quiz = load_quiz(args.quiz)
+    except FileNotFoundError as e:
+        print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
         return 1
     except Exception as e:
-        print(f"Error loading quiz: {e}")
+        print(f"{Fore.RED}Error loading quiz: {e}{Style.RESET_ALL}")
         return 1
     
-    passing_score = quiz.get("metadata", {}).get("passing_score", 70)
-    score = run_quiz(
-        quiz,
-        randomise=args.random,
-        limit=args.limit,
-        lo_filter=args.lo
-    )
+    if args.list_lo:
+        los = set(q.get("lo_ref") for q in quiz.get("questions", []))
+        print("\nAvailable Learning Objectives:")
+        for lo in sorted(los):
+            count = sum(1 for q in quiz["questions"] if q.get("lo_ref") == lo)
+            print(f"  {lo}: {count} question(s)")
+        return 0
     
-    return 0 if score >= passing_score else 1
+    try:
+        score = run_quiz(
+            quiz,
+            randomise=args.random,
+            limit=args.limit,
+            lo_filter=args.lo,
+            difficulty_filter=args.difficulty
+        )
+        return 0 if score >= quiz.get("metadata", {}).get("passing_score", 70) else 1
+    except KeyboardInterrupt:
+        print(f"\n\n{Fore.YELLOW}Quiz cancelled.{Style.RESET_ALL}")
+        return 130
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ENTRY_POINT
-# ═══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     sys.exit(main())

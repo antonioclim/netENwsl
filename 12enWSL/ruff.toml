@@ -1,0 +1,33 @@
+# ruff.toml — Week 12 Linting Configuration
+# NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
+
+target-version = "py310"
+line-length = 100
+
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*_pb2.py",
+    "*_pb2_grpc.py",
+]
+
+[lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501", "E402", "E731", "N806"]
+fixable = ["ALL"]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"*_pb2.py" = ["ALL"]
+"*_pb2_grpc.py" = ["ALL"]
+"tests/*.py" = ["E501"]
+
+[lint.isort]
+known-first-party = ["src", "scripts", "tests", "formative"]
+known-third-party = ["grpc", "requests", "yaml", "pytest", "docker"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

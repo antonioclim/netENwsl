@@ -1,0 +1,60 @@
+# pyproject.toml — Week 12 Laboratory Kit
+# NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "week12-email-rpc"
+version = "2.0.0"
+description = "Computer Networks Lab - Week 12: Email Protocols and RPC"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "ing. dr. Antonio Clim"}]
+keywords = ["networking", "smtp", "rpc", "grpc", "education"]
+
+dependencies = [
+    "grpcio>=1.50.0",
+    "grpcio-tools>=1.50.0",
+    "protobuf>=4.21.0",
+    "dnspython>=2.4.0",
+    "requests>=2.28.0",
+    "pyyaml>=6.0",
+    "docker>=6.0.0",
+    "colorama>=0.4.6",
+]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.1.0", "mypy>=1.0.0", "pytest>=7.0.0", "pytest-timeout>=2.0.0"]
+test = ["pytest>=7.0.0", "pytest-timeout>=2.0.0"]
+
+[project.urls]
+Homepage = "https://github.com/antonioclim/netENwsl"
+
+[project.scripts]
+week12-quiz = "formative.run_quiz:main"
+week12-export = "formative.export_lms:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "scripts*", "formative*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = ["-v", "--tb=short", "--strict-markers"]
+markers = [
+    "slow: marks tests as slow",
+    "requires_docker: marks tests requiring Docker",
+]
+timeout = 30
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+show_error_codes = true

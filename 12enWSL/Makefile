@@ -3,11 +3,13 @@
 #
 # Usage: make help
 
-.PHONY: help start stop status logs test smoke quiz lint verify clean
+.PHONY: help start stop status logs test smoke quiz lint lint-fix syntax verify clean
 .PHONY: smtp-server smtp-send smtp-list demo-smtp demo-rpc capture analyse
+.PHONY: ci docker-build docker-test export-moodle export-canvas export-csv
 
 PYTHON := python3
 COMPOSE := docker compose -f docker/docker-compose.yml
+RUFF := ruff
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELP
@@ -18,37 +20,45 @@ help:
 	@echo "═══════════════════════════════════════════════════════════════════════"
 	@echo ""
 	@echo "Lab Environment:"
-	@echo "  make start       Start laboratory containers"
-	@echo "  make stop        Stop laboratory containers"
-	@echo "  make status      Show container status"
-	@echo "  make logs        Follow container logs"
+	@echo "  make start         Start laboratory containers"
+	@echo "  make stop          Stop laboratory containers"
+	@echo "  make status        Show container status"
+	@echo "  make logs          Follow container logs"
 	@echo ""
-	@echo "Testing:"
-	@echo "  make test        Run all pytest tests"
-	@echo "  make smoke       Run smoke tests only"
-	@echo "  make quiz        Run formative self-assessment quiz"
+	@echo "Testing and Quality:"
+	@echo "  make test          Run all pytest tests"
+	@echo "  make smoke         Run smoke tests only"
+	@echo "  make quiz          Run formative self-assessment quiz"
+	@echo "  make lint          Run ruff linter (check only)"
+	@echo "  make lint-fix      Run ruff linter with auto-fix"
+	@echo "  make syntax        Check Python syntax only"
+	@echo "  make ci            Run full CI pipeline locally"
+	@echo ""
+	@echo "Quiz Export (LMS):"
+	@echo "  make export-moodle Export quiz to Moodle XML format"
+	@echo "  make export-canvas Export quiz to Canvas QTI format"
+	@echo "  make export-csv    Export quiz to CSV format"
 	@echo ""
 	@echo "Development:"
-	@echo "  make lint        Check Python syntax"
-	@echo "  make verify      Verify environment setup"
-	@echo "  make clean       Clean artifacts and caches"
+	@echo "  make verify        Verify environment setup"
+	@echo "  make clean         Clean artifacts and caches"
 	@echo ""
 	@echo "SMTP Services:"
-	@echo "  make smtp-server Start SMTP server (foreground, verbose)"
-	@echo "  make smtp-send   Send a test email"
-	@echo "  make smtp-list   List stored emails in spool"
+	@echo "  make smtp-server   Start SMTP server (foreground)"
+	@echo "  make smtp-send     Send a test email"
+	@echo "  make smtp-list     List stored emails"
 	@echo ""
-	@echo "RPC Demos:"
-	@echo "  make demo-smtp   Run SMTP demonstration"
-	@echo "  make demo-rpc    Run RPC comparison demo"
+	@echo "Demos:"
+	@echo "  make demo-smtp     Run SMTP demonstration"
+	@echo "  make demo-rpc      Run RPC comparison demo"
 	@echo ""
-	@echo "Packet Capture:"
-	@echo "  make capture     Capture traffic for 30 seconds (needs sudo)"
-	@echo "  make analyse     Analyse captured packets with tshark"
+	@echo "Docker:"
+	@echo "  make docker-build  Build Docker image"
+	@echo "  make docker-test   Test Docker container"
 	@echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LAB_ENVIRONMENT
+# LAB ENVIRONMENT
 # ═══════════════════════════════════════════════════════════════════════════════
 start:
 	@echo "Starting Week 12 laboratory..."
@@ -65,7 +75,7 @@ logs:
 	@$(COMPOSE) logs -f
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TESTING
+# TESTING AND QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
 test: smoke
 	@echo "Running pytest..."
@@ -79,17 +89,46 @@ quiz:
 	@echo "Starting formative quiz..."
 	@$(PYTHON) formative/run_quiz.py
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# DEVELOPMENT
-# ═══════════════════════════════════════════════════════════════════════════════
+quiz-random:
+	@echo "Starting randomised quiz..."
+	@$(PYTHON) formative/run_quiz.py --random
+
+quiz-lo:
+	@echo "Available Learning Objectives:"
+	@$(PYTHON) formative/run_quiz.py --list-lo
+
 lint:
+	@echo "Running ruff linter..."
+	@$(RUFF) check src/ scripts/ tests/ formative/ --config ruff.toml || true
+	@echo "Lint check complete."
+
+lint-fix:
+	@echo "Running ruff linter with auto-fix..."
+	@$(RUFF) check src/ scripts/ tests/ formative/ --config ruff.toml --fix
+
+syntax:
 	@echo "Checking Python syntax..."
-	@$(PYTHON) -m py_compile src/apps/email/*.py src/apps/rpc/*/*.py 2>/dev/null && echo "  ✓ src/apps/ OK" || echo "  ✗ Errors in src/apps/"
-	@$(PYTHON) -m py_compile src/exercises/*.py 2>/dev/null && echo "  ✓ src/exercises/ OK" || echo "  ✗ Errors in src/exercises/"
-	@$(PYTHON) -m py_compile scripts/*.py 2>/dev/null && echo "  ✓ scripts/ OK" || echo "  ✗ Errors in scripts/"
-	@$(PYTHON) -m py_compile tests/*.py 2>/dev/null && echo "  ✓ tests/ OK" || echo "  ✗ Errors in tests/"
-	@$(PYTHON) -m py_compile formative/*.py 2>/dev/null && echo "  ✓ formative/ OK" || echo "  ✗ Errors in formative/"
+	@$(PYTHON) -m py_compile src/apps/email/*.py 2>/dev/null && echo "  ✓ src/apps/email/ OK"
+	@$(PYTHON) -m py_compile src/apps/rpc/jsonrpc/*.py 2>/dev/null && echo "  ✓ src/apps/rpc/jsonrpc/ OK"
+	@$(PYTHON) -m py_compile src/apps/rpc/xmlrpc/*.py 2>/dev/null && echo "  ✓ src/apps/rpc/xmlrpc/ OK"
+	@$(PYTHON) -m py_compile src/apps/rpc/grpc/grpc_*.py 2>/dev/null && echo "  ✓ src/apps/rpc/grpc/ OK"
+	@$(PYTHON) -m py_compile scripts/*.py 2>/dev/null && echo "  ✓ scripts/ OK"
+	@$(PYTHON) -m py_compile tests/*.py 2>/dev/null && echo "  ✓ tests/ OK"
+	@$(PYTHON) -m py_compile formative/*.py 2>/dev/null && echo "  ✓ formative/ OK"
 	@echo "Syntax check complete."
+
+ci: syntax lint
+	@echo ""
+	@echo "Running CI checks..."
+	@echo "═══════════════════════════════════════════════════════════════════════"
+	@echo "1. Validating quiz YAML..."
+	@$(PYTHON) -c "import yaml; data=yaml.safe_load(open('formative/quiz.yaml')); print(f'   ✓ Quiz has {len(data[\"questions\"])} questions')"
+	@echo "2. Validating quiz JSON..."
+	@$(PYTHON) -c "import json; data=json.load(open('formative/quiz.json')); print(f'   ✓ Quiz JSON has {len(data[\"questions\"])} questions')"
+	@echo "3. Testing quiz runner..."
+	@$(PYTHON) formative/run_quiz.py --list-lo > /dev/null && echo "   ✓ Quiz runner works"
+	@echo ""
+	@echo "CI checks complete."
 
 verify:
 	@$(PYTHON) setup/verify_environment.py
@@ -97,25 +136,40 @@ verify:
 clean:
 	@echo "Cleaning artifacts..."
 	@rm -rf artifacts/*.pcap artifacts/*.log 2>/dev/null || true
-	@rm -rf pcap/*.pcap 2>/dev/null || true
 	@find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@rm -rf .pytest_cache .mypy_cache .ruff_cache 2>/dev/null || true
 	@echo "Clean complete."
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SMTP_SERVICES
+# QUIZ EXPORT (LMS)
+# ═══════════════════════════════════════════════════════════════════════════════
+export-moodle:
+	@echo "Exporting quiz to Moodle XML format..."
+	@$(PYTHON) formative/export_lms.py --format moodle
+
+export-canvas:
+	@echo "Exporting quiz to Canvas QTI format..."
+	@$(PYTHON) formative/export_lms.py --format canvas
+
+export-csv:
+	@echo "Exporting quiz to CSV format..."
+	@$(PYTHON) formative/export_lms.py --format csv
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SMTP SERVICES
 # ═══════════════════════════════════════════════════════════════════════════════
 smtp-server:
 	@echo "Starting SMTP server on localhost:1025..."
-	@$(PYTHON) src/apps/email/smtp_server.py --verbose --spool docker/volumes/spool
+	@$(PYTHON) src/apps/email/smtp_server.py --verbose
 
 smtp-send:
 	@echo "Sending test email..."
 	@$(PYTHON) src/apps/email/smtp_client.py
 
 smtp-list:
-	@echo "Stored emails in spool:"
-	@ls -la docker/volumes/spool/*.eml 2>/dev/null || echo "  (no emails stored yet)"
+	@echo "Stored emails:"
+	@ls -la docker/volumes/spool/*.eml 2>/dev/null || echo "  (no emails stored)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DEMOS
@@ -127,15 +181,14 @@ demo-rpc:
 	@$(PYTHON) scripts/run_demo.py rpc
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# PACKET_CAPTURE
+# DOCKER
 # ═══════════════════════════════════════════════════════════════════════════════
-capture:
-	@echo "Starting packet capture (30 seconds)..."
-	@echo "Note: This may require sudo privileges."
-	@sudo $(PYTHON) scripts/capture_traffic.py --duration 30 --output pcap/
+docker-build:
+	@echo "Building Docker image..."
+	@docker build -t week12-lab -f docker/Dockerfile .
+	@echo "✓ Docker image built"
 
-analyse:
-	@echo "Analysing captured packets..."
-	@command -v tshark >/dev/null 2>&1 && \
-		tshark -r pcap/*.pcap -Y "smtp or http" 2>/dev/null | head -50 || \
-		echo "tshark not found. Install Wireshark CLI tools."
+docker-test:
+	@echo "Testing Docker container..."
+	@docker run --rm week12-lab python --version
+	@echo "✓ Container runs successfully"

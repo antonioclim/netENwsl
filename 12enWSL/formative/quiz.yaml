@@ -3,15 +3,20 @@
 #
 # Run with: python formative/run_quiz.py
 #           make quiz
+#
+# Export to LMS: python formative/export_lms.py --format moodle
+#                python formative/export_lms.py --format canvas
 
 metadata:
   week: 12
   topic: "Email Protocols and Remote Procedure Call"
-  version: "1.0.0"
+  version: "2.0.0"
   author: "ing. dr. Antonio Clim"
-  estimated_time: "15 minutes"
+  institution: "ASE Bucharest - CSIE"
+  estimated_time: "20 minutes"
   passing_score: 70
-  lo_coverage: [LO1, LO2, LO4, LO5, LO7]
+  lo_coverage: [LO1, LO2, LO3, LO4, LO5, LO6, LO7, LO8]
+  total_questions: 13
 
 questions:
   # ═══════════════════════════════════════════════════════════════════════════
@@ -31,6 +36,7 @@ questions:
     correct: b
     explanation: "DATA returns 354 (intermediate state) to signal readiness for message content, not 250 (command success)."
     misconception_ref: "docs/misconceptions.md#misconception-4"
+    points: 1
 
   - id: q2
     type: multiple_choice
@@ -46,8 +52,9 @@ questions:
     correct: b
     explanation: "SMTP follows a strict state machine: greeting → envelope (MAIL FROM, RCPT TO) → DATA → content → QUIT."
     misconception_ref: "docs/misconceptions.md#misconception-4"
+    points: 1
 
-  - id: q10
+  - id: q3
     type: multiple_choice
     lo_ref: LO1
     difficulty: basic
@@ -61,11 +68,12 @@ questions:
     correct: b
     explanation: "SMTP is exclusively a push protocol for sending. POP3 and IMAP are pull protocols for receiving."
     misconception_ref: "docs/misconceptions.md#misconception-1"
+    points: 1
 
   # ═══════════════════════════════════════════════════════════════════════════
   # LO2: Explain RPC abstraction (Understand)
   # ═══════════════════════════════════════════════════════════════════════════
-  - id: q3
+  - id: q4
     type: multiple_choice
     lo_ref: LO2
     difficulty: intermediate
@@ -78,11 +86,36 @@ questions:
       d: "Authenticate the client with a password"
     correct: b
     explanation: "The client stub (proxy) handles serialisation and network communication, hiding remote invocation complexity from the caller."
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+    points: 1
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO3: Implement SMTP/RPC (Apply)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q5
+    type: fill_blank
+    lo_ref: LO3
+    difficulty: intermediate
+    bloom_level: apply
+    stem: "To start the SMTP server from the command line, run: python src/apps/email/___"
+    correct: ["smtp_server.py", "smtp_server.py --verbose", "smtp_server.py --host 127.0.0.1"]
+    hint: "Check the src/apps/email/ folder for the server script"
+    points: 1
+
+  - id: q6
+    type: fill_blank
+    lo_ref: LO3
+    difficulty: basic
+    bloom_level: apply
+    stem: "To run the formative quiz from the Makefile, use the command: make ___"
+    correct: ["quiz"]
+    hint: "Check the Makefile help section"
+    points: 1
 
   # ═══════════════════════════════════════════════════════════════════════════
   # LO4: Demonstrate communication (Apply)
   # ═══════════════════════════════════════════════════════════════════════════
-  - id: q8
+  - id: q7
     type: fill_blank
     lo_ref: LO4
     difficulty: basic
@@ -90,8 +123,9 @@ questions:
     stem: "To connect to the lab SMTP server using netcat, the command is: nc localhost ___"
     correct: ["1025"]
     hint: "Check the port mapping in docker-compose.yml"
+    points: 1
 
-  - id: q9
+  - id: q8
     type: fill_blank
     lo_ref: LO4
     difficulty: intermediate
@@ -99,11 +133,12 @@ questions:
     stem: "To call the JSON-RPC server with curl, use port: curl -X POST http://localhost:___ ..."
     correct: ["6200"]
     hint: "JSON-RPC server port from the lab configuration"
+    points: 1
 
   # ═══════════════════════════════════════════════════════════════════════════
   # LO5: Analyse protocol differences (Analyse)
   # ═══════════════════════════════════════════════════════════════════════════
-  - id: q4
+  - id: q9
     type: multiple_choice
     lo_ref: LO5
     difficulty: intermediate
@@ -117,8 +152,9 @@ questions:
     correct: b
     explanation: "JSON-RPC separates transport-level (HTTP) from application-level errors. HTTP 200 = 'I processed your request'; error code -32601 in the body = 'method not found'."
     misconception_ref: "docs/misconceptions.md#misconception-7"
+    points: 1
 
-  - id: q5
+  - id: q10
     type: multiple_choice
     lo_ref: LO5
     difficulty: advanced
@@ -132,11 +168,31 @@ questions:
     correct: c
     explanation: "Protobuf is a completely different serialisation format — binary, schema-defined, using field tags (1, 2) instead of string keys."
     misconception_ref: "docs/misconceptions.md#misconception-9"
+    points: 1
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # LO7: Design protocol selection (Evaluate)
+  # LO6: Compare serialisation (Analyse)
   # ═══════════════════════════════════════════════════════════════════════════
-  - id: q6
+  - id: q11
+    type: multiple_choice
+    lo_ref: LO6
+    difficulty: advanced
+    bloom_level: analyse
+    stem: "A JSON-RPC request {\"method\":\"add\",\"params\":[10,32]} is approximately 45 bytes. The equivalent gRPC/Protobuf request is approximately:"
+    options:
+      a: "45 bytes (same size)"
+      b: "90 bytes (larger due to HTTP/2 overhead)"
+      c: "10-20 bytes (binary encoding is more compact)"
+      d: "5 bytes (maximum compression)"
+    correct: c
+    explanation: "Protobuf uses varint encoding and field numbers instead of string keys, typically achieving 2-5x size reduction compared to JSON."
+    misconception_ref: "docs/misconceptions.md#misconception-9"
+    points: 1
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO7: Design protocol selection (Create)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q12
     type: multiple_choice
     lo_ref: LO7
     difficulty: advanced
@@ -148,32 +204,59 @@ questions:
       c: "gRPC — bandwidth efficient with strong type contracts"
       d: "Raw TCP sockets — maximum performance possible"
     correct: c
-    explanation: "Mobile apps benefit from gRPC's bandwidth efficiency (protobuf binary encoding), built-in code generation, and strong type contracts for security-critical operations."
+    explanation: "Mobile apps benefit from gRPC's bandwidth efficiency (protobuf binary encoding), built-in code generation and strong type contracts for security-critical operations."
+    points: 1
 
-  - id: q7
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LO8: Evaluate RPC suitability (Evaluate)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q13
     type: multiple_choice
-    lo_ref: LO7
+    lo_ref: LO8
     difficulty: advanced
     bloom_level: evaluate
-    stem: "A legacy enterprise system from 2005 needs to integrate with your new microservices. Which protocol provides the best compatibility?"
+    stem: "Your team needs to build a real-time collaborative document editor with thousands of concurrent users. Which protocol is MOST suitable?"
     options:
-      a: "gRPC with Protocol Buffers"
-      b: "GraphQL over HTTP"
-      c: "XML-RPC"
-      d: "WebSockets with JSON"
+      a: "JSON-RPC over HTTP/1.1 with polling"
+      b: "XML-RPC with long polling"
+      c: "gRPC with bidirectional streaming"
+      d: "SMTP for message delivery between users"
     correct: c
-    explanation: "XML-RPC has been a standard since 1998 and is supported by virtually all legacy systems. gRPC requires HTTP/2, which many older systems do not support."
-    misconception_ref: "docs/misconceptions.md#misconception-8"
+    explanation: "gRPC's bidirectional streaming over HTTP/2 handles persistent connections efficiently. It supports real-time updates without the overhead of repeated request-response cycles."
+    misconception_ref: "docs/misconceptions.md#misconception-10"
+    points: 1
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SCORING_CONFIGURATION
+# SCORING CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
 scoring:
-  total_questions: 10
-  points_per_question: 10
+  total_questions: 13
+  points_per_question: 1
+  max_score: 13
   passing_threshold: 70
+  grade_boundaries:
+    excellent: 90
+    good: 75
+    pass: 70
 
 feedback:
-  excellent: "Outstanding! You have mastered Week 12 concepts. Ready for the homework."
+  excellent: "Outstanding! You have mastered Week 12 concepts. Ready for the homework assignments."
   good: "Good work! Review the misconceptions document for topics you missed."
   needs_review: "Please revisit docs/theory_summary.md and try the exercises again before retaking the quiz."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LMS EXPORT METADATA
+# ═══════════════════════════════════════════════════════════════════════════════
+lms_export:
+  moodle:
+    category: "Week 12 - Email and RPC"
+    question_type_mapping:
+      multiple_choice: "multichoice"
+      fill_blank: "shortanswer"
+    shuffle_answers: true
+    show_feedback: true
+  canvas:
+    quiz_type: "practice_quiz"
+    time_limit: 20
+    allowed_attempts: 3
+    show_correct_answers: true
