@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Course Documentation
+    url: https://github.com/antonioclim/netENwsl#readme
+    about: Review the comprehensive README before opening an issue—your answer may already be documented.
+  - name: 🔧 Troubleshooting Guide
+    url: https://github.com/antonioclim/netENwsl#29-complete-troubleshooting-guide
+    about: Common problems and solutions are documented in the troubleshooting section.
