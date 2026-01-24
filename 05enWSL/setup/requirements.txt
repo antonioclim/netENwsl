@@ -1,9 +1,15 @@
-# Week 5 WSL Kit - Setup Requirements
-# NETWORKING class - ASE, Informatics | by Revolvix
+# Week 5 Laboratory Kit Dependencies
+# Computer Networks — ASE-CSIE Bucharest
+#
+# Install: pip install -r setup/requirements.txt
+# Python: >= 3.10 (3.11 recommended)
 
-# Optional packages for enhanced functionality
-# Core functionality works without these
+# Core dependencies
+pyyaml>=6.0
 
-docker>=6.0.0          # Docker SDK for Python
-requests>=2.28.0       # HTTP library
-pyyaml>=6.0            # YAML parsing
+# Testing (recommended)
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Code quality (development)
+ruff>=0.1.0

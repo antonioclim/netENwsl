@@ -18,7 +18,7 @@ Learning Objectives:
     - Track progress across multiple attempts
 
 Author: ing. dr. Antonio Clim, ASE-CSIE Bucharest
-Version: 1.0.0 (January 2026)
+Version: 1.1.0 (January 2026)
 """
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -149,10 +149,12 @@ def display_question(q: Dict[str, Any], index: int, total: int) -> None:
     diff = q.get('difficulty', 'unknown')
     diff_colour = difficulty_colours.get(diff, Colours.CYAN)
     
+    lo_ref = q.get('lo_ref', '?')
+    points = q.get('points', 1)
     print(f"  Question {colourise(f'{index}/{total}', Colours.BOLD)}"
           f"  [{colourise(diff.upper(), diff_colour)}]"
-          f"  {colourise(f'LO: {q.get(\"lo_ref\", \"?\")}', Colours.DIM)}"
-          f"  {colourise(f'{q.get(\"points\", 1)} pts', Colours.CYAN)}")
+          f"  {colourise(f'LO: {lo_ref}', Colours.DIM)}"
+          f"  {colourise(f'{points} pts', Colours.CYAN)}")
     print()
     
     # Question stem
@@ -255,7 +257,7 @@ def run_quiz(quiz: Dict[str, Any], randomize: bool = False, limit: Optional[int]
         quiz: Loaded quiz dictionary
         randomize: Whether to shuffle questions
         limit: Maximum number of questions to ask
-        category: Filter by Bloom level (remember, understand, apply, analyze)
+        category: Filter by Bloom level (remember, understand, apply, analyse)
         show_review: Show explanations even for correct answers
         
     Returns:
@@ -392,7 +394,7 @@ def display_results(session: QuizSession, quiz: Dict[str, Any]) -> None:
             bloom_stats[level]['correct'] += 1
     
     print(colourise("  Performance by Bloom Level:", Colours.CYAN))
-    for level in ['remember', 'understand', 'apply', 'analyze']:
+    for level in ['remember', 'understand', 'apply', 'analyse', 'evaluate', 'create']:
         if level in bloom_stats:
             stats = bloom_stats[level]
             pct = (stats['correct'] / stats['total']) * 100 if stats['total'] > 0 else 0
@@ -419,6 +421,65 @@ def display_results(session: QuizSession, quiz: Dict[str, Any]) -> None:
         print(colourise(f"  ❌ NOT PASSED (<{passing}%)", Colours.RED))
     
     print()
+    
+    # ─────────────────────────────────────────────────────────────────────────
+    # PERSONALIZED SELF-ASSESSMENT RECOMMENDATIONS
+    # ─────────────────────────────────────────────────────────────────────────
+    failed_los = set()
+    failed_blooms = set()
+    for r in session.results:
+        if not r.correct:
+            failed_los.add(r.lo_ref)
+            failed_blooms.add(r.bloom_level)
+    
+    if failed_los:
+        print(colourise("  📋 PERSONALIZED STUDY PLAN", Colours.YELLOW))
+        print(colourise("  " + "─" * 40, Colours.YELLOW))
+        print()
+        
+        # LO-specific recommendations
+        lo_resources = {
+            'LO1': ('Network Layer basics', 'docs/theory_summary.md', 'docs/misconceptions.md#osi-layers'),
+            'LO2': ('IPv4/IPv6 addressing', 'docs/theory_summary.md', 'docs/code_tracing.md (T4)'),
+            'LO3': ('CIDR calculations', 'docs/misconceptions.md#1-4', 'src/exercises/ex_5_01_cidr_flsm.py'),
+            'LO4': ('FLSM subnetting', 'docs/code_tracing.md (T2)', 'src/exercises/ex_5_01_cidr_flsm.py'),
+            'LO5': ('VLSM design', 'docs/misconceptions.md#5-6', 'src/exercises/ex_5_02_vlsm_ipv6.py'),
+            'LO6': ('Efficiency evaluation', 'docs/theory_summary.md', 'tests/expected_outputs.md'),
+        }
+        
+        print("  🎯 Focus areas based on missed questions:")
+        for lo in sorted(failed_los):
+            if lo in lo_resources:
+                topic, resource1, resource2 = lo_resources[lo]
+                print(f"     • {lo}: {topic}")
+                print(f"       → Review: {resource1}")
+                print(f"       → Practice: {resource2}")
+        print()
+        
+        # Bloom-level recommendations
+        if 'remember' in failed_blooms or 'understand' in failed_blooms:
+            print("  📚 Foundation gaps detected:")
+            print("     → Re-read: docs/theory_summary.md")
+            print("     → Review: docs/glossary.md for definitions")
+        
+        if 'apply' in failed_blooms:
+            print("  🔧 Application practice needed:")
+            print("     → Complete: docs/code_tracing.md exercises")
+            print("     → Run: make ex1 and make ex2 for hands-on practice")
+        
+        if 'analyse' in failed_blooms or 'evaluate' in failed_blooms:
+            print("  🔍 Analysis skills to develop:")
+            print("     → Study: docs/misconceptions.md (understand WHY)")
+            print("     → Try: homework/exercises/ for complex scenarios")
+        
+        print()
+        print("  💡 Recommended next steps:")
+        print("     1. Review the resources above")
+        print("     2. Re-run quiz: python formative/run_quiz.py --category " + 
+              list(failed_blooms)[0] if failed_blooms else "apply")
+        print("     3. Check understanding: make test")
+        print()
+    
     print(colourise("═" * 60, Colours.BLUE))
 
 
@@ -479,7 +540,7 @@ Examples:
     )
     parser.add_argument(
         '--category', '-c',
-        choices=['remember', 'understand', 'apply', 'analyze'],
+        choices=['remember', 'understand', 'apply', 'analyse', 'evaluate', 'create'],
         help='Filter by Bloom taxonomy level'
     )
     parser.add_argument(
