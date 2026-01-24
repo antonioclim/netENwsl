@@ -166,7 +166,7 @@ def test_exercise_5():
     """Test Exercise 5: HTTPS Service."""
     print("Testing Exercise 5: HTTPS Service (selftest)")
     
-    exercise_path = PROJECT_ROOT / "src" / "exercises" / "ex_10_01_https.py"
+    exercise_path = PROJECT_ROOT / "src" / "exercises" / "ex_10_01_tls_rest_crud.py"
     
     if not exercise_path.exists():
         print(f"  ✗ Exercise file not found: {exercise_path}")
@@ -195,7 +195,7 @@ def test_exercise_6():
     """Test Exercise 6: REST Maturity Levels."""
     print("Testing Exercise 6: REST Maturity Levels (selftest)")
     
-    exercise_path = PROJECT_ROOT / "src" / "exercises" / "ex_10_02_rest_levels.py"
+    exercise_path = PROJECT_ROOT / "src" / "exercises" / "ex_10_02_richardson_maturity.py"
     
     if not exercise_path.exists():
         print(f"  ✗ Exercise file not found: {exercise_path}")

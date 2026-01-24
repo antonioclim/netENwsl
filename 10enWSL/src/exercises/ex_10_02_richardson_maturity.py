@@ -25,7 +25,6 @@ Pair Programming Notes:
 - Driver: Start server and make Level 0-1 requests
 - Navigator: Document differences in request format
 - Swap after: Completing Level 1 requests
-"""
 
 Common Errors
 -------------
@@ -33,6 +32,7 @@ Common Errors
 2. "Flask not found" → pip install flask --break-system-packages
 3. "405 Method Not Allowed" → Wrong HTTP verb for the endpoint level
 4. "404 Not Found" → Check URL path matches the level (level0, level1, level2, level3)
+"""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SETUP_ENVIRONMENT

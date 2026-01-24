@@ -21,7 +21,6 @@ Pair Programming Notes:
 - Driver: Execute queries and observe output
 - Navigator: Verify response structure against RFC 1035
 - Swap after: Completing three different query types
-"""
 
 Common Errors
 -------------
@@ -30,6 +29,7 @@ Common Errors
 3. "dnspython not found" → pip install dnspython --break-system-packages
 4. "Truncated response" → Response too large for UDP; use TCP (+tcp flag)
 5. "SERVFAIL" → DNS server error; check container logs
+"""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SETUP_ENVIRONMENT

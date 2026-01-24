@@ -129,12 +129,26 @@ Follow this recommended order for maximum learning effectiveness:
 - [Theory Summary](docs/theory_summary.md) — Key concepts with concrete analogies
 - [Concept Analogies](docs/concept_analogies.md) — CPA method: everyday analogies before technical details
 - [Glossary](docs/glossary.md) — Technical terms and definitions
+- [Learning Objectives](docs/learning_objectives.md) — LO traceability matrix
 
 ### Learning Activities
 - [Peer Instruction Questions](docs/peer_instruction.md) — 5 MCQ questions for class discussion
 - [Pair Programming Guide](docs/pair_programming_guide.md) — Structured exercises for pairs
 - [Code Tracing](docs/code_tracing.md) — Trace code execution manually
 - [Parsons Problems](docs/parsons_problems.md) — Reorder code blocks
+
+### Self-Assessment
+- [Formative Quiz](formative/quiz.yaml) — 10 questions mapped to Learning Objectives
+  ```bash
+  # Run interactive quiz
+  python3 formative/run_quiz.py
+  
+  # Review mode (answers shown)
+  python3 formative/run_quiz.py --review
+  
+  # Filter by Learning Objective
+  python3 formative/run_quiz.py --lo LO1
+  ```
 
 ### Reference
 - [Commands Cheatsheet](docs/commands_cheatsheet.md) — curl, dig, ssh, ftp quick reference
@@ -277,6 +291,27 @@ python3 tests/smoke_test.py
 
 # Exercise self-tests
 python3 src/exercises/ex_10_01_tls_rest_crud.py selftest
+
+# Using Makefile (recommended)
+make test          # Run all tests
+make smoke         # Smoke tests only
+make selftest      # Exercise selftests
+make quiz          # Formative assessment quiz
+```
+
+---
+
+## 🔧 Makefile Commands
+
+```bash
+make help          # Show all available commands
+make setup         # Install dependencies
+make verify        # Verify environment
+make lab-start     # Start Docker lab
+make lab-stop      # Stop Docker lab
+make quiz          # Run formative quiz
+make quiz-review   # Quiz with answers shown
+make clean         # Remove generated files
 ```
 
 ---
