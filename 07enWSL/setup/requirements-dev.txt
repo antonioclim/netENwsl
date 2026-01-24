@@ -1,0 +1,77 @@
+# ============================================================================
+# Week 7 WSLkit — Development Dependencies
+# NETWORKING class - ASE, Informatics | Computer Networks Laboratory
+# ============================================================================
+#
+# Installation (after requirements.txt):
+#   pip install -r setup/requirements-dev.txt
+#
+# Or install everything at once:
+#   pip install -r setup/requirements.txt -r setup/requirements-dev.txt
+#
+# ============================================================================
+
+# ─── TESTING ─────────────────────────────────────────────────────────────────
+
+# Test framework
+pytest>=7.4.0,<8.0
+
+# Test timeout to prevent hanging tests
+pytest-timeout>=2.2.0,<3.0
+
+# Code coverage measurement
+pytest-cov>=4.1.0,<5.0
+
+# ─── LINTING AND FORMATTING ──────────────────────────────────────────────────
+
+# Fast Python linter (replaces flake8, isort, pyupgrade)
+ruff>=0.1.9,<1.0
+
+# ─── TYPE CHECKING ───────────────────────────────────────────────────────────
+
+# Static type checker
+mypy>=1.8.0,<2.0
+
+# Type stubs for requests library
+types-requests>=2.31.0,<3.0
+
+# Type stubs for PyYAML
+types-PyYAML>=6.0.0,<7.0
+
+# ─── SECURITY ────────────────────────────────────────────────────────────────
+
+# Security linter
+bandit>=1.7.0,<2.0
+
+# ─── DOCUMENTATION ───────────────────────────────────────────────────────────
+
+# Markdown linting (optional)
+# mdformat>=0.7.0,<1.0
+
+# ─── PCAP TOOLS ──────────────────────────────────────────────────────────────
+
+# Packet crafting library for full PCAP generation
+scapy>=2.5.0,<3.0
+
+# ============================================================================
+# USAGE NOTES
+# ============================================================================
+#
+# Running tests:
+#   pytest tests/ -v
+#   pytest tests/ --cov=src --cov-report=term-missing
+#
+# Running linter:
+#   ruff check src/ scripts/ tests/
+#   ruff check --fix src/  # Auto-fix issues
+#
+# Running formatter:
+#   ruff format src/ scripts/ tests/
+#
+# Running type checker:
+#   mypy src/ scripts/ --ignore-missing-imports
+#
+# Running security scan:
+#   bandit -r src/ scripts/ -ll
+#
+# ============================================================================

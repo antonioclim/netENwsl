@@ -2,30 +2,24 @@
 """
 Formative Quiz Runner — Week 7
 ==============================
-NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 
-Interactive quiz runner for self-assessment of packet capture and filtering concepts.
+Interactive quiz runner for self-assessment on packet capture and filtering concepts.
+Supports multiple modes: full quiz, random sampling, LO-specific and review mode.
 
 Usage:
-    python3 formative/run_quiz.py                    # Run full quiz
-    python3 formative/run_quiz.py --random           # Randomize question order
-    python3 formative/run_quiz.py --limit 5          # Limit to 5 questions
-    python3 formative/run_quiz.py --lo LO1 LO2       # Filter by learning objectives
-    python3 formative/run_quiz.py --difficulty basic # Filter by difficulty
-    python3 formative/run_quiz.py --review           # Review mode (show answers)
-    python3 formative/run_quiz.py --export results.json  # Export results
+    python3 formative/run_quiz.py                    # Full quiz
+    python3 formative/run_quiz.py --random --limit 5 # 5 random questions
+    python3 formative/run_quiz.py --lo LO1           # LO1 questions only
+    python3 formative/run_quiz.py --review           # Show answers
+    python3 formative/run_quiz.py --export-json      # Export results to JSON
 
-Exit codes:
-    0 - Quiz passed (score >= passing threshold)
-    1 - Quiz failed (score < passing threshold)
-    2 - Error (file not found, invalid YAML, etc.)
+Requirements:
+    pip install pyyaml colorama
 """
 
 from __future__ import annotations
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# IMPORTS
-# ═══════════════════════════════════════════════════════════════════════════════
 import argparse
 import json
 import random
@@ -39,575 +33,431 @@ from typing import Any, Optional
 try:
     import yaml
 except ImportError:
-    print("ERROR: PyYAML not installed. Run: pip install pyyaml")
+    print("Error: PyYAML not installed. Run: pip install pyyaml")
     sys.exit(2)
 
+try:
+    from colorama import Fore, Style, init
+    init(autoreset=True)
+    COLORS_AVAILABLE = True
+except ImportError:
+    COLORS_AVAILABLE = False
+    # Stub colour codes
+    class Fore:
+        GREEN = RED = YELLOW = CYAN = BLUE = MAGENTA = WHITE = ""
+    class Style:
+        BRIGHT = RESET_ALL = ""
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# DATA CLASSES
+# DATA STRUCTURES
 # ═══════════════════════════════════════════════════════════════════════════════
+
 @dataclass
-class QuizResult:
-    """Stores the result of a single question attempt."""
-    question_id: str
+class Question:
+    """Represents a single quiz question."""
+    id: str
+    type: str
+    stem: str
+    points: int
+    correct_answer: Any
     lo_ref: str
+    bloom_level: str
     difficulty: str
-    points_possible: int
-    points_earned: int
-    correct: bool
-    user_answer: str
-    correct_answer: str
-    time_taken: float
+    options: Optional[dict[str, str]] = None
+    explanation: str = ""
+    verify_command: str = ""
+    
+    def display(self, show_answer: bool = False) -> None:
+        """Display the question to the terminal."""
+        print()
+        print(f"{Fore.CYAN}╔{'═' * 68}╗{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} {Fore.YELLOW}[{self.id}]{Style.RESET_ALL} {self.stem[:60]}")
+        if len(self.stem) > 60:
+            for line in [self.stem[i:i+66] for i in range(60, len(self.stem), 66)]:
+                print(f"{Fore.CYAN}║{Style.RESET_ALL}        {line}")
+        print(f"{Fore.CYAN}╟{'─' * 68}╢{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}║{Style.RESET_ALL} LO: {self.lo_ref} | Bloom: {self.bloom_level} | Points: {self.points}")
+        print(f"{Fore.CYAN}╚{'═' * 68}╝{Style.RESET_ALL}")
+        
+        if self.type == "multiple_choice" and self.options:
+            print()
+            for key, text in self.options.items():
+                marker = f"{Fore.GREEN}►" if show_answer and key == self.correct_answer else " "
+                print(f"  {marker} {key}) {text}{Style.RESET_ALL}")
+        
+        if show_answer:
+            print()
+            print(f"{Fore.GREEN}✓ Correct answer: {self.correct_answer}{Style.RESET_ALL}")
+            if self.explanation:
+                print(f"\n{Fore.CYAN}Explanation:{Style.RESET_ALL}")
+                for line in self.explanation.strip().split('\n'):
+                    print(f"  {line}")
 
 
 @dataclass
 class QuizSession:
-    """Stores the complete quiz session data."""
-    start_time: datetime = field(default_factory=datetime.now)
-    end_time: Optional[datetime] = None
-    results: list[QuizResult] = field(default_factory=list)
-    total_points: int = 0
-    earned_points: int = 0
+    """Tracks a quiz session."""
+    questions: list[Question]
+    answers: dict[str, Any] = field(default_factory=dict)
+    start_time: Optional[float] = None
+    end_time: Optional[float] = None
     
-    @property
-    def score_percentage(self) -> float:
-        """Calculate score as percentage."""
-        if self.total_points == 0:
-            return 0.0
-        return (self.earned_points / self.total_points) * 100
+    def start(self) -> None:
+        """Mark session start."""
+        self.start_time = time.time()
+    
+    def finish(self) -> None:
+        """Mark session end."""
+        self.end_time = time.time()
     
     @property
     def duration_seconds(self) -> float:
-        """Calculate total quiz duration."""
-        if self.end_time is None:
-            return 0.0
-        return (self.end_time - self.start_time).total_seconds()
+        """Get session duration in seconds."""
+        if self.start_time and self.end_time:
+            return self.end_time - self.start_time
+        return 0.0
+    
+    @property
+    def score(self) -> tuple[int, int]:
+        """Calculate score as (earned, possible)."""
+        earned = 0
+        possible = sum(q.points for q in self.questions)
+        
+        for q in self.questions:
+            if q.id in self.answers:
+                user_answer = self.answers[q.id]
+                if self._check_answer(q, user_answer):
+                    earned += q.points
+        
+        return earned, possible
+    
+    def _check_answer(self, question: Question, answer: Any) -> bool:
+        """Check if answer is correct."""
+        if question.type == "multiple_choice":
+            return str(answer).lower() == str(question.correct_answer).lower()
+        elif question.type == "fill_blank":
+            if isinstance(question.correct_answer, list):
+                # For fill-blank, check each blank
+                if isinstance(answer, list):
+                    return all(
+                        str(a).lower() == str(c).lower()
+                        for a, c in zip(answer, question.correct_answer)
+                    )
+            return str(answer).lower() == str(question.correct_answer).lower()
+        elif question.type == "ordering":
+            return answer == question.correct_answer
+        elif question.type == "true_false":
+            return str(answer).lower() in ("true", "t", "1") if question.correct_answer else str(answer).lower() in ("false", "f", "0")
+        return False
     
     def to_dict(self) -> dict[str, Any]:
         """Convert session to dictionary for JSON export."""
+        earned, possible = self.score
         return {
-            "start_time": self.start_time.isoformat(),
-            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "timestamp": datetime.now().isoformat(),
             "duration_seconds": self.duration_seconds,
-            "total_points": self.total_points,
-            "earned_points": self.earned_points,
-            "score_percentage": self.score_percentage,
-            "results": [
-                {
-                    "question_id": r.question_id,
-                    "lo_ref": r.lo_ref,
-                    "difficulty": r.difficulty,
-                    "points_possible": r.points_possible,
-                    "points_earned": r.points_earned,
-                    "correct": r.correct,
-                    "user_answer": r.user_answer,
-                    "correct_answer": r.correct_answer,
-                    "time_taken": r.time_taken
+            "questions_attempted": len(self.answers),
+            "questions_total": len(self.questions),
+            "score_earned": earned,
+            "score_possible": possible,
+            "percentage": round(earned / possible * 100, 1) if possible > 0 else 0,
+            "answers": {
+                q.id: {
+                    "user_answer": self.answers.get(q.id),
+                    "correct_answer": q.correct_answer,
+                    "correct": self._check_answer(q, self.answers.get(q.id)) if q.id in self.answers else False,
+                    "points": q.points,
+                    "lo_ref": q.lo_ref,
                 }
-                for r in self.results
-            ]
+                for q in self.questions
+            },
+            "lo_breakdown": self._get_lo_breakdown(),
         }
+    
+    def _get_lo_breakdown(self) -> dict[str, dict[str, int]]:
+        """Get score breakdown by Learning Objective."""
+        breakdown = {}
+        for q in self.questions:
+            lo = q.lo_ref
+            if lo not in breakdown:
+                breakdown[lo] = {"earned": 0, "possible": 0}
+            breakdown[lo]["possible"] += q.points
+            if q.id in self.answers and self._check_answer(q, self.answers[q.id]):
+                breakdown[lo]["earned"] += q.points
+        return breakdown
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # QUIZ LOADER
 # ═══════════════════════════════════════════════════════════════════════════════
-def load_quiz(path: Path) -> dict[str, Any]:
+
+def load_quiz(path: Path) -> tuple[dict[str, Any], list[Question]]:
     """
     Load quiz from YAML file.
     
     Args:
-        path: Path to quiz YAML file
+        path: Path to quiz.yaml
         
     Returns:
-        Parsed quiz dictionary
-        
-    Raises:
-        FileNotFoundError: If quiz file doesn't exist
-        yaml.YAMLError: If YAML parsing fails
+        Tuple of (metadata, questions)
     """
     if not path.exists():
         raise FileNotFoundError(f"Quiz file not found: {path}")
     
     with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-def filter_questions(
-    questions: list[dict],
-    lo_filter: Optional[list[str]] = None,
-    difficulty_filter: Optional[str] = None
-) -> list[dict]:
-    """
-    Filter questions by learning objective and/or difficulty.
+        data = yaml.safe_load(f)
     
-    Args:
-        questions: List of question dictionaries
-        lo_filter: List of LO IDs to include (e.g., ["LO1", "LO2"])
-        difficulty_filter: Difficulty level ("basic", "intermediate", "advanced")
-        
-    Returns:
-        Filtered list of questions
-    """
-    filtered = questions
+    metadata = data.get("metadata", {})
+    questions = []
     
-    if lo_filter:
-        filtered = [q for q in filtered if q.get("lo_ref") in lo_filter]
-    
-    if difficulty_filter:
-        filtered = [q for q in filtered if q.get("difficulty") == difficulty_filter]
-    
-    return filtered
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# QUESTION HANDLERS
-# ═══════════════════════════════════════════════════════════════════════════════
-def display_question_header(index: int, total: int, question: dict) -> None:
-    """Display question header with metadata."""
-    print()
-    print("═" * 70)
-    print(f"  Question {index}/{total}  │  {question.get('lo_ref', '?')}  │  "
-          f"{question.get('difficulty', '?').upper()}  │  "
-          f"{question.get('points', 1)} pts")
-    print("═" * 70)
-    print()
-
-
-def handle_multiple_choice(question: dict, review_mode: bool = False) -> tuple[str, bool]:
-    """
-    Handle multiple choice question.
-    
-    Args:
-        question: Question dictionary
-        review_mode: If True, show correct answer immediately
-        
-    Returns:
-        Tuple of (user_answer, is_correct)
-    """
-    print(f"📝 {question['stem']}")
-    print()
-    
-    options = question.get("options", {})
-    for key, value in sorted(options.items()):
-        print(f"   {key}) {value}")
-    
-    print()
-    
-    if review_mode:
-        correct = question.get("correct", "?")
-        print(f"   ✅ Correct answer: {correct}")
-        print()
-        if "explanation" in question:
-            print(f"   📖 {question['explanation'].strip()}")
-        return correct, True
-    
-    while True:
-        answer = input("   Your answer (a/b/c/d): ").strip().lower()
-        if answer in options:
-            break
-        print("   ⚠️  Invalid option. Please enter a, b, c, or d.")
-    
-    correct = question.get("correct", "").lower()
-    is_correct = answer == correct
-    
-    if is_correct:
-        print("   ✅ Correct!")
-    else:
-        print(f"   ❌ Incorrect. Correct answer: {correct}")
-    
-    if "explanation" in question:
-        print()
-        print(f"   📖 {question['explanation'].strip()}")
-    
-    return answer, is_correct
-
-
-def handle_fill_blank(question: dict, review_mode: bool = False) -> tuple[str, bool]:
-    """
-    Handle fill-in-the-blank question.
-    
-    Args:
-        question: Question dictionary
-        review_mode: If True, show correct answer immediately
-        
-    Returns:
-        Tuple of (user_answer, is_correct)
-    """
-    print(f"📝 {question['stem']}")
-    print()
-    
-    if "template" in question:
-        print(f"   Template: {question['template']}")
-        print()
-    
-    correct_answers = question.get("correct", [])
-    if isinstance(correct_answers, str):
-        correct_answers = [correct_answers]
-    
-    if review_mode:
-        print(f"   ✅ Correct answer(s): {', '.join(correct_answers)}")
-        if "explanation" in question:
-            print()
-            print(f"   📖 {question['explanation'].strip()}")
-        return correct_answers[0], True
-    
-    # For multi-blank questions
-    if isinstance(correct_answers[0], list) or len(correct_answers) > 1:
-        user_answers = []
-        for i, _ in enumerate(correct_answers):
-            answer = input(f"   Blank {i+1}: ").strip()
-            user_answers.append(answer)
-        
-        # Check if all blanks match
-        is_correct = all(
-            ua.lower() == ca.lower() 
-            for ua, ca in zip(user_answers, correct_answers)
+    for q_data in data.get("questions", []):
+        question = Question(
+            id=q_data.get("id", ""),
+            type=q_data.get("type", "multiple_choice"),
+            stem=q_data.get("stem", ""),
+            points=q_data.get("points", 1),
+            correct_answer=q_data.get("correct") or q_data.get("correct_order", ""),
+            lo_ref=q_data.get("lo_ref", ""),
+            bloom_level=q_data.get("bloom_level", ""),
+            difficulty=q_data.get("difficulty", ""),
+            options=q_data.get("options"),
+            explanation=q_data.get("explanation", ""),
+            verify_command=q_data.get("verify_command", ""),
         )
-        user_answer = ", ".join(user_answers)
-    else:
-        user_answer = input("   Your answer: ").strip()
-        # Check against acceptable variants
-        acceptable = question.get("acceptable_variants", [])
-        all_correct = [correct_answers[0]] + [v[0] if isinstance(v, list) else v for v in acceptable]
-        is_correct = user_answer.lower() in [a.lower() for a in all_correct]
+        questions.append(question)
     
-    if is_correct:
-        print("   ✅ Correct!")
-    else:
-        print(f"   ❌ Incorrect. Correct answer: {correct_answers}")
-    
-    if "explanation" in question:
-        print()
-        print(f"   📖 {question['explanation'].strip()}")
-    
-    return user_answer, is_correct
-
-
-def handle_ordering(question: dict, review_mode: bool = False) -> tuple[str, bool]:
-    """
-    Handle ordering/sequencing question.
-    
-    Args:
-        question: Question dictionary
-        review_mode: If True, show correct answer immediately
-        
-    Returns:
-        Tuple of (user_answer, is_correct)
-    """
-    print(f"📝 {question['stem']}")
-    print()
-    print("   Items to order:")
-    
-    items = question.get("items", [])
-    for item in items:
-        print(f"   {item['id']}) {item['text']}")
-    
-    print()
-    
-    correct_order = question.get("correct_order", [])
-    
-    if review_mode:
-        print(f"   ✅ Correct order: {' → '.join(correct_order)}")
-        if "explanation" in question:
-            print()
-            print(f"   📖 {question['explanation'].strip()}")
-        return ",".join(correct_order), True
-    
-    user_input = input("   Your order (e.g., A,C,B): ").strip().upper()
-    user_order = [x.strip() for x in user_input.split(",")]
-    
-    is_correct = user_order == correct_order
-    
-    if is_correct:
-        print("   ✅ Correct!")
-    else:
-        print(f"   ❌ Incorrect. Correct order: {' → '.join(correct_order)}")
-    
-    if "explanation" in question:
-        print()
-        print(f"   📖 {question['explanation'].strip()}")
-    
-    return user_input, is_correct
+    return metadata, questions
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAIN QUIZ RUNNER
+# QUIZ RUNNER
 # ═══════════════════════════════════════════════════════════════════════════════
-def run_quiz(
-    quiz: dict,
-    randomize: bool = False,
-    limit: Optional[int] = None,
-    lo_filter: Optional[list[str]] = None,
-    difficulty_filter: Optional[str] = None,
-    review_mode: bool = False
-) -> QuizSession:
-    """
-    Run the interactive quiz session.
+
+def run_interactive_quiz(session: QuizSession) -> None:
+    """Run interactive quiz session."""
+    session.start()
     
-    Args:
-        quiz: Parsed quiz dictionary
-        randomize: Shuffle question order
-        limit: Maximum number of questions
-        lo_filter: Filter by learning objectives
-        difficulty_filter: Filter by difficulty
-        review_mode: Show answers without requiring input
-        
-    Returns:
-        QuizSession with results
-    """
-    session = QuizSession()
-    
-    # Get and filter questions
-    questions = quiz.get("questions", [])
-    questions = filter_questions(questions, lo_filter, difficulty_filter)
-    
-    if not questions:
-        print("⚠️  No questions match the specified filters.")
-        return session
-    
-    if randomize:
-        random.shuffle(questions)
-    
-    if limit and limit < len(questions):
-        questions = questions[:limit]
-    
-    # Display header
-    metadata = quiz.get("metadata", {})
     print()
-    print("╔" + "═" * 68 + "╗")
-    print(f"║  {'FORMATIVE QUIZ — Week 7':^64}  ║")
-    print(f"║  {metadata.get('topic', 'Packet Interception and Filtering'):^64}  ║")
-    print("╠" + "═" * 68 + "╣")
-    print(f"║  Questions: {len(questions):<5}  │  Passing: {metadata.get('passing_score', 70)}%  │  "
-          f"Time: ~{metadata.get('estimated_time', '15 min'):<10}  ║")
-    print("╚" + "═" * 68 + "╝")
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}  FORMATIVE QUIZ — Week 7: Packet Interception and Filtering{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"\n  Questions: {len(session.questions)}")
+    print(f"  Total points: {sum(q.points for q in session.questions)}")
+    print(f"  Passing: 70%")
+    print(f"\n  Type your answer and press Enter. Type 'quit' to exit early.\n")
     
-    if not review_mode:
+    for i, question in enumerate(session.questions, 1):
+        print(f"\n{Fore.MAGENTA}Question {i} of {len(session.questions)}{Style.RESET_ALL}")
+        question.display()
+        
         print()
-        input("Press Enter to start...")
+        try:
+            answer = input(f"{Fore.WHITE}Your answer: {Style.RESET_ALL}").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\n\nQuiz interrupted.")
+            break
+        
+        if answer.lower() == "quit":
+            print("\nQuiz ended early.")
+            break
+        
+        session.answers[question.id] = answer
+        
+        # Immediate feedback
+        if session._check_answer(question, answer):
+            print(f"{Fore.GREEN}✓ Correct!{Style.RESET_ALL}")
+        else:
+            print(f"{Fore.RED}✗ Incorrect.{Style.RESET_ALL}")
+            print(f"  Correct answer: {Fore.GREEN}{question.correct_answer}{Style.RESET_ALL}")
     
-    # Process each question
-    handlers = {
-        "multiple_choice": handle_multiple_choice,
-        "fill_blank": handle_fill_blank,
-        "ordering": handle_ordering,
-    }
+    session.finish()
+    display_results(session)
+
+
+def display_results(session: QuizSession) -> None:
+    """Display quiz results summary."""
+    earned, possible = session.score
+    percentage = round(earned / possible * 100, 1) if possible > 0 else 0
+    
+    print()
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}  QUIZ RESULTS{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    
+    # Score bar
+    bar_width = 40
+    filled = int(bar_width * percentage / 100)
+    bar = "█" * filled + "░" * (bar_width - filled)
+    
+    colour = Fore.GREEN if percentage >= 70 else Fore.YELLOW if percentage >= 50 else Fore.RED
+    print(f"\n  Score: {colour}{earned}/{possible} ({percentage}%){Style.RESET_ALL}")
+    print(f"  [{bar}]")
+    
+    # Pass/Fail
+    if percentage >= 70:
+        print(f"\n  {Fore.GREEN}✓ PASSED{Style.RESET_ALL}")
+    else:
+        print(f"\n  {Fore.RED}✗ NOT PASSED (70% required){Style.RESET_ALL}")
+    
+    # Time
+    if session.duration_seconds > 0:
+        minutes = int(session.duration_seconds // 60)
+        seconds = int(session.duration_seconds % 60)
+        print(f"\n  Time: {minutes}m {seconds}s")
+    
+    # LO Breakdown
+    print(f"\n  {Fore.CYAN}Learning Objective Breakdown:{Style.RESET_ALL}")
+    breakdown = session._get_lo_breakdown()
+    for lo, scores in sorted(breakdown.items()):
+        lo_pct = round(scores["earned"] / scores["possible"] * 100) if scores["possible"] > 0 else 0
+        lo_colour = Fore.GREEN if lo_pct >= 70 else Fore.RED
+        print(f"    {lo}: {lo_colour}{scores['earned']}/{scores['possible']} ({lo_pct}%){Style.RESET_ALL}")
+    
+    print()
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+
+
+def run_review_mode(questions: list[Question]) -> None:
+    """Display all questions with answers."""
+    print()
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}  QUIZ REVIEW MODE — All answers shown{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'═' * 70}{Style.RESET_ALL}")
     
     for i, question in enumerate(questions, 1):
-        display_question_header(i, len(questions), question)
+        print(f"\n{Fore.MAGENTA}Question {i}{Style.RESET_ALL}")
+        question.display(show_answer=True)
         
-        q_type = question.get("type", "multiple_choice")
-        handler = handlers.get(q_type, handle_multiple_choice)
+        if question.verify_command:
+            print(f"\n{Fore.YELLOW}Verify: {question.verify_command}{Style.RESET_ALL}")
         
-        start_time = time.time()
-        user_answer, is_correct = handler(question, review_mode)
-        elapsed = time.time() - start_time
-        
-        points = question.get("points", 1)
-        earned = points if is_correct else 0
-        
-        result = QuizResult(
-            question_id=question.get("id", f"q{i}"),
-            lo_ref=question.get("lo_ref", "?"),
-            difficulty=question.get("difficulty", "?"),
-            points_possible=points,
-            points_earned=earned,
-            correct=is_correct,
-            user_answer=str(user_answer),
-            correct_answer=str(question.get("correct", "?")),
-            time_taken=elapsed
-        )
-        
-        session.results.append(result)
-        session.total_points += points
-        session.earned_points += earned
-        
-        if not review_mode:
-            print()
-            input("Press Enter for next question...")
-    
-    session.end_time = datetime.now()
-    return session
-
-
-def display_results(session: QuizSession, quiz: dict) -> None:
-    """Display final quiz results and feedback."""
-    print()
-    print("╔" + "═" * 68 + "╗")
-    print(f"║  {'QUIZ COMPLETE':^64}  ║")
-    print("╠" + "═" * 68 + "╣")
-    
-    score_pct = session.score_percentage
-    duration = session.duration_seconds
-    
-    print(f"║  Score: {session.earned_points}/{session.total_points} "
-          f"({score_pct:.1f}%)  │  Time: {duration:.0f} seconds{' ' * 20}║")
-    
-    # Determine grade
-    scoring = quiz.get("scoring", {})
-    grade_boundaries = scoring.get("grade_boundaries", {"A": 90, "B": 80, "C": 70, "D": 60, "F": 0})
-    
-    grade = "F"
-    for g, threshold in sorted(grade_boundaries.items(), key=lambda x: -x[1]):
-        if score_pct >= threshold:
-            grade = g
-            break
-    
-    passing = quiz.get("metadata", {}).get("passing_score", 70)
-    passed = score_pct >= passing
-    
-    status = "✅ PASSED" if passed else "❌ NEEDS REVIEW"
-    print(f"║  Grade: {grade}  │  Status: {status}{' ' * 35}║")
-    
-    print("╠" + "═" * 68 + "╣")
-    
-    # LO breakdown
-    print(f"║  {'Performance by Learning Objective':^64}  ║")
-    print("╟" + "─" * 68 + "╢")
-    
-    lo_stats: dict[str, dict[str, int]] = {}
-    for r in session.results:
-        if r.lo_ref not in lo_stats:
-            lo_stats[r.lo_ref] = {"correct": 0, "total": 0}
-        lo_stats[r.lo_ref]["total"] += 1
-        if r.correct:
-            lo_stats[r.lo_ref]["correct"] += 1
-    
-    for lo, stats in sorted(lo_stats.items()):
-        pct = (stats["correct"] / stats["total"]) * 100 if stats["total"] > 0 else 0
-        bar = "█" * int(pct / 10) + "░" * (10 - int(pct / 10))
-        status_icon = "✅" if pct >= 70 else "⚠️" if pct >= 50 else "❌"
-        print(f"║  {lo}: {bar} {pct:5.1f}% ({stats['correct']}/{stats['total']}) {status_icon}{' ' * 20}║")
-    
-    print("╠" + "═" * 68 + "╣")
-    
-    # Feedback message
-    feedback = quiz.get("feedback_messages", {})
-    if score_pct >= 90:
-        msg = feedback.get("excellent", "Excellent work!")
-    elif score_pct >= 70:
-        msg = feedback.get("good", "Good job!")
-    elif score_pct >= 50:
-        msg = feedback.get("needs_work", "Review the material.")
-    else:
-        msg = feedback.get("insufficient", "Please study again.")
-    
-    # Word wrap feedback
-    words = msg.split()
-    lines = []
-    current = ""
-    for word in words:
-        if len(current) + len(word) + 1 <= 62:
-            current = current + " " + word if current else word
-        else:
-            lines.append(current)
-            current = word
-    if current:
-        lines.append(current)
-    
-    for line in lines:
-        print(f"║  {line:<64}  ║")
-    
-    print("╚" + "═" * 68 + "╝")
+        print()
+        input(f"{Fore.WHITE}Press Enter for next question...{Style.RESET_ALL}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CLI INTERFACE
+# CLI
 # ═══════════════════════════════════════════════════════════════════════════════
+
 def build_parser() -> argparse.ArgumentParser:
     """Build command-line argument parser."""
     parser = argparse.ArgumentParser(
-        description="Formative Quiz Runner for Week 7",
-        epilog="Exit codes: 0=passed, 1=failed, 2=error"
+        description="Week 7 Formative Quiz Runner",
+        epilog="Run without arguments for full interactive quiz."
     )
     
     parser.add_argument(
         "--quiz", "-q",
         type=Path,
         default=Path(__file__).parent / "quiz.yaml",
-        help="Path to quiz YAML file (default: formative/quiz.yaml)"
+        help="Path to quiz YAML file"
     )
     
     parser.add_argument(
         "--random", "-r",
         action="store_true",
-        help="Randomize question order"
+        help="Randomise question order"
     )
     
     parser.add_argument(
         "--limit", "-n",
         type=int,
-        help="Maximum number of questions"
+        help="Limit number of questions"
     )
     
     parser.add_argument(
         "--lo",
-        nargs="+",
-        help="Filter by learning objectives (e.g., --lo LO1 LO2)"
+        type=str,
+        help="Filter by Learning Objective (e.g., LO1)"
     )
     
     parser.add_argument(
-        "--difficulty", "-d",
+        "--difficulty",
         choices=["basic", "intermediate", "advanced"],
-        help="Filter by difficulty level"
+        help="Filter by difficulty"
     )
     
     parser.add_argument(
         "--review",
         action="store_true",
-        help="Review mode - show answers without input"
+        help="Review mode (show all answers)"
     )
     
     parser.add_argument(
-        "--export", "-e",
+        "--export-json",
         type=Path,
         help="Export results to JSON file"
+    )
+    
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List all questions without running quiz"
     )
     
     return parser
 
 
 def main() -> int:
-    """
-    Main entry point.
-    
-    Returns:
-        Exit code: 0 if passed, 1 if failed, 2 if error
-    """
+    """Main entry point."""
     parser = build_parser()
     args = parser.parse_args()
     
     try:
-        quiz = load_quiz(args.quiz)
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}")
-        return 2
-    except yaml.YAMLError as e:
-        print(f"ERROR: Invalid YAML: {e}")
+        metadata, questions = load_quiz(args.quiz)
+    except Exception as e:
+        print(f"{Fore.RED}Error loading quiz: {e}{Style.RESET_ALL}")
         return 2
     
-    session = run_quiz(
-        quiz,
-        randomize=args.random,
-        limit=args.limit,
-        lo_filter=args.lo,
-        difficulty_filter=args.difficulty,
-        review_mode=args.review
-    )
+    # Apply filters
+    if args.lo:
+        questions = [q for q in questions if q.lo_ref == args.lo]
     
-    display_results(session, quiz)
+    if args.difficulty:
+        questions = [q for q in questions if q.difficulty == args.difficulty]
     
-    if args.export:
-        try:
-            with open(args.export, "w", encoding="utf-8") as f:
-                json.dump(session.to_dict(), f, indent=2)
-            print(f"\n📄 Results exported to: {args.export}")
-        except IOError as e:
-            print(f"\n⚠️  Failed to export results: {e}")
+    if not questions:
+        print(f"{Fore.RED}No questions match the specified filters.{Style.RESET_ALL}")
+        return 1
     
-    passing = quiz.get("metadata", {}).get("passing_score", 70)
-    return 0 if session.score_percentage >= passing else 1
+    # Apply randomisation
+    if args.random:
+        random.shuffle(questions)
+    
+    # Apply limit
+    if args.limit and args.limit < len(questions):
+        questions = questions[:args.limit]
+    
+    # List mode
+    if args.list:
+        print(f"\n{Fore.CYAN}Quiz Questions ({len(questions)} total):{Style.RESET_ALL}\n")
+        for q in questions:
+            print(f"  [{q.id}] {q.lo_ref} | {q.bloom_level} | {q.points}pts")
+            print(f"        {q.stem[:60]}...")
+            print()
+        return 0
+    
+    # Review mode
+    if args.review:
+        run_review_mode(questions)
+        return 0
+    
+    # Interactive quiz
+    session = QuizSession(questions=questions)
+    run_interactive_quiz(session)
+    
+    # Export results if requested
+    if args.export_json:
+        results = session.to_dict()
+        with open(args.export_json, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
+        print(f"\nResults exported to: {args.export_json}")
+    
+    # Return exit code based on pass/fail
+    earned, possible = session.score
+    percentage = earned / possible * 100 if possible > 0 else 0
+    return 0 if percentage >= 70 else 1
 
 
 if __name__ == "__main__":

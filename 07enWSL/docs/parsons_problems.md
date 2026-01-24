@@ -1,495 +1,502 @@
-# 🧩 Parsons Problems — Week 7: Packet Capture and Filtering
+# 🧩 Parsons Problems — Week 7
+## Computer Networks — ASE, CSIE | Computer Networks Laboratory
 
-## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
-
-> Reorder the code blocks to create a working solution.  
-> Each problem includes one or more **distractor blocks** that should NOT be used.
+> Parsons problems require arranging code blocks in the correct order.
+> This technique helps develop understanding of procedural logic without
+> the cognitive load of writing syntax from scratch.
 
 ---
 
 ## How to Use These Problems
 
-Parsons problems develop code comprehension without the cognitive load of syntax recall. For each problem:
+1. Read the problem description carefully
+2. Identify the blocks that belong in the solution (some are distractors!)
+3. Arrange the correct blocks in the proper order
+4. Check your solution against the explanation
+5. Run the code to verify (where applicable)
 
-1. **Read** the task description carefully
-2. **Identify** which blocks are distractors (not needed)
-3. **Arrange** the remaining blocks in the correct order
-4. **Verify** by tracing through the logic mentally
-5. **Check** your answer against the solution
-
-**Pair Programming Adaptation:**
-- Navigator reads the task aloud
-- Driver arranges blocks on paper/whiteboard
-- Discuss disagreements before revealing solution
+**Interactive Mode:** `python3 formative/parsons_runner.py`
 
 ---
 
-## Problem P1: TCP Port Probe with Timeout
+## Problem P1: TCP Port Probe Implementation
 
-### Task
+**Learning Objective:** LO1 (Identify TCP/UDP packet fields)  
+**Difficulty:** Intermediate  
+**Estimated Time:** 5 minutes
 
-Create a function that probes a TCP port and returns one of three states: `"open"`, `"closed"`, or `"filtered"`. The function should:
-- Create a TCP socket
-- Set a timeout of 2 seconds
-- Attempt to connect
-- Return the appropriate state based on the result
+### Description
 
-### Scrambled Blocks
+Arrange the code blocks to implement a function that probes a TCP port
+and returns its state (open, closed or filtered).
+
+### Available Blocks
 
 ```python
 # Block A
-    return "open"
+def probe_tcp_port(host: str, port: int, timeout: float = 2.0) -> str:
 
 # Block B
-def probe_port(host: str, port: int) -> str:
-
-# Block C
-    sock.settimeout(2)
-
-# Block D
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+# Block C
+    sock.settimeout(timeout)
+
+# Block D
+    try:
+
 # Block E
-    result = sock.connect_ex((host, port))
+        result = sock.connect_ex((host, port))
 
 # Block F
-    if result == 0:
+        if result == 0:
+            return "open"
 
 # Block G
-    sock.close()
-    return "closed"
+        else:
+            return "closed"
 
-# Block H (DISTRACTOR)
-    sock.bind(('', 0))
-
-# Block I
+# Block H
     except socket.timeout:
         return "filtered"
 
-# Block J
-    try:
-
-# Block K (DISTRACTOR)
-    sock.listen(1)
+# Block I
+    finally:
+        sock.close()
 ```
 
-### Correct Order
-
-<details>
-<summary>Click to reveal solution</summary>
+### Distractor Blocks (Do NOT include)
 
 ```python
-# Block B
-def probe_port(host: str, port: int) -> str:
+# Distractor X - Wrong socket type for TCP
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# Block J
-    try:
-
-# Block D
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block C
-    sock.settimeout(2)
-
-# Block E
-    result = sock.connect_ex((host, port))
-
-# Block F
-    if result == 0:
-
-# Block A
+# Distractor Y - Missing error handling
+        sock.connect((host, port))
         return "open"
 
-# Block G
-    sock.close()
-    return "closed"
-
-# Block I
-    except socket.timeout:
-        return "filtered"
-```
-
-**Distractors explained:**
-- **Block H** (`sock.bind`) — Used for servers, not clients. Binding is unnecessary for outgoing connections.
-- **Block K** (`sock.listen`) — Used for servers to accept connections. Probing is a client operation.
-
-**Key insight:** The distinction between `"closed"` and `"filtered"` depends on whether we receive a response (RST for closed) or timeout (no response for filtered).
-
-</details>
-
----
-
-## Problem P2: Parse iptables Rule Output
-
-### Task
-
-Create a function that parses a single line of `iptables -L -n` output and extracts the action, protocol and destination port. The function should return a dictionary with keys `"action"`, `"protocol"` and `"dport"`.
-
-Example input: `"DROP       tcp  --  0.0.0.0/0  0.0.0.0/0  tcp dpt:9090"`
-
-### Scrambled Blocks
-
-```python
-# Block A
-    return {
-        "action": parts[0],
-        "protocol": parts[1],
-        "dport": dport
-    }
-
-# Block B
-def parse_iptables_line(line: str) -> dict:
-
-# Block C
-    parts = line.split()
-
-# Block D
-    if "dpt:" in line:
-        dport_part = [p for p in parts if p.startswith("dpt:")]
-        dport = int(dport_part[0].split(":")[1]) if dport_part else None
-
-# Block E (DISTRACTOR)
-    subprocess.run(["iptables", "-L", "-n"])
-
-# Block F
-    else:
-        dport = None
-
-# Block G (DISTRACTOR)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_RAW)
+# Distractor Z - Incorrect return value
+        return "timeout"
 ```
 
 ### Correct Order
 
-<details>
-<summary>Click to reveal solution</summary>
+`A → B → C → D → E → F → G → H → I`
+
+### Explanation
+
+1. Function definition with type hints (A)
+2. Create TCP socket - SOCK_STREAM for TCP (B)
+3. Set timeout before connection attempt (C)
+4. Try block for exception handling (D)
+5. Non-blocking connect returns error code (E)
+6. Result 0 means successful connection (F)
+7. Non-zero result means connection refused (G)
+8. Timeout exception indicates filtered port (H)
+9. Always close socket in finally block (I)
+
+**Why Distractors Are Wrong:**
+- X: SOCK_DGRAM is for UDP, not TCP
+- Y: connect() raises exception, connect_ex() returns error code
+- Z: "timeout" is not a standard port state
+
+---
+
+## Problem P2: Parse iptables Output
+
+**Learning Objective:** LO3 (Implement filtering rules)  
+**Difficulty:** Intermediate  
+**Estimated Time:** 5 minutes
+
+### Description
+
+Arrange the code blocks to parse iptables output and extract rule information.
+
+### Available Blocks
 
 ```python
+# Block A
+def parse_iptables_rules(output: str) -> list[dict]:
+
 # Block B
-def parse_iptables_line(line: str) -> dict:
+    rules = []
 
 # Block C
-    parts = line.split()
+    lines = output.strip().split('\n')
 
 # Block D
-    if "dpt:" in line:
-        dport_part = [p for p in parts if p.startswith("dpt:")]
-        dport = int(dport_part[0].split(":")[1]) if dport_part else None
+    for line in lines[2:]:  # Skip header lines
+
+# Block E
+        if not line.strip():
+            continue
 
 # Block F
-    else:
-        dport = None
+        parts = line.split()
 
-# Block A
-    return {
-        "action": parts[0],
-        "protocol": parts[1],
-        "dport": dport
-    }
+# Block G
+        if len(parts) >= 4:
+
+# Block H
+            rule = {
+                'target': parts[0],
+                'protocol': parts[1],
+                'source': parts[3],
+                'destination': parts[4] if len(parts) > 4 else 'anywhere'
+            }
+
+# Block I
+            rules.append(rule)
+
+# Block J
+    return rules
 ```
 
-**Distractors explained:**
-- **Block E** (`subprocess.run`) — This function parses existing output; it doesn't run iptables.
-- **Block G** (`socket.AF_INET, socket.SOCK_RAW`) — Raw sockets are for packet crafting, not parsing text output.
+### Distractor Blocks (Do NOT include)
 
-**Key insight:** Parsing iptables output requires understanding the column structure. The action is always first, protocol second and `dpt:` indicates the destination port.
+```python
+# Distractor X - Wrong indexing
+    for line in lines:  # Includes headers
 
-</details>
+# Distractor Y - Missing validation
+        rule = {'target': parts[0]}
+        rules.append(rule)
+
+# Distractor Z - Incorrect return
+    return output
+```
+
+### Correct Order
+
+`A → B → C → D → E → F → G → H → I → J`
+
+### Explanation
+
+1. Function signature with return type (A)
+2. Initialise empty results list (B)
+3. Split output into lines (C)
+4. Skip first two header lines with [2:] slice (D)
+5. Skip empty lines (E)
+6. Split line into whitespace-separated parts (F)
+7. Validate sufficient parts exist (G)
+8. Create rule dictionary with extracted fields (H)
+9. Add rule to results (I)
+10. Return collected rules (J)
+
+**Why Distractors Are Wrong:**
+- X: Would include "Chain INPUT" and column headers
+- Y: Missing fields and validation
+- Z: Returns raw string instead of parsed data
 
 ---
 
 ## Problem P3: UDP Send with Error Handling
 
-### Task
+**Learning Objective:** LO2 (Explain app vs network-layer failures)  
+**Difficulty:** Basic  
+**Estimated Time:** 3 minutes
 
-Create a function that sends a UDP message and waits for a response with timeout handling. The function should:
-- Create a UDP socket
-- Set a 3-second timeout
-- Send the message
-- Try to receive a response
-- Return `(True, response)` on success or `(False, "timeout")` on timeout
+### Description
 
-### Scrambled Blocks
+Arrange the blocks to send a UDP datagram with proper error handling
+that acknowledges UDP's fire-and-forget nature.
+
+### Available Blocks
 
 ```python
 # Block A
-    except socket.timeout:
-        return (False, "timeout")
+def send_udp_message(host: str, port: int, message: str) -> tuple[bool, str]:
 
 # Block B
-def udp_send_recv(host: str, port: int, message: bytes) -> tuple:
-
-# Block C
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# Block D
-    sock.settimeout(3)
-
-# Block E
+# Block C
     try:
 
+# Block D
+        sock.sendto(message.encode('utf-8'), (host, port))
+
+# Block E
+        # Note: Success only means packet was sent, not delivered
+        return (True, "Datagram sent (delivery not confirmed)")
+
 # Block F
-        sock.sendto(message, (host, port))
+    except OSError as e:
+        return (False, f"Send failed: {e}")
 
 # Block G
-        response, addr = sock.recvfrom(1024)
-        return (True, response)
-
-# Block H (DISTRACTOR)
-        sock.connect((host, port))
-
-# Block I
     finally:
         sock.close()
+```
 
-# Block J (DISTRACTOR)
-        sock.accept()
+### Distractor Blocks (Do NOT include)
+
+```python
+# Distractor X - Wrong assumption about UDP
+        return (True, "Message delivered successfully")
+
+# Distractor Y - Unnecessary for UDP
+        sock.connect((host, port))
+        sock.send(message.encode('utf-8'))
+
+# Distractor Z - TCP socket type
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ```
 
 ### Correct Order
 
-<details>
-<summary>Click to reveal solution</summary>
+`A → B → C → D → E → F → G`
 
-```python
-# Block B
-def udp_send_recv(host: str, port: int, message: bytes) -> tuple:
+### Explanation
 
-# Block C
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+1. Function with return type indicating success and message (A)
+2. Create UDP socket - SOCK_DGRAM (B)
+3. Try block for error handling (C)
+4. sendto() for connectionless UDP (D)
+5. Return acknowledges no delivery confirmation (E)
+6. Catch OS-level errors (F)
+7. Clean up socket (G)
 
-# Block D
-    sock.settimeout(3)
-
-# Block E
-    try:
-
-# Block F
-        sock.sendto(message, (host, port))
-
-# Block G
-        response, addr = sock.recvfrom(1024)
-        return (True, response)
-
-# Block A
-    except socket.timeout:
-        return (False, "timeout")
-
-# Block I
-    finally:
-        sock.close()
-```
-
-**Distractors explained:**
-- **Block H** (`sock.connect`) — UDP is connectionless; `sendto()` already specifies the destination. While `connect()` can be used with UDP, it's not required here.
-- **Block J** (`sock.accept`) — Only TCP servers use `accept()`. UDP has no connection to accept.
-
-**Key insight:** UDP's "fire and forget" nature means we cannot distinguish between a dropped packet and a slow server until the timeout expires.
-
-</details>
+**Why Distractors Are Wrong:**
+- X: UDP cannot confirm delivery
+- Y: connect() not needed for UDP (and misleading)
+- Z: SOCK_STREAM is TCP, not UDP
 
 ---
 
 ## Problem P4: Apply Firewall Profile from JSON
 
-### Task
+**Learning Objective:** LO5 (Design custom firewall profiles)  
+**Difficulty:** Advanced  
+**Estimated Time:** 7 minutes
 
-Create a function that reads a firewall profile from JSON and applies each rule using iptables. The function should:
-- Load the JSON file
-- Iterate through the rules
-- Build and execute the iptables command for each rule
-- Return the number of rules applied
+### Description
 
-### Scrambled Blocks
+Arrange the blocks to load a firewall profile from JSON and apply
+the rules using iptables commands.
+
+### Available Blocks
 
 ```python
 # Block A
-    return count
+def apply_firewall_profile(profile_path: str, profile_name: str) -> bool:
 
 # Block B
-def apply_profile(profile_path: str) -> int:
+    with open(profile_path, 'r') as f:
+        profiles = json.load(f)
 
 # Block C
-    with open(profile_path) as f:
-        profile = json.load(f)
+    if profile_name not in profiles:
+        print(f"Profile '{profile_name}' not found")
+        return False
 
 # Block D
-    count = 0
-    for rule in profile["rules"]:
+    profile = profiles[profile_name]
 
 # Block E
-        cmd = [
-            "iptables", "-A", "INPUT",
-            "-p", rule["protocol"],
-            "--dport", str(rule["port"]),
-            "-j", rule["action"]
-        ]
+    # Clear existing rules in chain
+    subprocess.run(['iptables', '-F', 'FORWARD'], check=True)
 
 # Block F
+    # Set default policy
+    policy = profile.get('forward_policy', 'ACCEPT')
+    subprocess.run(['iptables', '-P', 'FORWARD', policy], check=True)
+
+# Block G
+    # Apply rules in order (first match wins)
+    for rule in profile.get('rules', []):
+
+# Block H
+        cmd = ['iptables', '-A', rule.get('chain', 'FORWARD')]
+        if 'proto' in rule:
+            cmd.extend(['-p', rule['proto']])
+        if 'dport' in rule:
+            cmd.extend(['--dport', str(rule['dport'])])
+        cmd.extend(['-j', rule.get('action', 'ACCEPT')])
+
+# Block I
         subprocess.run(cmd, check=True)
-        count += 1
 
-# Block G (DISTRACTOR)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# Block J
+    return True
+```
 
-# Block H (DISTRACTOR)
-    profile = yaml.safe_load(f)
+### Distractor Blocks (Do NOT include)
+
+```python
+# Distractor X - Wrong chain clear
+    subprocess.run(['iptables', '-F'], check=True)  # Clears ALL chains
+
+# Distractor Y - Missing policy setting
+    # Jump straight to rules without setting policy
+
+# Distractor Z - Wrong rule order
+    for rule in reversed(profile.get('rules', [])):  # Wrong order!
+
+# Distractor W - Insecure command construction
+        cmd = f"iptables -A FORWARD {rule}"  # Shell injection risk
+        os.system(cmd)
 ```
 
 ### Correct Order
 
-<details>
-<summary>Click to reveal solution</summary>
+`A → B → C → D → E → F → G → H → I → J`
 
-```python
-# Block B
-def apply_profile(profile_path: str) -> int:
+### Explanation
 
-# Block C
-    with open(profile_path) as f:
-        profile = json.load(f)
+1. Function signature (A)
+2. Load JSON file (B)
+3. Validate profile exists (C)
+4. Extract profile data (D)
+5. Clear FORWARD chain specifically (E)
+6. Set default policy from profile (F)
+7. Iterate rules in order (G)
+8. Build command list safely (H)
+9. Execute each rule (I)
+10. Return success (J)
 
-# Block D
-    count = 0
-    for rule in profile["rules"]:
-
-# Block E
-        cmd = [
-            "iptables", "-A", "INPUT",
-            "-p", rule["protocol"],
-            "--dport", str(rule["port"]),
-            "-j", rule["action"]
-        ]
-
-# Block F
-        subprocess.run(cmd, check=True)
-        count += 1
-
-# Block A
-    return count
-```
-
-**Distractors explained:**
-- **Block G** (`setsockopt`) — Socket options are for network programming, not firewall management.
-- **Block H** (`yaml.safe_load`) — The task specifies JSON format, not YAML.
-
-**Key insight:** The iptables command structure is: `iptables -A <chain> -p <protocol> --dport <port> -j <action>`. The `-A` flag appends to the chain.
-
-</details>
+**Why Distractors Are Wrong:**
+- X: `-F` without chain clears ALL chains including INPUT
+- Y: Missing policy could leave chain in unexpected state
+- Z: Rules must be applied in order (first match wins)
+- W: Shell injection vulnerability and deprecated os.system
 
 ---
 
-## Problem P5: Capture Traffic Summary
+## Problem P5: Analyse PCAP with tshark
 
-### Task
+**Learning Objective:** LO4 (Analyse packet captures)  
+**Difficulty:** Intermediate  
+**Estimated Time:** 5 minutes
 
-Create a function that analyses a pcap file using tshark and returns a summary dictionary with packet counts by protocol. The function should:
-- Run tshark with appropriate filters
-- Parse the output to count TCP, UDP and ICMP packets
-- Return a dictionary with the counts
+### Description
 
-### Scrambled Blocks
+Arrange the blocks to analyse a PCAP file and extract TCP connection statistics.
+
+### Available Blocks
 
 ```python
 # Block A
-    return summary
+def analyse_tcp_connections(pcap_path: str) -> dict:
 
 # Block B
-def analyse_pcap(pcap_path: str) -> dict:
+    cmd = [
+        'tshark', '-r', pcap_path,
+        '-q', '-z', 'conv,tcp'
+    ]
 
 # Block C
-    summary = {"tcp": 0, "udp": 0, "icmp": 0}
+    result = subprocess.run(cmd, capture_output=True, text=True)
 
 # Block D
-    result = subprocess.run(
-        ["tshark", "-r", pcap_path, "-T", "fields", "-e", "ip.proto"],
-        capture_output=True,
-        text=True
-    )
+    if result.returncode != 0:
+        return {'error': result.stderr}
 
 # Block E
-    for line in result.stdout.strip().split("\n"):
-        proto = line.strip()
-        if proto == "6":
-            summary["tcp"] += 1
-        elif proto == "17":
-            summary["udp"] += 1
-        elif proto == "1":
-            summary["icmp"] += 1
+    stats = {
+        'total_connections': 0,
+        'total_bytes': 0,
+        'connections': []
+    }
 
-# Block F (DISTRACTOR)
-    sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+# Block F
+    for line in result.stdout.split('\n'):
 
-# Block G (DISTRACTOR)
-    wireshark.open(pcap_path)
+# Block G
+        if '<->' in line:  # Connection line format
+
+# Block H
+            parts = line.split()
+            if len(parts) >= 10:
+                stats['connections'].append({
+                    'endpoints': f"{parts[0]} <-> {parts[2]}",
+                    'frames': int(parts[4]) + int(parts[7]),
+                    'bytes': int(parts[5]) + int(parts[8])
+                })
+                stats['total_connections'] += 1
+                stats['total_bytes'] += int(parts[5]) + int(parts[8])
+
+# Block I
+    return stats
+```
+
+### Distractor Blocks (Do NOT include)
+
+```python
+# Distractor X - Missing quiet flag
+    cmd = ['tshark', '-r', pcap_path, '-z', 'conv,tcp']  # Verbose output
+
+# Distractor Y - Wrong parsing
+        stats['connections'].append(line)  # Raw line, not parsed
+
+# Distractor Z - Ignoring errors
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    # No error checking
+    for line in result.stdout.split('\n'):
 ```
 
 ### Correct Order
 
-<details>
-<summary>Click to reveal solution</summary>
+`A → B → C → D → E → F → G → H → I`
 
-```python
-# Block B
-def analyse_pcap(pcap_path: str) -> dict:
+### Explanation
 
-# Block C
-    summary = {"tcp": 0, "udp": 0, "icmp": 0}
+1. Function with return type (A)
+2. Build tshark command with conversation stats (B)
+3. Run command capturing output (C)
+4. Check for errors (D)
+5. Initialise statistics dictionary (E)
+6. Iterate through output lines (F)
+7. Identify connection lines by marker (G)
+8. Parse and accumulate statistics (H)
+9. Return results (I)
 
-# Block D
-    result = subprocess.run(
-        ["tshark", "-r", pcap_path, "-T", "fields", "-e", "ip.proto"],
-        capture_output=True,
-        text=True
-    )
+**Why Distractors Are Wrong:**
+- X: Without `-q`, output includes packet details making parsing harder
+- Y: Storing raw lines loses structured data
+- Z: Ignoring errors could lead to parsing garbage
 
-# Block E
-    for line in result.stdout.strip().split("\n"):
-        proto = line.strip()
-        if proto == "6":
-            summary["tcp"] += 1
-        elif proto == "17":
-            summary["udp"] += 1
-        elif proto == "1":
-            summary["icmp"] += 1
+---
 
-# Block A
-    return summary
+## Answer Key Summary
+
+| Problem | LO | Correct Order | Distractors |
+|---------|-----|---------------|-------------|
+| P1 | LO1 | A→B→C→D→E→F→G→H→I | X, Y, Z |
+| P2 | LO3 | A→B→C→D→E→F→G→H→I→J | X, Y, Z |
+| P3 | LO2 | A→B→C→D→E→F→G | X, Y, Z |
+| P4 | LO5 | A→B→C→D→E→F→G→H→I→J | X, Y, Z, W |
+| P5 | LO4 | A→B→C→D→E→F→G→H→I | X, Y, Z |
+
+---
+
+## Self-Assessment Rubric
+
+| Score | Interpretation |
+|-------|----------------|
+| 5/5 correct | Excellent understanding of networking code patterns |
+| 4/5 correct | Good understanding, review the missed concept |
+| 3/5 correct | Adequate, additional practice recommended |
+| <3/5 correct | Review theory and code tracing exercises first |
+
+---
+
+## Interactive Runner
+
+Run Parsons problems interactively:
+
+```bash
+# All problems
+python3 formative/parsons_runner.py
+
+# With hints enabled
+python3 formative/parsons_runner.py --hints
+
+# Specific problem
+python3 formative/parsons_runner.py --problem P1
 ```
 
-**Distractors explained:**
-- **Block F** (`AF_PACKET, SOCK_RAW`) — Raw packet capture requires root privileges and is for live capture, not pcap analysis.
-- **Block G** (`wireshark.open`) — There is no Python `wireshark` module. Use `tshark` (command-line) or `pyshark` (library).
-
-**Key insight:** IP protocol numbers are: TCP = 6, UDP = 17, ICMP = 1. The `-T fields -e ip.proto` options extract just the protocol field from each packet.
-
-</details>
-
 ---
 
-## Self-Assessment Checklist
-
-After completing these problems, you should be able to:
-
-- [ ] Distinguish between client and server socket operations
-- [ ] Understand the difference between TCP (connection-oriented) and UDP (connectionless)
-- [ ] Parse structured text output from network tools
-- [ ] Construct iptables commands programmatically
-- [ ] Use tshark for automated pcap analysis
-- [ ] Identify common distractors (wrong operations for the context)
-
----
-
-## Additional Challenge
-
-Try creating your own Parsons problem for one of these scenarios:
-1. A function that checks if a firewall rule exists
-2. A function that extracts source/destination IPs from a pcap
-3. A function that tests both TCP and UDP connectivity to a host
-
-Share with your pair programming partner and compare solutions.
-
----
-
-*NETWORKING class - ASE, Informatics | by Revolvix*  
-*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
+*Computer Networks — Week 7: Packet Interception, Filtering and Defensive Port Probing*  
+*ASE Bucharest, CSIE | Computer Networks Laboratory*

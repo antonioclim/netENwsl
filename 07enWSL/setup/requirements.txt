@@ -1,66 +1,72 @@
 # ============================================================================
-# Week 7 WSLkit — Python Dependencies (Pinned Versions)
-# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# Week 7 WSLkit — Python Dependencies
+# NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 # ============================================================================
 #
 # Installation:
 #   pip install -r setup/requirements.txt
 #
-# Upgrade all packages:
-#   pip install --upgrade -r setup/requirements.txt
-#
 # Verify installation:
 #   pip list | grep -E "PyYAML|docker|requests|colorama"
+#
+# For development dependencies, also install:
+#   pip install -r setup/requirements-dev.txt
 #
 # ============================================================================
 
 # ─── CORE DEPENDENCIES ───────────────────────────────────────────────────────
-# These are required for laboratory functionality
+# Required for laboratory functionality
 
 # YAML parsing for configuration files and quiz data
-# Used by: formative/run_quiz.py, scripts/start_lab.py
-PyYAML==6.0.1
+# Used by: formative/run_quiz.py, formative/quiz_export.py, scripts/*.py
+PyYAML>=6.0.1,<7.0
 
-# ─── OPTIONAL BUT RECOMMENDED ────────────────────────────────────────────────
-# These enhance the laboratory experience but are not strictly required
+# ─── DOCKER INTEGRATION ──────────────────────────────────────────────────────
+# For programmatic Docker control
 
-# Docker SDK for Python - programmatic Docker control
+# Docker SDK for Python
 # Used by: scripts/start_lab.py, scripts/stop_lab.py, scripts/cleanup.py
 # Note: Core scripts also work with subprocess calls to docker CLI
-docker==7.0.0
+docker>=7.0.0,<8.0
 
-# HTTP client for health checks and API verification
+# ─── HTTP AND NETWORKING ─────────────────────────────────────────────────────
+# For health checks and API verification
+
+# HTTP client library
 # Used by: setup/verify_environment.py, tests/test_environment.py
-requests==2.31.0
+requests>=2.31.0,<3.0
+
+# ─── TERMINAL ENHANCEMENT ────────────────────────────────────────────────────
+# For improved user experience
 
 # Cross-platform terminal colours
-# Used by: scripts/utils/logger.py for coloured output
+# Used by: scripts/utils/logger.py, formative/run_quiz.py
 # Note: Scripts work without colours if not installed
-colorama==0.4.6
+colorama>=0.4.6,<1.0
 
-# ─── DEVELOPMENT/TESTING (Optional) ──────────────────────────────────────────
-# Install with: pip install -r setup/requirements.txt[dev]
+# ─── OPTIONAL: PCAP GENERATION ───────────────────────────────────────────────
+# Uncomment to enable full-featured PCAP sample generation
 
-# Uncomment for development work:
-# pytest==7.4.3
-# pytest-timeout==2.2.0
-# ruff==0.1.9
+# Scapy for packet crafting (large dependency)
+# Used by: pcap/samples/generate_samples.py
+# scapy>=2.5.0,<3.0
 
-# ─── NOTES ───────────────────────────────────────────────────────────────────
+# ============================================================================
+# NOTES
+# ============================================================================
 #
 # Compatibility:
-#   - Tested with Python 3.11.x
-#   - Should work with Python 3.10+ (not tested)
+#   - Tested with Python 3.11.x (recommended)
+#   - Compatible with Python 3.10+
 #   - Python 3.9 and below NOT supported
 #
-# Version Pinning Policy:
-#   - Major.Minor.Patch pinned for reproducibility
-#   - Update periodically to patch security issues
-#   - Test thoroughly before updating in production
+# Version Pinning:
+#   - Using >= and < constraints for flexibility with security updates
+#   - Pin exact versions in production if reproducibility is critical
 #
 # Troubleshooting:
 #   - "Permission denied": Use pip install --user or virtual environment
-#   - "No matching distribution": Check Python version (3.11+ required)
+#   - "No matching distribution": Check Python version (3.10+ required)
 #   - "SSL certificate error": pip install --trusted-host pypi.org
 #
 # Virtual Environment (Recommended):
