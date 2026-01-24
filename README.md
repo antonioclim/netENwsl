@@ -7,7 +7,7 @@
 [![Portainer](https://img.shields.io/badge/Portainer-2.33.6_LTS-13BEF9?style=for-the-badge&logo=portainer&logoColor=white)](https://portainer.io)
 [![Licence](https://img.shields.io/badge/Licence-Restrictive_Educational-red?style=for-the-badge)](LICENCE.md)
 
-> **© 2019–2026 Antonio Clim, Andrei Toma** | by Revolvix
+> **© 2019–2056 Antonio Clim, Andrei Toma** | by Revolvix
 
 ---
 
@@ -1754,7 +1754,7 @@ If you have followed this guide and configured the environment correctly, you ar
 This document has been updated to reflect:
 
 1. **Restrictive Educational Licence** — Replacing MIT with restrictive licence for materials protection
-2. **Correct Attribution** — © 2019–2026 Antonio Clim, Andrei Toma
+2. **Correct Attribution** — © 2019–2056 Antonio Clim, Andrei Toma
 3. **18 PREDICTION Questions** — Prediction prompts for each week
 4. **Two Separate Repositories** — netENwsl (English) and netROwsl (Romanian)
 5. **Distinct Naming Conventions** — `<N>enWSL` vs `<NN>roWSL`
@@ -1766,6 +1766,6 @@ This document has been updated to reflect:
 
 ---
 
-> **© 2019–2029 Antonio Clim, Andrei Toma**  
+> **© 2019–2056 Antonio Clim, Andrei Toma**  
 > Computer Networks Laboratory — ASE Bucharest, CSIE  
 > Documentation Version: January 2026
