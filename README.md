@@ -23,7 +23,7 @@ cd netENwsl
 # ═══════════════════════════════════════════════════════════════════════════════
 # NAVIGATE_TO_WEEK
 # ═══════════════════════════════════════════════════════════════════════════════
-cd 1enWSL  # or any other week (1-14)
+cd 01enWSL  # or any week (01-14)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # VERIFY_ENVIRONMENT
@@ -394,27 +394,68 @@ The choice of **WSL2 + native Docker in Ubuntu** architecture (instead of Docker
 ```
 netENwsl/
 │
-├── 📁 0BEFOREanythingELSE/            # ⚠️ READ FIRST! Prerequisites
-│   ├── PREREQUISITES_EN.html          # Interactive HTML guide
-│   ├── PrerequisitesEN.md              # Markdown guide
-│   └── wireshark_capture_example.png   # Example screenshot
+├── 📁 00-startAPPENDIX(week0)/         # ⚠️ READ FIRST! Prerequisites & Python Guide
+│   ├── 00BEFORE_ANYTHING_ELSE/         # Essential setup instructions
+│   ├── 00LECTURES/                     # Lecture materials
+│   ├── 00PREREQUISITES/                # Prerequisites HTML guide
+│   │   ├── PREREQUISITES_EN.html       # Interactive HTML guide
+│   │   └── wireshark_capture_example.png
+│   ├── PYTHON_self_study_guide/        # Python for Networking (self-study)
+│   │   ├── PRESENTATIONS_EN/           # 10 HTML presentations
+│   │   │   ├── 01_introduction_setup.html
+│   │   │   ├── 02_reading_python_code.html
+│   │   │   ├── 03_data_types_networking.html
+│   │   │   ├── 04_socket_programming.html
+│   │   │   ├── 05_code_organisation.html
+│   │   │   ├── 06_cli_interfaces.html
+│   │   │   ├── 07_packet_analysis.html
+│   │   │   ├── 08_concurrency.html
+│   │   │   ├── 09_http_protocols.html
+│   │   │   └── 10_debugging_best_practices.html
+│   │   ├── cheatsheets/                # Quick reference guides
+│   │   ├── examples/                   # Python code examples
+│   │   └── PYTHON_NETWORKING_GUIDE.md  # Complete guide
+│   ├── docs/                           # Pedagogical documentation
+│   │   ├── peer_instruction.md
+│   │   ├── misconceptions.md
+│   │   ├── parsons_problems.md
+│   │   └── troubleshooting.md
+│   └── LIVE_CODING_INSTRUCTOR_GUIDE.md
 │
-├── 📁 1enWSL/                          # Week 1: Network Fundamentals
-├── 📁 2enWSL/                          # Week 2: Models & Sockets
-├── 📁 3enWSL/                          # Week 3: Network Programming
-├── 📁 4enWSL/                          # Week 4: Physical & Data Link
-├── 📁 5enWSL/                          # Week 5: IP Addressing & Subnets
-├── 📁 6enWSL/                          # Week 6: NAT/PAT, SDN
-├── 📁 7enWSL/                          # Week 7: Filtering & Security
-├── 📁 8enWSL/                          # Week 8: Transport & HTTP
-├── 📁 9enWSL/                          # Week 9: Session & Presentation
-├── 📁 10enWSL/                         # Week 10: Application Protocols
-├── 📁 11enWSL/                         # Week 11: Load Balancing
-├── 📁 12enWSL/                         # Week 12: Email & RPC
-├── 📁 13enWSL/                         # Week 13: IoT & Security
-├── 📁 14enWSL/                         # Week 14: Review
+├── 📁 00PROJ/                          # 📋 Course Projects (Teams of 2)
+│   ├── PROJECTS/                       # 15 main projects (P01-P15)
+│   │   ├── P01_SDN_Firewall_Mininet.md
+│   │   ├── P02_Hybrid_Network_Mininet_Docker.md
+│   │   ├── ... (P03-P14)
+│   │   └── P15_IoT_Edge_Computing_MQTT.md
+│   ├── RESERVE_individual/             # 5 reserve/individual projects (P16-P20)
+│   │   ├── P16_HTTP_Analysis_Wireshark.md
+│   │   ├── P17_LAN_NAT_DHCP_Network.md
+│   │   ├── P18_TCP_Chat_Client_Server.md
+│   │   ├── P19_Port_Scanner_Security.md
+│   │   └── P20_IoT_Smart_Home_Security.md
+│   └── docs/common/                    # Shared project documentation
+│       ├── code_quality_standards.md
+│       ├── git_workflow_detailed.md
+│       ├── pair_programming_guide.md
+│       └── presentation_guide.md
 │
-├── 📄 README.md                        # Main documentation (EN)
+├── 📁 01enWSL/                         # Week 1: Fundamentals of Computer Networks
+├── 📁 02enWSL/                         # Week 2: Architectural Models and Socket Programming
+├── 📁 03enWSL/                         # Week 3: Introduction to Network Programming
+├── 📁 04enWSL/                         # Week 4: Physical Layer, Data Link Layer & Custom Protocols
+├── 📁 05enWSL/                         # Week 5: Network Layer – IP Addressing, Subnetting, VLSM
+├── 📁 06enWSL/                         # Week 6: NAT/PAT, Network Support Protocols & SDN
+├── 📁 07enWSL/                         # Week 7: Packet Interception, Filtering and Defensive Port Probing
+├── 📁 08enWSL/                         # Week 8: Transport Layer — HTTP Server Implementation and Reverse Proxies
+├── 📁 09enWSL/                         # Week 9: Session Layer and Presentation Layer
+├── 📁 10enWSL/                         # Week 10: Application Layer Protocols
+├── 📁 11enWSL/                         # Week 11: Application Protocols – FTP, DNS, SSH & Load Balancing
+├── 📁 12enWSL/                         # Week 12: Email Protocols and Remote Procedure Call
+├── 📁 13enWSL/                         # Week 13: IoT and Security in Computer Networks
+├── 📁 14enWSL/                         # Week 14: Integrated Recap and Project Evaluation
+│
+├── 📄 README.md                        # Main documentation (this file)
 └── 📄 LICENCE.md                       # Restrictive Educational Licence
 ```
 
@@ -1149,11 +1190,19 @@ Each weekly kit follows this standard structure:
 │   ├── volumes/         # Persistent data
 │   ├── web1/, web2/...  # Backend content
 │   └── docker-compose.yml
-├── docs/                # Documentation
+├── docs/                # Documentation (12 standard files)
+│   ├── code_tracing.md          # Code tracing exercises
 │   ├── commands_cheatsheet.md   # Quick command reference
-│   ├── further_reading.md       # Additional reading
+│   ├── concept_analogies.md     # Real-world analogies
+│   ├── further_reading.md       # Additional resources
+│   ├── glossary.md              # Technical terms
+│   ├── images/                  # Diagrams and screenshots
+│   ├── misconceptions.md        # Common misconceptions
+│   ├── pair_programming_guide.md # Pair programming instructions
+│   ├── parsons_problems.md      # Parsons problems
+│   ├── peer_instruction.md      # Peer instruction questions
 │   ├── theory_summary.md        # Theory summary
-│   └── troubleshooting.md       # Troubleshooting
+│   └── troubleshooting.md       # Troubleshooting guide
 ├── homework/            # Assignments
 │   ├── exercises/       # hw_NN_XX_*.py
 │   ├── solutions/       # Reference solutions (instructor only)
