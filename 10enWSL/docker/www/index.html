@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 10 - HTTP Server</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        code {
+            background: #e8e8e8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        ul { line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Week 10 - HTTP Server</h1>
+        <p>Welcome to the Week 10 Network Services Laboratory!</p>
+        
+        <div class="info-box">
+            <strong>Server Information:</strong><br>
+            Container: <code>week10_web</code><br>
+            IP Address: <code>172.20.0.10</code><br>
+            Port: <code>8000</code>
+        </div>
+
+        <h2>Available Resources</h2>
+        <ul>
+            <li><a href="/">index.html</a> - This page</li>
+            <li><a href="/hello.txt">hello.txt</a> - Simple text file</li>
+        </ul>
+
+        <h2>Exercises</h2>
+        <p>Use <code>curl -v</code> to observe:</p>
+        <ul>
+            <li>HTTP request and response headers</li>
+            <li>Status codes (200 OK, 404 Not Found)</li>
+            <li>Content-Type and Content-Length headers</li>
+        </ul>
+
+        <h2>Packet Capture</h2>
+        <p>Capture HTTP traffic with Wireshark using the filter:</p>
+        <code>tcp.port == 8000 && http</code>
+
+        <hr style="margin: 30px 0;">
+        <small>NETWORKING class - ASE, Informatics | by Revolvix</small>
+    </div>
+</body>
+</html>

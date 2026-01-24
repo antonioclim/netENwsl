@@ -1,0 +1,8 @@
+Hello from the Week 10 HTTP Server!
+
+This file demonstrates simple HTTP content retrieval.
+Observe the Content-Type header when fetching this resource.
+
+Try: curl -v http://localhost:8000/hello.txt
+
+NETWORKING class - ASE, Informatics | by Revolvix
