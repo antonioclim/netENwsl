@@ -1,0 +1,112 @@
+name: 💡 Feature Request
+description: Suggest a new feature, exercise or improvement
+title: "[FEATURE] "
+labels: ["enhancement"]
+assignees:
+  - antonioclim
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your suggestion. Feature requests help us improve the laboratory materials for all students.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What type of feature are you suggesting?
+      options:
+        - New exercise or practical activity
+        - New documentation section
+        - Script improvement or automation
+        - Docker configuration enhancement
+        - New protocol or technology coverage
+        - Accessibility improvement
+        - Testing or validation enhancement
+        - User interface improvement (Portainer, scripts)
+        - Other enhancement
+    validations:
+      required: true
+
+  - type: dropdown
+    id: week
+    attributes:
+      label: Related Week (if applicable)
+      description: Does this feature relate to a specific week?
+      options:
+        - Not week-specific
+        - Week 00 (Appendix/Setup)
+        - Week 01 — Network Fundamentals
+        - Week 02 — Socket Programming
+        - Week 03 — Advanced Network Models
+        - Week 04 — Physical and Data Link Layers
+        - Week 05 — Network Layer and IP
+        - Week 06 — NAT/PAT and SDN
+        - Week 07 — Packet Capture and Security
+        - Week 08 — Transport Layer and HTTP
+        - Week 09 — Session and Presentation
+        - Week 10 — Application Protocols
+        - Week 11 — Load Balancing
+        - Week 12 — Email and RPC
+        - Week 13 — IoT Security
+        - Week 14 — Review and Assessment
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: Describe the feature you would like to see.
+      placeholder: "Explain what you would like added or improved..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Motivation
+      description: What problem does this feature solve? Why would it be useful?
+      placeholder: "This feature would help because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: If you have ideas about how to implement this, describe them here.
+      placeholder: "One way to implement this could be..."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative approaches?
+      placeholder: "Alternative approaches might include..."
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Suggested Priority
+      description: How important do you consider this feature?
+      options:
+        - Low — Nice to have
+        - Medium — Would improve the learning experience
+        - High — Currently missing essential functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots or examples.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues and feature requests for duplicates
+          required: true
+        - label: This feature aligns with the educational objectives of the course
+          required: true
