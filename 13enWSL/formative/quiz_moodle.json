@@ -1,0 +1,361 @@
+{
+  "$schema": "https://purl.imsglobal.org/spec/qti/v3p0/schema/json/qti-item-schema.json",
+  "metadata": {
+    "title": "Week 13: IoT and Security — Formative Quiz",
+    "description": "Computer Networks formative assessment covering MQTT, TLS, port scanning, and IoT security",
+    "author": "ing. dr. Antonio Clim",
+    "institution": "ASE Bucharest, CSIE",
+    "course": "Computer Networks",
+    "week": 13,
+    "version": "2.0",
+    "language": "en",
+    "license": "CC-BY-NC-SA-4.0",
+    "created": "2026-01-24",
+    "timeLimit": 1080,
+    "passingScore": 70,
+    "shuffleQuestions": false,
+    "shuffleAnswers": true,
+    "showFeedback": true,
+    "allowReview": true,
+    "lmsCompatibility": {
+      "moodle": "3.9+",
+      "canvas": "2020+",
+      "blackboard": "9.1+",
+      "d2l": "10.8+"
+    }
+  },
+  "categories": [
+    {"id": "cat_remember", "name": "Remember (Bloom L1)", "description": "Recall facts"},
+    {"id": "cat_understand", "name": "Understand (Bloom L2)", "description": "Explain concepts"},
+    {"id": "cat_apply", "name": "Apply (Bloom L3)", "description": "Use in new situations"},
+    {"id": "cat_analyze", "name": "Analyze (Bloom L4)", "description": "Draw connections"},
+    {"id": "cat_evaluate", "name": "Evaluate (Bloom L5)", "description": "Justify decisions"},
+    {"id": "cat_create", "name": "Create (Bloom L6)", "description": "Produce original work"}
+  ],
+  "learningObjectives": [
+    {"id": "LO1", "description": "Recall MQTT architecture components"},
+    {"id": "LO2", "description": "Explain plaintext vs TLS differences"},
+    {"id": "LO3", "description": "Implement TCP connect scanning"},
+    {"id": "LO4", "description": "Demonstrate MQTT pub/sub operations"},
+    {"id": "LO5", "description": "Analyse packet captures"},
+    {"id": "LO6", "description": "Design reconnaissance workflow"},
+    {"id": "LO7", "description": "Evaluate security posture"}
+  ],
+  "questions": [
+    {
+      "id": "q01",
+      "type": "multichoice",
+      "category": "cat_remember",
+      "learningObjective": "LO1",
+      "difficulty": "easy",
+      "points": 1,
+      "timeLimit": 30,
+      "stem": {"format": "html", "content": "<p>Care este portul standard pentru MQTT plaintext (necriptat)?</p>"},
+      "choices": [
+        {"id": "a", "content": "80 (HTTP)", "correct": false},
+        {"id": "b", "content": "443 (HTTPS)", "correct": false},
+        {"id": "c", "content": "1883 (MQTT)", "correct": true},
+        {"id": "d", "content": "8883 (MQTT-TLS)", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! MQTT plaintext = 1883.",
+        "incorrect": "MQTT plaintext = 1883, TLS = 8883."
+      },
+      "tags": ["mqtt", "ports"]
+    },
+    {
+      "id": "q02",
+      "type": "multichoice",
+      "category": "cat_remember",
+      "learningObjective": "LO1",
+      "difficulty": "easy",
+      "points": 1,
+      "timeLimit": 30,
+      "stem": {"format": "html", "content": "<p>Ce garantează QoS nivel 2 în MQTT?</p>"},
+      "choices": [
+        {"id": "a", "content": "Fire and forget — mesajul poate fi pierdut", "correct": false},
+        {"id": "b", "content": "At least once — mesajul poate fi duplicat", "correct": false},
+        {"id": "c", "content": "Exactly once — livrare garantată fără duplicate", "correct": true},
+        {"id": "d", "content": "Encrypted delivery — mesajul este criptat automat", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! QoS 2 = exactly once.",
+        "incorrect": "QoS 2 = exactly once. QoS NU oferă criptare!"
+      },
+      "tags": ["mqtt", "qos"]
+    },
+    {
+      "id": "q03",
+      "type": "multichoice",
+      "category": "cat_remember",
+      "learningObjective": "LO1",
+      "difficulty": "easy",
+      "points": 1,
+      "timeLimit": 30,
+      "stem": {"format": "html", "content": "<p>Care sunt cele trei componente principale ale arhitecturii MQTT?</p>"},
+      "choices": [
+        {"id": "a", "content": "Client, Server, Database", "correct": false},
+        {"id": "b", "content": "Publisher, Broker, Subscriber", "correct": true},
+        {"id": "c", "content": "Producer, Queue, Consumer", "correct": false},
+        {"id": "d", "content": "Sender, Router, Receiver", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! MQTT: Publisher → Broker → Subscriber",
+        "incorrect": "MQTT are: Publisher, Broker, Subscriber"
+      },
+      "tags": ["mqtt", "architecture"]
+    },
+    {
+      "id": "q04",
+      "type": "multichoice",
+      "category": "cat_understand",
+      "learningObjective": "LO2",
+      "difficulty": "medium",
+      "points": 1,
+      "timeLimit": 45,
+      "stem": {"format": "html", "content": "<p>Când traficul MQTT este criptat cu TLS, ce informații rămân vizibile pentru un atacator?</p>"},
+      "choices": [
+        {"id": "a", "content": "Topic-urile MQTT și payload-ul", "correct": false},
+        {"id": "b", "content": "Doar payload-ul mesajului", "correct": false},
+        {"id": "c", "content": "Adresele IP, porturile și dimensiunile pachetelor", "correct": true},
+        {"id": "d", "content": "Absolut nimic — TLS criptează totul", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! TLS criptează conținutul dar metadatele rămân vizibile.",
+        "incorrect": "TLS criptează payload dar IP-uri, porturi, timing rămân vizibile."
+      },
+      "tags": ["tls", "encryption"]
+    },
+    {
+      "id": "q05",
+      "type": "multichoice",
+      "category": "cat_understand",
+      "learningObjective": "LO2",
+      "difficulty": "medium",
+      "points": 1,
+      "timeLimit": 45,
+      "stem": {"format": "html", "content": "<p>Ce înseamnă când un port scanner raportează un port ca 'filtered'?</p>"},
+      "choices": [
+        {"id": "a", "content": "Portul este protejat cu autentificare", "correct": false},
+        {"id": "b", "content": "Serviciul necesită credențiale", "correct": false},
+        {"id": "c", "content": "Firewall DROP sau host inaccesibil (timeout)", "correct": true},
+        {"id": "d", "content": "Portul este închis permanent", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! Filtered = timeout, firewall DROP.",
+        "incorrect": "Filtered = niciun răspuns. Starea reală e NECUNOSCUTĂ."
+      },
+      "tags": ["scanning", "firewall"]
+    },
+    {
+      "id": "q06",
+      "type": "multichoice",
+      "category": "cat_understand",
+      "learningObjective": "LO2",
+      "difficulty": "medium",
+      "points": 1,
+      "timeLimit": 45,
+      "stem": {"format": "html", "content": "<p>De ce TLS 1.3 nu este backwards-compatible cu TLS 1.0/1.1?</p>"},
+      "choices": [
+        {"id": "a", "content": "Folosește porturi diferite", "correct": false},
+        {"id": "b", "content": "A eliminat cipher suites vechi și nesigure", "correct": true},
+        {"id": "c", "content": "Necesită hardware special", "correct": false},
+        {"id": "d", "content": "Funcționează doar cu IPv6", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! TLS 1.3 a eliminat RSA key exchange, CBC, SHA-1.",
+        "incorrect": "TLS 1.3 a eliminat algoritmi nesiguri."
+      },
+      "tags": ["tls", "versions"]
+    },
+    {
+      "id": "q07",
+      "type": "shortanswer",
+      "category": "cat_apply",
+      "learningObjective": "LO3",
+      "difficulty": "medium",
+      "points": 1,
+      "timeLimit": 60,
+      "stem": {"format": "html", "content": "<p>Completează IP-ul: <code>python3 ex_13_01_port_scanner.py --target _____ --ports 80,443</code> pentru 10.0.13.11</p>"},
+      "answers": [{"content": "10.0.13.11", "fraction": 100}],
+      "caseSensitive": false,
+      "tags": ["scanning", "commands"]
+    },
+    {
+      "id": "q08",
+      "type": "shortanswer",
+      "category": "cat_apply",
+      "learningObjective": "LO3",
+      "difficulty": "medium",
+      "points": 1,
+      "timeLimit": 60,
+      "stem": {"format": "html", "content": "<p>Metoda Python pentru timeout pe socket: <code>sock._____(0.5)</code></p>"},
+      "answers": [{"content": "settimeout", "fraction": 100}],
+      "caseSensitive": true,
+      "tags": ["python", "sockets"]
+    },
+    {
+      "id": "q09",
+      "type": "shortanswer",
+      "category": "cat_apply",
+      "learningObjective": "LO4",
+      "difficulty": "medium",
+      "points": 1,
+      "timeLimit": 45,
+      "stem": {"format": "html", "content": "<p>Wildcard MQTT pentru EXACT UN nivel: ___</p>"},
+      "answers": [{"content": "+", "fraction": 100}],
+      "caseSensitive": false,
+      "tags": ["mqtt", "wildcards"]
+    },
+    {
+      "id": "q10",
+      "type": "multichoice",
+      "category": "cat_apply",
+      "learningObjective": "LO4",
+      "difficulty": "medium",
+      "points": 1,
+      "timeLimit": 60,
+      "stem": {"format": "html", "content": "<p>Subscriber cu <code>sensors/+/temperature</code>. Care topic NU va primi mesaje?</p>"},
+      "choices": [
+        {"id": "a", "content": "sensors/room1/temperature", "correct": false},
+        {"id": "b", "content": "sensors/room2/temperature", "correct": false},
+        {"id": "c", "content": "sensors/building1/floor2/temperature", "correct": true},
+        {"id": "d", "content": "sensors/outdoor/temperature", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! '+' = EXACT un nivel. building1/floor2 = DOUĂ niveluri.",
+        "incorrect": "'+' match exact un nivel."
+      },
+      "tags": ["mqtt", "wildcards"]
+    },
+    {
+      "id": "q11",
+      "type": "multichoice",
+      "category": "cat_analyze",
+      "learningObjective": "LO5",
+      "difficulty": "hard",
+      "points": 1,
+      "timeLimit": 60,
+      "stem": {"format": "html", "content": "<p>Publisher QoS 2, subscriber QoS 1. Ce QoS efectiv?</p>"},
+      "choices": [
+        {"id": "a", "content": "QoS 2 — publisher decide", "correct": false},
+        {"id": "b", "content": "QoS 1 — minimul", "correct": true},
+        {"id": "c", "content": "QoS 0 — se anulează", "correct": false},
+        {"id": "d", "content": "Eroare", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! QoS efectiv = min(pub, sub)",
+        "incorrect": "MQTT: QoS = MINIMUL, per-hop."
+      },
+      "tags": ["mqtt", "qos"]
+    },
+    {
+      "id": "q12",
+      "type": "multichoice",
+      "category": "cat_analyze",
+      "learningObjective": "LO5",
+      "difficulty": "hard",
+      "points": 1,
+      "timeLimit": 60,
+      "stem": {"format": "html", "content": "<p>Wireshark: [SYN] apoi timeout. Concluzie?</p>"},
+      "choices": [
+        {"id": "a", "content": "Port închis", "correct": false},
+        {"id": "b", "content": "Serviciu crashuit", "correct": false},
+        {"id": "c", "content": "Firewall DROP sau host inaccesibil", "correct": true},
+        {"id": "d", "content": "TLS eșuat", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! Niciun răspuns = DROP sau inexistent.",
+        "incorrect": "Port închis → RST. Timeout = filtered."
+      },
+      "tags": ["tcp", "wireshark"]
+    },
+    {
+      "id": "q13",
+      "type": "multichoice",
+      "category": "cat_analyze",
+      "learningObjective": "LO7",
+      "difficulty": "hard",
+      "points": 1,
+      "timeLimit": 75,
+      "stem": {"format": "html", "content": "<p>Scan: SSH(22), Telnet(23), HTTP(80), MQTT anon(1883). Cea mai critică?</p>"},
+      "choices": [
+        {"id": "a", "content": "SSH standard", "correct": false},
+        {"id": "b", "content": "Telnet activ", "correct": true},
+        {"id": "c", "content": "HTTP fără HTTPS", "correct": false},
+        {"id": "d", "content": "MQTT anonymous", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! Telnet = TOTUL plaintext!",
+        "incorrect": "Telnet transmite credențiale necriptate."
+      },
+      "tags": ["security", "telnet"]
+    },
+    {
+      "id": "q14",
+      "type": "multichoice",
+      "category": "cat_evaluate",
+      "learningObjective": "LO7",
+      "difficulty": "hard",
+      "points": 1,
+      "timeLimit": 75,
+      "stem": {"format": "html", "content": "<p>Audit IoT: MQTT anonim, credențiale admin/admin, firmware HTTP, date necriptate. OWASP IoT Top 10: ce PRIMUL?</p>"},
+      "choices": [
+        {"id": "a", "content": "Firmware nesigur", "correct": false},
+        {"id": "b", "content": "MQTT anonim", "correct": false},
+        {"id": "c", "content": "Credențiale default", "correct": true},
+        {"id": "d", "content": "Date necriptate", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! OWASP IoT #1: Weak Passwords.",
+        "incorrect": "OWASP IoT #1 = credențiale slabe."
+      },
+      "tags": ["owasp", "iot"]
+    },
+    {
+      "id": "q15",
+      "type": "multichoice",
+      "category": "cat_evaluate",
+      "learningObjective": "LO6",
+      "difficulty": "hard",
+      "points": 1,
+      "timeLimit": 60,
+      "stem": {"format": "html", "content": "<p>Config A: 1.0s timeout → 5 open. Config B: 0.1s timeout → 3 open. De ce B a ratat 2?</p>"},
+      "choices": [
+        {"id": "a", "content": "Rate limiting", "correct": false},
+        {"id": "b", "content": "Timeout prea scurt", "correct": true},
+        {"id": "c", "content": "Thread limit", "correct": false},
+        {"id": "d", "content": "Porturi închise", "correct": false}
+      ],
+      "feedback": {
+        "correct": "Corect! Timeout scurt = false negatives.",
+        "incorrect": "Servicii lente au nevoie de mai mult timp."
+      },
+      "tags": ["scanning", "performance"]
+    },
+    {
+      "id": "q16",
+      "type": "essay",
+      "category": "cat_create",
+      "learningObjective": "LO6",
+      "difficulty": "hard",
+      "points": 3,
+      "timeLimit": 180,
+      "stem": {"format": "html", "content": "<p>Descrie workflow reconnaissance pentru serviciu necunoscut pe port 8080. Minim 4 pași + tools.</p>"},
+      "responseFormat": "html",
+      "wordLimit": 300,
+      "rubric": [
+        {"criterion": "Port scan", "points": 1},
+        {"criterion": "Banner grabbing", "points": 1},
+        {"criterion": "CVE lookup", "points": 1}
+      ],
+      "sampleAnswer": "1. PORT SCAN (nmap/scanner) 2. BANNER GRAB (curl -I) 3. VERSION ID (nmap -sV) 4. CVE LOOKUP (searchsploit) 5. ENUMERATION (dirb)",
+      "tags": ["reconnaissance", "workflow"]
+    }
+  ],
+  "exportFormats": {
+    "moodleXML": {"supported": true, "command": "python run_quiz.py --export moodle"},
+    "canvasQTI": {"supported": true, "command": "python run_quiz.py --export canvas"},
+    "gift": {"supported": true, "command": "python run_quiz.py --export gift"}
+  }
+}

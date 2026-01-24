@@ -1,0 +1,96 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Ruff Configuration — Week 13 Laboratory
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Ruff is a fast Python linter written in Rust.
+# Install: pip install ruff
+# Usage:  ruff check src/ scripts/ tests/
+#         ruff check --fix src/  (auto-fix)
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+[tool.ruff]
+# Python version target
+target-version = "py311"
+
+# Maximum line length
+line-length = 120
+
+# Directories to exclude
+exclude = [
+    ".git",
+    ".github",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "artifacts",
+    "pcap",
+    "docker/volumes",
+    "*.pyc",
+]
+
+# Source directories
+src = ["src", "scripts", "tests", "formative"]
+
+[tool.ruff.lint]
+# Enable rule categories
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort (import sorting)
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "SIM",    # flake8-simplify
+]
+
+# Ignore specific rules
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+    "E402",   # Module level import not at top (needed for path setup)
+    "E731",   # Lambda assignment (sometimes useful)
+    "B008",   # Function call in default argument (argparse pattern)
+    "B905",   # zip without strict= (Python 3.10+)
+    "SIM108", # Ternary operator (readability preference)
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+# Allow assert in tests
+"tests/*" = ["S101", "B011"]
+
+# Allow print in scripts
+"scripts/*" = ["T201"]
+
+# Allow complex functions in exercises (educational)
+"src/exercises/*" = ["C901", "PLR0912", "PLR0915"]
+
+[tool.ruff.lint.isort]
+# Import sorting configuration
+known-first-party = ["src", "scripts"]
+force-single-line = false
+lines-after-imports = 2
+
+[tool.ruff.lint.flake8-quotes]
+# Prefer double quotes
+inline-quotes = "double"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Flake8 Configuration (Alternative)
+# ══════════════════════════════════════════════════════════════════════════════
+# If using flake8 instead of ruff, create .flake8 file with:
+#
+# [flake8]
+# max-line-length = 120
+# ignore = E402, W503, E501
+# exclude = .git, __pycache__, artifacts, docker/volumes
+# per-file-ignores =
+#     tests/*: S101
+#     scripts/*: T201
+#
+# ══════════════════════════════════════════════════════════════════════════════

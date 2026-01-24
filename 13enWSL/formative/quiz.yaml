@@ -1,0 +1,562 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# FORMATIVE QUIZ — Week 13: IoT and Security
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# USAGE:
+#   python formative/run_quiz.py                      # Full quiz
+#   python formative/run_quiz.py --random --limit 5   # Random 5 questions
+#   python formative/run_quiz.py --bloom apply        # Filter by Bloom level
+#   python formative/run_quiz.py --export moodle      # Export to Moodle XML
+#   python formative/run_quiz.py --export json        # Export JSON for LMS
+#
+# COMPANION FILES:
+#   - quiz_moodle.json: LMS-compatible format (Moodle/Canvas/Blackboard)
+#   - run_quiz.py: Interactive runner with export capabilities
+#
+# LANGUAGE: British English (analyse, authorisation, colour etc.)
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  week: 13
+  topic: "IoT and Security in Computer Networks"
+  version: "2.0"
+  author: "ing. dr. Antonio Clim"
+  institution: "ASE Bucharest, CSIE"
+  course: "Computer Networks"
+  language: "en-GB"
+  estimated_time_minutes: 18
+  passing_score: 70
+  total_questions: 16
+  
+  bloom_distribution:
+    remember: 3
+    understand: 3
+    apply: 3
+    analyse: 3
+    evaluate: 2
+    create: 2
+  
+  lo_coverage:
+    LO1: [q01, q02, q03]
+    LO2: [q04, q05, q06]
+    LO3: [q07, q08]
+    LO4: [q09, q10]
+    LO5: [q11, q12]
+    LO6: [q15, q16]
+    LO7: [q13, q14]
+
+questions:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # REMEMBER (Bloom Level 1) — Recall facts and basic concepts
+  # ────────────────────────────────────────────────────────────────────────────
+  
+  - id: q01
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: basic
+    bloom_level: remember
+    points: 1
+    time_limit_seconds: 30
+    stem: "What is the standard port for plaintext (unencrypted) MQTT?"
+    options:
+      a: "80 (HTTP)"
+      b: "443 (HTTPS)"
+      c: "1883 (MQTT)"
+      d: "8883 (MQTT-TLS)"
+    correct: c
+    feedback:
+      correct: "Correct! MQTT uses port 1883 for plaintext connections."
+      incorrect: "Incorrect. MQTT plaintext uses port 1883 whilst TLS uses 8883."
+    explanation: |
+      MQTT (Message Queuing Telemetry Transport) has two standard ports:
+      - Port 1883: plaintext connections (unencrypted)
+      - Port 8883: TLS connections (encrypted)
+      Ports 80/443 are for HTTP/HTTPS.
+    tags: [mqtt, ports, basics]
+
+  - id: q02
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: basic
+    bloom_level: remember
+    points: 1
+    time_limit_seconds: 30
+    stem: "What does QoS level 2 guarantee in MQTT?"
+    options:
+      a: "Fire and forget — the message may be lost"
+      b: "At least once — the message may be duplicated"
+      c: "Exactly once — guaranteed delivery without duplicates"
+      d: "Encrypted delivery — the message is automatically encrypted"
+    correct: c
+    feedback:
+      correct: "Correct! QoS 2 guarantees exactly-once delivery."
+      incorrect: "Incorrect. QoS 2 = exactly once. QoS 0 = fire and forget, QoS 1 = at least once."
+    explanation: |
+      MQTT Quality of Service levels:
+      - QoS 0: At most once (fire and forget) — may lose messages
+      - QoS 1: At least once — guarantees delivery but may duplicate
+      - QoS 2: Exactly once — 4-step handshake with no losses or duplicates
+      IMPORTANT: QoS does NOT provide encryption! TLS is required for that.
+    tags: [mqtt, qos, reliability]
+
+  - id: q03
+    type: multiple_choice
+    lo_ref: LO1
+    difficulty: basic
+    bloom_level: remember
+    points: 1
+    time_limit_seconds: 30
+    stem: "What are the three main components of MQTT architecture?"
+    options:
+      a: "Client, Server, Database"
+      b: "Publisher, Broker, Subscriber"
+      c: "Producer, Queue, Consumer"
+      d: "Sender, Router, Receiver"
+    correct: b
+    feedback:
+      correct: "Correct! MQTT uses the Publisher-Broker-Subscriber model."
+      incorrect: "Incorrect. MQTT has: Publisher (sends messages), Broker (routes) and Subscriber (receives)."
+    explanation: |
+      MQTT publish/subscribe architecture:
+      - Publisher: sends messages to topics
+      - Broker: receives, routes and delivers messages (e.g. Mosquitto)
+      - Subscriber: subscribes to topics and receives messages
+      Topics are organised hierarchically: building/floor1/temperature
+    tags: [mqtt, architecture, basics]
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # UNDERSTAND (Bloom Level 2) — Explain ideas and concepts
+  # ────────────────────────────────────────────────────────────────────────────
+  
+  - id: q04
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: intermediate
+    bloom_level: understand
+    points: 1
+    time_limit_seconds: 45
+    stem: |
+      When MQTT traffic is encrypted with TLS (port 8883), what information
+      remains visible to an attacker capturing packets?
+    options:
+      a: "MQTT topics and message payloads"
+      b: "Only the message payload, not the topics"
+      c: "Source/destination IP addresses, ports and packet sizes"
+      d: "Absolutely nothing — TLS encrypts everything including network metadata"
+    correct: c
+    feedback:
+      correct: "Correct! TLS encrypts application content but network metadata remains visible."
+      incorrect: "Incorrect. TLS encrypts the application layer payload but IP addresses, ports and timing remain visible."
+    explanation: |
+      TLS (Transport Layer Security) encrypts CONTENT at the application layer:
+      ✓ Encrypted: topics, messages, credentials and application data
+      ✗ Visible: source IP, destination IP, ports, packet sizes and timing
+      
+      This enables "traffic analysis" attacks — inference based on patterns.
+    tags: [tls, encryption, security, metadata]
+
+  - id: q05
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: intermediate
+    bloom_level: understand
+    points: 1
+    time_limit_seconds: 45
+    stem: "What does it mean when a port scanner reports a port as 'filtered'?"
+    options:
+      a: "The port is protected with authentication"
+      b: "The service is running but requires credentials"
+      c: "The firewall blocks packets without sending a response (DROP)"
+      d: "The port is permanently closed by the administrator"
+    correct: c
+    feedback:
+      correct: "Correct! 'Filtered' = no response received, typically a firewall DROP."
+      incorrect: "Incorrect. Filtered means timeout — the firewall does DROP and the actual state is unknown."
+    explanation: |
+      The three possible port states:
+      - OPEN: connection succeeded (SYN → SYN-ACK) — active service
+      - CLOSED: connection refused (SYN → RST) — no service but host accessible
+      - FILTERED: no response (timeout) — firewall DROP or host inaccessible
+      
+      IMPORTANT: "filtered" does NOT mean "secure" — the actual state is UNKNOWN!
+    tags: [scanning, ports, firewall]
+
+  - id: q06
+    type: multiple_choice
+    lo_ref: LO2
+    difficulty: intermediate
+    bloom_level: understand
+    points: 1
+    time_limit_seconds: 45
+    stem: "Why is TLS 1.3 not backwards-compatible with TLS 1.0/1.1?"
+    options:
+      a: "TLS 1.3 uses different ports"
+      b: "TLS 1.3 removed old and insecure cipher suites"
+      c: "TLS 1.3 requires special hardware"
+      d: "TLS 1.3 only works with IPv6"
+    correct: b
+    feedback:
+      correct: "Correct! TLS 1.3 removed algorithms considered insecure."
+      incorrect: "Incorrect. TLS 1.3 uses the same ports but removed deprecated cipher suites."
+    explanation: |
+      TLS 1.3 (RFC 8446) introduced major security changes:
+      - Removed: RSA key exchange, CBC mode ciphers and SHA-1
+      - Retained: ECDHE, AES-GCM and ChaCha20-Poly1305
+      
+      Old clients supporting only TLS 1.0/1.1 cannot negotiate with TLS 1.3-only servers.
+    tags: [tls, versions, compatibility]
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # APPLY (Bloom Level 3) — Use information in new situations
+  # ────────────────────────────────────────────────────────────────────────────
+  
+  - id: q07
+    type: fill_blank
+    lo_ref: LO3
+    difficulty: intermediate
+    bloom_level: apply
+    points: 1
+    time_limit_seconds: 60
+    stem: |
+      To scan ports 80, 443 and 8080 on target 10.0.13.11,
+      complete the command:
+      
+      python3 ex_13_01_port_scanner.py --target _______ --ports _______
+    correct:
+      - ["10.0.13.11", "80,443,8080"]
+      - ["10.0.13.11", "80, 443, 8080"]
+    hint: "The target is the IP address and ports are separated by commas"
+    feedback:
+      correct: "Correct! The syntax is --target IP --ports port1,port2,port3"
+      incorrect: "Check: --target receives the IP and --ports receives a comma-separated list"
+    tags: [scanning, commands, syntax]
+
+  - id: q08
+    type: fill_blank
+    lo_ref: LO3
+    difficulty: intermediate
+    bloom_level: apply
+    points: 1
+    time_limit_seconds: 60
+    stem: |
+      In Python, to set a 0.5 second timeout on a TCP socket,
+      we use the method:
+      
+      sock._______(_______)
+    correct:
+      - ["settimeout", "0.5"]
+    hint: "The method is called settimeout and receives a float in seconds"
+    feedback:
+      correct: "Correct! sock.settimeout(0.5) sets the timeout to 500ms"
+      incorrect: "The correct syntax: sock.settimeout(seconds) where seconds is a float"
+    tags: [python, sockets, timeout]
+
+  - id: q09
+    type: fill_blank
+    lo_ref: LO4
+    difficulty: intermediate
+    bloom_level: apply
+    points: 1
+    time_limit_seconds: 45
+    stem: |
+      In MQTT, the wildcard that matches EXACTLY ONE level in the topic
+      hierarchy is the symbol: ___
+    correct:
+      - "+"
+    hint: "It is not # (multi-level wildcard)"
+    feedback:
+      correct: "Correct! '+' = single-level wildcard (exactly one level)"
+      incorrect: "The single-level wildcard is '+' whilst the multi-level wildcard is '#'"
+    explanation: |
+      MQTT Wildcards:
+      - '+' (plus): matches exactly one level — sensors/+/temp → sensors/room1/temp ✓
+      - '#' (hash): matches zero or more levels, only at end — sensors/# → sensors/a/b/c ✓
+    tags: [mqtt, wildcards, topics]
+
+  - id: q10
+    type: multiple_choice
+    lo_ref: LO4
+    difficulty: intermediate
+    bloom_level: apply
+    points: 1
+    time_limit_seconds: 60
+    stem: |
+      A subscriber connects with the pattern: sensors/+/temperature
+      
+      Which of the following topics will NOT receive messages?
+    options:
+      a: "sensors/room1/temperature"
+      b: "sensors/room2/temperature"
+      c: "sensors/building1/floor2/temperature"
+      d: "sensors/outdoor/temperature"
+    correct: c
+    feedback:
+      correct: "Correct! '+' matches EXACTLY one level, not multiple."
+      incorrect: "Review: '+' = exactly one level. building1/floor2 are TWO levels."
+    explanation: |
+      Pattern: sensors/+/temperature
+      
+      ✓ sensors/room1/temperature (+ = room1, one level)
+      ✓ sensors/room2/temperature (+ = room2, one level)
+      ✗ sensors/building1/floor2/temperature (building1/floor2 = TWO levels!)
+      ✓ sensors/outdoor/temperature (+ = outdoor, one level)
+    tags: [mqtt, wildcards, matching]
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # ANALYSE (Bloom Level 4) — Draw connections among ideas
+  # ────────────────────────────────────────────────────────────────────────────
+  
+  - id: q11
+    type: multiple_choice
+    lo_ref: LO5
+    difficulty: advanced
+    bloom_level: analyse
+    points: 1
+    time_limit_seconds: 60
+    stem: |
+      A publisher sends messages with QoS 2 but the subscriber is
+      connected to the broker with QoS 1. What effective QoS does the subscriber receive?
+    options:
+      a: "QoS 2 — the publisher decides the level"
+      b: "QoS 1 — the minimum of publisher and subscriber is used"
+      c: "QoS 0 — different levels cancel each other out"
+      d: "Connection error — QoS must be identical"
+    correct: b
+    feedback:
+      correct: "Correct! Effective QoS = min(publisher_QoS, subscriber_QoS)"
+      incorrect: "In MQTT, effective QoS is the MINIMUM of the two parties."
+    explanation: |
+      MQTT QoS Negotiation:
+      - QoS is negotiated PER-HOP, not end-to-end
+      - Publisher → Broker: QoS 2
+      - Broker → Subscriber: QoS 1 (limited by subscriber)
+      - Result: subscriber receives with QoS 1
+      
+      Formula: effective_qos = min(publisher_qos, subscriber_qos)
+    tags: [mqtt, qos, negotiation]
+
+  - id: q12
+    type: multiple_choice
+    lo_ref: LO5
+    difficulty: advanced
+    bloom_level: analyse
+    points: 1
+    time_limit_seconds: 60
+    stem: |
+      In Wireshark you observe the following TCP sequence:
+      
+      Client → Server: [SYN]
+      (no response, timeout after 2 seconds)
+      
+      What conclusions can you draw?
+    options:
+      a: "The port is closed — the service is not running"
+      b: "The service crashed during connection"
+      c: "The firewall does DROP or the host is inaccessible"
+      d: "The TLS connection failed"
+    correct: c
+    feedback:
+      correct: "Correct! No response = firewall DROP or inaccessible host. A closed port would send RST."
+      incorrect: "Analysis: SYN→SYN-ACK=open, SYN→RST=closed, SYN→(nothing)=filtered/inaccessible."
+    explanation: |
+      TCP handshake analysis:
+      - SYN → SYN-ACK: port OPEN (active service)
+      - SYN → RST: port CLOSED (no service but host responds)
+      - SYN → (nothing): port FILTERED or host inaccessible
+      
+      TLS handshake comes AFTER complete TCP handshake so it is not relevant here.
+    tags: [tcp, wireshark, analysis, handshake]
+
+  - id: q13
+    type: multiple_choice
+    lo_ref: LO7
+    difficulty: advanced
+    bloom_level: analyse
+    points: 1
+    time_limit_seconds: 75
+    stem: |
+      A port scan discovers on an IoT server:
+      - Port 22: SSH (OpenSSH 8.9)
+      - Port 23: Telnet
+      - Port 80: HTTP (nginx 1.18)
+      - Port 1883: MQTT (anonymous access)
+      
+      Which is the most critical vulnerability?
+    options:
+      a: "SSH on standard port (22)"
+      b: "Telnet active (port 23)"
+      c: "HTTP without HTTPS"
+      d: "Outdated nginx version"
+    correct: b
+    feedback:
+      correct: "Correct! Telnet transmits credentials in plaintext — the most critical issue."
+      incorrect: "Telnet is the most critical: it transmits EVERYTHING in plaintext including passwords."
+    explanation: |
+      Risk analysis:
+      1. CRITICAL: Telnet (port 23) — credentials in plaintext, no encryption
+      2. HIGH: Anonymous MQTT — allows unauthorised access
+      3. MEDIUM: HTTP without HTTPS — depends on transmitted data
+      4. LOW: SSH/nginx versions — requires specific CVE
+      
+      Telnet should ALWAYS be replaced with SSH.
+    tags: [security, risk, assessment, telnet]
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # EVALUATE (Bloom Level 5) — Justify a decision
+  # ────────────────────────────────────────────────────────────────────────────
+  
+  - id: q14
+    type: multiple_choice
+    lo_ref: LO7
+    difficulty: advanced
+    bloom_level: evaluate
+    points: 1
+    time_limit_seconds: 75
+    stem: |
+      An IoT audit discovers:
+      1. MQTT broker with anonymous access
+      2. Devices with default credentials (admin/admin)
+      3. Firmware updates over HTTP
+      4. Unencrypted sensor data
+      
+      According to OWASP IoT Top 10, what should be remediated FIRST?
+    options:
+      a: "Insecure firmware updates"
+      b: "Anonymous MQTT access"
+      c: "Default/weak credentials"
+      d: "Unencrypted data"
+    correct: c
+    feedback:
+      correct: "Correct! OWASP IoT #1: Weak/Default Passwords."
+      incorrect: "OWASP IoT Top 10 puts weak credentials in position #1."
+    explanation: |
+      OWASP IoT Top 10 (2018) prioritises:
+      #1 Weak, Guessable, or Hardcoded Passwords
+      #2 Insecure Network Services
+      #3 Insecure Ecosystem Interfaces
+      ...
+      #7 Insecure Data Transfer and Storage
+      
+      The Mirai botnet compromised 600,000+ devices using just 62 default 
+      username/password pairs. Weak credentials = easiest attack path.
+    tags: [owasp, iot, security, priority]
+
+  - id: q15
+    type: multiple_choice
+    lo_ref: LO6
+    difficulty: advanced
+    bloom_level: evaluate
+    points: 1
+    time_limit_seconds: 60
+    stem: |
+      You scan 1000 ports with two configurations:
+      
+      Config A: 10 workers, 1.0s timeout → 100s, finds 5 open ports
+      Config B: 500 workers, 0.1s timeout → 2s, finds 3 open ports
+      
+      Why did Config B miss 2 ports?
+    options:
+      a: "The target did rate limiting"
+      b: "The 0.1s timeout was too short for slow services"
+      c: "Python does not support 500 threads"
+      d: "The ports closed randomly"
+    correct: b
+    feedback:
+      correct: "Correct! A timeout that is too short = false negatives (ports reported as filtered)."
+      incorrect: "Slow services need more than 0.1s to respond."
+    explanation: |
+      Speed vs. accuracy trade-off in scanning:
+      - Short timeout: fast scanning but may miss slow-responding ports
+      - Long timeout: accurate results but takes much longer
+      
+      Config B with 0.1s timeout interpreted slow services as "filtered" (timeout)
+      when they were actually "open" but responding in >0.1s.
+      
+      Recommendation: start with conservative timeout (1-2s) then optimise.
+    tags: [scanning, performance, accuracy, tradeoffs]
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # CREATE (Bloom Level 6) — Produce new or original work
+  # ────────────────────────────────────────────────────────────────────────────
+  
+  - id: q16
+    type: short_answer
+    lo_ref: LO6
+    difficulty: advanced
+    bloom_level: create
+    points: 3
+    time_limit_seconds: 180
+    stem: |
+      Describe a systematic reconnaissance workflow for an unknown service 
+      on port 8080. Include at least 4 steps and the tools used.
+    rubric:
+      - "Step 1: Port scan to confirm state (nmap, custom scanner) [1 point]"
+      - "Step 2: Banner grabbing / service fingerprinting (curl, nc, nmap -sV) [1 point]"
+      - "Step 3: Version identification and CVE lookup (searchsploit, CVE DB) [1 point]"
+      - "Step 4: Traffic analysis / enumeration (Wireshark, dirb, nikto) [bonus]"
+    example_answer: |
+      Reconnaissance workflow for port 8080:
+      
+      1. STATE CONFIRMATION: Run port scan to verify the port is open
+         Tool: python ex_13_01_port_scanner.py --target IP --ports 8080
+      
+      2. SERVICE IDENTIFICATION: Banner grabbing to identify the service
+         Tool: curl -I http://IP:8080 or nc -v IP 8080
+         Look for: Server header, X-Powered-By and other indicators
+      
+      3. VERSION FINGERPRINTING: Identify exact version
+         Tool: nmap -sV -p 8080 IP
+         Result: e.g. "Apache httpd 2.4.41"
+      
+      4. CVE LOOKUP: Search for known vulnerabilities for this version
+         Tool: searchsploit apache 2.4.41
+         Or: https://cve.mitre.org search
+      
+      5. (BONUS) ENUMERATION: Directories and sensitive files
+         Tool: dirb http://IP:8080 or nikto -h IP:8080
+    self_evaluate: true
+    tags: [reconnaissance, workflow, methodology]
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING & ANALYTICS
+# ══════════════════════════════════════════════════════════════════════════════
+
+scoring:
+  total_possible: 18  # 15 x 1pt + 1 x 3pt
+  passing_threshold: 70
+  grading_scale:
+    A: [90, 100]
+    B: [80, 89]
+    C: [70, 79]
+    D: [60, 69]
+    F: [0, 59]
+
+analytics:
+  track_time_per_question: true
+  track_bloom_performance: true
+  track_lo_coverage: true
+  export_formats:
+    - yaml
+    - json
+    - moodle_xml
+    - gift
+    - canvas_qti
+  export_path: "artifacts/quiz_results"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LMS EXPORT NOTES
+# ══════════════════════════════════════════════════════════════════════════════
+# 
+# For Moodle/Canvas import, use the companion file: quiz_moodle.json
+# Run: python formative/run_quiz.py --export moodle --output quiz_moodle.xml
+#
+# Supported LMS formats:
+# - Moodle XML (GIFT format)
+# - Canvas QTI 1.2
+# - Blackboard
+# - JSON (generic)
+#
+# ══════════════════════════════════════════════════════════════════════════════
