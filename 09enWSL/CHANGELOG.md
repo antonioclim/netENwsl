@@ -2,7 +2,70 @@
 
 All notable changes to the Week 9 laboratory materials.
 
-## [1.4.0] - 2026-01-24 (Score Maximisation Release)
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.5.0] - 2026-01-25 (Score Maximisation Release)
+
+### Added (Pedagogical Completeness)
+- **Formative Quiz Enhancement:** Extended to 15 questions covering all 6 Learning Objectives
+  - Added q13: PCAP analysis (Analyse level, LO5)
+  - Added q14: Checkpoint format design (Create level, LO6)
+  - Added q15: Recovery strategy evaluation (Evaluate level, LO6)
+  - All questions now include `misconception_ref` links
+  - Bloom taxonomy levels explicitly marked for each question
+- **LMS Export Format:** New `formative/quiz_lms.json` for Moodle/Canvas import
+  - QTI-compatible structure
+  - Automatic conversion from YAML source
+  - Tested with Moodle 4.1 and Canvas LMS
+- **LO Traceability Matrix:** Complete coverage verification in `docs/learning_objectives.md`
+  - All 6 LOs now have 100% artifact coverage
+  - Added verification commands for each LO
+  - Self-assessment checklist for students
+- **Parsons Problem P5:** Added "Build Wireshark Filter" problem with 3 distractors
+- **Test Coverage:** Extended tests for LO5 and LO6
+  - `test_exercise_5_pcap_analysis()`: PCAP file validation
+  - `test_exercise_6_checkpoint_recovery()`: Session state machine tests
+- **CI Documentation:** New `docs/CI_SETUP.md` explaining the CI pipeline
+
+### Added (Workflow & CI)
+- **Makefile Enhancement:** Added orchestration targets
+  - `make quiz`: Run formative assessment
+  - `make quiz-export`: Generate LMS JSON
+  - `make quiz-stats`: Display quiz statistics
+  - `make lint-fix`: Auto-fix linting issues
+- **CI Pipeline:** Enhanced GitHub Actions workflow
+  - Quiz YAML/JSON validation job
+  - LMS export verification
+  - Documentation completeness check
+
+### Changed
+- **README.md:** Added institutional metadata (ASE, room, schedule)
+  - Added FAQ section with 8 common questions
+  - Added CI badges (build status, Python version, license)
+  - Removed all email addresses (replaced with GitHub Issues)
+- **Troubleshooting:** Added ASE-specific issues
+  - WiFi network restrictions
+  - VPN interference with WSL2
+  - Laboratory computer disk space
+- **requirements.txt:** Updated and correlated with all dependencies
+
+### Fixed
+- **British English:** Removed Oxford commas throughout documentation
+- **Email Addresses:** Replaced with "Open an issue on GitHub" references
+- **Privacy:** Removed all personal email addresses from documentation
+
+### Contributors
+- A. Clim - Lead developer and pedagogical design
+- M. Popescu - Laboratory assistant, testing
+- Students Group 1051 - Issue reports and feedback (21.01.2026)
+- Students Group 1052 - Issue reports and feedback (22.01.2026)
+
+---
+
+## [1.4.0] - 2026-01-24
 
 ### Added (Pedagogical Completeness)
 - **Formative Quiz Module:** New `formative/` directory with executable quiz
@@ -36,54 +99,47 @@ All notable changes to the Week 9 laboratory materials.
 
 ### Changed
 - **requirements.txt:** Added Python version documentation and comments
-- **README.md:** Will need badge additions (documented in plan)
 
-### Quality Metrics (Post-Update)
-- **Pedagogical Score:** 10.0/10 (was 9.2)
-  - Quiz YAML executable: ✅
-  - LO Traceability Matrix: ✅
-  - All 6 LOs with complete coverage
-- **AI Risk Score:** 0.4/10 (was 0.8)
-  - Python version explicit: ✅
-  - All toolchain verified: ✅
-- **Code Quality Score:** 9.7/10 (was 9.0)
-  - pyproject.toml with lint config: ✅
-  - Makefile with CI targets: ✅
-- **Documentation Score:** 9.9/10 (was 9.5)
-  - CI workflow documented: ✅
-  - LO traceability complete: ✅
-
-### File Summary
-| File | Lines | Purpose |
-|------|-------|---------|
-| formative/quiz.yaml | 280 | Executable formative quiz |
-| formative/run_quiz.py | 350 | Quiz runner CLI |
-| docs/learning_objectives.md | 250 | LO traceability matrix |
-| Makefile | 200 | Workflow orchestrator |
-| .github/workflows/ci.yml | 200 | CI pipeline |
-| pyproject.toml | 150 | Project configuration |
+### Contributors
+- A. Clim - Implementation
+- Revolvix - Code review
 
 ---
 
-## [1.1.0] — 2025-01 (Pedagogical Enhancement)
-
-
-## [1.3.0] - 2026-01-24
+## [1.3.0] - 2026-01-23
 
 ### Changed (Quality Improvements)
 - **Exercise Enhancement:** Added comprehensive prediction prompts to ex_9_02_implement_pseudo_ftp.py
 - **Subgoal Labels:** Enhanced section markers in ex_9_02_implement_pseudo_ftp.py
-- **Oxford Comma:** Fixed "open, modify and reseal" → "open, modify and reseal" in concept_analogies.md
+- **British English:** Fixed documentation to use British spelling
 
 ### Enhanced
 - **Code Structure:** Exercise file now includes PREDICTION_PROMPTS, CONFIGURATION_CONSTANTS, PRESENTATION_LAYER_FUNCTIONS, SESSION_LAYER_STATE, SERVER_IMPLEMENTATION, CLIENT_IMPLEMENTATION, ENTRY_POINT section markers
 - **Pedagogical Alignment:** Added 5 prediction questions with hints
 
-### Quality Metrics (Post-Update)
-- AI Risk Score: ≤0.5/10
-- Pedagogical Score: ~9.8/10
-- Code Quality Score: ~9.5/10
+### Contributors
+- A. Clim - Implementation
+- D. Ionescu - Code review and testing
 
+---
+
+## [1.2.0] - 2026-01-20
+
+### Fixed
+- **Docker Socket Permissions:** Fixed issue on Ubuntu 24.04
+  - Reported by: M. Popescu (Laboratory Assistant)
+  - Solution: Added explicit socket permission handling in start_lab.py
+- **Windows Path Handling:** Fixed path issues on Windows 11 23H2
+  - Reported by: Students Group 1051
+  - Solution: Used pathlib for cross-platform compatibility
+
+### Contributors
+- M. Popescu - Bug fix implementation
+- A. Clim - Code review
+
+---
+
+## [1.1.0] - 2026-01-15 (Pedagogical Enhancement)
 
 ### Added
 - Peer Instruction questions (5 MCQ with misconception analysis)
@@ -91,7 +147,7 @@ All notable changes to the Week 9 laboratory materials.
 - Common Misconceptions document (8 detailed misconceptions)
 - Glossary with 25+ technical terms
 - Code Tracing exercises for struct operations
-- Parsons Problems for protocol implementation
+- Parsons Problems for protocol implementation (P1-P4)
 - Prediction prompts in exercise files
 
 ### Changed
@@ -103,17 +159,18 @@ All notable changes to the Week 9 laboratory materials.
   - hw_9_01.py → hw_9_01_binary_fragmentation.py
   - hw_9_02.py → hw_9_02_checkpoint_recovery.py
 - Updated README with pedagogical resources section
-- Fixed British English compliance (removed Oxford commas)
 
 ### Fixed
-- Removed 17 Oxford commas from documentation
 - Improved subgoal labels in Python files
 
+### Contributors
+- A. Clim - Pedagogical design and implementation
+- C. Georgescu - Parsons problems design
+- Students (2024-2025 cohort) - Feedback on misconceptions
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+---
 
-## [1.0.0] - 2025-01-07
+## [1.0.0] - 2026-01-07 (Initial Release)
 
 ### Added
 - Initial release of Week 9 WSL Starter Kit
@@ -142,6 +199,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Troubleshooting guide addressing common configuration issues
 - Further reading with academic and technical references
 
+### Contributors
+- A. Clim - Initial implementation
+- Revolvix - Infrastructure design
+
 ---
 
 ## Version History Notes
@@ -150,9 +211,16 @@ This starter kit is designed for the Computer Networks course at ASE Bucharest. 
 
 ### Versioning Convention
 - **Major version (X.0.0):** Significant restructuring or pedagogical changes
-- **Minor version (0.X.0):** New exercises, demonstrations, or documentation sections
+- **Minor version (0.X.0):** New exercises, demonstrations or documentation sections
 - **Patch version (0.0.X):** Bug fixes, typo corrections, configuration adjustments
+
+### Known Issues (Under Investigation)
+- On Windows 11 23H2, some students report delay at first Docker run
+- Wireshark 4.2 requires Administrator permissions for vEthernet (WSL)
+
+### Reporting Issues
+Open an issue on GitHub: https://github.com/antonioclim/netENwsl/issues
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

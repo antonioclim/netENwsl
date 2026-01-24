@@ -365,3 +365,115 @@ feedback:
 # ═══════════════════════════════════════════════════════════════════════════════
 # END OF QUIZ
 # ═══════════════════════════════════════════════════════════════════════════════
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO5: Additional PCAP Analysis Question (Analyse)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q13
+    lo_ref: LO5
+    bloom_level: analyse
+    difficulty: advanced
+    type: multiple_choice
+    points: 3
+    stem: |
+      In a Wireshark capture, you see:
+        Packet 1: TCP SYN to port 2121
+        Packet 2: TCP SYN-ACK from port 2121
+        Packet 3: TCP ACK
+        Packet 4: "220 FTP Server Ready"
+        Packet 5: "USER test"
+      
+      At which packet does the SESSION layer become active?
+    options:
+      a: "Packet 1 — when TCP connection initiates"
+      b: "Packet 3 — when TCP handshake completes"
+      c: "Packet 4 — when FTP server sends banner"
+      d: "Packet 5 — when authentication begins"
+    correct: d
+    explanation: |
+      TCP handshake (packets 1-3) establishes the transport connection.
+      The server banner (packet 4) is still transport-level data.
+      Session layer activity begins with USER command (packet 5) which
+      initiates the authentication dialogue — a session-layer concern.
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    time_seconds: 90
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LO6: Checkpoint Recovery Design Question (Create)
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - id: q14
+    lo_ref: LO6
+    bloom_level: create
+    difficulty: advanced
+    type: open_response
+    points: 5
+    stem: |
+      Design a checkpoint format for resumable file transfers. Your format
+      must include: session ID, file path, bytes transferred, timestamp
+      and integrity verification. Describe the binary layout.
+    rubric:
+      - "Session ID present (1 point)"
+      - "File path with length prefix (1 point)"
+      - "Byte offset as 64-bit integer (1 point)"
+      - "Timestamp in Unix epoch (1 point)"
+      - "CRC or hash for verification (1 point)"
+    sample_answer: |
+      Format: ">4s I H {path_len}s Q Q I"
+      - Magic: 4 bytes "CKPT"
+      - Session ID: 4 bytes (unsigned int)
+      - Path length: 2 bytes (unsigned short)
+      - File path: variable (UTF-8 encoded)
+      - Bytes transferred: 8 bytes (unsigned long long)
+      - Timestamp: 8 bytes (Unix epoch)
+      - CRC-32: 4 bytes
+    max_points: 5
+    time_seconds: 180
+
+  - id: q15
+    lo_ref: LO6
+    bloom_level: evaluate
+    difficulty: advanced
+    type: multiple_choice
+    points: 3
+    stem: |
+      A file transfer uses 1MB checkpoints. The transfer fails at 47.3MB.
+      Which recovery approach minimises retransmission whilst ensuring integrity?
+    options:
+      a: "Restart from 0MB — ensures complete data integrity"
+      b: "Resume from 47MB checkpoint — latest complete checkpoint"
+      c: "Resume from 46MB — adds safety margin for partial writes"
+      d: "Resume from 47.3MB — continue exactly where stopped"
+    correct: b
+    explanation: |
+      Option (b) resumes from the last verified checkpoint (47MB).
+      Option (d) is risky because 47.3MB was never confirmed received.
+      Option (c) wastes bandwidth unnecessarily.
+      Option (a) defeats the purpose of checkpointing entirely.
+    misconception_ref: "docs/misconceptions.md#misconception-4"
+    time_seconds: 60
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# UPDATED STATISTICS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+statistics:
+  by_learning_objective:
+    LO1: 2
+    LO2: 3
+    LO3: 2
+    LO4: 2
+    LO5: 2
+    LO6: 4
+  
+  by_bloom_level:
+    remember: 2
+    understand: 4
+    apply: 5
+    analyse: 2
+    evaluate: 1
+    create: 1
+  
+  total_questions: 15
+  total_points: 30

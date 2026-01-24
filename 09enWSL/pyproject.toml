@@ -3,24 +3,24 @@
 # NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# This file defines:
-#   - Python version requirements
-#   - Linting configuration (ruff)
-#   - Project metadata
+# Project configuration for Python packaging, linting and testing.
+#
+# Usage:
+#   pip install -e .              Install in development mode
+#   ruff check .                  Run linter
+#   pytest                        Run tests
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
 [project]
 name = "week9-networking-lab"
-version = "1.3.0"
-description = "Week 9 Laboratory: Session Layer (L5) and Presentation Layer (L6)"
+version = "1.5.0"
+description = "Computer Networks Laboratory - Week 9: Session and Presentation Layers"
 readme = "README.md"
-license = { text = "MIT" }
+license = {text = "MIT"}
+requires-python = ">=3.10"
 authors = [
-    { name = "ing. dr. Antonio Clim", email = "antonio.clim@csie.ase.ro" }
-]
-maintainers = [
-    { name = "Revolvix" }
+    {name = "Antonio Clim", email = "antonio.clim@example.com"}
 ]
 keywords = [
     "networking",
@@ -28,15 +28,14 @@ keywords = [
     "ftp",
     "session-layer",
     "presentation-layer",
-    "binary-protocols",
-    "endianness"
+    "binary-protocols"
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Education",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: POSIX :: Linux",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -45,14 +44,6 @@ classifiers = [
     "Topic :: System :: Networking",
 ]
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# PYTHON VERSION REQUIREMENT
-# ═══════════════════════════════════════════════════════════════════════════════
-requires-python = ">=3.10"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# DEPENDENCIES
-# ═══════════════════════════════════════════════════════════════════════════════
 dependencies = [
     "docker>=6.0.0",
     "requests>=2.28.0",
@@ -66,119 +57,153 @@ dev = [
     "ruff>=0.1.0",
     "pytest>=7.0.0",
     "pytest-timeout>=2.0.0",
+    "mypy>=1.0.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/antonioclim/netENwsl"
-Documentation = "https://github.com/antonioclim/netENwsl/tree/main/09enWSL"
-Repository = "https://github.com/antonioclim/netENwsl.git"
-"Bug Tracker" = "https://github.com/antonioclim/netENwsl/issues"
+Documentation = "https://github.com/antonioclim/netENwsl/tree/main/09enWSL/docs"
+Repository = "https://github.com/antonioclim/netENwsl"
+Issues = "https://github.com/antonioclim/netENwsl/issues"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# RUFF LINTER CONFIGURATION
+# RUFF CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
+
 [tool.ruff]
 # Target Python version
 target-version = "py310"
 
-# Line length (match Black default)
+# Line length (relaxed for educational code with long comments)
 line-length = 100
 
-# Files to include
-include = ["*.py"]
-
-# Files/directories to exclude
+# Exclude paths
 exclude = [
     ".git",
     ".github",
     "__pycache__",
-    "*.pyc",
-    ".venv",
-    "venv",
+    ".pytest_cache",
+    ".ruff_cache",
     "artifacts",
     "pcap",
+    "docker/volumes",
 ]
 
 [tool.ruff.lint]
-# Enable these rule sets
+# Enable rule sets
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
     "F",      # Pyflakes
-    "I",      # isort
+    "I",      # isort (import sorting)
     "B",      # flake8-bugbear
     "C4",     # flake8-comprehensions
     "UP",     # pyupgrade
     "SIM",    # flake8-simplify
 ]
 
-# Ignore these rules
+# Ignore specific rules
 ignore = [
     "E501",   # Line too long (handled by formatter)
-    "E402",   # Module level import not at top (we have path manipulation)
-    "B008",   # Function call in default argument (argparse)
-    "SIM108", # Use ternary operator (readability preference)
+    "E402",   # Module level import not at top (needed for sys.path manipulation)
+    "B008",   # Do not perform function calls in argument defaults
+    "SIM108", # Use ternary operator (sometimes less readable)
+    "B904",   # Within an except clause, raise from error
 ]
 
-# Allow autofix for these rules
+# Allow autofix for all enabled rules
 fixable = ["ALL"]
 unfixable = []
 
 [tool.ruff.lint.per-file-ignores]
-# Tests can have longer lines and unused imports
-"tests/*.py" = ["E501", "F401"]
-# Scripts have path manipulation at top
+# Ignore import order in test files
+"tests/*.py" = ["E402", "F401"]
 "scripts/*.py" = ["E402"]
+"setup/*.py" = ["E402"]
+"homework/exercises/*.py" = ["F401", "E402"]
 
 [tool.ruff.lint.isort]
-# isort configuration
+# Import sorting configuration
 known-first-party = ["src", "scripts", "tests"]
-force-single-line = false
-lines-after-imports = 2
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.format]
+# Formatting options
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PYTEST CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
+
 [tool.pytest.ini_options]
-minversion = "7.0"
+# Test discovery
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-]
+
+# Markers
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "docker: marks tests that require Docker",
     "network: marks tests that require network access",
+    "integration: marks integration tests",
 ]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-]
+
+# Timeout for each test (seconds)
 timeout = 60
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# COVERAGE CONFIGURATION (if using pytest-cov)
-# ═══════════════════════════════════════════════════════════════════════════════
+# Verbosity
+addopts = "-v --tb=short"
+
+# Coverage settings (if pytest-cov installed)
+# addopts = "-v --tb=short --cov=src --cov=scripts --cov-report=term-missing"
+
 [tool.coverage.run]
 source = ["src", "scripts"]
-branch = true
 omit = [
     "*/tests/*",
-    "*/__init__.py",
+    "*/__pycache__/*",
+    "*/setup/*",
 ]
 
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
-    "raise AssertionError",
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MYPY CONFIGURATION (Optional)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BUILD SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "scripts*"]
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # END OF CONFIGURATION

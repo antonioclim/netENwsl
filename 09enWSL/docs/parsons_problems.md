@@ -1,465 +1,436 @@
 # 🧩 Parsons Problems — Week 9
-## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
-> Reorder the code blocks to create a working solution.
+> Session Layer (L5) and Presentation Layer (L6)
+> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
-Parsons Problems help you understand code structure without the cognitive load of syntax. Focus on the LOGIC and ORDER of operations.
+Parsons Problems present code blocks in scrambled order. Your task is to arrange
+them correctly whilst avoiding distractor blocks (incorrect code that should not
+be included).
 
----
-
-## How to Solve Parsons Problems
-
-1. **Read** the task description carefully
-2. **Identify** the first and last blocks (often obvious)
-3. **Group** related blocks together
-4. **Order** blocks within each group
-5. **Watch out** for distractors (blocks that shouldn't be used)
-6. **Verify** by tracing through mentally
+**How to use:**
+1. Read the problem description carefully
+2. Identify the correct blocks (some are distractors!)
+3. Arrange the correct blocks in proper order
+4. Verify your solution matches the expected output
 
 ---
 
-## Problem P1: Pack a Network Message
+## P1: Pack a Network Message (LO2, LO3)
 
-### Task
+**Objective:** Arrange the code blocks to pack a message with a header containing
+magic bytes, message type, length and CRC-32 checksum in network byte order.
 
-Create a function that packs a payload into a network message with:
-- 4-byte magic number "NET9"
-- 4-byte payload length (network byte order)
-- 4-byte CRC-32 checksum
-- The payload bytes
+**Expected output:** A bytes object with 14-byte header + payload
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-    return header + payload
-
-# Block B
-def pack_message(payload: bytes) -> bytes:
-
-# Block C
-    crc = zlib.crc32(payload) & 0xFFFFFFFF
-
-# Block D
-    header = struct.pack(">4sII", magic, length, crc)
-
-# Block E
 import struct
 import zlib
 
-# Block F
+# Block B
+def pack_message(payload: bytes, msg_type: int = 1) -> bytes:
+
+# Block C
+    magic = b"S9PK"
+
+# Block D
     length = len(payload)
 
-# Block G
-    magic = b"NET9"
-
-# Block H (DISTRACTOR - not needed)
-    payload = payload.encode("utf-8")
-
-# Block I (DISTRACTOR - not needed)
-    header = struct.pack("<4sII", magic, length, crc)
-```
-
-### Correct Order
-
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block E - Imports must come first
-import struct
-import zlib
-
-# Block B - Function definition
-def pack_message(payload: bytes) -> bytes:
-
-# Block G - Define magic bytes
-    magic = b"NET9"
-
-# Block F - Calculate length
-    length = len(payload)
-
-# Block C - Calculate CRC
+# Block E
     crc = zlib.crc32(payload) & 0xFFFFFFFF
 
-# Block D - Pack header (big-endian!)
-    header = struct.pack(">4sII", magic, length, crc)
+# Block F
+    header = struct.pack(">4sBxII", magic, msg_type, length, crc)
 
-# Block A - Return combined message
+# Block G (DISTRACTOR - wrong byte order)
+    header = struct.pack("<4sBxII", magic, msg_type, length, crc)
+
+# Block H (DISTRACTOR - missing CRC mask)
+    crc = zlib.crc32(payload)
+
+# Block I
     return header + payload
 ```
 
-**Why these blocks are wrong:**
-- **Block H:** The function already takes `bytes`, no encoding needed
-- **Block I:** Uses little-endian (`<`) instead of network byte order (`>`)
-
-**Key insight:** Network protocols use big-endian byte order. The magic, length and CRC form a 12-byte header.
-
-</details>
-
----
-
-## Problem P2: Receive Exactly N Bytes
-
-### Task
-
-Create a function that receives exactly `n` bytes from a socket, handling the case where `recv()` returns fewer bytes than requested.
-
-### Scrambled Blocks
-
-```python
-# Block A
-def recv_exactly(sock, n: int) -> bytes:
-
-# Block B
-    while len(data) < n:
-
-# Block C
-        data += chunk
-
-# Block D
-    data = b""
-
-# Block E
-    return data
-
-# Block F
-        chunk = sock.recv(n - len(data))
-
-# Block G
-        if not chunk:
-            raise ConnectionError("Connection closed")
-
-# Block H (DISTRACTOR)
-    return sock.recv(n)
-
-# Block I (DISTRACTOR)
-        chunk = sock.recv(1024)
-```
-
-### Correct Order
+### Solution Order
 
 <details>
 <summary>Click to reveal solution</summary>
 
+**Correct order:** A → B → C → D → E → F → I
+
+**Distractors to avoid:**
+- Block G: Uses little-endian (`<`) instead of network byte order (`>`)
+- Block H: Missing `& 0xFFFFFFFF` mask for unsigned CRC
+
+**Complete solution:**
 ```python
-# Block A - Function definition
-def recv_exactly(sock, n: int) -> bytes:
+import struct
+import zlib
 
-# Block D - Initialise empty buffer
-    data = b""
-
-# Block B - Loop until we have enough
-    while len(data) < n:
-
-# Block F - Request only remaining bytes
-        chunk = sock.recv(n - len(data))
-
-# Block G - Handle connection closure
-        if not chunk:
-            raise ConnectionError("Connection closed")
-
-# Block C - Append received data
-        data += chunk
-
-# Block E - Return complete buffer
-    return data
+def pack_message(payload: bytes, msg_type: int = 1) -> bytes:
+    magic = b"S9PK"
+    length = len(payload)
+    crc = zlib.crc32(payload) & 0xFFFFFFFF
+    header = struct.pack(">4sBxII", magic, msg_type, length, crc)
+    return header + payload
 ```
-
-**Why these blocks are wrong:**
-- **Block H:** `recv(n)` may return FEWER than n bytes — TCP doesn't guarantee message boundaries
-- **Block I:** Using fixed buffer size 1024 might receive MORE than needed if another message follows
-
-**Key insight:** TCP is a byte stream. You must loop and accumulate until you have exactly the bytes you need.
-
 </details>
 
 ---
 
-## Problem P3: Parse FTP PASV Response
+## P2: FTP Session Setup (LO1, LO4)
 
-### Task
+**Objective:** Arrange the code blocks to establish an FTP session with proper
+authentication sequence.
 
-Create a function that parses an FTP PASV response like:
-`"227 Entering Passive Mode (192,168,1,5,234,100)"`
-
-And returns a tuple of (ip_address, port_number).
+**Expected output:** Successfully authenticated FTP connection
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-def parse_pasv(response: str) -> tuple[str, int]:
+from ftplib import FTP
 
 # Block B
-    start = response.index("(") + 1
-    end = response.index(")")
+def connect_ftp(host: str, port: int, user: str, password: str) -> FTP:
 
 # Block C
-    parts = inner.split(",")
+    ftp = FTP()
 
 # Block D
-    ip = f"{parts[0]}.{parts[1]}.{parts[2]}.{parts[3]}"
+    ftp.connect(host, port)
 
 # Block E
-    port = int(parts[4]) * 256 + int(parts[5])
+    ftp.login(user, password)
 
-# Block F
-    return ip, port
+# Block F (DISTRACTOR - wrong order)
+    ftp.login(user, password)
+    ftp.connect(host, port)
 
 # Block G
-    inner = response[start:end]
-
-# Block H (DISTRACTOR)
-    port = int(parts[4]) + int(parts[5])
-
-# Block I (DISTRACTOR)
-    ip = parts[0:4].join(".")
-
-# Block J (DISTRACTOR)
-    port = int(parts[4]) * 255 + int(parts[5])
+    return ftp
 ```
 
-### Correct Order
+### Solution Order
 
 <details>
 <summary>Click to reveal solution</summary>
 
+**Correct order:** A → B → C → D → E → G
+
+**Distractors to avoid:**
+- Block F: Attempts login before connect (will fail)
+
+**Key insight:** FTP requires connection before authentication. The session
+layer (authentication) builds on the transport layer (TCP connection).
+
+**Complete solution:**
 ```python
-# Block A - Function definition
-def parse_pasv(response: str) -> tuple[str, int]:
+from ftplib import FTP
 
-# Block B - Find parentheses positions
-    start = response.index("(") + 1
-    end = response.index(")")
-
-# Block G - Extract content between parentheses
-    inner = response[start:end]
-
-# Block C - Split by comma
-    parts = inner.split(",")
-
-# Block D - Build IP address
-    ip = f"{parts[0]}.{parts[1]}.{parts[2]}.{parts[3]}"
-
-# Block E - Calculate port
-    port = int(parts[4]) * 256 + int(parts[5])
-
-# Block F - Return result
-    return ip, port
+def connect_ftp(host: str, port: int, user: str, password: str) -> FTP:
+    ftp = FTP()
+    ftp.connect(host, port)
+    ftp.login(user, password)
+    return ftp
 ```
-
-**Why these blocks are wrong:**
-- **Block H:** Port = p1 + p2 is wrong; correct formula is p1 × 256 + p2
-- **Block I:** Syntax error — should be `".".join(parts[0:4])`
-- **Block J:** Port = p1 × 255 + p2 is wrong; byte range is 0-255 so multiplier is 256
-
-**Key insight:** The PASV port encoding uses two bytes: port = high_byte × 256 + low_byte. This allows ports 0-65535.
-
 </details>
 
 ---
 
-## Problem P4: FTP Session Login
+## P3: Checkpoint State Machine (LO6)
 
-### Task
+**Objective:** Arrange the code blocks to implement a session state machine with
+checkpoint and recovery capabilities.
 
-Create a function that logs into an FTP server using the control connection. The function should send USER and PASS commands and verify the responses.
+**Expected output:** A state machine that tracks session states and supports checkpointing
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-def ftp_login(sock, username: str, password: str) -> bool:
+from enum import Enum, auto
+from dataclasses import dataclass
+from typing import Optional
 
 # Block B
-    sock.sendall(f"USER {username}\r\n".encode())
+class SessionState(Enum):
+    DISCONNECTED = auto()
+    CONNECTED = auto()
+    AUTHENTICATED = auto()
+    TRANSFERRING = auto()
 
 # Block C
-    response = sock.recv(1024).decode()
+@dataclass
+class Checkpoint:
+    state: SessionState
+    bytes_transferred: int
+    timestamp: float
 
 # Block D
-    if not response.startswith("331"):
-        return False
-
-# Block E
-    sock.sendall(f"PASS {password}\r\n".encode())
-
-# Block F
-    response = sock.recv(1024).decode()
-
-# Block G
-    return response.startswith("230")
-
-# Block H (DISTRACTOR)
-    if not response.startswith("220"):
-        return False
-
-# Block I (DISTRACTOR)
-    sock.sendall(f"USER {username}\n".encode())
-
-# Block J (DISTRACTOR)
-    return response.startswith("200")
-```
-
-### Correct Order
-
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block A - Function definition
-def ftp_login(sock, username: str, password: str) -> bool:
-
-# Block B - Send USER command
-    sock.sendall(f"USER {username}\r\n".encode())
-
-# Block C - Receive response
-    response = sock.recv(1024).decode()
-
-# Block D - Check for 331 (password required)
-    if not response.startswith("331"):
-        return False
-
-# Block E - Send PASS command
-    sock.sendall(f"PASS {password}\r\n".encode())
-
-# Block F - Receive response
-    response = sock.recv(1024).decode()
-
-# Block G - Check for 230 (login successful)
-    return response.startswith("230")
-```
-
-**Why these blocks are wrong:**
-- **Block H:** 220 is the welcome banner, not the USER response
-- **Block I:** FTP uses `\r\n` (CRLF) line endings, not just `\n`
-- **Block J:** 200 is "Command OK", not "Login successful" (which is 230)
-
-**Key insight:** FTP response codes follow a pattern:
-- 2xx = Success
-- 3xx = Need more info (like password)
-- 4xx/5xx = Error
-
-</details>
-
----
-
-## Bonus Problem P5: Session State Tracking
-
-### Task
-
-Complete a Session class that tracks authentication state and current directory. The `change_dir` method should prevent directory traversal attacks.
-
-### Scrambled Blocks
-
-```python
-# Block A
 class Session:
-
-# Block B
-    def __init__(self, root: Path):
-        self.root = root.resolve()
-        self.authenticated = False
-        self.cwd = Path("/")
-
-# Block C
-    def is_authenticated(self) -> bool:
-        return self.authenticated
-
-# Block D
-    def change_dir(self, path: str) -> bool:
-        try:
-            new_path = (self.root / self.cwd / path).resolve()
+    def __init__(self):
+        self.state = SessionState.DISCONNECTED
+        self.checkpoint: Optional[Checkpoint] = None
 
 # Block E
-            new_path.relative_to(self.root)  # Raises if outside root
+    def save_checkpoint(self, bytes_transferred: int) -> None:
+        import time
+        self.checkpoint = Checkpoint(
+            state=self.state,
+            bytes_transferred=bytes_transferred,
+            timestamp=time.time()
+        )
 
 # Block F
-            if new_path.is_dir():
-                self.cwd = new_path.relative_to(self.root)
-                return True
-        except (ValueError, FileNotFoundError):
-            pass
-        return False
+    def restore_checkpoint(self) -> int:
+        if self.checkpoint is None:
+            return 0
+        self.state = self.checkpoint.state
+        return self.checkpoint.bytes_transferred
 
-# Block G (DISTRACTOR)
-            self.cwd = Path(path)  # Allows escape!
-            return True
+# Block G (DISTRACTOR - no state restoration)
+    def restore_checkpoint(self) -> int:
+        if self.checkpoint is None:
+            return 0
+        return self.checkpoint.bytes_transferred
 
-# Block H (DISTRACTOR)
-            new_path = Path(path).resolve()  # Ignores root!
+# Block H (DISTRACTOR - missing timestamp)
+@dataclass
+class Checkpoint:
+    state: SessionState
+    bytes_transferred: int
+
+# Block I (DISTRACTOR - wrong initial state)
+class Session:
+    def __init__(self):
+        self.state = SessionState.AUTHENTICATED
+        self.checkpoint: Optional[Checkpoint] = None
 ```
 
-### Correct Order
+### Solution Order
 
 <details>
 <summary>Click to reveal solution</summary>
 
+**Correct order:** A → B → C → D → E → F
+
+**Distractors to avoid:**
+- Block G: Does not restore state, only returns bytes (incomplete recovery)
+- Block H: Missing timestamp field (cannot verify checkpoint age)
+- Block I: Wrong initial state (should start DISCONNECTED)
+
+**Key insight:** Checkpoint recovery must restore BOTH the session state AND
+the transfer position. Timestamps enable checkpoint validity verification.
+
+**Complete solution:**
 ```python
-# Block A - Class definition
+from enum import Enum, auto
+from dataclasses import dataclass
+from typing import Optional
+
+class SessionState(Enum):
+    DISCONNECTED = auto()
+    CONNECTED = auto()
+    AUTHENTICATED = auto()
+    TRANSFERRING = auto()
+
+@dataclass
+class Checkpoint:
+    state: SessionState
+    bytes_transferred: int
+    timestamp: float
+
 class Session:
+    def __init__(self):
+        self.state = SessionState.DISCONNECTED
+        self.checkpoint: Optional[Checkpoint] = None
 
-# Block B - Constructor
-    def __init__(self, root: Path):
-        self.root = root.resolve()
-        self.authenticated = False
-        self.cwd = Path("/")
+    def save_checkpoint(self, bytes_transferred: int) -> None:
+        import time
+        self.checkpoint = Checkpoint(
+            state=self.state,
+            bytes_transferred=bytes_transferred,
+            timestamp=time.time()
+        )
 
-# Block C - Authentication check
-    def is_authenticated(self) -> bool:
-        return self.authenticated
-
-# Block D - Start of change_dir
-    def change_dir(self, path: str) -> bool:
-        try:
-            new_path = (self.root / self.cwd / path).resolve()
-
-# Block E - Security check
-            new_path.relative_to(self.root)  # Raises if outside root
-
-# Block F - Update state if valid
-            if new_path.is_dir():
-                self.cwd = new_path.relative_to(self.root)
-                return True
-        except (ValueError, FileNotFoundError):
-            pass
-        return False
+    def restore_checkpoint(self) -> int:
+        if self.checkpoint is None:
+            return 0
+        self.state = self.checkpoint.state
+        return self.checkpoint.bytes_transferred
 ```
-
-**Why these blocks are wrong:**
-- **Block G:** Directly assigns path without validation — allows `../../etc/passwd`
-- **Block H:** Resolves path without considering root — allows absolute path escape
-
-**Key insight:** Path traversal prevention requires:
-1. Resolve the full path (handle `..` and symlinks)
-2. Verify result is still within the allowed root
-3. Use `relative_to()` which raises ValueError if path is outside
-
 </details>
 
 ---
 
-## Self-Assessment Checklist
+## P4: FTP Passive Mode Setup (LO4)
 
-After completing these problems, verify you understand:
+**Objective:** Arrange the code blocks to parse an FTP PASV response and connect
+to the data channel.
 
-- [ ] Network byte order is big-endian (`>` in struct)
-- [ ] TCP recv() may return fewer bytes than requested
-- [ ] FTP PASV port = p1 × 256 + p2
-- [ ] FTP uses CRLF (`\r\n`) line endings
-- [ ] FTP response 331 = need password, 230 = success
-- [ ] Path traversal prevention requires explicit validation
+**Expected output:** Socket connected to the passive data port
+
+### Scrambled Blocks
+
+```python
+# Block A
+import socket
+import re
+
+# Block B
+def parse_pasv_response(response: str) -> tuple[str, int]:
+    """Parse '227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)'"""
+
+# Block C
+    match = re.search(r'\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)', response)
+
+# Block D
+    if not match:
+        raise ValueError("Invalid PASV response")
+
+# Block E
+    parts = [int(x) for x in match.groups()]
+
+# Block F
+    host = f"{parts[0]}.{parts[1]}.{parts[2]}.{parts[3]}"
+
+# Block G
+    port = (parts[4] * 256) + parts[5]
+
+# Block H (DISTRACTOR - wrong port calculation)
+    port = parts[4] + parts[5]
+
+# Block I (DISTRACTOR - wrong port calculation)
+    port = (parts[4] << 16) + parts[5]
+
+# Block J
+    return host, port
+```
+
+### Solution Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**Correct order:** A → B → C → D → E → F → G → J
+
+**Distractors to avoid:**
+- Block H: Simple addition instead of (p1 * 256) + p2
+- Block I: Bit shift by 16 instead of 8 (same as * 65536)
+
+**Key insight:** FTP PASV port = (p1 × 256) + p2. For example,
+(234, 120) = (234 × 256) + 120 = 59904 + 120 = 60024.
+
+**Complete solution:**
+```python
+import socket
+import re
+
+def parse_pasv_response(response: str) -> tuple[str, int]:
+    """Parse '227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)'"""
+    match = re.search(r'\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)', response)
+    if not match:
+        raise ValueError("Invalid PASV response")
+    parts = [int(x) for x in match.groups()]
+    host = f"{parts[0]}.{parts[1]}.{parts[2]}.{parts[3]}"
+    port = (parts[4] * 256) + parts[5]
+    return host, port
+```
+</details>
 
 ---
 
-## Tips for Future Parsons Problems
+## P5: Wireshark Filter Construction (LO5)
 
-1. **Imports always first** — Look for `import` statements
-2. **Function def before body** — `def` comes before its implementation
-3. **Indentation matters** — Group blocks by indent level
-4. **Watch for off-by-one** — Common in byte order multipliers (255 vs 256)
-5. **Protocol details** — Line endings, response codes, byte order
+**Objective:** Arrange the filter expressions to create a compound Wireshark
+display filter for FTP traffic analysis.
+
+**Expected output:** A filter that shows FTP control and data channel traffic
+
+### Scrambled Blocks
+
+```
+# Block A - Base filter for FTP control channel
+tcp.port == 2121
+
+# Block B - Filter for passive data channels
+tcp.port >= 60000 && tcp.port <= 60010
+
+# Block C - Combine with OR operator
+(tcp.port == 2121) || (tcp.port >= 60000 && tcp.port <= 60010)
+
+# Block D - Add FTP command filter
+ftp.request.command
+
+# Block E (DISTRACTOR - wrong operator precedence)
+tcp.port == 2121 || tcp.port >= 60000 && tcp.port <= 60010
+
+# Block F (DISTRACTOR - wrong comparison)
+tcp.port > 60000 && tcp.port < 60010
+
+# Block G - Filter for authentication only
+ftp.request.command == "USER" || ftp.request.command == "PASS"
+
+# Block H - Complete filter with authentication
+(tcp.port == 2121 && (ftp.request.command == "USER" || ftp.request.command == "PASS")) || (tcp.port >= 60000 && tcp.port <= 60010)
+```
+
+### Solution Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**For basic FTP traffic:** Block C
+
+**For authentication + data:** Block H
+
+**Distractors to avoid:**
+- Block E: Missing parentheses causes wrong precedence (AND binds tighter than OR)
+- Block F: Uses `>` and `<` instead of `>=` and `<=`, missing ports 60000 and 60010
+
+**Key insight:** Wireshark filters follow C-style operator precedence.
+Always use parentheses for compound OR/AND expressions.
+
+**Filter examples:**
+```
+# All FTP traffic (control + data)
+(tcp.port == 2121) || (tcp.port >= 60000 && tcp.port <= 60010)
+
+# Only authentication commands
+tcp.port == 2121 && (ftp.request.command == "USER" || ftp.request.command == "PASS")
+
+# Only data transfers
+tcp.port >= 60000 && tcp.port <= 60010
+```
+</details>
+
+---
+
+## Summary Table
+
+| Problem | Learning Objectives | Difficulty | Distractors | Key Concept |
+|---------|---------------------|------------|-------------|-------------|
+| P1 | LO2, LO3 | Intermediate | 2 | Network byte order, CRC masking |
+| P2 | LO1, LO4 | Basic | 1 | Connect before login sequence |
+| P3 | LO6 | Advanced | 3 | State + position recovery |
+| P4 | LO4 | Intermediate | 2 | PASV port calculation formula |
+| P5 | LO5 | Basic | 2 | Filter operator precedence |
+
+---
+
+## Self-Check Questions
+
+After completing each Parsons Problem, ask yourself:
+
+1. **P1:** Why must we use `& 0xFFFFFFFF` on the CRC result?
+2. **P2:** What happens if you call `login()` before `connect()`?
+3. **P3:** Why is timestamp important in a checkpoint?
+4. **P4:** What port does `(234, 120)` decode to?
+5. **P5:** Why do we need parentheses in compound Wireshark filters?
 
 ---
 

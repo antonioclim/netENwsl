@@ -1,288 +1,206 @@
-# Further Reading: Week 9
+# 📚 Further Reading — Week 9
 
-> Extended resources for Session Layer (L5) and Presentation Layer (L6)
-> NETWORKING class - ASE, Informatics | by Revolvix
+> Session Layer (L5) and Presentation Layer (L6)
+> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
----
-
-## Core Textbooks
-
-### Network Fundamentals
-
-1. **Kurose, J.F. & Ross, K.W. (2021)** *Computer Networking: A Top-Down Approach* (8th ed.). Pearson.
-   - Chapter 2: Application Layer (FTP coverage)
-   - Chapter 3: Transport Layer (TCP fundamentals)
-   - Excellent companion website with Wireshark labs
-
-2. **Tanenbaum, A.S. & Wetherall, D.J. (2021)** *Computer Networks* (6th ed.). Pearson.
-   - Chapter 7: Application Layer
-   - Complete OSI model coverage
-   - Strong theoretical foundation
-
-3. **Stevens, W.R. (1994)** *TCP/IP Illustrated, Volume 1: The Protocols*. Addison-Wesley.
-   - Classic reference for protocol internals
-   - Detailed examination into FTP mechanics
-   - Essential for understanding byte-level operations
-
-### Python Network Programming
-
-4. **Rhodes, B. & Goerzen, J. (2014)** *Foundations of Python Network Programming* (3rd ed.). Apress.
-   - Chapter 17: FTP
-   - Chapter 5: Network Data and Network Errors
-   - Practical code examples throughout
-
-5. **Goerzen, J. (2004)** *Foundations of Python Network Programming*. Apress.
-   - Older but foundational
-   - Excellent struct module coverage
+This document provides additional resources for deeper exploration of the
+concepts covered in Week 9.
 
 ---
 
-## RFC Documents (Standards)
+## 📖 Primary References
 
-### FTP Protocol
+### RFC Documents (Internet Standards)
 
-- **RFC 959** - File Transfer Protocol (FTP)
-  - https://tools.ietf.org/html/rfc959
-  - The definitive FTP specification
-  - Essential reading for protocol implementation
+| RFC | Title | Relevance |
+|-----|-------|-----------|
+| [RFC 959](https://tools.ietf.org/html/rfc959) | File Transfer Protocol | FTP specification, session management |
+| [RFC 2228](https://tools.ietf.org/html/rfc2228) | FTP Security Extensions | AUTH, PROT commands |
+| [RFC 2389](https://tools.ietf.org/html/rfc2389) | Feature Negotiation for FTP | FEAT, OPTS commands |
+| [RFC 3659](https://tools.ietf.org/html/rfc3659) | Extensions to FTP | MDTM, SIZE, REST commands |
+| [RFC 4217](https://tools.ietf.org/html/rfc4217) | FTP over TLS | Secure FTP sessions |
 
-- **RFC 2228** - FTP Security Extensions
-  - https://tools.ietf.org/html/rfc2228
-  - Authentication and encryption extensions
+### Core Textbooks
 
-- **RFC 2428** - FTP Extensions for IPv6 and NATs
-  - https://tools.ietf.org/html/rfc2428
-  - EPSV and EPRT commands
-
-- **RFC 4217** - Securing FTP with TLS
-  - https://tools.ietf.org/html/rfc4217
-  - FTPS implementation guide
-
-### Data Representation
-
-- **RFC 4506** - XDR: External Data Representation Standard
-  - https://tools.ietf.org/html/rfc4506
-  - Foundation for network data encoding
-
-- **RFC 1832** - XDR: External Data Representation Standard
-  - https://tools.ietf.org/html/rfc1832
-  - Earlier version, still useful
+| Title | Author(s) | Chapters | Notes |
+|-------|-----------|----------|-------|
+| *Computer Networks* (5th ed.) | Tanenbaum & Wetherall | Ch. 7: Application Layer | FTP protocol details |
+| *TCP/IP Illustrated, Vol. 1* | Stevens | Ch. 27: FTP | Implementation-level view |
+| *Unix Network Programming* | Stevens et al. | Ch. 6: I/O Multiplexing | Socket programming patterns |
+| *Computer Networking: A Top-Down Approach* | Kurose & Ross | Ch. 2: Application Layer | Conceptual foundation |
 
 ---
 
-## Online Resources
+## 🏫 Resources Available at ASE Library
 
-### Tutorials and Guides
+### Physical Books (Central Library, Floor 3)
 
-1. **Python struct Module Documentation**
-   - https://docs.python.org/3/library/struct.html
-   - Official reference with format string tables
+| Title | Author | Call Number | Copies |
+|-------|--------|-------------|--------|
+| Computer Networks | Tanenbaum, A. | 004.7/T15 | 3 |
+| TCP/IP Illustrated Vol. 1 | Stevens, W.R. | 004.738/S84 | 2 |
+| Unix Network Programming | Stevens, W.R. | 004.43/S84 | 1 |
+| Data Communications | Stallings, W. | 004.6/S78 | 2 |
+| Network Security Essentials | Stallings, W. | 004.056/S78 | 1 |
 
-2. **Python ftplib Documentation**
-   - https://docs.python.org/3/library/ftplib.html
-   - Standard library FTP client
+### Electronic Resources (Access with ASE Credentials)
 
-3. **Wireshark FTP Analysis**
-   - https://wiki.wireshark.org/FTP
-   - Protocol dissection and capture filters
+| Resource | URL | Access |
+|----------|-----|--------|
+| IEEE Xplore | ieeexplore.ieee.org | Via ASE proxy |
+| ACM Digital Library | dl.acm.org | Via ASE proxy |
+| Springer Link | link.springer.com | Institutional subscription |
+| O'Reilly Online | learning.oreilly.com | Check library portal |
+| Safari Books | safaribooksonline.com | Check library portal |
 
-4. **Docker Networking Guide**
-   - https://docs.docker.com/network/
-   - Container networking fundamentals
-
-### Interactive Learning
-
-5. **Computer Networking Course (Stanford)**
-   - https://www.coursera.org/learn/computer-networking
-   - Free online course covering OSI layers
-
-6. **The TCP/IP Guide**
-   - http://www.tcpipguide.com/
-   - Thorough free online reference
-   - Excellent diagrams and explanations
+**Access from home:** Use VPN or proxy settings from the library portal.
 
 ---
 
-## Academic Papers
+## 🎬 Video Resources
 
-### Session Management
+### Conceptual Understanding
 
-1. **Clark, D.D. (1988)** "The Design Philosophy of the DARPA Internet Protocols"
-   - *ACM SIGCOMM Computer Communication Review*, 18(4), 106-114.
-   - Foundational paper on protocol design
+| Topic | Platform | Duration | Notes |
+|-------|----------|----------|-------|
+| OSI Model Explained | YouTube | ~15 min | Search "OSI 7 layers explained" |
+| FTP Protocol Deep Dive | YouTube | ~20 min | Search "FTP protocol wireshark" |
+| Binary Data and Endianness | YouTube | ~10 min | Search "endianness explained" |
+| Socket Programming | YouTube | ~30 min | Search "Python socket tutorial" |
 
-2. **Saltzer, J.H., Reed, D.P., & Clark, D.D. (1984)** "End-to-End Arguments in System Design"
-   - *ACM Transactions on Computer Systems*, 2(4), 277-288.
-   - Explains why session management is application-layer
+### Practical Tutorials
 
-### Data Encoding
-
-3. **Cohen, D. (1981)** "On Holy Wars and a Plea for Peace"
-   - USC/ISI IEN 137
-   - Classic paper on byte order debates
-   - Origin of "big-endian" and "little-endian" terms
-
-### Protocol Design
-
-4. **Postel, J. (1980)** "DoD Standard Transmission Control Protocol"
-   - RFC 761
-   - Original TCP specification with design rationale
+| Topic | Platform | Notes |
+|-------|----------|-------|
+| Wireshark FTP Analysis | YouTube | Search "wireshark FTP capture" |
+| Docker Networking | YouTube | Search "docker networking basics" |
+| Python struct Module | YouTube | Search "python struct pack unpack" |
 
 ---
 
-## Tools and Software
+## 🔧 Technical Documentation
 
-### FTP Servers
+### Python Libraries
 
-- **vsftpd** - Very Secure FTP Daemon
-  - https://security.appspot.com/vsftpd.html
-  - Production-grade, security-focused
+| Library | Documentation | Purpose |
+|---------|---------------|---------|
+| `struct` | [docs.python.org/3/library/struct.html](https://docs.python.org/3/library/struct.html) | Binary packing/unpacking |
+| `socket` | [docs.python.org/3/library/socket.html](https://docs.python.org/3/library/socket.html) | Network programming |
+| `ftplib` | [docs.python.org/3/library/ftplib.html](https://docs.python.org/3/library/ftplib.html) | FTP client |
+| `pyftpdlib` | [pyftpdlib.readthedocs.io](https://pyftpdlib.readthedocs.io/) | FTP server |
+| `zlib` | [docs.python.org/3/library/zlib.html](https://docs.python.org/3/library/zlib.html) | CRC-32 checksums |
 
-- **ProFTPD** - Professional FTP Server
-  - http://www.proftpd.org/
-  - Highly configurable, modular design
+### Tools
 
-- **pyftpdlib** - Python FTP Server Library
-  - https://github.com/giampaolo/pyftpdlib
-  - Used in this laboratory
-  - Excellent for learning and testing
-
-### Network Analysis
-
-- **Wireshark**
-  - https://www.wireshark.org/
-  - Essential packet capture tool
-
-- **tcpdump**
-  - https://www.tcpdump.org/
-  - Command-line packet capture
-
-- **netcat (nc)**
-  - Network Swiss army knife
-  - Testing connections and protocols
-
-### Development Tools
-
-- **Docker**
-  - https://www.docker.com/
-  - Container platform for isolated testing
-
-- **Portainer**
-  - https://www.portainer.io/
-  - Docker management GUI
+| Tool | Documentation | Purpose |
+|------|---------------|---------|
+| Wireshark | [wireshark.org/docs](https://www.wireshark.org/docs/) | Packet analysis |
+| Docker | [docs.docker.com](https://docs.docker.com/) | Containerisation |
+| Docker Compose | [docs.docker.com/compose](https://docs.docker.com/compose/) | Multi-container apps |
 
 ---
 
-## Video Resources
+## 📝 Academic Papers
 
-### University Lectures
+### Session Layer Concepts
 
-1. **MIT OpenCourseWare: Computer Networks**
-   - https://ocw.mit.edu/
-   - Academic-level network courses
+1. **Day, J.D. & Zimmermann, H.** (1983). "The OSI Reference Model."
+   *Proceedings of the IEEE*, 71(12), 1334-1340.
+   - Historical context of OSI model layers
 
-2. **Stanford CS144: Introduction to Computer Networking**
-   - https://cs144.github.io/
-   - Excellent lecture videos and labs
+2. **Saltzer, J.H., Reed, D.P. & Clark, D.D.** (1984). "End-to-End Arguments in System Design."
+   *ACM Transactions on Computer Systems*, 2(4), 277-288.
+   - Foundational paper on protocol layering
 
-### YouTube Channels
+### Binary Protocol Design
 
-3. **Computerphile**
-   - Network protocol explanations
-   - Accessible technical content
+1. **Mogul, J. et al.** (1997). "HTTP/1.1 Protocol."
+   *RFC 2616*
+   - Text vs binary protocol design decisions
 
-4. **Ben Eater**
-   - Low-level networking concepts
-   - Byte-order explanations
+2. **Google** (2008). "Protocol Buffers."
+   - Modern binary serialisation approach
 
----
+### Network Security
 
-## Practice Resources
-
-### Hands-on Labs
-
-1. **SEED Labs**
-   - https://seedsecuritylabs.org/
-   - Network security labs including FTP
-
-2. **Hack The Box**
-   - https://www.hackthebox.eu/
-   - FTP-related challenges
-
-3. **OverTheWire: Bandit**
-   - https://overthewire.org/wargames/bandit/
-   - Command-line and networking practice
-
-### Code Repositories
-
-4. **Python Network Programming Examples**
-   - https://github.com/brandon-rhodes/fopnp
-   - Code from "Foundations of Python Network Programming"
-
-5. **Wireshark Sample Captures**
-   - https://wiki.wireshark.org/SampleCaptures
-   - FTP captures for analysis practice
+1. **Rescorla, E.** (2018). "The Transport Layer Security (TLS) Protocol Version 1.3."
+   *RFC 8446*
+   - Session security in modern protocols
 
 ---
 
-## Related Topics for Advanced Study
+## 🌐 Online Courses
 
-### Session Layer Extensions
+### Free Resources
 
-- **WebSockets** - Full-duplex session management for web
-- **gRPC** - Modern RPC with streaming sessions
-- **MQTT** - Lightweight publish/subscribe sessions (IoT)
+| Course | Platform | Level |
+|--------|----------|-------|
+| Computer Networking | Coursera (Stanford) | Intermediate |
+| Introduction to Computer Networks | edX (Microsoft) | Beginner |
+| Networking Fundamentals | Cisco Networking Academy | Beginner |
+| Practical Networking | YouTube (various) | All levels |
 
-### Presentation Layer Alternatives
+### Certification Paths
 
-- **Protocol Buffers** - Google's binary serialisation
-- **MessagePack** - Efficient binary format
-- **CBOR** - Concise Binary Object Representation (IoT)
-- **ASN.1** - Abstract Syntax Notation One (telecom)
-
-### Security Extensions
-
-- **TLS/SSL** - Transport Layer Security
-- **SSH** - Secure Shell (SFTP)
-- **IPsec** - Network layer security
+| Certification | Organisation | Relevance |
+|---------------|--------------|-----------|
+| CCNA | Cisco | Network fundamentals |
+| CompTIA Network+ | CompTIA | Vendor-neutral networking |
+| AWS Certified Solutions Architect | Amazon | Cloud networking |
 
 ---
 
-## Course-Related Links
+## 💡 Practice Resources
 
-### ASE Resources
+### Online Labs
 
-- **Faculty Website:** https://csie.ase.ro/
-- **Course Materials:** See Moodle/internal platform
-- **Laboratory Schedule:** Check departmental announcements
+| Platform | URL | Type |
+|----------|-----|------|
+| Cisco Packet Tracer | netacad.com | Network simulation |
+| GNS3 | gns3.com | Network emulation |
+| Katacoda (Docker) | katacoda.com | Interactive tutorials |
+| OverTheWire | overthewire.org | Security challenges |
 
-### Contact
+### Capture Files for Analysis
 
-For questions related to this laboratory:
-- Laboratory instructor
-- Course coordinator
-- Teaching assistants
-
----
-
-## Citation Format
-
-When referencing materials in academic work:
-
-```
-# Book
-Kurose, J.F. & Ross, K.W. (2021). Computer Networking: A Top-Down Approach
-(8th ed.). Pearson Education.
-
-# RFC
-Postel, J. & Reynolds, J. (1985). File Transfer Protocol (FTP) (RFC 959).
-Internet Engineering Task Force. https://tools.ietf.org/html/rfc959
-
-# Online Resource
-Python Software Foundation. (2024). struct — Interpret bytes as packed
-binary data. https://docs.python.org/3/library/struct.html
-```
+| Source | URL | Content |
+|--------|-----|---------|
+| Wireshark Sample Captures | wiki.wireshark.org/SampleCaptures | Various protocols |
+| PacketLife.net | packetlife.net/captures | Network scenarios |
+| Netresec | netresec.com | Security-focused |
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+## 🔗 Related Laboratory Topics
+
+| Week | Topic | Connection to Week 9 |
+|------|-------|---------------------|
+| 7 | Transport Layer (TCP) | Foundation for sessions |
+| 8 | Transport Layer (UDP) | Connectionless comparison |
+| 10 | Application Layer (HTTP) | Higher-level protocols |
+| 11 | Application Layer (DNS) | Name resolution |
+| 12 | Security Protocols | Session encryption |
+
+---
+
+## 📋 Recommended Reading Order
+
+For Week 9 specifically:
+
+1. **Before lab:** Read RFC 959 Sections 1-3 (FTP overview)
+2. **During lab:** Reference `struct` module documentation
+3. **After lab:** Read Tanenbaum Chapter 7 on Application Layer
+4. **For homework:** Review Wireshark FTP analysis tutorials
+
+---
+
+## 🆘 Getting Help
+
+- **Technical Issues:** Open an issue on GitHub
+- **Course Questions:** Post on Moodle forum
+- **Office Hours:** Check course schedule on Moodle
+
+---
+
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
+*Week 9: Session Layer and Presentation Layer*
