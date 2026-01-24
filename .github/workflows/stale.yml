@@ -1,0 +1,67 @@
+name: Manage Stale Issues
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Run daily at 9:00 UTC
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark and Close Stale Issues
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Manage Stale Issues and PRs
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # Issue configuration
+          stale-issue-message: |
+            This issue has been automatically marked as stale because it has not had any activity for 120 days.
+            
+            If this issue is still relevant:
+            - Comment to let us know you are still working on it or waiting for a response
+            - Provide any additional information that might help resolve the issue
+            
+            If no activity occurs within the next 30 days, this issue will be closed automatically.
+          
+          stale-issue-label: 'stale'
+          days-before-issue-stale: 120
+          days-before-issue-close: 30
+          
+          # PR configuration
+          stale-pr-message: |
+            This pull request has been automatically marked as stale because it has not had any activity for 90 days.
+            
+            If you are still working on this PR, please comment or push additional commits.
+            
+            If no activity occurs within the next 30 days, this PR will be closed automatically.
+          
+          stale-pr-label: 'stale'
+          days-before-pr-stale: 90
+          days-before-pr-close: 30
+          
+          # Labels that prevent marking as stale
+          exempt-issue-labels: 'licence,pinned,security,in-progress'
+          exempt-pr-labels: 'pinned,security,in-progress'
+          
+          # Only process certain labels
+          only-labels: ''
+          
+          # Remove stale label when updated
+          remove-stale-when-updated: true
+          
+          # Close message
+          close-issue-message: |
+            This issue has been closed due to inactivity. If the problem persists or you have new information, please feel free to open a new issue with updated details.
+          
+          close-pr-message: |
+            This pull request has been closed due to inactivity. If you would like to continue this work, please open a new PR.
+          
+          # Operation limits
+          operations-per-run: 30
