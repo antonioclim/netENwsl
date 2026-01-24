@@ -1,8 +1,16 @@
-# Week 13 Setup Dependencies
-# NETWORKING class - ASE, Informatics | by Revolvix
+# ══════════════════════════════════════════════════════════════════════════════
+# Week 13: IoT and Security — Python Dependencies
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Installation: pip install -r setup/requirements.txt
+# Python version: >= 3.11
+#
+# ══════════════════════════════════════════════════════════════════════════════
 
-docker>=6.0.0
-requests>=2.28.0
-pyyaml>=6.0
-paho-mqtt>=1.6.0
-scapy>=2.5.0
+# Core dependencies
+docker>=6.0.0,<8.0.0
+requests>=2.28.0,<3.0.0
+pyyaml>=6.0,<7.0
+paho-mqtt>=1.6.0,<2.0.0
+scapy>=2.5.0,<3.0.0

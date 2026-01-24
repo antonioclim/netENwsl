@@ -1,0 +1,339 @@
+{
+  "_meta": {
+    "description": "Verified facts about Week 13 kit - use to validate AI responses and prevent hallucinations",
+    "version": "2.1.0",
+    "last_verified": "2026-01-24",
+    "verified_by": "ing. dr. Antonio Clim",
+    "schema_version": "1.0",
+    "purpose": "Ground truth reference for automated validation and AI fact-checking",
+    "issues": "Open an issue in the GitHub repository"
+  },
+  "environment": {
+    "python_min_version": "3.11",
+    "python_recommended_version": "3.12",
+    "docker_compose_version": "3.8",
+    "wsl_distribution": "Ubuntu 22.04 LTS",
+    "network_subnet": "10.0.13.0/24",
+    "network_gateway": "10.0.13.1",
+    "network_name": "week13net",
+    "containers": [
+      {
+        "name": "week13_mosquitto",
+        "image": "eclipse-mosquitto:2",
+        "ip": "10.0.13.100",
+        "purpose": "MQTT broker with plaintext and TLS endpoints"
+      },
+      {
+        "name": "week13_dvwa",
+        "image": "vulnerables/web-dvwa",
+        "ip": "10.0.13.11",
+        "purpose": "Deliberately vulnerable web application for security testing"
+      },
+      {
+        "name": "week13_vsftpd",
+        "image": "custom (Dockerfile.vulnerable)",
+        "ip": "10.0.13.12",
+        "purpose": "FTP server with simulated backdoor for educational detection"
+      }
+    ]
+  },
+  "ports": {
+    "mqtt_plain": {
+      "number": 1883,
+      "protocol": "TCP",
+      "service": "MQTT plaintext",
+      "container": "week13_mosquitto",
+      "security": "NONE - traffic visible in Wireshark"
+    },
+    "mqtt_tls": {
+      "number": 8883,
+      "protocol": "TCP",
+      "service": "MQTT over TLS",
+      "container": "week13_mosquitto",
+      "security": "TLS 1.2/1.3 encryption"
+    },
+    "dvwa_http": {
+      "number": 8080,
+      "protocol": "TCP",
+      "service": "HTTP (DVWA)",
+      "container": "week13_dvwa",
+      "security": "NONE - intentionally vulnerable"
+    },
+    "ftp_control": {
+      "number": 2121,
+      "protocol": "TCP",
+      "service": "FTP control channel",
+      "container": "week13_vsftpd",
+      "security": "Plaintext credentials"
+    },
+    "backdoor_stub": {
+      "number": 6200,
+      "protocol": "TCP",
+      "service": "Simulated backdoor",
+      "container": "week13_vsftpd",
+      "security": "Educational stub only"
+    },
+    "portainer_reserved": {
+      "number": 9000,
+      "protocol": "TCP",
+      "service": "Portainer CE",
+      "container": "portainer (global)",
+      "security": "Password protected",
+      "note": "NEVER use this port for weekly services"
+    }
+  },
+  "credentials": {
+    "note": "These are INTENTIONALLY WEAK for educational purposes only",
+    "portainer": {
+      "username": "stud",
+      "password": "studstudstud"
+    },
+    "dvwa": {
+      "username": "admin",
+      "password": "password"
+    },
+    "wsl": {
+      "username": "stud",
+      "password": "stud"
+    },
+    "mqtt": {
+      "type": "anonymous",
+      "note": "No authentication required on port 1883"
+    }
+  },
+  "exercises": {
+    "ex_13_01": {
+      "name": "Port Scanner",
+      "filename": "ex_13_01_port_scanner.py",
+      "lines_of_code": 582,
+      "primary_lo": ["LO3"],
+      "bloom_levels": ["Apply", "Analyse"],
+      "key_functions": [
+        "tcp_connect_scan",
+        "scan_host",
+        "parse_ports",
+        "parse_targets",
+        "discover_hosts",
+        "export_json"
+      ],
+      "cli_flags": [
+        "--target",
+        "--ports",
+        "--mode",
+        "--timeout",
+        "--workers",
+        "--no-banner",
+        "--json-out",
+        "--quiet"
+      ],
+      "dependencies": ["socket", "concurrent.futures", "argparse"]
+    },
+    "ex_13_02": {
+      "name": "MQTT Client",
+      "filename": "ex_13_02_mqtt_client.py",
+      "lines_of_code": 440,
+      "primary_lo": ["LO1", "LO2", "LO4"],
+      "bloom_levels": ["Remember", "Understand", "Apply"],
+      "key_functions": [
+        "mqtt_publish",
+        "mqtt_subscribe",
+        "create_tls_context"
+      ],
+      "cli_flags": [
+        "--broker",
+        "--port",
+        "--mode",
+        "--topic",
+        "--message",
+        "--tls",
+        "--cafile",
+        "--count",
+        "--qos"
+      ],
+      "dependencies": ["paho-mqtt", "ssl"]
+    },
+    "ex_13_03": {
+      "name": "Packet Sniffer",
+      "filename": "ex_13_03_packet_sniffer.py",
+      "lines_of_code": 341,
+      "primary_lo": ["LO5"],
+      "bloom_levels": ["Analyse"],
+      "requires_sudo": true,
+      "key_functions": [
+        "capture_packets",
+        "analyse_packet",
+        "filter_mqtt_traffic"
+      ],
+      "cli_flags": [
+        "--iface",
+        "--filter",
+        "--count",
+        "--output",
+        "--verbose"
+      ],
+      "dependencies": ["scapy"]
+    },
+    "ex_13_04": {
+      "name": "Vulnerability Checker",
+      "filename": "ex_13_04_vuln_checker.py",
+      "lines_of_code": 458,
+      "primary_lo": ["LO6", "LO7"],
+      "bloom_levels": ["Create", "Evaluate"],
+      "key_functions": [
+        "check_service",
+        "grab_banner",
+        "lookup_cve",
+        "generate_report"
+      ],
+      "cli_flags": [
+        "--target",
+        "--port",
+        "--service",
+        "--output",
+        "--verbose"
+      ],
+      "dependencies": ["requests", "socket"]
+    }
+  },
+  "quiz": {
+    "file": "formative/quiz.yaml",
+    "total_questions": 16,
+    "passing_score": 70,
+    "estimated_time_minutes": 18,
+    "bloom_distribution": {
+      "remember": 3,
+      "understand": 3,
+      "apply": 3,
+      "analyse": 3,
+      "evaluate": 2,
+      "create": 2
+    },
+    "lo_coverage": {
+      "LO1": ["q01", "q02", "q03"],
+      "LO2": ["q04", "q05", "q06"],
+      "LO3": ["q07", "q08"],
+      "LO4": ["q09", "q10"],
+      "LO5": ["q11", "q12"],
+      "LO6": ["q15", "q16"],
+      "LO7": ["q13", "q14"]
+    },
+    "export_formats": ["yaml", "json", "moodle_xml", "canvas_qti"]
+  },
+  "learning_objectives": {
+    "LO1": {
+      "id": "LO1",
+      "bloom_level": "Remember",
+      "bloom_number": 1,
+      "description": "Recall the fundamental components of MQTT architecture including brokers, publishers, subscribers and topic hierarchies",
+      "artifacts": ["theory_summary.md §2", "ex_13_02", "quiz q01-q03", "parsons P1"]
+    },
+    "LO2": {
+      "id": "LO2",
+      "bloom_level": "Understand",
+      "bloom_number": 2,
+      "description": "Explain the differences between plaintext and TLS-encrypted network communications and what metadata remains observable under encryption",
+      "artifacts": ["theory_summary.md §3", "ex_13_02 --tls", "quiz q04-q06", "parsons P3"]
+    },
+    "LO3": {
+      "id": "LO3",
+      "bloom_level": "Apply",
+      "bloom_number": 3,
+      "description": "Implement TCP connect scanning using concurrent programming techniques and interpret the resulting port states (open, closed, filtered)",
+      "artifacts": ["theory_summary.md §4", "ex_13_01", "quiz q07-q08", "parsons P2"]
+    },
+    "LO4": {
+      "id": "LO4",
+      "bloom_level": "Apply",
+      "bloom_number": 3,
+      "description": "Demonstrate MQTT publish/subscribe operations using Python client libraries with both plaintext and TLS transport configurations",
+      "artifacts": ["theory_summary.md §2.2", "ex_13_02", "quiz q09-q10", "parsons P1"]
+    },
+    "LO5": {
+      "id": "LO5",
+      "bloom_level": "Analyse",
+      "bloom_number": 4,
+      "description": "Analyse packet captures to distinguish between encrypted and unencrypted traffic flows and identify protocol-specific patterns",
+      "artifacts": ["theory_summary.md §3", "ex_13_03", "quiz q11-q12", "parsons P4"]
+    },
+    "LO6": {
+      "id": "LO6",
+      "bloom_level": "Create",
+      "bloom_number": 6,
+      "description": "Design a systematic reconnaissance workflow that combines service enumeration, banner grabbing and vulnerability fingerprinting",
+      "artifacts": ["theory_summary.md §4", "ex_13_04", "quiz q15-q16", "parsons P5"]
+    },
+    "LO7": {
+      "id": "LO7",
+      "bloom_level": "Evaluate",
+      "bloom_number": 5,
+      "description": "Evaluate the security posture of network services based on exposed ports, protocol versions and known vulnerability indicators",
+      "artifacts": ["theory_summary.md §5", "ex_13_04", "quiz q13-q14"]
+    }
+  },
+  "misconceptions": {
+    "total": 10,
+    "by_topic": {
+      "mqtt": ["#1 QoS≠encryption", "#2 wildcards≠regex", "#3 anonymous≠secure"],
+      "tls": ["#4 TLS metadata visible", "#5 TLS 1.3 compatibility"],
+      "scanning": ["#6 filtered≠protected", "#7 scanning legality", "#8 open≠vulnerable"],
+      "iot_security": ["#9 simple≠safe", "#10 encrypt vs authenticate"]
+    }
+  },
+  "parsons_problems": {
+    "total": 5,
+    "problems": [
+      {"id": "P1", "title": "MQTT Publish with QoS", "lo_ref": "LO1", "distractors": 2},
+      {"id": "P2", "title": "TCP Port Scanner Function", "lo_ref": "LO3", "distractors": 2},
+      {"id": "P3", "title": "TLS Context Configuration", "lo_ref": "LO2", "distractors": 1},
+      {"id": "P4", "title": "Packet Capture Filter", "lo_ref": "LO5", "distractors": 2},
+      {"id": "P5", "title": "Vulnerability Check Workflow", "lo_ref": "LO6", "distractors": 1}
+    ]
+  },
+  "documentation": {
+    "total_md_files": 23,
+    "key_documents": [
+      "README.md",
+      "SECURITY.md",
+      "CHANGELOG.md",
+      "docs/theory_summary.md",
+      "docs/learning_objectives.md",
+      "docs/misconceptions.md",
+      "docs/troubleshooting.md",
+      "docs/parsons_problems.md",
+      "docs/peer_instruction.md",
+      "docs/api_reference.md"
+    ]
+  },
+  "verification_sources": {
+    "mqtt_port_1883": {
+      "claim": "MQTT plaintext uses port 1883",
+      "source": "IANA Service Name and Transport Protocol Port Number Registry",
+      "reference": "https://www.iana.org/assignments/service-names-port-numbers"
+    },
+    "mqtt_port_8883": {
+      "claim": "MQTT TLS uses port 8883",
+      "source": "IANA Service Name and Transport Protocol Port Number Registry",
+      "reference": "https://www.iana.org/assignments/service-names-port-numbers"
+    },
+    "mqtt_qos_levels": {
+      "claim": "MQTT has three QoS levels: 0 (at most once), 1 (at least once), 2 (exactly once)",
+      "source": "MQTT Version 3.1.1 OASIS Standard, Section 4.3",
+      "reference": "https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html"
+    },
+    "tcp_handshake": {
+      "claim": "TCP uses three-way handshake: SYN, SYN-ACK, ACK",
+      "source": "RFC 793 - Transmission Control Protocol",
+      "reference": "https://www.rfc-editor.org/rfc/rfc793"
+    },
+    "tls_metadata_visible": {
+      "claim": "TLS encrypts application data but IP addresses, ports and packet sizes remain visible",
+      "source": "RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3",
+      "reference": "https://www.rfc-editor.org/rfc/rfc8446"
+    },
+    "owasp_iot_top10": {
+      "claim": "OWASP IoT Top 10 ranks Weak Passwords as #1 vulnerability",
+      "source": "OWASP Internet of Things Top 10 2018",
+      "reference": "https://owasp.org/www-project-internet-of-things/"
+    }
+  }
+}

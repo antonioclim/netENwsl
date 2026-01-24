@@ -1,0 +1,217 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Week 13: IoT and Security — Python Project Configuration
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# ══════════════════════════════════════════════════════════════════════════════
+
+[project]
+name = "week13-iot-security"
+version = "2.1.0"
+description = "Week 13: IoT and Security - Computer Networks Laboratory Kit"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "ing. dr. Antonio Clim"}
+]
+maintainers = [
+    {name = "ing. dr. Antonio Clim"}
+]
+requires-python = ">=3.11"
+keywords = [
+    "networking",
+    "education",
+    "mqtt",
+    "iot",
+    "security",
+    "port-scanning",
+    "computer-networks",
+    "laboratory"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+    "Topic :: System :: Networking",
+    "Topic :: Security",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "docker>=6.0.0",
+    "requests>=2.28.0",
+    "pyyaml>=6.0",
+    "paho-mqtt>=1.6.0",
+    "scapy>=2.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.1.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/antonioclim/netENwsl"
+Documentation = "https://github.com/antonioclim/netENwsl/tree/main/13enWSL/docs"
+Repository = "https://github.com/antonioclim/netENwsl"
+Issues = "https://github.com/antonioclim/netENwsl/issues"
+Changelog = "https://github.com/antonioclim/netENwsl/blob/main/13enWSL/CHANGELOG.md"
+
+[project.scripts]
+week13-quiz = "formative.run_quiz:main"
+week13-start = "scripts.start_lab:main"
+week13-stop = "scripts.stop_lab:main"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RUFF CONFIGURATION (Linter + Formatter)
+# ══════════════════════════════════════════════════════════════════════════════
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+indent-width = 4
+
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "artifacts",
+    "pcap",
+    "docker/volumes",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # Pyflakes
+    "W",      # pycodestyle warnings
+    "I",      # isort
+    "N",      # pep8-naming
+    "D",      # pydocstyle
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "RUF",    # Ruff-specific rules
+]
+
+ignore = [
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D203",   # 1 blank line required before class docstring
+    "D213",   # Multi-line docstring summary should start at second line
+    "E501",   # Line too long (handled by formatter)
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "scripts", "tests", "formative"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+docstring-code-format = true
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PYTEST CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "-ra",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring Docker services",
+    "network: marks tests requiring network access",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MYPY CONFIGURATION (Type Checking)
+# ══════════════════════════════════════════════════════════════════════════════
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+[[tool.mypy.overrides]]
+module = [
+    "scapy.*",
+    "paho.*",
+    "docker.*",
+]
+ignore_missing_imports = true
+
+# ══════════════════════════════════════════════════════════════════════════════
+# COVERAGE CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+[tool.coverage.run]
+source = ["src", "scripts", "formative"]
+branch = true
+omit = [
+    "*/__init__.py",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+fail_under = 60
+show_missing = true
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BUILD SYSTEM
+# ══════════════════════════════════════════════════════════════════════════════
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "scripts*", "formative*"]

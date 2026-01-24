@@ -1,56 +1,67 @@
 # Changelog
 
-All notable changes to the WEEK13_WSLkit package will be documented in this file.
+All notable changes to Week 13 laboratory kit will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-
-
-## [1.3.0] - 2026-01-24
-
-### Changed (Quality Improvements)
-- **AI Decontamination:** Replaced "Comprehensive" with more natural alternatives in further_reading.md
-  - "Comprehensive coverage" → "Thorough coverage"
-  - "Comprehensive security" → "Complete security"
-  - "Comprehensive vulnerability" → "Detailed vulnerability"
-  - "Comprehensive documentation" → "Full documentation"
-  - "Comprehensive Docker" → "Complete Docker"
-- **Subgoal Labels:** Added standardised section markers to ftp_backdoor_check.py
-
-### Enhanced
-- **Code Structure:** App file now includes IMPORT_DEPENDENCIES, CORE_LOGIC, ENTRY_POINT section markers
-
-### Quality Metrics (Post-Update)
-- AI Risk Score: ≤0.5/10
-- Pedagogical Score: ~9.8/10
-- Code Quality Score: ~9.5/10
-
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [1.0.0] - 2026-01-07
+## [2.1.0] - 2026-01-24
 
 ### Added
-- Initial release of Week 13: IoT and Security in Computer Networks laboratory kit
-- Docker Compose configuration with three vulnerable services:
-  - Mosquitto MQTT broker (plaintext and TLS endpoints)
-  - DVWA (Damn Vulnerable Web Application)
-  - vsftpd with educational backdoor stub
-- Four Python exercises:
-  - Port scanner with concurrent execution
-  - MQTT client for IoT communication
-  - Packet sniffer with protocol identification
-  - Vulnerability checker for defensive assessment
-- IoT simulation applications (sensor and controller)
-- Automated demonstration scripts
-- Complete documentation and theory summary
-- Environment verification and setup scripts
-- Test suite with smoke tests
 
-### Security Notes
-- All vulnerable services are isolated within a Docker network
-- Backdoor stub does NOT execute commands (educational only)
-- Prominent warnings included throughout documentation
+**Pedagogical Enhancements**
+- Beginner Mode in exercises with step-by-step explanations
+- Pre-flight Checklist in README for environment verification
+- Beginner Errors section in troubleshooting guide
+- API Quick Reference (`docs/api_reference.md`)
+
+**AI Risk Mitigation**
+- Ground Truth System (`tests/ground_truth.json`) for fact verification
+- Validation Script (`tests/validate_ground_truth.py`)
+- Fact-checking metadata in quiz with authoritative sources
+
+**CI/CD Infrastructure**
+- GitHub Actions Workflow (`.github/workflows/ci.yml`)
+- Linting with ruff configuration
+- Syntax validation for Python, YAML and JSON
+- Ground truth validation as CI stage
+
+**Project Configuration**
+- `pyproject.toml` for modern Python packaging
+- `py.typed` marker for type hint support
+- Enhanced `requirements.txt` with version constraints
+
+### Changed
+- Standardised British English terminology (analyse, colour)
+- Fixed inconsistent naming (`Colors` vs `Colours`)
+- Added complete type hints to exercise functions
+
+### Fixed
+- Inconsistent variable naming in port scanner
+- Missing type hints in utility functions
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+## [2.0.0] - 2026-01-15
+
+### Added
+- Quiz YAML with 16 questions
+- LO Traceability Matrix
+- 5 Parsons Problems with distractors
+- SECURITY.md with ethical guidelines
+- 7 Mermaid architecture diagrams
+- Makefile with 20+ targets
+
+---
+
+## [1.0.0] - 2026-01-01
+
+### Added
+- Initial release with 4 exercises
+- Docker-based lab environment
+- Mosquitto, DVWA and vsftpd services
+
+---
+
+*Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*

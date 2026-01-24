@@ -1,61 +1,81 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# Week 13: IoT and Security — Laboratory Makefile
+# Week 13: IoT and Security — Makefile
 # Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# Usage:
-#   make help     - Show all available targets
-#   make start    - Start laboratory environment
-#   make quiz     - Run formative assessment quiz
-#   make test     - Run all tests
+# This Makefile provides convenient shortcuts for common laboratory tasks.
+#
+# Quick reference:
+#   make help        - Show all available commands
+#   make start       - Start laboratory environment
+#   make stop        - Stop laboratory environment
+#   make quiz        - Run formative assessment quiz
+#   make test        - Run all tests
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
-.PHONY: help start stop restart quiz quiz-random test smoke lint verify clean all
+.PHONY: help start stop restart status logs clean clean-full \
+        quiz quiz-random quiz-bloom quiz-export \
+        test smoke lint verify validate \
+        ex1 ex2 ex3 ex4 prelab postlab all
 
-# Configuration
-PYTHON := python3
-COMPOSE := docker compose -f docker/docker-compose.yml
-QUIZ_FILE := formative/quiz.yaml
+# Default target
+.DEFAULT_GOAL := help
 
-# Colors for output
-GREEN := \033[0;32m
-YELLOW := \033[0;33m
-CYAN := \033[0;36m
+# Colours for terminal output
+CYAN := \033[96m
+GREEN := \033[92m
+YELLOW := \033[93m
+RED := \033[91m
 RESET := \033[0m
+BOLD := \033[1m
 
 # ══════════════════════════════════════════════════════════════════════════════
-# DEFAULT TARGET
+# HELP
 # ══════════════════════════════════════════════════════════════════════════════
 
 help:
 	@echo ""
-	@echo "$(CYAN)╔══════════════════════════════════════════════════════════════════╗$(RESET)"
-	@echo "$(CYAN)║         Week 13: IoT and Security Laboratory                     ║$(RESET)"
-	@echo "$(CYAN)║         Computer Networks — ASE, CSIE                            ║$(RESET)"
-	@echo "$(CYAN)╠══════════════════════════════════════════════════════════════════╣$(RESET)"
-	@echo "$(CYAN)║  ENVIRONMENT                                                     ║$(RESET)"
-	@echo "$(CYAN)║    make start      - Start laboratory containers                 ║$(RESET)"
-	@echo "$(CYAN)║    make stop       - Stop laboratory containers                  ║$(RESET)"
-	@echo "$(CYAN)║    make restart    - Restart laboratory environment              ║$(RESET)"
-	@echo "$(CYAN)║    make status     - Show container status                       ║$(RESET)"
-	@echo "$(CYAN)║                                                                  ║$(RESET)"
-	@echo "$(CYAN)║  ASSESSMENT                                                      ║$(RESET)"
-	@echo "$(CYAN)║    make quiz       - Run full formative quiz (10 questions)      ║$(RESET)"
-	@echo "$(CYAN)║    make quiz-random- Run random 5 questions                      ║$(RESET)"
-	@echo "$(CYAN)║    make quiz-bloom - Run quiz filtered by Bloom level            ║$(RESET)"
-	@echo "$(CYAN)║                                                                  ║$(RESET)"
-	@echo "$(CYAN)║  TESTING                                                         ║$(RESET)"
-	@echo "$(CYAN)║    make test       - Run all tests                               ║$(RESET)"
-	@echo "$(CYAN)║    make smoke      - Run smoke tests only                        ║$(RESET)"
-	@echo "$(CYAN)║    make lint       - Check code syntax                           ║$(RESET)"
-	@echo "$(CYAN)║    make verify     - Verify environment setup                    ║$(RESET)"
-	@echo "$(CYAN)║                                                                  ║$(RESET)"
-	@echo "$(CYAN)║  MAINTENANCE                                                     ║$(RESET)"
-	@echo "$(CYAN)║    make clean      - Clean artifacts and caches                  ║$(RESET)"
-	@echo "$(CYAN)║    make clean-full - Full cleanup including Docker               ║$(RESET)"
-	@echo "$(CYAN)║    make all        - Full cycle: lint → test → quiz              ║$(RESET)"
-	@echo "$(CYAN)╚══════════════════════════════════════════════════════════════════╝$(RESET)"
+	@echo "$(CYAN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
+	@echo "$(BOLD)  Week 13: IoT and Security — Laboratory Commands$(RESET)"
+	@echo "$(CYAN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
+	@echo ""
+	@echo "$(BOLD)Environment Management:$(RESET)"
+	@echo "  $(GREEN)make start$(RESET)         Start laboratory Docker containers"
+	@echo "  $(GREEN)make stop$(RESET)          Stop laboratory containers (Portainer stays)"
+	@echo "  $(GREEN)make restart$(RESET)       Restart laboratory containers"
+	@echo "  $(GREEN)make status$(RESET)        Show container status"
+	@echo "  $(GREEN)make logs$(RESET)          View container logs"
+	@echo ""
+	@echo "$(BOLD)Formative Assessment:$(RESET)"
+	@echo "  $(GREEN)make quiz$(RESET)          Run full quiz (16 questions)"
+	@echo "  $(GREEN)make quiz-random$(RESET)   Run 5 random questions"
+	@echo "  $(GREEN)make quiz-bloom$(RESET)    Run quiz filtered by Bloom level"
+	@echo "  $(GREEN)make quiz-export$(RESET)   Export quiz to Moodle XML format"
+	@echo ""
+	@echo "$(BOLD)Testing and Validation:$(RESET)"
+	@echo "  $(GREEN)make test$(RESET)          Run all tests"
+	@echo "  $(GREEN)make smoke$(RESET)         Run quick smoke tests"
+	@echo "  $(GREEN)make lint$(RESET)          Run code linter (ruff)"
+	@echo "  $(GREEN)make verify$(RESET)        Verify environment setup"
+	@echo "  $(GREEN)make validate$(RESET)      Validate ground truth"
+	@echo ""
+	@echo "$(BOLD)Exercise Shortcuts:$(RESET)"
+	@echo "  $(GREEN)make ex1$(RESET)           Run Exercise 1 (Port Scanner)"
+	@echo "  $(GREEN)make ex2$(RESET)           Run Exercise 2 (MQTT Client)"
+	@echo "  $(GREEN)make ex3$(RESET)           Run Exercise 3 (Packet Sniffer)"
+	@echo "  $(GREEN)make ex4$(RESET)           Run Exercise 4 (Vulnerability Checker)"
+	@echo ""
+	@echo "$(BOLD)Cleanup:$(RESET)"
+	@echo "  $(GREEN)make clean$(RESET)         Remove temporary files"
+	@echo "  $(GREEN)make clean-full$(RESET)    Remove containers, networks and volumes"
+	@echo ""
+	@echo "$(BOLD)Workflows:$(RESET)"
+	@echo "  $(GREEN)make prelab$(RESET)        Pre-laboratory preparation"
+	@echo "  $(GREEN)make postlab$(RESET)       Post-laboratory cleanup and export"
+	@echo "  $(GREEN)make all$(RESET)           Full verification suite"
+	@echo ""
+	@echo "$(CYAN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
 	@echo ""
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -63,149 +83,228 @@ help:
 # ══════════════════════════════════════════════════════════════════════════════
 
 start:
-	@echo "$(GREEN)🚀 Starting Week 13 laboratory environment...$(RESET)"
-	@$(PYTHON) scripts/start_lab.py
-	@echo "$(GREEN)✅ Laboratory started. Access:$(RESET)"
-	@echo "   - Portainer: http://localhost:9000"
-	@echo "   - DVWA:      http://localhost:8080"
-	@echo "   - MQTT:      localhost:1883 (plain) / 8883 (TLS)"
+	@echo "$(CYAN)[*] Starting Week 13 laboratory environment...$(RESET)"
+	@python3 scripts/start_lab.py
+	@echo "$(GREEN)[✓] Laboratory started$(RESET)"
 
 stop:
-	@echo "$(YELLOW)🛑 Stopping Week 13 laboratory...$(RESET)"
-	@$(PYTHON) scripts/stop_lab.py
-	@echo "$(GREEN)✅ Laboratory stopped.$(RESET)"
+	@echo "$(CYAN)[*] Stopping Week 13 laboratory containers...$(RESET)"
+	@docker compose -f docker/docker-compose.yml down 2>/dev/null || true
+	@echo "$(GREEN)[✓] Laboratory stopped (Portainer remains running)$(RESET)"
 
 restart: stop start
-	@echo "$(GREEN)✅ Laboratory restarted.$(RESET)"
+	@echo "$(GREEN)[✓] Laboratory restarted$(RESET)"
 
 status:
-	@echo "$(CYAN)📊 Container Status:$(RESET)"
+	@echo "$(CYAN)[*] Container Status:$(RESET)"
 	@docker ps --filter "name=week13" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+	@echo ""
+	@echo "$(CYAN)[*] Network Info:$(RESET)"
+	@docker network inspect week13net --format '{{range .Containers}}{{.Name}}: {{.IPv4Address}}{{"\n"}}{{end}}' 2>/dev/null || echo "Network not found"
 
 logs:
-	@echo "$(CYAN)📋 Recent logs (all containers):$(RESET)"
-	@docker logs week13_mosquitto --tail 10 2>/dev/null || echo "  mosquitto: not running"
-	@docker logs week13_dvwa --tail 10 2>/dev/null || echo "  dvwa: not running"
-	@docker logs week13_vsftpd --tail 10 2>/dev/null || echo "  vsftpd: not running"
+	@echo "$(CYAN)[*] Recent logs from all Week 13 containers:$(RESET)"
+	@echo ""
+	@echo "$(BOLD)--- Mosquitto MQTT ---$(RESET)"
+	@docker logs --tail 20 week13_mosquitto 2>/dev/null || echo "Container not running"
+	@echo ""
+	@echo "$(BOLD)--- DVWA ---$(RESET)"
+	@docker logs --tail 20 week13_dvwa 2>/dev/null || echo "Container not running"
+	@echo ""
+	@echo "$(BOLD)--- vsftpd ---$(RESET)"
+	@docker logs --tail 20 week13_vsftpd 2>/dev/null || echo "Container not running"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # FORMATIVE ASSESSMENT
 # ══════════════════════════════════════════════════════════════════════════════
 
 quiz:
-	@echo "$(GREEN)📝 Starting formative quiz...$(RESET)"
-	@$(PYTHON) formative/run_quiz.py
+	@echo "$(CYAN)[*] Starting formative assessment quiz...$(RESET)"
+	@python3 formative/run_quiz.py
 
 quiz-random:
-	@echo "$(GREEN)📝 Starting random quiz (5 questions)...$(RESET)"
-	@$(PYTHON) formative/run_quiz.py --random --limit 5
+	@echo "$(CYAN)[*] Starting random quiz (5 questions)...$(RESET)"
+	@python3 formative/run_quiz.py --random --limit 5
 
 quiz-bloom:
-	@echo "$(CYAN)Available Bloom levels: remember, understand, apply, analyze, evaluate, create$(RESET)"
-	@read -p "Enter Bloom level: " level; \
-	$(PYTHON) formative/run_quiz.py --bloom $$level
+	@echo "$(CYAN)[*] Quiz filtered by Bloom level$(RESET)"
+	@echo "Usage: python3 formative/run_quiz.py --bloom [remember|understand|apply|analyse|evaluate|create]"
+	@echo ""
+	@echo "Example: python3 formative/run_quiz.py --bloom apply"
 
 quiz-export:
-	@echo "$(GREEN)📝 Running quiz with export...$(RESET)"
-	@$(PYTHON) formative/run_quiz.py --export artifacts/quiz_results.json
-	@echo "$(GREEN)✅ Results exported to artifacts/quiz_results.json$(RESET)"
+	@echo "$(CYAN)[*] Exporting quiz to Moodle XML format...$(RESET)"
+	@python3 formative/run_quiz.py --export-moodle artifacts/quiz_moodle_export.xml
+	@echo "$(GREEN)[✓] Exported to artifacts/quiz_moodle_export.xml$(RESET)"
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TESTING
+# TESTING AND VALIDATION
 # ══════════════════════════════════════════════════════════════════════════════
 
-test: lint smoke
-	@echo "$(GREEN)🧪 Running exercise tests...$(RESET)"
-	@$(PYTHON) tests/test_exercises.py --all || true
-	@echo "$(GREEN)✅ Tests completed.$(RESET)"
+test:
+	@echo "$(CYAN)[*] Running all tests...$(RESET)"
+	@python3 -m pytest tests/ -v --tb=short || python3 tests/test_exercises.py
 
 smoke:
-	@echo "$(CYAN)💨 Running smoke tests...$(RESET)"
-	@$(PYTHON) tests/smoke_test.py
+	@echo "$(CYAN)[*] Running smoke tests...$(RESET)"
+	@python3 tests/smoke_test.py
 
 lint:
-	@echo "$(CYAN)🔍 Checking Python syntax...$(RESET)"
-	@$(PYTHON) -m py_compile src/exercises/*.py && echo "  ✅ src/exercises/ OK"
-	@$(PYTHON) -m py_compile scripts/*.py && echo "  ✅ scripts/ OK"
-	@$(PYTHON) -m py_compile tests/*.py && echo "  ✅ tests/ OK"
-	@$(PYTHON) -m py_compile formative/*.py 2>/dev/null && echo "  ✅ formative/ OK" || true
-	@echo "$(GREEN)✅ Syntax check passed.$(RESET)"
+	@echo "$(CYAN)[*] Running code linter (ruff)...$(RESET)"
+	@ruff check src/ scripts/ tests/ formative/ --output-format=concise 2>/dev/null || \
+		echo "$(YELLOW)[!] Install ruff: pip install ruff$(RESET)"
+
+lint-fix:
+	@echo "$(CYAN)[*] Running linter with auto-fix...$(RESET)"
+	@ruff check src/ scripts/ tests/ formative/ --fix 2>/dev/null || \
+		echo "$(YELLOW)[!] Install ruff: pip install ruff$(RESET)"
 
 verify:
-	@echo "$(CYAN)🔧 Verifying environment...$(RESET)"
-	@$(PYTHON) setup/verify_environment.py
+	@echo "$(CYAN)[*] Verifying environment setup...$(RESET)"
+	@python3 setup/verify_environment.py
+
+validate:
+	@echo "$(CYAN)[*] Validating ground truth...$(RESET)"
+	@python3 tests/validate_ground_truth.py
+
+type-check:
+	@echo "$(CYAN)[*] Running type checker (mypy)...$(RESET)"
+	@mypy src/ --ignore-missing-imports 2>/dev/null || \
+		echo "$(YELLOW)[!] Install mypy: pip install mypy$(RESET)"
 
 # ══════════════════════════════════════════════════════════════════════════════
-# EXERCISES (shortcuts)
+# EXERCISE SHORTCUTS
 # ══════════════════════════════════════════════════════════════════════════════
 
 ex1:
-	@echo "$(CYAN)Running Exercise 1: Port Scanner$(RESET)"
-	@$(PYTHON) src/exercises/ex_13_01_port_scanner.py --help
+	@echo "$(CYAN)[*] Exercise 1: Port Scanner$(RESET)"
+	@echo "$(YELLOW)Usage:$(RESET) python3 src/exercises/ex_13_01_port_scanner.py --target <IP> --ports <PORTS>"
+	@echo ""
+	@echo "$(BOLD)Example commands:$(RESET)"
+	@echo "  python3 src/exercises/ex_13_01_port_scanner.py --target 127.0.0.1 --ports 1-1024"
+	@echo "  python3 src/exercises/ex_13_01_port_scanner.py --target 10.0.13.11 --ports 22,80,443,8080"
+	@echo ""
+	@python3 src/exercises/ex_13_01_port_scanner.py --help
 
 ex2:
-	@echo "$(CYAN)Running Exercise 2: MQTT Client$(RESET)"
-	@$(PYTHON) src/exercises/ex_13_02_mqtt_client.py --help
+	@echo "$(CYAN)[*] Exercise 2: MQTT Client$(RESET)"
+	@echo "$(YELLOW)Usage:$(RESET) python3 src/exercises/ex_13_02_mqtt_client.py --mode <publish|subscribe> --topic <TOPIC>"
+	@echo ""
+	@echo "$(BOLD)Example commands:$(RESET)"
+	@echo "  python3 src/exercises/ex_13_02_mqtt_client.py --mode subscribe --topic '#'"
+	@echo "  python3 src/exercises/ex_13_02_mqtt_client.py --mode publish --topic sensors/temp --message '23.5'"
+	@echo ""
+	@python3 src/exercises/ex_13_02_mqtt_client.py --help
 
 ex3:
-	@echo "$(CYAN)Running Exercise 3: Packet Sniffer$(RESET)"
-	@$(PYTHON) src/exercises/ex_13_03_packet_sniffer.py --help
+	@echo "$(CYAN)[*] Exercise 3: Packet Sniffer$(RESET)"
+	@echo "$(YELLOW)Usage:$(RESET) sudo python3 src/exercises/ex_13_03_packet_sniffer.py --filter <BPF>"
+	@echo ""
+	@echo "$(BOLD)Example commands:$(RESET)"
+	@echo "  sudo python3 src/exercises/ex_13_03_packet_sniffer.py --filter 'tcp port 1883' --count 20"
+	@echo "  sudo python3 src/exercises/ex_13_03_packet_sniffer.py --filter 'tcp port 8080' --output capture.pcap"
+	@echo ""
+	@python3 src/exercises/ex_13_03_packet_sniffer.py --help
 
 ex4:
-	@echo "$(CYAN)Running Exercise 4: Vulnerability Checker$(RESET)"
-	@$(PYTHON) src/exercises/ex_13_04_vuln_checker.py --help
+	@echo "$(CYAN)[*] Exercise 4: Vulnerability Checker$(RESET)"
+	@echo "$(YELLOW)Usage:$(RESET) python3 src/exercises/ex_13_04_vuln_checker.py --target <IP> --port <PORT> --service <TYPE>"
+	@echo ""
+	@echo "$(BOLD)Example commands:$(RESET)"
+	@echo "  python3 src/exercises/ex_13_04_vuln_checker.py --target 10.0.13.11 --port 8080 --service http"
+	@echo "  python3 src/exercises/ex_13_04_vuln_checker.py --target 10.0.13.12 --port 2121 --service ftp"
+	@echo ""
+	@python3 src/exercises/ex_13_04_vuln_checker.py --help
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MAINTENANCE
+# CLEANUP
 # ══════════════════════════════════════════════════════════════════════════════
 
 clean:
-	@echo "$(YELLOW)🧹 Cleaning artifacts and caches...$(RESET)"
-	@rm -rf artifacts/*.pcap artifacts/*.log artifacts/*.json 2>/dev/null || true
-	@rm -rf __pycache__ */__pycache__ */*/__pycache__ 2>/dev/null || true
-	@find . -name "*.pyc" -delete 2>/dev/null || true
-	@find . -name ".pytest_cache" -type d -exec rm -rf {} + 2>/dev/null || true
-	@echo "$(GREEN)✅ Cleanup complete.$(RESET)"
+	@echo "$(CYAN)[*] Cleaning temporary files...$(RESET)"
+	@rm -rf __pycache__ */__pycache__ */*/__pycache__
+	@rm -rf .pytest_cache .mypy_cache .ruff_cache
+	@rm -rf artifacts/*.json artifacts/*.xml artifacts/*.log 2>/dev/null || true
+	@rm -rf pcap/*.pcap 2>/dev/null || true
+	@echo "$(GREEN)[✓] Temporary files removed$(RESET)"
 
 clean-full: clean
-	@echo "$(YELLOW)🧹 Full cleanup including Docker resources...$(RESET)"
-	@$(PYTHON) scripts/cleanup.py --full 2>/dev/null || true
-	@echo "$(GREEN)✅ Full cleanup complete.$(RESET)"
+	@echo "$(CYAN)[*] Full cleanup: removing containers, networks and volumes...$(RESET)"
+	@docker compose -f docker/docker-compose.yml down -v 2>/dev/null || true
+	@docker network rm week13net 2>/dev/null || true
+	@echo "$(GREEN)[✓] Full cleanup complete$(RESET)"
 
 # ══════════════════════════════════════════════════════════════════════════════
-# COMBINED WORKFLOWS
+# WORKFLOWS
 # ══════════════════════════════════════════════════════════════════════════════
 
-all: lint smoke test quiz
+prelab: verify start status
 	@echo ""
-	@echo "$(GREEN)════════════════════════════════════════════════════════════════$(RESET)"
-	@echo "$(GREEN)  ✅ All checks completed successfully!$(RESET)"
-	@echo "$(GREEN)════════════════════════════════════════════════════════════════$(RESET)"
-
-# Pre-lab check (run before starting a lab session)
-prelab: verify lint
-	@echo "$(GREEN)✅ Pre-lab checks passed. Ready to start!$(RESET)"
-	@echo "$(CYAN)Run 'make start' to begin the laboratory.$(RESET)"
-
-# Post-lab cleanup
-postlab: stop clean
-	@echo "$(GREEN)✅ Post-lab cleanup complete.$(RESET)"
-
-# ══════════════════════════════════════════════════════════════════════════════
-# DOCUMENTATION
-# ══════════════════════════════════════════════════════════════════════════════
-
-docs:
-	@echo "$(CYAN)📚 Available documentation:$(RESET)"
-	@echo "   README.md              - Main laboratory guide"
-	@echo "   SECURITY.md            - Security notice and guidelines"
-	@echo "   docs/theory_summary.md - Theoretical background"
-	@echo "   docs/troubleshooting.md- Problem solving guide"
-	@echo "   docs/misconceptions.md - Common errors"
-	@echo "   docs/peer_instruction.md - Discussion questions"
-
-# Show security notice
-security:
-	@cat SECURITY.md | head -50
+	@echo "$(GREEN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
+	@echo "$(BOLD)  Pre-laboratory preparation complete!$(RESET)"
+	@echo "$(GREEN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
 	@echo ""
-	@echo "$(YELLOW)... (see SECURITY.md for full document)$(RESET)"
+	@echo "Next steps:"
+	@echo "  1. Open Portainer: http://localhost:9000"
+	@echo "  2. Open DVWA: http://localhost:8080"
+	@echo "  3. Start Wireshark and select 'vEthernet (WSL)'"
+	@echo "  4. Begin with Exercise 1: make ex1"
+	@echo ""
+
+postlab:
+	@echo "$(CYAN)[*] Post-laboratory cleanup...$(RESET)"
+	@echo ""
+	@echo "$(BOLD)Quiz Results:$(RESET)"
+	@python3 formative/run_quiz.py --export artifacts/final_quiz_results.json 2>/dev/null || true
+	@echo ""
+	@$(MAKE) stop
+	@$(MAKE) clean
+	@echo ""
+	@echo "$(GREEN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
+	@echo "$(BOLD)  Post-laboratory complete!$(RESET)"
+	@echo "$(GREEN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
+	@echo ""
+	@echo "Remember to:"
+	@echo "  1. Save your PCAP captures from pcap/ folder"
+	@echo "  2. Export scan results from artifacts/ folder"
+	@echo "  3. Complete the online self-assessment if required"
+	@echo ""
+
+all: verify lint validate smoke
+	@echo ""
+	@echo "$(GREEN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
+	@echo "$(BOLD)  Full verification suite complete!$(RESET)"
+	@echo "$(GREEN)══════════════════════════════════════════════════════════════════════════════$(RESET)"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DOCKER COMPOSE SHORTCUTS
+# ══════════════════════════════════════════════════════════════════════════════
+
+up:
+	@docker compose -f docker/docker-compose.yml up -d
+
+down:
+	@docker compose -f docker/docker-compose.yml down
+
+build:
+	@docker compose -f docker/docker-compose.yml build
+
+pull:
+	@docker compose -f docker/docker-compose.yml pull
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DEVELOPMENT HELPERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+install-dev:
+	@echo "$(CYAN)[*] Installing development dependencies...$(RESET)"
+	@pip install -r setup/requirements.txt
+	@pip install ruff pytest pytest-cov mypy
+	@echo "$(GREEN)[✓] Development dependencies installed$(RESET)"
+
+format:
+	@echo "$(CYAN)[*] Formatting code with ruff...$(RESET)"
+	@ruff format src/ scripts/ tests/ formative/ 2>/dev/null || \
+		echo "$(YELLOW)[!] Install ruff: pip install ruff$(RESET)"
+
+# ══════════════════════════════════════════════════════════════════════════════

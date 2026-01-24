@@ -1,492 +1,456 @@
 # 🧩 Parsons Problems — Week 13
-## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
-> Reorder the code blocks to create a working solution. Some blocks may be distractors (not needed).
+> Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
 ---
 
-## Problem P1: MQTT Publish with QoS
+## What are Parsons Problems?
+
+Parsons Problems are code-ordering exercises where you arrange scrambled code blocks into the correct sequence. They help develop:
+
+- **Code reading skills** — Understanding code structure
+- **Logical thinking** — Identifying dependencies between statements
+- **Debugging intuition** — Spotting incorrect orderings
+
+**⚠️ Warning:** Some blocks below are **distractors** — they should NOT be included in the solution!
+
+---
+
+## Problem 1: MQTT Publish with QoS
+
+**Learning Objective:** LO1, LO4  
+**Difficulty:** ⭐⭐☆☆☆ (Intermediate)  
+**Distractors:** 2 blocks
 
 ### Task
-Create a function that publishes a message to an MQTT broker with QoS 1 and waits for acknowledgement.
+
+Arrange the blocks to create a function that publishes an MQTT message with QoS 1 and waits for acknowledgement.
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-    client.loop_stop()
-    return True
+def mqtt_publish_qos1(broker, topic, message):
 
 # Block B
-def publish_with_ack(broker: str, port: int, topic: str, message: str) -> bool:
-
-# Block C
-    client.on_publish = on_publish
-
-# Block D
-    ack_received = False
-
-# Block E
-    def on_publish(client, userdata, mid):
-        nonlocal ack_received
-        ack_received = True
-
-# Block F
     client = mqtt.Client()
 
+# Block C
+    client.connect(broker, 1883, 60)
+
+# Block D
+    result = client.publish(topic, message, qos=1)
+
+# Block E
+    result.wait_for_publish()
+
+# Block F
+    client.disconnect()
+
 # Block G
-    client.connect(broker, port)
-    client.loop_start()
+    return result.is_published()
 
-# Block H
-    client.publish(topic, message, qos=1)
-
-# Block I (DISTRACTOR)
+# Block H (DISTRACTOR)
     client.subscribe(topic)
 
-# Block J
-    import time
-    timeout = time.time() + 5
-    while not ack_received and time.time() < timeout:
-        time.sleep(0.1)
-
-# Block K (DISTRACTOR)
-    client.disconnect()
-    return ack_received
+# Block I (DISTRACTOR)
+    result = client.publish(topic, message, qos=0)
 ```
 
-### Hints
-- The function needs to track whether an acknowledgement was received
-- QoS 1 requires the `on_publish` callback to confirm delivery
-- We need to wait for the acknowledgement before returning
-- One block subscribes to a topic — is that needed for publishing?
-
-### Correct Order
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+
+QoS 1 requires waiting for PUBACK. The `wait_for_publish()` method blocks until acknowledgement is received.
+
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order: A → B → C → D → E → F → G**
 
 ```python
-# Block B
-def publish_with_ack(broker: str, port: int, topic: str, message: str) -> bool:
-
-# Block D
-    ack_received = False
-
-# Block E
-    def on_publish(client, userdata, mid):
-        nonlocal ack_received
-        ack_received = True
-
-# Block F
+def mqtt_publish_qos1(broker, topic, message):
     client = mqtt.Client()
-
-# Block C
-    client.on_publish = on_publish
-
-# Block G
-    client.connect(broker, port)
-    client.loop_start()
-
-# Block H
-    client.publish(topic, message, qos=1)
-
-# Block J
-    import time
-    timeout = time.time() + 5
-    while not ack_received and time.time() < timeout:
-        time.sleep(0.1)
-
-# Block A
-    client.loop_stop()
-    return True
+    client.connect(broker, 1883, 60)
+    result = client.publish(topic, message, qos=1)
+    result.wait_for_publish()
+    client.disconnect()
+    return result.is_published()
 ```
 
-**Distractors:**
-- Block I (`client.subscribe(topic)`) — subscribing is not needed for publishing
-- Block K — contains duplicate `return` statement; Block A handles cleanup correctly
+**Why distractors are wrong:**
+- Block H: `subscribe()` is for receiving messages, not publishing
+- Block I: Uses QoS 0 (fire-and-forget), not QoS 1
 
-**Key insight:** The `on_publish` callback is essential for QoS 1 to know when the broker acknowledged the message.
 </details>
 
 ---
 
-## Problem P2: TCP Port Scanner Function
+## Problem 2: TCP Port Scanner Function
+
+**Learning Objective:** LO3  
+**Difficulty:** ⭐⭐⭐☆☆ (Intermediate)  
+**Distractors:** 2 blocks
 
 ### Task
-Create a function that scans a single port and returns its state (open, closed, or filtered).
+
+Arrange the blocks to create a function that scans a single TCP port and returns its state.
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-    except socket.timeout:
-        return "filtered"
+def scan_port(host, port, timeout=0.5):
 
 # Block B
-def scan_port(host: str, port: int, timeout: float = 0.5) -> str:
-
-# Block C
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Block D
-        return "open"
-
-# Block E
-    sock.settimeout(timeout)
-
-# Block F
-    try:
-
-# Block G
-        result = sock.connect_ex((host, port))
-
-# Block H
-    finally:
-        sock.close()
-
-# Block I
-        if result == 0:
-
-# Block J
-        else:
-            return "closed"
-
-# Block K (DISTRACTOR)
-    sock.bind(('', 0))
-
-# Block L (DISTRACTOR)
-        sock.send(b"HELLO")
-```
-
-### Hints
-- Socket must be created before setting timeout
-- `connect_ex()` returns 0 for successful connection
-- The socket must always be closed (use `finally`)
-- Port scanning doesn't require binding to a local port
-- We're checking if port is open, not sending data
-
-### Correct Order
-<details>
-<summary>Click to reveal solution</summary>
-
-```python
-# Block B
-def scan_port(host: str, port: int, timeout: float = 0.5) -> str:
-
 # Block C
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Block E
     sock.settimeout(timeout)
 
-# Block F
+# Block D
     try:
 
-# Block G
+# Block E
         result = sock.connect_ex((host, port))
 
-# Block I
+# Block F
         if result == 0:
-
-# Block D
             return "open"
-
-# Block J
         else:
             return "closed"
 
-# Block A
+# Block G
     except socket.timeout:
         return "filtered"
 
 # Block H
     finally:
         sock.close()
-```
-
-**Distractors:**
-- Block K (`sock.bind(('', 0))`) — binding is for servers, not clients
-- Block L (`sock.send(b"HELLO")`) — port scanning only checks if connection succeeds
-
-**Key insight:** `connect_ex()` returns an error code instead of raising an exception, making it ideal for scanning.
-</details>
-
----
-
-## Problem P3: TLS Context Configuration
-
-### Task
-Create a function that configures an SSL context for connecting to an MQTT broker with TLS.
-
-### Scrambled Blocks
-
-```python
-# Block A
-    return context
-
-# Block B
-def create_tls_context(ca_file: str, verify: bool = True) -> ssl.SSLContext:
-
-# Block C
-    context = ssl.create_default_context()
-
-# Block D
-    context.load_verify_locations(ca_file)
-
-# Block E
-    if not verify:
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-
-# Block F (DISTRACTOR)
-    context.set_ciphers('HIGH:!aNULL:!MD5')
-
-# Block G
-    import ssl
-
-# Block H (DISTRACTOR)
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
 
 # Block I (DISTRACTOR)
-    context.load_cert_chain('client.crt', 'client.key')
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Block J (DISTRACTOR)
+        if result == 1:
+            return "open"
 ```
 
-### Hints
-- Import statement comes first
-- `create_default_context()` is preferred over manual `SSLContext()`
-- CA file must be loaded for server verification
-- Disabling verification should be conditional
-- Client certificates are optional and not needed here
-
-### Correct Order
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+
+- `connect_ex()` returns 0 for success (open port)
+- `SOCK_STREAM` is for TCP (connection-oriented)
+- `finally` ensures socket cleanup even on exceptions
+
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order: A → B → C → D → E → F → G → H**
 
 ```python
-# Block G
-    import ssl
+def scan_port(host, port, timeout=0.5):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(timeout)
+    try:
+        result = sock.connect_ex((host, port))
+        if result == 0:
+            return "open"
+        else:
+            return "closed"
+    except socket.timeout:
+        return "filtered"
+    finally:
+        sock.close()
+```
+
+**Why distractors are wrong:**
+- Block I: `SOCK_DGRAM` is UDP, not TCP
+- Block J: `connect_ex()` returns 0 for success, not 1
+
+</details>
+
+---
+
+## Problem 3: TLS Context Configuration
+
+**Learning Objective:** LO2  
+**Difficulty:** ⭐⭐⭐☆☆ (Intermediate)  
+**Distractors:** 1 block
+
+### Task
+
+Arrange the blocks to create a secure TLS context for MQTT connection.
+
+### Scrambled Blocks
+
+```python
+# Block A
+def create_tls_context(ca_cert_path):
 
 # Block B
-def create_tls_context(ca_file: str, verify: bool = True) -> ssl.SSLContext:
-
-# Block C
     context = ssl.create_default_context()
 
+# Block C
+    context.check_hostname = True
+
 # Block D
-    context.load_verify_locations(ca_file)
+    context.verify_mode = ssl.CERT_REQUIRED
 
 # Block E
-    if not verify:
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
+    context.load_verify_locations(ca_cert_path)
 
-# Block A
+# Block F
+    return context
+
+# Block G (DISTRACTOR)
+    context.verify_mode = ssl.CERT_NONE
+```
+
+<details>
+<summary>💡 Hint</summary>
+
+For secure connections:
+- `CERT_REQUIRED` ensures server certificate is validated
+- `check_hostname = True` verifies the server's identity
+- CA certificate must be loaded to verify the server
+
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order: A → B → C → D → E → F**
+
+```python
+def create_tls_context(ca_cert_path):
+    context = ssl.create_default_context()
+    context.check_hostname = True
+    context.verify_mode = ssl.CERT_REQUIRED
+    context.load_verify_locations(ca_cert_path)
     return context
 ```
 
-**Distractors:**
-- Block F (`set_ciphers`) — `create_default_context()` already sets secure ciphers
-- Block H (`SSLContext(ssl.PROTOCOL_TLS)`) — manual context creation is less secure than `create_default_context()`
-- Block I (`load_cert_chain`) — client certificates are for mutual TLS, not required for basic server authentication
+**Why distractor is wrong:**
+- Block G: `CERT_NONE` disables certificate verification, making the connection insecure (vulnerable to MITM attacks)
 
-**Key insight:** `create_default_context()` provides secure defaults; only override when necessary.
 </details>
 
 ---
 
-## Problem P4: Packet Capture Filter
+## Problem 4: Packet Capture Filter
+
+**Learning Objective:** LO5  
+**Difficulty:** ⭐⭐☆☆☆ (Easy)  
+**Distractors:** 2 blocks
 
 ### Task
-Create a function that captures packets matching specific ports and saves them to a file.
+
+Arrange the blocks to capture MQTT packets and save to a PCAP file.
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-    return len(packets)
+from scapy.all import sniff, wrpcap
 
 # Block B
-def capture_lab_traffic(interface: str, output_file: str, duration: int = 10) -> int:
+def capture_mqtt_traffic(interface, count, output_file):
 
 # Block C
-    from scapy.all import sniff, wrpcap
+    bpf_filter = "tcp port 1883"
 
 # Block D
-    packets = sniff(
-        iface=interface,
-        filter=bpf_filter,
-        timeout=duration
-    )
+    packets = sniff(iface=interface, filter=bpf_filter, count=count)
 
 # Block E
-    # Week 13 ports: MQTT (1883, 8883), DVWA (8080), FTP (2121)
-    bpf_filter = "tcp port 1883 or tcp port 8883 or tcp port 8080 or tcp port 2121"
+    wrpcap(output_file, packets)
 
 # Block F
-    wrpcap(output_file, packets)
+    return len(packets)
 
 # Block G (DISTRACTOR)
-    packets = sniff(iface=interface, count=100)
+    bpf_filter = "udp port 1883"
 
 # Block H (DISTRACTOR)
-    bpf_filter = "ip"
+    packets = sniff(iface=interface, count=count)
 ```
 
-### Hints
-- Import scapy functions first
-- Define the BPF filter before using it
-- Use timeout-based capture for predictable duration
-- Save packets after capture completes
-- "ip" filter is too broad for lab traffic
-
-### Correct Order
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+
+- MQTT uses TCP (not UDP)
+- BPF filter must be applied to capture only relevant traffic
+- `wrpcap()` saves packets to PCAP format
+
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order: A → B → C → D → E → F**
 
 ```python
-# Block C
-    from scapy.all import sniff, wrpcap
+from scapy.all import sniff, wrpcap
 
-# Block B
-def capture_lab_traffic(interface: str, output_file: str, duration: int = 10) -> int:
-
-# Block E
-    # Week 13 ports: MQTT (1883, 8883), DVWA (8080), FTP (2121)
-    bpf_filter = "tcp port 1883 or tcp port 8883 or tcp port 8080 or tcp port 2121"
-
-# Block D
-    packets = sniff(
-        iface=interface,
-        filter=bpf_filter,
-        timeout=duration
-    )
-
-# Block F
+def capture_mqtt_traffic(interface, count, output_file):
+    bpf_filter = "tcp port 1883"
+    packets = sniff(iface=interface, filter=bpf_filter, count=count)
     wrpcap(output_file, packets)
-
-# Block A
     return len(packets)
 ```
 
-**Distractors:**
-- Block G (`count=100`) — count-based capture doesn't respect duration
-- Block H (`bpf_filter = "ip"`) — captures all IP traffic, not specific to lab
+**Why distractors are wrong:**
+- Block G: MQTT uses TCP, not UDP
+- Block H: No filter means capturing ALL traffic, not just MQTT
 
-**Key insight:** BPF filters are essential for capturing only relevant traffic; timeout ensures predictable capture duration.
 </details>
 
 ---
 
-## Problem P5: Vulnerability Check Result
+## Problem 5: Vulnerability Check Workflow
+
+**Learning Objective:** LO6  
+**Difficulty:** ⭐⭐⭐⭐☆ (Advanced)  
+**Distractors:** 1 block
 
 ### Task
-Create a data class and function to check if anonymous MQTT access is enabled.
+
+Arrange the blocks to create a vulnerability assessment function that checks a service and generates a report.
 
 ### Scrambled Blocks
 
 ```python
 # Block A
-    return VulnResult(
-        name="Anonymous MQTT",
-        vulnerable=True,
-        details="Broker accepts connections without credentials"
-    )
+def assess_service(target, port, service_type):
 
 # Block B
-@dataclass
-class VulnResult:
-    name: str
-    vulnerable: bool
-    details: str
+    report = {"target": target, "port": port, "findings": []}
 
 # Block C
-def check_anonymous_mqtt(host: str, port: int = 1883) -> VulnResult:
+    # Step 1: Verify port is open
+    if not is_port_open(target, port):
+        report["status"] = "unreachable"
+        return report
 
 # Block D
-    from dataclasses import dataclass
-    import paho.mqtt.client as mqtt
+    # Step 2: Grab service banner
+    banner = grab_banner(target, port)
+    report["banner"] = banner
 
 # Block E
-    try:
-        client = mqtt.Client()
-        client.connect(host, port, keepalive=5)
-        client.disconnect()
+    # Step 3: Identify version
+    version = parse_version(banner)
+    report["version"] = version
 
 # Block F
-    except Exception:
-        return VulnResult(
-            name="Anonymous MQTT",
-            vulnerable=False,
-            details="Connection failed or requires authentication"
-        )
+    # Step 4: Check for known vulnerabilities
+    cves = lookup_cves(service_type, version)
+    report["findings"].extend(cves)
 
-# Block G (DISTRACTOR)
-    client.username_pw_set("admin", "admin")
+# Block G
+    # Step 5: Calculate risk score
+    report["risk_score"] = calculate_risk(report["findings"])
+    report["status"] = "complete"
 
-# Block H (DISTRACTOR)
-        client.subscribe("#")
+# Block H
+    return report
+
+# Block I (DISTRACTOR)
+    # Step 1: Check for vulnerabilities first
+    cves = lookup_cves(service_type, "unknown")
 ```
 
-### Correct Order
 <details>
-<summary>Click to reveal solution</summary>
+<summary>💡 Hint</summary>
+
+The correct order follows a logical workflow:
+1. Verify target is reachable
+2. Gather information (banner, version)
+3. Analyse (CVE lookup)
+4. Assess (risk score)
+
+You cannot look up vulnerabilities without knowing the version first!
+
+</details>
+
+<details>
+<summary>✅ Solution</summary>
+
+**Correct order: A → B → C → D → E → F → G → H**
 
 ```python
-# Block D
-    from dataclasses import dataclass
-    import paho.mqtt.client as mqtt
-
-# Block B
-@dataclass
-class VulnResult:
-    name: str
-    vulnerable: bool
-    details: str
-
-# Block C
-def check_anonymous_mqtt(host: str, port: int = 1883) -> VulnResult:
-
-# Block E
-    try:
-        client = mqtt.Client()
-        client.connect(host, port, keepalive=5)
-        client.disconnect()
-
-# Block A
-    return VulnResult(
-        name="Anonymous MQTT",
-        vulnerable=True,
-        details="Broker accepts connections without credentials"
-    )
-
-# Block F
-    except Exception:
-        return VulnResult(
-            name="Anonymous MQTT",
-            vulnerable=False,
-            details="Connection failed or requires authentication"
-        )
+def assess_service(target, port, service_type):
+    report = {"target": target, "port": port, "findings": []}
+    
+    # Step 1: Verify port is open
+    if not is_port_open(target, port):
+        report["status"] = "unreachable"
+        return report
+    
+    # Step 2: Grab service banner
+    banner = grab_banner(target, port)
+    report["banner"] = banner
+    
+    # Step 3: Identify version
+    version = parse_version(banner)
+    report["version"] = version
+    
+    # Step 4: Check for known vulnerabilities
+    cves = lookup_cves(service_type, version)
+    report["findings"].extend(cves)
+    
+    # Step 5: Calculate risk score
+    report["risk_score"] = calculate_risk(report["findings"])
+    report["status"] = "complete"
+    
+    return report
 ```
 
-**Distractors:**
-- Block G (`username_pw_set`) — we're testing anonymous access, so no credentials
-- Block H (`subscribe("#")`) — connecting without auth is enough to prove vulnerability
+**Why distractor is wrong:**
+- Block I: Looking up CVEs with "unknown" version is useless. You must first identify the version through banner grabbing, then look up vulnerabilities for that specific version.
 
-**Key insight:** If connection succeeds without credentials, the broker allows anonymous access — a security vulnerability.
 </details>
+
+---
+
+## Scoring Rubric
+
+Use this rubric for self-assessment:
+
+| Score | Criteria |
+|-------|----------|
+| **5/5** | Correct order, no distractors included, can explain why |
+| **4/5** | Correct order, no distractors, minor hesitation |
+| **3/5** | Mostly correct, one block misplaced OR one distractor included |
+| **2/5** | Several blocks misplaced, logic unclear |
+| **1/5** | Significant errors, distractors included |
+| **0/5** | Could not complete |
 
 ---
 
 ## Tips for Solving Parsons Problems
 
-1. **Identify the function signature** — always starts the sequence
-2. **Find imports** — usually at the very beginning
-3. **Track variable dependencies** — variables must be defined before use
-4. **Look for try/except/finally patterns** — `finally` always comes last in try block
-5. **Spot distractors** — blocks that add functionality not required by the task
-6. **Check return statements** — usually near the end
+1. **Identify the function signature first** — This is always Block A
+2. **Look for dependencies** — Some blocks require others to run first
+3. **Watch for try/except/finally** — These must be properly nested
+4. **Check return statements** — Usually come last
+5. **Spot distractors by logic errors** — Wrong protocols, wrong values, missing prerequisites
 
 ---
 
-*Computer Networks — Week 13: IoT and Security*
+## Additional Practice
+
+For more practice, try:
+
+1. **Reverse engineering** — Take working code and identify the logical order
+2. **Error insertion** — Find the bug in intentionally broken code
+3. **Code completion** — Fill in missing blocks from a partial solution
+
+---
+
+*Computer Networks — Week 13: IoT and Security*  
 *ASE Bucharest, CSIE | by ing. dr. Antonio Clim*

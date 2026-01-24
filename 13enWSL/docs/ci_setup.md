@@ -1,230 +1,395 @@
-# 🔄 CI/CD Setup Guide — Week 13
+# 🔄 CI/CD Setup Guide
 
-## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+> Week 13: IoT and Security in Computer Networks  
+> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 ---
 
 ## Overview
 
-This laboratory kit includes a GitHub Actions CI/CD pipeline that automatically validates code quality, tests and quiz syntax on every push and pull request.
+This guide explains how to set up Continuous Integration (CI) for the Week 13 laboratory kit using GitHub Actions. The CI pipeline ensures code quality, validates documentation and catches errors before they reach students.
+
+---
+
+## Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        GitHub Actions Workflow                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────┐    ┌─────────┐    ┌─────────────┐    ┌────────┐           │
+│  │  Lint   │───▶│ Syntax  │───▶│Ground Truth │───▶│  Test  │           │
+│  │ (ruff)  │    │ (py,yml)│    │ Validation  │    │(pytest)│           │
+│  └─────────┘    └─────────┘    └─────────────┘    └────────┘           │
+│       │              │               │                 │                │
+│       ▼              ▼               ▼                 ▼                │
+│  Code style    File validity   Documentation     Functionality         │
+│   checks         checks          accuracy          verification        │
+│                                                                         │
+│                              ┌──────────┐                               │
+│                              │  Docker  │  (Optional)                   │
+│                              │  Build   │                               │
+│                              └──────────┘                               │
+│                                   │                                     │
+│                                   ▼                                     │
+│                           Container validity                            │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Workflow File Location
+
+The CI workflow is defined in:
+
+```
+.github/workflows/ci.yml
+```
 
 ---
 
 ## Pipeline Stages
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           CI Pipeline Flow                                   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│   Push/PR ──► [Lint] ──► [Test] ──► [Quiz] ──► [Docker] ──► [Summary]       │
-│                 │          │          │           │             │            │
-│                 ▼          ▼          ▼           ▼             ▼            │
-│              ruff      smoke      YAML/JSON    Build        Report          │
-│              syntax    tests      validate     images        results        │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
 ### Stage 1: Lint (Code Quality)
 
-**Purpose:** Ensure code follows Python best practices and has no syntax errors.
+**Purpose:** Ensure code follows Python best practices and style guidelines.
 
-**Tools:**
-- **ruff** — Fast Python linter (preferred)
-- **py_compile** — Syntax verification fallback
+**Tools:** ruff (fast Python linter)
 
-**Checks performed:**
-- Import ordering
-- Unused variables/imports
-- Line length (max 120)
-- Common anti-patterns
+**Checks:**
+- PEP 8 style compliance (E, W rules)
+- Import sorting (I rules)
+- Naming conventions (N rules)
+- Docstring presence (D rules)
+- Common bugs (B rules)
 
-**Configuration:** See `setup/ruff.toml`
+**Local execution:**
+```bash
+make lint
+# or
+ruff check src/ scripts/ tests/ formative/
+```
 
-### Stage 2: Test
-
-**Purpose:** Verify exercise code and environment setup.
-
-**Tests run:**
-- `tests/smoke_test.py` — Basic environment checks
-- `tests/test_exercises.py` — Exercise syntax and help output
-
-**Note:** Full integration tests require Docker services and run only in `docker` stage.
-
-### Stage 3: Quiz Validation
-
-**Purpose:** Ensure formative assessment files are syntactically correct and complete.
-
-**Validates:**
-- `formative/quiz.yaml` — YAML syntax and required fields
-- `formative/quiz_moodle.json` — JSON syntax for LMS export
-- Quiz runner functionality
-
-**Required fields per question:**
-- `id` — Unique identifier
-- `type` — Question type (multiple_choice, fill_blank, short_answer)
-- `stem` — Question text
-- `bloom_level` — Taxonomy level
-- `lo_ref` — Learning objective reference
-
-### Stage 4: Docker (Optional)
-
-**Purpose:** Build and validate container configurations.
-
-**Runs when:**
-- Push to `main` branch
-- Manual trigger with `run_docker: true`
-
-**Tests:**
-- Dockerfile.vulnerable build
-- docker-compose.yml syntax validation
+**Configuration:** See `pyproject.toml` section `[tool.ruff]`
 
 ---
 
-## Local CI Execution
+### Stage 2: Syntax Validation
 
-Run the full CI pipeline locally before pushing:
+**Purpose:** Verify all source files are syntactically valid.
+
+**Checks:**
+- Python files compile without errors
+- YAML files parse correctly
+- JSON files are valid
+
+**Local execution:**
+```bash
+# Python syntax
+find . -name "*.py" -exec python -m py_compile {} \;
+
+# YAML validation
+python -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))"
+
+# JSON validation
+python -c "import json; json.load(open('tests/ground_truth.json'))"
+```
+
+---
+
+### Stage 3: Ground Truth Validation
+
+**Purpose:** Ensure documentation matches actual kit contents.
+
+**Checks:**
+- Python version requirements
+- Exercise file existence and line counts
+- Port configurations in docker-compose
+- Quiz structure and question counts
+- Learning objective coverage
+
+**Local execution:**
+```bash
+make validate
+# or
+python tests/validate_ground_truth.py
+```
+
+**Output:**
+```
+══════════════════════════════════════════════════════════════════════════
+  Ground Truth Validation Report
+══════════════════════════════════════════════════════════════════════════
+
+  ✅ PASS  Python Version
+         Expected: >= 3.11
+         Actual:   3.11
+
+  ✅ PASS  Exercise ex_13_01 line count
+         Expected: 582 ± 58
+         Actual:   585
+  
+  ...
+  
+  ✅ ALL VALIDATIONS PASSED
+```
+
+---
+
+### Stage 4: Unit Tests
+
+**Purpose:** Verify exercise functionality and test coverage.
+
+**Checks:**
+- Exercise help flags work
+- Smoke tests pass
+- Unit tests pass (when services available)
+
+**Local execution:**
+```bash
+make test
+# or
+python -m pytest tests/ -v
+```
+
+**Test categories:**
+
+| Marker | Description | Requires |
+|--------|-------------|----------|
+| (none) | Basic tests | Python only |
+| `@pytest.mark.integration` | Docker tests | Running services |
+| `@pytest.mark.network` | Network tests | Network access |
+| `@pytest.mark.slow` | Long-running tests | Time |
+
+---
+
+### Stage 5: Docker Build (Optional)
+
+**Purpose:** Validate container configurations.
+
+**Checks:**
+- Custom Dockerfiles build successfully
+- docker-compose.yml is valid
+- Images can be pulled
+
+**Local execution:**
+```bash
+docker compose -f docker/docker-compose.yml config --quiet
+docker compose -f docker/docker-compose.yml build
+```
+
+---
+
+## Trigger Conditions
+
+The pipeline runs on:
+
+| Event | Condition |
+|-------|-----------|
+| Push | To `main` or `develop` branches |
+| Pull Request | Targeting `main` branch |
+| Manual | Via "Run workflow" button |
+
+**Path filters:** Only triggers when files in `13enWSL/` change.
+
+---
+
+## Setting Up GitHub Actions
+
+### Step 1: Create Workflow Directory
 
 ```bash
-# Full pipeline
-make ci-local
+mkdir -p .github/workflows
+```
+
+### Step 2: Copy Workflow File
+
+The workflow file is already provided at `.github/workflows/ci.yml`.
+
+### Step 3: Configure Repository Secrets (Optional)
+
+If using private Docker images:
+
+1. Go to repository **Settings → Secrets → Actions**
+2. Add `DOCKER_USERNAME` and `DOCKER_PASSWORD`
+
+### Step 4: Enable Actions
+
+1. Go to repository **Settings → Actions → General**
+2. Select "Allow all actions and reusable workflows"
+3. Save
+
+---
+
+## Local CI Simulation
+
+Run the same checks locally before pushing:
+
+```bash
+# Full CI simulation
+make all
 
 # Individual stages
-make lint      # Code quality
-make smoke     # Smoke tests
-make verify    # Environment check
+make lint      # Stage 1
+make verify    # Stages 2-3
+make test      # Stage 4
 ```
 
 ---
 
-## GitHub Actions Configuration
+## Linting Configuration
 
-### Workflow File Location
-
-```
-.github/
-└── workflows/
-    └── ci.yml
-```
-
-### Trigger Events
-
-| Event | Branches | Conditions |
-|-------|----------|------------|
-| `push` | main, develop, master | Changes to src/, scripts/, tests/, formative/ |
-| `pull_request` | main, master | All PRs |
-| `workflow_dispatch` | — | Manual trigger |
-
-### Required Secrets
-
-No secrets required for basic CI. For Docker Hub publishing (future):
-- `DOCKERHUB_USERNAME`
-- `DOCKERHUB_TOKEN`
-
----
-
-## Adding CI to Your Fork
-
-1. **Fork the repository** on GitHub
-
-2. **Enable Actions:**
-   - Go to repository Settings → Actions → General
-   - Select "Allow all actions and reusable workflows"
-   - Click Save
-
-3. **Trigger first run:**
-   - Make any commit to trigger the workflow
-   - Or go to Actions → Week 13 Lab CI → Run workflow
-
-4. **View results:**
-   - Actions tab shows workflow runs
-   - Click on a run to see detailed logs
-
----
-
-## Customising the Pipeline
-
-### Adding New Test Files
-
-1. Create test file in `tests/` directory
-2. Follow naming convention: `test_*.py`
-3. Pipeline automatically discovers and runs new tests
-
-### Modifying Lint Rules
-
-Edit `setup/ruff.toml`:
+### Ruff Configuration (pyproject.toml)
 
 ```toml
 [tool.ruff]
-line-length = 120
-ignore = ["E501", "E402"]
+target-version = "py311"
+line-length = 100
 
-[tool.ruff.per-file-ignores]
-"tests/*" = ["S101"]  # Allow assert in tests
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # Pyflakes
+    "W",      # pycodestyle warnings
+    "I",      # isort
+    "N",      # pep8-naming
+    "D",      # pydocstyle
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+]
+
+ignore = [
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+]
 ```
 
-### Adding CI Stages
+### Running Lint with Auto-fix
 
-Edit `.github/workflows/ci.yml`:
+```bash
+# Check only
+ruff check src/
+
+# Auto-fix safe issues
+ruff check src/ --fix
+
+# Format code
+ruff format src/
+```
+
+---
+
+## Common CI Failures and Fixes
+
+### "Lint failed: E501 line too long"
+
+**Fix:** Break long lines or increase line-length in pyproject.toml
+
+```python
+# Before
+result = some_very_long_function_name(argument1, argument2, argument3, argument4)
+
+# After
+result = some_very_long_function_name(
+    argument1, argument2, argument3, argument4
+)
+```
+
+### "Syntax: YAML parse error"
+
+**Fix:** Check YAML indentation (use spaces, not tabs)
 
 ```yaml
-new-stage:
-  name: 🆕 New Stage
-  runs-on: ubuntu-latest
-  needs: [lint]  # Run after lint
-  steps:
-    - uses: actions/checkout@v4
-    - name: Your step
-      run: echo "Custom step"
+# Wrong
+questions:
+	- id: q01  # TAB character
+
+# Correct
+questions:
+  - id: q01   # 2 spaces
+```
+
+### "Ground truth: Exercise line count mismatch"
+
+**Fix:** Update `tests/ground_truth.json` after significant code changes
+
+```bash
+# Check actual line count
+wc -l src/exercises/ex_13_01_port_scanner.py
+
+# Update ground_truth.json accordingly
+```
+
+### "Test failed: ModuleNotFoundError"
+
+**Fix:** Install missing dependencies
+
+```bash
+pip install -r setup/requirements.txt
 ```
 
 ---
 
-## Troubleshooting CI
+## CI Badge
 
-### Common Issues
-
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Lint fails | Code style violations | Run `make lint` locally and fix |
-| Quiz validation fails | Missing required fields | Check quiz.yaml structure |
-| Docker stage fails | Invalid Dockerfile | Validate with `docker build` locally |
-
-### Viewing Logs
-
-1. Go to Actions tab in GitHub
-2. Click on failed workflow run
-3. Expand failed job
-4. Click on failed step to see detailed output
-
-### Re-running Failed Jobs
-
-1. Go to failed workflow run
-2. Click "Re-run failed jobs" button
-3. Optionally enable debug logging
-
----
-
-## CI Badges
-
-Add status badge to README:
+Add this badge to your README:
 
 ```markdown
-![CI Status](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)
+![CI Status](https://github.com/antonioclim/netENwsl/actions/workflows/ci.yml/badge.svg)
 ```
+
+---
+
+## Monitoring CI Runs
+
+### View Run History
+
+1. Go to repository **Actions** tab
+2. Click on workflow name
+3. View individual runs
+
+### Download Artifacts
+
+Test reports and validation results are uploaded as artifacts:
+
+1. Click on completed run
+2. Scroll to "Artifacts" section
+3. Download `validation-report` or `test-report`
 
 ---
 
 ## Best Practices
 
-1. **Run locally first:** `make ci-local` before pushing
-2. **Small commits:** Easier to identify issues
-3. **Fix immediately:** Don't let CI failures accumulate
-4. **Review logs:** Understand why tests fail
-5. **Keep dependencies updated:** Regular `pip` updates
+1. **Run locally first:** Use `make all` before pushing
+2. **Small commits:** Easier to identify which change broke CI
+3. **Fix immediately:** Do not let failures accumulate
+4. **Update ground truth:** Keep documentation accurate
+5. **Review warnings:** Even non-failing issues deserve attention
 
 ---
 
-*Week 13: IoT and Security — CI/CD Documentation*
-*Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*
+## Troubleshooting
+
+### "Workflow not triggering"
+
+- Check path filters in workflow file
+- Verify branch names match
+- Check Actions are enabled in repository settings
+
+### "Permission denied in workflow"
+
+- Check `permissions` section in workflow file
+- Ensure required secrets are configured
+
+### "Docker build timeout"
+
+- Increase timeout in workflow file
+- Use smaller base images
+- Enable Docker layer caching
+
+---
+
+*Computer Networks — Week 13: IoT and Security*  
+*ASE Bucharest, CSIE | by ing. dr. Antonio Clim*
