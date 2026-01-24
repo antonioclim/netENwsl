@@ -1,0 +1,17 @@
+# Week 7 WSLkit - Python Dependencies
+# NETWORKING class - ASE, Informatics | by Revolvix
+
+# Core dependencies
+PyYAML>=6.0
+
+# Docker SDK (optional but recommended)
+docker>=6.0
+
+# HTTP requests for health checks
+requests>=2.28
+
+# Terminal colours (optional)
+colorama>=0.4
+
+# Note: The core laboratory scripts use only the Python standard library.
+# These packages are for enhanced setup and management functionality.

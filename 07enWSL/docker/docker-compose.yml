@@ -1,0 +1,189 @@
+# ============================================================================
+# docker-compose.yml — Week 7 Laboratory Environment
+# NETWORKING class - ASE, Informatics | by Revolvix
+# ============================================================================
+#
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
+# Services for packet interception, filtering and port probing exercises
+#
+# Usage:
+#   docker compose up -d
+#   docker compose down
+#   docker compose logs -f
+#
+# ============================================================================
+
+services:
+  # TCP Echo Server - listens on port 9090
+  tcp_server:
+    image: python:3.11-slim
+    container_name: week7_tcp_server
+    hostname: tcp-server
+    working_dir: /work
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ../src:/work/src:ro
+      - ../artifacts:/work/artifacts
+    command: >
+      python3 src/apps/tcp_server.py
+      --host 0.0.0.0
+      --port 9090
+      --log artifacts/tcp_server.log
+    # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
+    ports:
+      - "9090:9090"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=7
+    networks:
+      week7net:
+        ipv4_address: 10.0.7.100
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.settimeout(1); s.connect(('localhost', 9090)); s.close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # TCP Client - connects to TCP server
+  tcp_client:
+    image: python:3.11-slim
+    container_name: week7_tcp_client
+    hostname: tcp-client
+    working_dir: /work
+    depends_on:
+      tcp_server:
+        condition: service_healthy
+    volumes:
+      - ../src:/work/src:ro
+      - ../artifacts:/work/artifacts
+    command: >
+      bash -lc "sleep 1 && python3 src/apps/tcp_client.py
+      --host tcp-server
+      --port 9090
+      --message 'hello_from_docker'
+      --timeout 5
+      --log artifacts/tcp_client.log"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=7
+    networks:
+      week7net:
+        ipv4_address: 10.0.7.11
+    profiles:
+      - demo
+
+  # UDP Receiver - listens on port 9091
+  udp_receiver:
+    image: python:3.11-slim
+    container_name: week7_udp_receiver
+    hostname: udp-receiver
+    working_dir: /work
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ../src:/work/src:ro
+      - ../artifacts:/work/artifacts
+    command: >
+      python3 src/apps/udp_receiver.py
+      --host 0.0.0.0
+      --port 9091
+      --count 999
+      --timeout 300
+      --log artifacts/udp_receiver.log
+    ports:
+      - "9091:9091/udp"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=7
+    networks:
+      week7net:
+        ipv4_address: 10.0.7.200
+    restart: unless-stopped
+
+  # UDP Sender - sends to UDP receiver
+  udp_sender:
+    image: python:3.11-slim
+    container_name: week7_udp_sender
+    hostname: udp-sender
+    working_dir: /work
+    depends_on:
+      - udp_receiver
+    volumes:
+      - ../src:/work/src:ro
+      - ../artifacts:/work/artifacts
+    command: >
+      bash -lc "sleep 1 && python3 src/apps/udp_sender.py
+      --host udp-receiver
+      --port 9091
+      --message 'hello_udp_from_docker'
+      --count 1
+      --log artifacts/udp_sender.log"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=7
+    networks:
+      week7net:
+        ipv4_address: 10.0.7.12
+    profiles:
+      - demo
+
+  # Packet Filter Proxy (optional)
+  packet_filter:
+    image: python:3.11-slim
+    container_name: week7_packet_filter
+    hostname: packet-filter
+    working_dir: /work
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ../src:/work/src:ro
+      - ../artifacts:/work/artifacts
+    command: >
+      python3 src/apps/packet_filter.py
+      --listen-host 0.0.0.0
+      --listen-port 8888
+      --upstream-host tcp-server
+      --upstream-port 9090
+      --log artifacts/packet_filter.log
+    ports:
+      - "8888:8888"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=7
+    networks:
+      week7net:
+        ipv4_address: 10.0.7.50
+    depends_on:
+      tcp_server:
+        condition: service_healthy
+    profiles:
+      - proxy
+    restart: unless-stopped
+
+# ─── NETWORKS ─────────────────────────────────────────────────────────────
+
+networks:
+  week7net:
+    name: week7net
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.7.0/24
+          gateway: 10.0.7.1
+
+# ─── VOLUMES ──────────────────────────────────────────────────────────────
+# NOTE: Portainer data volume is managed globally, not here
+
+volumes:
+  week7_artifacts:
+    name: week7_artifacts
