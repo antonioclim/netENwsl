@@ -1,0 +1,182 @@
+# =============================================================================
+# Docker Compose for Week 9 Laboratory - Session and Presentation Layers
+# NETWORKING class - ASE, Informatics | by Revolvix
+# =============================================================================
+#
+# Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+#
+# IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
+# It is NOT included in this compose file and should NEVER be
+# started or stopped by weekly laboratory scripts.
+#
+# To access Portainer: http://localhost:9000
+# Credentials: stud / studstudstud
+#
+# Port 9000 is RESERVED for Portainer - do not use for any service!
+#
+# This configuration creates a complete FTP testing environment with:
+# - A Python-based FTP server (pyftpdlib)
+# - Multiple client containers for concurrent testing
+# - Isolated network for traffic capture
+#
+# Usage:
+#   docker compose up -d          # Start all services
+#   docker compose logs -f        # View logs
+#   docker compose down           # Stop and clean up
+#   docker compose down -v        # Also remove volumes
+#
+# Architecture:
+#   ┌─────────────────┐
+#   │   ftp-server    │  Port 2121 (FTP control)
+#   │   (pyftpdlib)   │  Ports 60000-60010 (passive data)
+#   └────────┬────────┘
+#            │
+#     ┌──────┴──────┐
+#     │             │
+# ┌───┴───┐   ┌───┴───┐
+# │client1│   │client2│
+# └───────┘   └───────┘
+#
+# =============================================================================
+
+services:
+  # ==========================================================================
+  # FTP Server (pyftpdlib)
+  # ==========================================================================
+  ftp-server:
+    image: python:3.11-slim
+    container_name: s9_ftp_server
+    hostname: ftp-server
+    working_dir: /app
+    volumes:
+      - ./server-files:/app/server-files
+      - ../src/exercises:/app/exercises:ro
+    # NOTE: Port 9000 is RESERVED for Portainer - NEVER use it here!
+    ports:
+      - "2121:2121"
+      - "60000-60010:60000-60010"
+    environment:
+      - FTP_USER=test
+      - FTP_PASS=12345
+      - FTP_PORT=2121
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=9
+    command: >
+      bash -c "
+        pip install -q pyftpdlib &&
+        echo '=== FTP Server Starting ===' &&
+        python exercises/ex_9_04_ftp_server_demo.py 
+          --host 0.0.0.0 
+          --port 2121 
+          --root /app/server-files
+          --user test 
+          --password 12345
+          --passive-ports 60000-60010
+      "
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('127.0.0.1', 2121)); s.close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - s9_network
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Client 1 - LIST command test
+  # ==========================================================================
+  client1:
+    image: python:3.11-slim
+    container_name: s9_client1
+    hostname: client1
+    working_dir: /app
+    volumes:
+      - ./client1-files:/app/client-files
+      - ../src/exercises:/app/exercises:ro
+    depends_on:
+      ftp-server:
+        condition: service_healthy
+    environment:
+      - FTP_HOST=ftp-server
+      - FTP_PORT=2121
+      - FTP_USER=test
+      - FTP_PASS=12345
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=9
+    command: >
+      bash -c "
+        echo '=== Client 1: Executing LIST ===' &&
+        sleep 2 &&
+        python exercises/ex_9_03_ftp_client_demo.py 
+          --host ftp-server 
+          --port 2121 
+          --user test 
+          --password 12345 
+          --local-dir /app/client-files
+          list &&
+        echo '=== Client 1: Complete ==='
+      "
+    networks:
+      - s9_network
+
+  # ==========================================================================
+  # Client 2 - GET command test
+  # ==========================================================================
+  client2:
+    image: python:3.11-slim
+    container_name: s9_client2
+    hostname: client2
+    working_dir: /app
+    volumes:
+      - ./client2-files:/app/client-files
+      - ../src/exercises:/app/exercises:ro
+    depends_on:
+      ftp-server:
+        condition: service_healthy
+    environment:
+      - FTP_HOST=ftp-server
+      - FTP_PORT=2121
+      - FTP_USER=test
+      - FTP_PASS=12345
+      - PYTHONUNBUFFERED=1
+      - LAB_WEEK=9
+    command: >
+      bash -c "
+        echo '=== Client 2: Executing GET ===' &&
+        sleep 3 &&
+        python exercises/ex_9_03_ftp_client_demo.py 
+          --host ftp-server 
+          --port 2121 
+          --user test 
+          --password 12345 
+          --local-dir /app/client-files
+          get hello.txt &&
+        echo '=== Client 2: Complete ===' &&
+        echo 'Downloaded files:' &&
+        ls -la /app/client-files/
+      "
+    networks:
+      - s9_network
+
+# =============================================================================
+# Networks
+# NOTE: Portainer uses its own network, managed globally
+# =============================================================================
+networks:
+  s9_network:
+    name: week9_ftp_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.9.0/24
+
+# =============================================================================
+# Volumes
+# NOTE: Portainer data volume is managed globally, not here
+# =============================================================================
+volumes: {}
+
+# =============================================================================
+# by Revolvix
+# =============================================================================
