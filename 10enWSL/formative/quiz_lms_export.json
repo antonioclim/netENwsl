@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "title": "Week 10 Formative Assessment",
+    "topic": "Application Layer Protocols: HTTP/HTTPS, REST, DNS, SSH, FTP",
+    "version": "2.0.0",
+    "passing_score": 70,
+    "total_questions": 10,
+    "estimated_time_minutes": 15,
+    "exported_at": "2026-01-24T00:00:00Z",
+    "format_version": "1.0",
+    "lms_compatibility": ["moodle", "canvas", "blackboard"],
+    "bloom_distribution": {
+      "remember": 2,
+      "understand": 3,
+      "apply": 3,
+      "analyse": 2
+    },
+    "learning_objectives": ["LO1", "LO2", "LO3", "LO4", "LO5"]
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "type": "multiple_choice",
+      "learning_objective": "LO1",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "What information is visible to a network observer during an HTTPS connection?",
+      "options": {
+        "a": "The full URL path and query parameters",
+        "b": "The domain name via SNI (Server Name Indication)",
+        "c": "Nothing at all — everything is encrypted",
+        "d": "HTTP headers but not the body"
+      },
+      "correct_answer": "b",
+      "explanation": "The domain name is visible through SNI in the TLS handshake. The URL path, query parameters, headers and body are all encrypted. The destination IP address is also visible."
+    },
+    {
+      "id": "q02",
+      "type": "multiple_choice",
+      "learning_objective": "LO1",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "Why does TLS use symmetric encryption for bulk data transfer instead of asymmetric encryption throughout?",
+      "options": {
+        "a": "Symmetric encryption is more secure than asymmetric",
+        "b": "Asymmetric encryption cannot handle large data",
+        "c": "Symmetric encryption is significantly faster (approximately 1000x)",
+        "d": "Browsers only support symmetric encryption"
+      },
+      "correct_answer": "c",
+      "explanation": "Asymmetric cryptography (RSA, ECDSA) is computationally expensive — about 1000x slower than symmetric algorithms (AES, ChaCha20). TLS uses asymmetric crypto only during the handshake to authenticate and establish a shared symmetric key, then switches to fast symmetric encryption for data."
+    },
+    {
+      "id": "q03",
+      "type": "multiple_choice",
+      "learning_objective": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "Consider this API endpoint: POST /api/users/123/update. According to the Richardson Maturity Model, what level does this represent?",
+      "options": {
+        "a": "Level 0 — RPC-style single endpoint",
+        "b": "Level 1 — Resources with URIs but action-style naming",
+        "c": "Level 2 — Proper HTTP verbs and status codes",
+        "d": "Level 3 — Full HATEOAS compliance"
+      },
+      "correct_answer": "b",
+      "explanation": "This endpoint has resource-oriented URIs (/api/users/123) but uses action-style subpaths (/update) instead of HTTP verbs. A Level 2 API would use PUT /api/users/123 instead of POST /api/users/123/update."
+    },
+    {
+      "id": "q04",
+      "type": "multiple_choice",
+      "learning_objective": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "Which HTTP status code should a REST Level 2 API return after successfully creating a new resource?",
+      "options": {
+        "a": "200 OK",
+        "b": "201 Created",
+        "c": "204 No Content",
+        "d": "302 Found"
+      },
+      "correct_answer": "b",
+      "explanation": "201 Created is the correct status for successful resource creation. 200 OK is for successful GET/PUT. 204 No Content is for successful DELETE. Level 2 requires semantic use of HTTP status codes."
+    },
+    {
+      "id": "q05",
+      "type": "multiple_choice",
+      "learning_objective": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "advanced",
+      "points": 2,
+      "stem": "What distinguishes a Level 3 (HATEOAS) REST API from Level 2?",
+      "options": {
+        "a": "Level 3 uses JSON instead of XML",
+        "b": "Level 3 responses include hypermedia links to related resources",
+        "c": "Level 3 requires authentication on all endpoints",
+        "d": "Level 3 uses WebSockets instead of HTTP"
+      },
+      "correct_answer": "b",
+      "explanation": "HATEOAS (Hypermedia As The Engine Of Application State) means responses include links like {\"_links\": {\"self\": \"/users/1\", \"orders\": \"/users/1/orders\"}}. This allows clients to discover available actions without hardcoding URLs."
+    },
+    {
+      "id": "q06",
+      "type": "multiple_choice",
+      "learning_objective": "LO3",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "What transport protocol(s) does DNS use?",
+      "options": {
+        "a": "UDP only, always on port 53",
+        "b": "TCP only, always on port 53",
+        "c": "Both UDP and TCP on port 53, depending on response size",
+        "d": "UDP on port 53 for queries, TCP on port 80 for responses"
+      },
+      "correct_answer": "c",
+      "explanation": "DNS uses UDP for most queries (efficiency), but switches to TCP when responses exceed 512 bytes (traditional) or ~1232 bytes (EDNS). Zone transfers (AXFR/IXFR) always use TCP. The TC (truncation) bit signals the client to retry over TCP."
+    },
+    {
+      "id": "q07",
+      "type": "multiple_choice",
+      "learning_objective": "LO3",
+      "bloom_level": "analyse",
+      "difficulty": "advanced",
+      "points": 2,
+      "stem": "A DNS response has the TC (truncation) bit set. What should the client do?",
+      "options": {
+        "a": "Accept the partial response as complete",
+        "b": "Retry the query using TCP instead of UDP",
+        "c": "Query a different DNS server",
+        "d": "Increase the UDP buffer size and retry"
+      },
+      "correct_answer": "b",
+      "explanation": "The TC bit indicates the response was truncated because it exceeded the UDP packet size limit. The standard behaviour is to retry the same query over TCP, which has no size limit."
+    },
+    {
+      "id": "q08",
+      "type": "multiple_choice",
+      "learning_objective": "LO4",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "How many TCP connections does FTP establish to download a single file?",
+      "options": {
+        "a": "One connection for everything",
+        "b": "Two connections — control (port 21) and data (high port)",
+        "c": "Three connections — authentication, command and data",
+        "d": "One connection that changes ports during transfer"
+      },
+      "correct_answer": "b",
+      "explanation": "FTP uses a dual-channel architecture: a persistent control connection on port 21 for commands/responses and a separate data connection for actual file transfers. In passive mode, the server opens a high port and the client connects to it."
+    },
+    {
+      "id": "q09",
+      "type": "multiple_choice",
+      "learning_objective": "LO5",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 1,
+      "stem": "Why is SSH key authentication more secure than password authentication?",
+      "options": {
+        "a": "SSH keys are encrypted, passwords are not",
+        "b": "SSH keys are longer and never transmitted to the server",
+        "c": "SSH keys expire automatically, passwords do not",
+        "d": "SSH keys use symmetric encryption, passwords use asymmetric"
+      },
+      "correct_answer": "b",
+      "explanation": "SSH keys provide 2048+ bits of entropy vs typical passwords (40-80 bits). Only the public key is sent to the server — the private key never leaves the client. This makes brute-force attacks impractical and eliminates phishing risks since there is no password to steal."
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "learning_objective": "LO5",
+      "bloom_level": "analyse",
+      "difficulty": "advanced",
+      "points": 2,
+      "stem": "You capture network traffic and see FTP credentials in plaintext. Which statement is correct?",
+      "options": {
+        "a": "This is normal — FTP always encrypts after authentication",
+        "b": "The FTP server is misconfigured and should use TLS",
+        "c": "Standard FTP transmits everything in plaintext including credentials",
+        "d": "Only passive mode FTP exposes credentials"
+      },
+      "correct_answer": "c",
+      "explanation": "Standard FTP (port 21) transmits all data in plaintext, including USER and PASS commands. FTPS (FTP over TLS) or SFTP (SSH File Transfer) should be used when security is required. This is why FTP is considered insecure for sensitive data."
+    }
+  ],
+  "answer_key": {
+    "q01": "b",
+    "q02": "c",
+    "q03": "b",
+    "q04": "b",
+    "q05": "b",
+    "q06": "c",
+    "q07": "b",
+    "q08": "b",
+    "q09": "b",
+    "q10": "c"
+  },
+  "lo_question_map": {
+    "LO1": ["q01", "q02"],
+    "LO2": ["q03", "q04", "q05"],
+    "LO3": ["q06", "q07"],
+    "LO4": ["q08"],
+    "LO5": ["q09", "q10"]
+  }
+}

@@ -1,0 +1,125 @@
+# Ruff Configuration — Week 10
+# Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Documentation: https://docs.astral.sh/ruff/configuration/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GENERAL SETTINGS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Target Python version
+target-version = "py311"
+
+# Maximum line length (relaxed for educational code readability)
+line-length = 120
+
+# Exclude directories
+exclude = [
+    ".git",
+    ".github",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "venv",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LINT SETTINGS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint]
+
+# Enable rule categories
+select = [
+    "E",      # pycodestyle errors
+    "F",      # Pyflakes
+    "W",      # pycodestyle warnings
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "UP",     # pyupgrade
+    "RUF",    # Ruff-specific rules
+]
+
+# Ignore specific rules
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+    "E402",   # Module level import not at top (needed for sys.path manipulation)
+    "E731",   # Do not assign a lambda expression
+    "B008",   # Do not perform function calls in argument defaults
+    "B905",   # zip() without strict= (Python 3.10+)
+    "SIM108", # Use ternary operator instead of if-else-block
+    "UP007",  # Use X | Y for type union (keep Optional for clarity)
+    "TCH001", # Move application import into type-checking block
+    "TCH002", # Move third-party import into type-checking block
+    "TCH003", # Move stdlib import into type-checking block
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ISORT SETTINGS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint.isort]
+
+# Known first-party packages
+known-first-party = ["anti_cheat", "formative", "scripts", "tests"]
+
+# Combine as imports
+combine-as-imports = true
+
+# Force single line imports
+force-single-line = false
+
+# Lines after imports
+lines-after-imports = 2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PER-FILE IGNORES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint.per-file-ignores]
+
+# Tests can have unused imports and assertions
+"tests/*" = ["F401", "F811", "S101", "PLR2004"]
+
+# Init files can have unused imports
+"__init__.py" = ["F401"]
+
+# Scripts can have print statements and sys.exit
+"scripts/*" = ["T201", "T203"]
+
+# Exercise files have specific patterns
+"src/exercises/*" = ["T201", "PLR0912", "PLR0915"]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FORMAT SETTINGS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[format]
+
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+# Unix-style line endings
+line-ending = "lf"
+
+# Enable auto-formatting of code examples in docstrings
+docstring-code-format = true

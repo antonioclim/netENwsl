@@ -5,34 +5,45 @@
 # Options:  --random (shuffle questions)
 #           --limit N (first N questions only)
 #           --lo LO1 (filter by Learning Objective)
+#           --export-moodle (export Moodle XML)
+#           --export-canvas (export Canvas QTI)
 
 metadata:
   week: 10
   topic: "Application Layer Protocols: HTTP/HTTPS, REST, DNS, SSH, FTP"
-  version: "1.0.0"
-  estimated_time: "12-15 minutes"
+  version: "2.0.0"
+  estimated_time: "15-20 minutes"
   passing_score: 70
-  total_questions: 10
+  total_questions: 15
   bloom_distribution:
-    remember: 2
-    understand: 3
-    apply: 3
-    analyse: 2
+    remember: 3
+    understand: 4
+    apply: 4
+    analyse: 3
+    evaluate: 1
   lo_coverage:
     - LO1  # TLS certificates in HTTPS
     - LO2  # REST API Richardson levels
     - LO3  # DNS query/response structure
     - LO4  # Implement protocol clients
     - LO5  # Security: encrypted vs unencrypted
+  lms_compatibility:
+    - moodle_xml
+    - canvas_qti
+    - blackboard
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# STANDARD QUESTIONS (can be answered without lab running)
+# ═══════════════════════════════════════════════════════════════════════════════
 questions:
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   # LO1: TLS Certificates (Remember + Understand)
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   - id: q01
     lo_ref: LO1
     bloom_level: remember
     difficulty: basic
+    type: multiple_choice
     stem: "What information is visible to a network observer during an HTTPS connection?"
     options:
       a: "The full URL path and query parameters"
@@ -45,17 +56,18 @@ questions:
       query parameters, headers and body are all encrypted. The destination IP
       address is also visible.
     misconception_ref: "docs/misconceptions.md#misconception-1"
-    verify_command: "# Capture TLS handshake: filter ssl.handshake.extensions_server_name"
+    points: 1
 
   - id: q02
     lo_ref: LO1
     bloom_level: understand
     difficulty: intermediate
+    type: multiple_choice
     stem: "Why does TLS use symmetric encryption for bulk data transfer instead of asymmetric encryption throughout?"
     options:
       a: "Symmetric encryption is more secure than asymmetric"
       b: "Asymmetric encryption cannot handle large data"
-      c: "Symmetric encryption is significantly faster (~1000x)"
+      c: "Symmetric encryption is significantly faster (approximately 1000x)"
       d: "Browsers only support symmetric encryption"
     correct: c
     explanation: |
@@ -63,21 +75,22 @@ questions:
       1000x slower than symmetric algorithms (AES, ChaCha20). TLS uses asymmetric
       crypto only during the handshake to authenticate and establish a shared
       symmetric key, then switches to fast symmetric encryption for data.
-    misconception_ref: "docs/misconceptions.md#misconception-1"
+    points: 1
 
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   # LO2: REST Richardson Maturity Model (Understand + Apply)
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   - id: q03
     lo_ref: LO2
     bloom_level: understand
     difficulty: intermediate
+    type: multiple_choice
     stem: |
       Consider this API endpoint: POST /api/users/123/update
       According to the Richardson Maturity Model, what level does this represent?
     options:
       a: "Level 0 — RPC-style single endpoint"
-      b: "Level 1 — Resources with URIs but action-style"
+      b: "Level 1 — Resources with URIs but action-style naming"
       c: "Level 2 — Proper HTTP verbs and status codes"
       d: "Level 3 — Full HATEOAS compliance"
     correct: b
@@ -86,11 +99,13 @@ questions:
       action-style subpaths (/update) instead of HTTP verbs. A Level 2 API
       would use PUT /api/users/123 instead of POST /api/users/123/update.
     misconception_ref: "docs/misconceptions.md#misconception-5"
+    points: 1
 
   - id: q04
     lo_ref: LO2
     bloom_level: apply
     difficulty: intermediate
+    type: multiple_choice
     stem: "Which HTTP status code should a REST Level 2 API return after successfully creating a new resource?"
     options:
       a: "200 OK"
@@ -102,12 +117,13 @@ questions:
       201 Created is the correct status for successful resource creation.
       200 OK is for successful GET/PUT. 204 No Content is for successful
       DELETE. Level 2 requires semantic use of HTTP status codes.
-    verify_command: "curl -X POST http://localhost:5000/level2/users -d '{\"name\":\"test\"}' -w '%{http_code}'"
+    points: 1
 
   - id: q05
     lo_ref: LO2
     bloom_level: apply
     difficulty: advanced
+    type: multiple_choice
     stem: "What distinguishes a Level 3 (HATEOAS) REST API from Level 2?"
     options:
       a: "Level 3 uses JSON instead of XML"
@@ -119,15 +135,16 @@ questions:
       HATEOAS (Hypermedia As The Engine Of Application State) means responses
       include links like {"_links": {"self": "/users/1", "orders": "/users/1/orders"}}.
       This allows clients to discover available actions without hardcoding URLs.
-    verify_command: "curl http://localhost:5000/level3/users | jq '._links'"
+    points: 2
 
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   # LO3: DNS Query Structure (Remember + Analyse)
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   - id: q06
     lo_ref: LO3
     bloom_level: remember
     difficulty: basic
+    type: multiple_choice
     stem: "What transport protocol(s) does DNS use?"
     options:
       a: "UDP only, always on port 53"
@@ -141,12 +158,13 @@ questions:
       transfers (AXFR/IXFR) always use TCP. The TC (truncation) bit signals
       the client to retry over TCP.
     misconception_ref: "docs/misconceptions.md#misconception-7"
-    verify_command: "dig @8.8.8.8 google.com +tcp  # Force TCP"
+    points: 1
 
   - id: q07
     lo_ref: LO3
     bloom_level: analyse
     difficulty: advanced
+    type: multiple_choice
     stem: |
       A DNS response has the TC (truncation) bit set. What should the client do?
     options:
@@ -159,15 +177,16 @@ questions:
       The TC bit indicates the response was truncated because it exceeded
       the UDP packet size limit. The standard behaviour is to retry the
       same query over TCP, which has no size limit.
-    verify_command: "dig @127.0.0.1 -p 5353 large-record.lab.local  # Observe TC bit"
+    points: 2
 
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   # LO4: Protocol Implementation (Apply)
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   - id: q08
     lo_ref: LO4
     bloom_level: apply
     difficulty: intermediate
+    type: multiple_choice
     stem: "How many TCP connections does FTP establish to download a single file?"
     options:
       a: "One connection for everything"
@@ -177,19 +196,20 @@ questions:
     correct: b
     explanation: |
       FTP uses a dual-channel architecture: a persistent control connection
-      on port 21 for commands/responses, and a separate data connection for
+      on port 21 for commands/responses and a separate data connection for
       actual file transfers. In passive mode, the server opens a high port
       and the client connects to it.
     misconception_ref: "docs/misconceptions.md#misconception-11"
-    verify_command: "netstat -an | grep -E '(21|30000)'  # During FTP transfer"
+    points: 1
 
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   # LO5: Security Evaluation (Understand + Analyse)
-  # ═══════════════════════════════════════════════════════════════════════════
+  # ─────────────────────────────────────────────────────────────────────────────
   - id: q09
     lo_ref: LO5
     bloom_level: understand
     difficulty: intermediate
+    type: multiple_choice
     stem: "Why is SSH key authentication more secure than password authentication?"
     options:
       a: "SSH keys are encrypted, passwords are not"
@@ -201,13 +221,15 @@ questions:
       SSH keys provide 2048+ bits of entropy vs typical passwords (40-80 bits).
       Only the public key is sent to the server — the private key never leaves
       the client. This makes brute-force attacks impractical and eliminates
-      phishing risks since there's no password to steal.
+      phishing risks since there is no password to steal.
     misconception_ref: "docs/misconceptions.md#misconception-10"
+    points: 1
 
   - id: q10
     lo_ref: LO5
     bloom_level: analyse
     difficulty: advanced
+    type: multiple_choice
     stem: |
       You capture network traffic and see FTP credentials in plaintext.
       Which statement is correct?
@@ -222,10 +244,107 @@ questions:
       USER and PASS commands. FTPS (FTP over TLS) or SFTP (SSH File Transfer)
       should be used when security is required. This is why FTP is considered
       insecure for sensitive data.
-    verify_command: "# Capture FTP: tcpdump -i any port 2121 -A | grep -E '(USER|PASS)'"
+    points: 2
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ANSWER_KEY (for instructor reference)
+# LIVE VERIFICATION QUESTIONS (require lab interaction — anti-AI)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  - id: q_live_01
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: procedural
+    type: live_verification
+    requires_lab: true
+    stem: |
+      Run the command: dig @127.0.0.1 -p 5353 myservice.lab.local +short
+      What IP address is returned?
+    verification_command: "dig @127.0.0.1 -p 5353 myservice.lab.local +short"
+    expected_pattern: "10\\.10\\.10\\.10"
+    correct: "10.10.10.10"
+    explanation: |
+      The lab DNS server is configured with myservice.lab.local pointing
+      to 10.10.10.10. This can only be verified with the DNS container running.
+    anti_ai_note: "Correct answer requires DNS container to be running"
+    points: 2
+
+  - id: q_live_02
+    lo_ref: LO4
+    bloom_level: apply
+    difficulty: procedural
+    type: live_verification
+    requires_lab: true
+    stem: |
+      Connect via SSH: ssh -p 2222 labuser@localhost (password: labpass)
+      Run: hostname
+      What is the container's hostname?
+    verification_command: "sshpass -p labpass ssh -o StrictHostKeyChecking=no -p 2222 labuser@localhost hostname"
+    expected_pattern: ".*"
+    correct: "dynamically_generated"
+    explanation: |
+      The SSH container hostname is generated when the container starts.
+      This answer can only be obtained by connecting to the running container.
+    anti_ai_note: "Hostname is dynamically generated at container startup"
+    points: 2
+
+  - id: q_live_03
+    lo_ref: LO1
+    bloom_level: analyse
+    difficulty: procedural
+    type: live_verification
+    requires_lab: true
+    stem: |
+      Start the HTTPS server: python3 src/exercises/ex_10_01_tls_rest_crud.py serve
+      Use curl to make a request: curl -k https://127.0.0.1:8443/ -w '%{ssl_verify_result}'
+      What is the SSL verify result code?
+    verification_command: "curl -k -s https://127.0.0.1:8443/ -w '%{ssl_verify_result}' -o /dev/null"
+    expected_pattern: "\\d+"
+    correct: "varies"
+    explanation: |
+      The SSL verification result depends on the certificate configuration.
+      A self-signed certificate typically returns code 18 (self-signed) or 0
+      when verification is disabled with -k.
+    anti_ai_note: "Result depends on local certificate and curl version"
+    points: 2
+
+  - id: q_live_04
+    lo_ref: LO2
+    bloom_level: apply
+    difficulty: procedural
+    type: live_verification
+    requires_lab: true
+    stem: |
+      Query the web server: curl -s http://localhost:8000/ | head -1
+      What is the first line of the response?
+    verification_command: "curl -s http://localhost:8000/ | head -1"
+    expected_pattern: ".*"
+    correct: "varies"
+    explanation: |
+      The web server response depends on the Docker container configuration.
+      This verifies the student has the lab environment running.
+    anti_ai_note: "Response varies based on container configuration"
+    points: 1
+
+  - id: q_live_05
+    lo_ref: LO5
+    bloom_level: evaluate
+    difficulty: advanced
+    type: live_verification
+    requires_lab: true
+    stem: |
+      List running Week 10 containers: docker ps --filter name=week10 --format '{{.Names}}' | sort | head -3
+      What are the first three container names (alphabetically)?
+    verification_command: "docker ps --filter name=week10 --format '{{.Names}}' | sort | head -3"
+    expected_pattern: "week10_.*"
+    correct: "varies"
+    explanation: |
+      This verifies the student has the complete lab environment running.
+      The container names are standardised but require Docker to be running.
+    anti_ai_note: "Requires Docker with Week 10 containers running"
+    points: 2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANSWER KEY AND LO MAPPING
 # ═══════════════════════════════════════════════════════════════════════════════
 answer_key:
   q01: b
@@ -238,13 +357,48 @@ answer_key:
   q08: b
   q09: b
   q10: c
+  q_live_01: "10.10.10.10"
+  q_live_02: "dynamic"
+  q_live_03: "dynamic"
+  q_live_04: "dynamic"
+  q_live_05: "dynamic"
+
+lo_question_map:
+  LO1:
+    standard: [q01, q02]
+    live: [q_live_03]
+  LO2:
+    standard: [q03, q04, q05]
+    live: [q_live_04]
+  LO3:
+    standard: [q06, q07]
+    live: [q_live_01]
+  LO4:
+    standard: [q08]
+    live: [q_live_02]
+  LO5:
+    standard: [q09, q10]
+    live: [q_live_05]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LO MAPPING SUMMARY
+# LMS EXPORT CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
-lo_question_map:
-  LO1: [q01, q02]      # TLS certificates
-  LO2: [q03, q04, q05] # REST Richardson levels
-  LO3: [q06, q07]      # DNS query structure
-  LO4: [q08]           # Protocol implementation
-  LO5: [q09, q10]      # Security evaluation
+lms_export:
+  moodle:
+    category: "Week 10/Formative Assessment"
+    question_type_mapping:
+      multiple_choice: "multichoice"
+      live_verification: "shortanswer"
+    include_feedback: true
+    shuffle_answers: true
+    
+  canvas:
+    assessment_type: "practice_quiz"
+    question_type_mapping:
+      multiple_choice: "multiple_choice_question"
+      live_verification: "short_answer_question"
+    points_possible: 20
+    
+  blackboard:
+    pool_name: "Week10_Formative"
+    include_in_pool: true
