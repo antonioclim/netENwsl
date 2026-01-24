@@ -1,33 +1,36 @@
 #!/usr/bin/env python3
 """
-export_moodle.py — Moodle XML Quiz Exporter
+export_moodle.py — Export Quiz to LMS Formats.
+
 NETWORKING class — ASE, CSIE | Computer Networks Laboratory
 by ing. dr. Antonio Clim
 
-Exports quiz from YAML format to Moodle XML format for LMS import.
+Exports quiz.yaml to various LMS formats:
+- Moodle XML (GIFT format alternative)
+- Canvas QTI
+- JSON (universal)
 
 Usage:
-    python formative/export_moodle.py                           # Default output
-    python formative/export_moodle.py -o quiz_moodle.xml        # Custom output
-    python formative/export_moodle.py --category "Week 14"      # Set category
-    python formative/export_moodle.py --shuffle                  # Shuffle answers
-
-Moodle Import:
-    1. Go to Question Bank → Import
-    2. Select "Moodle XML format"
-    3. Upload generated file
-    4. Review and categorize questions
+    python formative/export_moodle.py                      # Export to Moodle XML
+    python formative/export_moodle.py --format json        # Export to JSON
+    python formative/export_moodle.py --format canvas      # Export to Canvas QTI
+    python formative/export_moodle.py --output my_quiz.xml # Custom output file
 """
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPORTS
+# ═══════════════════════════════════════════════════════════════════════════════
 from __future__ import annotations
 
 import argparse
 import html
+import json
 import sys
-from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-from xml.etree import ElementTree as ET
+from typing import Any, Dict, List
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 
 try:
     import yaml
@@ -37,395 +40,495 @@ except ImportError:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# DATA CLASSES
+# QUIZ LOADING
 # ═══════════════════════════════════════════════════════════════════════════════
-
-@dataclass
-class MoodleExportConfig:
-    """Configuration for Moodle export."""
-    category: str = "Computer Networks / Week 14"
-    shuffle_answers: bool = True
-    single_answer: bool = True
-    penalty_factor: float = 0.3333333
-    default_grade: int = 1
-    include_feedback: bool = True
-    include_hints: bool = True
+def load_quiz(path: Path) -> Dict[str, Any]:
+    """Load quiz from YAML file."""
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# XML BUILDERS
+# MOODLE XML EXPORT
 # ═══════════════════════════════════════════════════════════════════════════════
+def export_moodle_xml(quiz: Dict[str, Any], output_path: Path) -> None:
+    """
+    Export quiz to Moodle XML format.
 
-def create_cdata_element(parent: ET.Element, tag: str, text: str) -> ET.Element:
-    """Create an element with CDATA content."""
-    elem = ET.SubElement(parent, tag, format="html")
-    # We'll handle CDATA in the final output
-    elem.text = text
-    return elem
+    Moodle XML structure:
+    <quiz>
+      <question type="category">...</question>
+      <question type="multichoice">...</question>
+      <question type="shortanswer">...</question>
+      <question type="essay">...</question>
+    </quiz>
+    """
+    meta = quiz["metadata"]
+    questions = quiz["questions"]
+    export_config = quiz.get("export", {}).get("moodle", {})
+
+    # Create root element
+    root = Element("quiz")
+
+    # Add category question
+    category = SubElement(root, "question", type="category")
+    cat_text = SubElement(category, "category")
+    cat_text_content = SubElement(cat_text, "text")
+    cat_text_content.text = export_config.get(
+        "category", f"$course$/Computer Networks/Week {meta.get('week', '?')}"
+    )
+
+    # Add each question
+    for q in questions:
+        q_type = q.get("type", "multiple_choice")
+
+        if q_type == "multiple_choice":
+            _add_moodle_multichoice(root, q, export_config)
+        elif q_type in ("fill_blank", "short_answer"):
+            _add_moodle_shortanswer(root, q, export_config)
+        elif q_type in ("design_task", "architecture_design", "troubleshooting_design", "scenario_analysis"):
+            # Scenario analysis with options → multichoice
+            if "options" in q:
+                _add_moodle_multichoice(root, q, export_config)
+            else:
+                _add_moodle_essay(root, q, export_config)
+
+    # Format and write XML
+    xml_str = tostring(root, encoding="unicode")
+    pretty_xml = minidom.parseString(xml_str).toprettyxml(indent="  ")
+
+    # Remove extra blank lines
+    lines = [line for line in pretty_xml.split("\n") if line.strip()]
+    clean_xml = "\n".join(lines)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(clean_xml)
+
+    print(f"Exported {len(questions)} questions to {output_path}")
 
 
-def build_category_question(category: str) -> ET.Element:
-    """Build Moodle category question element."""
-    question = ET.Element("question", type="category")
-    
-    cat = ET.SubElement(question, "category")
-    cat_text = ET.SubElement(cat, "text")
-    cat_text.text = f"$course$/{category}"
-    
-    info = ET.SubElement(question, "info", format="html")
-    info_text = ET.SubElement(info, "text")
-    info_text.text = ""
-    
-    return question
+def _add_moodle_multichoice(
+    root: Element, q: Dict[str, Any], config: Dict[str, Any]
+) -> None:
+    """Add a multiple choice question to Moodle XML."""
+    question = SubElement(root, "question", type="multichoice")
 
-
-def build_multichoice_question(
-    q: Dict[str, Any], 
-    config: MoodleExportConfig
-) -> ET.Element:
-    """Build Moodle multiple choice question element."""
-    question = ET.Element("question", type="multichoice")
-    
     # Name
-    name = ET.SubElement(question, "name")
-    name_text = ET.SubElement(name, "text")
-    name_text.text = q.get("id", "Question")
-    
+    name = SubElement(question, "name")
+    name_text = SubElement(name, "text")
+    name_text.text = q["id"]
+
     # Question text
-    qtext = ET.SubElement(question, "questiontext", format="html")
-    qtext_text = ET.SubElement(qtext, "text")
-    
-    # Build question stem with Bloom level tag
-    stem = q.get("stem", "").strip()
-    bloom = q.get("bloom_level", "")
-    lo_ref = q.get("lo_ref", "")
-    
-    formatted_stem = f"<p>{html.escape(stem)}</p>"
-    if bloom or lo_ref:
-        tags = []
-        if bloom:
-            tags.append(f"[{bloom}]")
-        if lo_ref:
-            tags.append(f"[{lo_ref}]")
-        formatted_stem += f"<p><small><em>{' '.join(tags)}</em></small></p>"
-    
-    qtext_text.text = formatted_stem
-    
-    # General feedback (explanation)
-    if config.include_feedback and q.get("explanation"):
-        genfeed = ET.SubElement(question, "generalfeedback", format="html")
-        genfeed_text = ET.SubElement(genfeed, "text")
-        genfeed_text.text = f"<p>{html.escape(q['explanation'])}</p>"
-    
+    qtext = SubElement(question, "questiontext", format="html")
+    qtext_text = SubElement(qtext, "text")
+
+    stem = q["stem"]
+    if q.get("hint"):
+        stem += f"\n\n<em>Hint: {q['hint']}</em>"
+    qtext_text.text = f"<![CDATA[<p>{html.escape(stem)}</p>]]>"
+
     # Default grade
-    points = q.get("points", config.default_grade)
-    ET.SubElement(question, "defaultgrade").text = str(points)
-    
+    grade = SubElement(question, "defaultgrade")
+    grade.text = str(q.get("points", 1))
+
     # Penalty
-    ET.SubElement(question, "penalty").text = str(config.penalty_factor)
-    
-    # Hidden (not hidden)
-    ET.SubElement(question, "hidden").text = "0"
-    
+    penalty = SubElement(question, "penalty")
+    penalty.text = str(config.get("penalty_factor", 0.25))
+
     # Single answer
-    ET.SubElement(question, "single").text = "true" if config.single_answer else "false"
-    
+    single = SubElement(question, "single")
+    single.text = "true"
+
     # Shuffle answers
-    ET.SubElement(question, "shuffleanswers").text = "true" if config.shuffle_answers else "false"
-    
+    shuffle = SubElement(question, "shuffleanswers")
+    shuffle.text = str(config.get("shuffle_answers", True)).lower()
+
     # Answer numbering
-    ET.SubElement(question, "answernumbering").text = "abc"
-    
-    # Correct feedback
-    cfeed = ET.SubElement(question, "correctfeedback", format="html")
-    cfeed_text = ET.SubElement(cfeed, "text")
-    cfeed_text.text = "<p>Corect!</p>"
-    
-    # Partially correct feedback
-    pcfeed = ET.SubElement(question, "partiallycorrectfeedback", format="html")
-    pcfeed_text = ET.SubElement(pcfeed, "text")
-    pcfeed_text.text = "<p>Parțial corect.</p>"
-    
-    # Incorrect feedback
-    icfeed = ET.SubElement(question, "incorrectfeedback", format="html")
-    icfeed_text = ET.SubElement(icfeed, "text")
-    icfeed_text.text = "<p>Incorect.</p>"
-    
+    numbering = SubElement(question, "answernumbering")
+    numbering.text = "abc"
+
     # Answers
-    options = q.get("options", {})
     correct_key = q.get("correct", "").lower()
-    
+    options = q.get("options", {})
+
     for key, value in sorted(options.items()):
         is_correct = key.lower() == correct_key
         fraction = "100" if is_correct else "0"
-        
-        answer = ET.SubElement(question, "answer", fraction=fraction, format="html")
-        ans_text = ET.SubElement(answer, "text")
-        ans_text.text = f"<p>{html.escape(str(value))}</p>"
-        
-        # Individual answer feedback
-        feedback = ET.SubElement(answer, "feedback", format="html")
-        feed_text = ET.SubElement(feedback, "text")
-        feed_text.text = ""
-    
-    # Hint (if available)
-    if config.include_hints and q.get("hint"):
-        hint = ET.SubElement(question, "hint", format="html")
-        hint_text = ET.SubElement(hint, "text")
-        hint_text.text = f"<p>💡 {html.escape(q['hint'])}</p>"
-    
-    # Tags
-    tags_elem = ET.SubElement(question, "tags")
-    for tag in q.get("tags", []):
-        tag_elem = ET.SubElement(tags_elem, "tag")
-        tag_text = ET.SubElement(tag_elem, "text")
-        tag_text.text = tag
-    
-    # Add Bloom level as tag
-    if bloom:
-        tag_elem = ET.SubElement(tags_elem, "tag")
-        tag_text = ET.SubElement(tag_elem, "text")
-        tag_text.text = f"bloom:{bloom.lower()}"
-    
-    # Add LO as tag
-    if lo_ref:
-        tag_elem = ET.SubElement(tags_elem, "tag")
-        tag_text = ET.SubElement(tag_elem, "text")
-        tag_text.text = lo_ref
-    
-    return question
+
+        answer = SubElement(question, "answer", fraction=fraction, format="html")
+        answer_text = SubElement(answer, "text")
+        answer_text.text = f"<![CDATA[{html.escape(value)}]]>"
+
+        # Feedback for correct answer
+        if is_correct and q.get("explanation"):
+            feedback = SubElement(answer, "feedback", format="html")
+            fb_text = SubElement(feedback, "text")
+            fb_text.text = f"<![CDATA[{html.escape(q['explanation'][:500])}]]>"
 
 
-def build_shortanswer_question(
-    q: Dict[str, Any],
-    config: MoodleExportConfig
-) -> ET.Element:
-    """Build Moodle short answer (fill blank) question element."""
-    question = ET.Element("question", type="shortanswer")
-    
+def _add_moodle_shortanswer(
+    root: Element, q: Dict[str, Any], config: Dict[str, Any]
+) -> None:
+    """Add a short answer question to Moodle XML."""
+    question = SubElement(root, "question", type="shortanswer")
+
     # Name
-    name = ET.SubElement(question, "name")
-    name_text = ET.SubElement(name, "text")
-    name_text.text = q.get("id", "Question")
-    
+    name = SubElement(question, "name")
+    name_text = SubElement(name, "text")
+    name_text.text = q["id"]
+
     # Question text
-    qtext = ET.SubElement(question, "questiontext", format="html")
-    qtext_text = ET.SubElement(qtext, "text")
-    
-    stem = q.get("stem", "").strip()
-    qtext_text.text = f"<p>{html.escape(stem)}</p>"
-    
-    # General feedback
-    if config.include_feedback and q.get("explanation"):
-        genfeed = ET.SubElement(question, "generalfeedback", format="html")
-        genfeed_text = ET.SubElement(genfeed, "text")
-        genfeed_text.text = f"<p>{html.escape(q['explanation'])}</p>"
-    
+    qtext = SubElement(question, "questiontext", format="html")
+    qtext_text = SubElement(qtext, "text")
+    qtext_text.text = f"<![CDATA[<p>{html.escape(q['stem'])}</p>]]>"
+
     # Default grade
-    points = q.get("points", config.default_grade)
-    ET.SubElement(question, "defaultgrade").text = str(points)
-    
-    # Penalty
-    ET.SubElement(question, "penalty").text = str(config.penalty_factor)
-    
-    # Hidden
-    ET.SubElement(question, "hidden").text = "0"
-    
-    # Use case
-    case_sensitive = q.get("case_sensitive", False)
-    ET.SubElement(question, "usecase").text = "1" if case_sensitive else "0"
-    
-    # Answers (can be multiple correct answers)
+    grade = SubElement(question, "defaultgrade")
+    grade.text = str(q.get("points", 1))
+
+    # Case sensitivity
+    usecase = SubElement(question, "usecase")
+    usecase.text = "1" if q.get("case_sensitive", False) else "0"
+
+    # Answers
     correct_answers = q.get("correct", [])
     if isinstance(correct_answers, str):
         correct_answers = [correct_answers]
-    
-    for i, ans in enumerate(correct_answers):
-        # First answer gets 100%, others could be partial
-        fraction = "100" if i == 0 else "100"
-        
-        answer = ET.SubElement(question, "answer", fraction=fraction, format="plain_text")
-        ans_text = ET.SubElement(answer, "text")
-        ans_text.text = ans
-        
-        feedback = ET.SubElement(answer, "feedback", format="html")
-        feed_text = ET.SubElement(feedback, "text")
-        feed_text.text = ""
-    
-    # Hint
-    if config.include_hints and q.get("hint"):
-        hint = ET.SubElement(question, "hint", format="html")
-        hint_text = ET.SubElement(hint, "text")
-        hint_text.text = f"<p>💡 {html.escape(q['hint'])}</p>"
-    
-    return question
+
+    for ans in correct_answers:
+        answer = SubElement(question, "answer", fraction="100", format="plain")
+        answer_text = SubElement(answer, "text")
+        answer_text.text = ans
+
+        if q.get("explanation"):
+            feedback = SubElement(answer, "feedback", format="html")
+            fb_text = SubElement(feedback, "text")
+            fb_text.text = f"<![CDATA[{html.escape(q['explanation'][:500])}]]>"
 
 
-def build_question(q: Dict[str, Any], config: MoodleExportConfig) -> Optional[ET.Element]:
-    """Build appropriate Moodle question element based on type."""
-    q_type = q.get("type", "multiple_choice")
-    
-    if q_type == "multiple_choice":
-        return build_multichoice_question(q, config)
-    elif q_type == "fill_blank":
-        return build_shortanswer_question(q, config)
-    else:
-        print(f"Warning: Unsupported question type '{q_type}', skipping {q.get('id')}")
-        return None
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN EXPORT FUNCTION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def export_to_moodle(
-    quiz: Dict[str, Any],
-    output_path: Path,
-    config: Optional[MoodleExportConfig] = None
+def _add_moodle_essay(
+    root: Element, q: Dict[str, Any], config: Dict[str, Any]
 ) -> None:
-    """Export quiz to Moodle XML format.
-    
-    Args:
-        quiz: Quiz dictionary loaded from YAML/JSON
-        output_path: Path to write XML file
-        config: Export configuration options
+    """Add an essay question to Moodle XML."""
+    question = SubElement(root, "question", type="essay")
+
+    # Name
+    name = SubElement(question, "name")
+    name_text = SubElement(name, "text")
+    name_text.text = q["id"]
+
+    # Question text
+    qtext = SubElement(question, "questiontext", format="html")
+    qtext_text = SubElement(qtext, "text")
+
+    stem = q["stem"]
+    if q.get("code_template"):
+        stem += f"\n\n<pre>{html.escape(q['code_template'])}</pre>"
+    qtext_text.text = f"<![CDATA[<p>{stem}</p>]]>"
+
+    # Default grade
+    grade = SubElement(question, "defaultgrade")
+    grade.text = str(q.get("points", 5))
+
+    # Response format
+    response_format = SubElement(question, "responseformat")
+    response_format.text = "editor"
+
+    # Grader info (rubric)
+    if q.get("rubric"):
+        grader = SubElement(question, "graderinfo", format="html")
+        grader_text = SubElement(grader, "text")
+        rubric_html = "<ul>"
+        for score, desc in q["rubric"].items():
+            rubric_html += f"<li><strong>{score}:</strong> {html.escape(str(desc))}</li>"
+        rubric_html += "</ul>"
+        grader_text.text = f"<![CDATA[{rubric_html}]]>"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# JSON EXPORT
+# ═══════════════════════════════════════════════════════════════════════════════
+def export_json(quiz: Dict[str, Any], output_path: Path) -> None:
+    """Export quiz to JSON format."""
+    export_config = quiz.get("export", {}).get("json", {})
+
+    export_data = {
+        "metadata": {
+            **quiz["metadata"],
+            "exported_at": datetime.now().isoformat(),
+            "format_version": export_config.get("format_version", "2.0"),
+        },
+        "questions": [],
+    }
+
+    include_explanations = export_config.get("include_explanations", True)
+    include_hints = export_config.get("include_hints", True)
+    include_verification = export_config.get("include_verification", False)
+
+    for q in quiz["questions"]:
+        q_export: Dict[str, Any] = {
+            "id": q["id"],
+            "type": q.get("type", "multiple_choice"),
+            "bloom_level": q.get("bloom_level"),
+            "lo_ref": q.get("lo_ref"),
+            "difficulty": q.get("difficulty"),
+            "points": q.get("points", 1),
+            "stem": q["stem"].strip(),
+        }
+
+        if "options" in q:
+            q_export["options"] = q["options"]
+
+        if "correct" in q:
+            q_export["correct"] = q["correct"]
+
+        if include_explanations and q.get("explanation"):
+            q_export["explanation"] = q["explanation"].strip()
+
+        if include_hints and q.get("hint"):
+            q_export["hint"] = q["hint"]
+
+        if include_verification and q.get("verification"):
+            q_export["verification"] = q["verification"]
+
+        if q.get("rubric"):
+            q_export["rubric"] = q["rubric"]
+
+        if q.get("model_answer"):
+            q_export["model_answer"] = q["model_answer"].strip()
+
+        export_data["questions"].append(q_export)
+
+    # Add scoring info
+    if "scoring" in quiz:
+        export_data["scoring"] = quiz["scoring"]
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(export_data, f, indent=2, ensure_ascii=False)
+
+    print(f"Exported {len(quiz['questions'])} questions to {output_path}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CANVAS QTI EXPORT
+# ═══════════════════════════════════════════════════════════════════════════════
+def export_canvas_qti(quiz: Dict[str, Any], output_path: Path) -> None:
     """
-    if config is None:
-        config = MoodleExportConfig()
-    
-    # Create root element
-    root = ET.Element("quiz")
-    
-    # Add category
-    metadata = quiz.get("metadata", {})
-    category = metadata.get("moodle_category", config.category)
-    root.append(build_category_question(category))
-    
+    Export quiz to Canvas QTI format.
+
+    Note: Simplified QTI 1.2 format for Canvas import.
+    """
+    meta = quiz["metadata"]
+    questions = quiz["questions"]
+    export_config = quiz.get("export", {}).get("canvas", {})
+
+    # Create QTI manifest
+    root = Element(
+        "questestinterop",
+        xmlns="http://www.imsglobal.org/xsd/ims_qtiasiv1p2",
+    )
+
+    # Assessment
+    assessment = SubElement(root, "assessment", ident=f"week{meta.get('week', '?')}_quiz")
+    assessment.set("title", f"Week {meta.get('week', '?')}: {meta.get('topic', 'Quiz')}")
+
+    # Assessment metadata
+    qtimetadata = SubElement(assessment, "qtimetadata")
+
+    # Points possible
+    points_field = SubElement(qtimetadata, "qtimetadatafield")
+    label = SubElement(points_field, "fieldlabel")
+    label.text = "points_possible"
+    entry = SubElement(points_field, "fieldentry")
+    entry.text = str(export_config.get("points_possible", meta.get("total_points", 42)))
+
+    # Quiz type
+    type_field = SubElement(qtimetadata, "qtimetadatafield")
+    type_label = SubElement(type_field, "fieldlabel")
+    type_label.text = "quiz_type"
+    type_entry = SubElement(type_field, "fieldentry")
+    type_entry.text = export_config.get("quiz_type", "practice_quiz")
+
+    # Section for questions
+    section = SubElement(assessment, "section", ident="root_section")
+
     # Add questions
-    questions = quiz.get("questions", [])
-    exported = 0
-    
-    for q in questions:
-        question_elem = build_question(q, config)
-        if question_elem is not None:
-            root.append(question_elem)
-            exported += 1
-    
-    # Write to file
-    tree = ET.ElementTree(root)
-    
-    # Add XML declaration
-    with open(output_path, "wb") as f:
-        f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
-        tree.write(f, encoding="unicode")
-    
-    print(f"✓ Exported {exported} questions to: {output_path}")
-    print(f"  Category: {category}")
-    print(f"  Shuffle answers: {config.shuffle_answers}")
+    for i, q in enumerate(questions, 1):
+        q_type = q.get("type", "multiple_choice")
+
+        if q_type == "multiple_choice" or "options" in q:
+            _add_canvas_multiple_choice(section, q, i)
+        elif q_type in ("fill_blank", "short_answer"):
+            _add_canvas_short_answer(section, q, i)
+        else:
+            _add_canvas_essay(section, q, i)
+
+    # Format and write
+    xml_str = tostring(root, encoding="unicode")
+    pretty_xml = minidom.parseString(xml_str).toprettyxml(indent="  ")
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(pretty_xml)
+
+    print(f"Exported {len(questions)} questions to {output_path} (Canvas QTI)")
 
 
-def load_quiz(path: Path) -> Dict[str, Any]:
-    """Load quiz from YAML or JSON file."""
-    if path.suffix in (".yaml", ".yml"):
-        with open(path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
-    elif path.suffix == ".json":
-        import json
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    else:
-        raise ValueError(f"Unsupported file format: {path.suffix}")
+def _add_canvas_multiple_choice(section: Element, q: Dict[str, Any], index: int) -> None:
+    """Add a multiple choice item to Canvas QTI."""
+    item = SubElement(section, "item", ident=q["id"])
+    item.set("title", f"Question {index}")
+
+    # Item metadata
+    itemmetadata = SubElement(item, "itemmetadata")
+    qtimetadata = SubElement(itemmetadata, "qtimetadata")
+
+    # Question type
+    qtype_field = SubElement(qtimetadata, "qtimetadatafield")
+    qtype_label = SubElement(qtype_field, "fieldlabel")
+    qtype_label.text = "question_type"
+    qtype_entry = SubElement(qtype_field, "fieldentry")
+    qtype_entry.text = "multiple_choice_question"
+
+    # Points
+    pts_field = SubElement(qtimetadata, "qtimetadatafield")
+    pts_label = SubElement(pts_field, "fieldlabel")
+    pts_label.text = "points_possible"
+    pts_entry = SubElement(pts_field, "fieldentry")
+    pts_entry.text = str(q.get("points", 1))
+
+    # Presentation
+    presentation = SubElement(item, "presentation")
+    material = SubElement(presentation, "material")
+    mattext = SubElement(material, "mattext", texttype="text/html")
+    mattext.text = q["stem"]
+
+    # Response
+    response_lid = SubElement(
+        presentation, "response_lid", ident="response1", rcardinality="Single"
+    )
+    render_choice = SubElement(response_lid, "render_choice")
+
+    correct_key = q.get("correct", "").lower()
+    options = q.get("options", {})
+
+    for key, value in sorted(options.items()):
+        response_label = SubElement(render_choice, "response_label", ident=key)
+        mat = SubElement(response_label, "material")
+        matt = SubElement(mat, "mattext")
+        matt.text = value
+
+    # Response processing
+    resprocessing = SubElement(item, "resprocessing")
+    outcomes = SubElement(resprocessing, "outcomes")
+    SubElement(outcomes, "decvar", maxvalue="100", minvalue="0", varname="SCORE", vartype="Decimal")
+
+    # Correct answer condition
+    respcondition = SubElement(resprocessing, "respcondition", attrib={"continue": "No"})
+    conditionvar = SubElement(respcondition, "conditionvar")
+    varequal = SubElement(conditionvar, "varequal", respident="response1")
+    varequal.text = correct_key
+    setvar = SubElement(respcondition, "setvar", action="Set", varname="SCORE")
+    setvar.text = "100"
+
+
+def _add_canvas_short_answer(section: Element, q: Dict[str, Any], index: int) -> None:
+    """Add a short answer item to Canvas QTI."""
+    item = SubElement(section, "item", ident=q["id"])
+    item.set("title", f"Question {index}")
+
+    # Metadata
+    itemmetadata = SubElement(item, "itemmetadata")
+    qtimetadata = SubElement(itemmetadata, "qtimetadata")
+
+    qtype_field = SubElement(qtimetadata, "qtimetadatafield")
+    qtype_label = SubElement(qtype_field, "fieldlabel")
+    qtype_label.text = "question_type"
+    qtype_entry = SubElement(qtype_field, "fieldentry")
+    qtype_entry.text = "short_answer_question"
+
+    # Presentation
+    presentation = SubElement(item, "presentation")
+    material = SubElement(presentation, "material")
+    mattext = SubElement(material, "mattext", texttype="text/html")
+    mattext.text = q["stem"]
+
+    SubElement(presentation, "response_str", ident="response1", rcardinality="Single")
+
+
+def _add_canvas_essay(section: Element, q: Dict[str, Any], index: int) -> None:
+    """Add an essay item to Canvas QTI."""
+    item = SubElement(section, "item", ident=q["id"])
+    item.set("title", f"Question {index}")
+
+    # Metadata
+    itemmetadata = SubElement(item, "itemmetadata")
+    qtimetadata = SubElement(itemmetadata, "qtimetadata")
+
+    qtype_field = SubElement(qtimetadata, "qtimetadatafield")
+    qtype_label = SubElement(qtype_field, "fieldlabel")
+    qtype_label.text = "question_type"
+    qtype_entry = SubElement(qtype_field, "fieldentry")
+    qtype_entry.text = "essay_question"
+
+    # Presentation
+    presentation = SubElement(item, "presentation")
+    material = SubElement(presentation, "material")
+    mattext = SubElement(material, "mattext", texttype="text/html")
+    mattext.text = q["stem"]
+
+    SubElement(presentation, "response_str", ident="response1", rcardinality="Single")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CLI
 # ═══════════════════════════════════════════════════════════════════════════════
-
-def parse_args() -> argparse.Namespace:
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Export quiz to Moodle XML format",
-        epilog="NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim"
-    )
-    
-    parser.add_argument(
-        "--input", "-i",
-        type=Path,
-        default=Path(__file__).parent / "quiz_week14.yaml",
-        help="Input quiz file (YAML or JSON)"
-    )
-    
-    parser.add_argument(
-        "--output", "-o",
-        type=Path,
-        default=Path(__file__).parent / "quiz_week14_moodle.xml",
-        help="Output Moodle XML file"
-    )
-    
-    parser.add_argument(
-        "--category", "-c",
-        type=str,
-        default="Computer Networks / Week 14",
-        help="Moodle question category"
-    )
-    
-    parser.add_argument(
-        "--shuffle",
-        action="store_true",
-        default=True,
-        help="Shuffle answer options"
-    )
-    
-    parser.add_argument(
-        "--no-shuffle",
-        dest="shuffle",
-        action="store_false",
-        help="Don't shuffle answer options"
-    )
-    
-    parser.add_argument(
-        "--no-feedback",
-        action="store_true",
-        help="Exclude explanations from export"
-    )
-    
-    parser.add_argument(
-        "--no-hints",
-        action="store_true",
-        help="Exclude hints from export"
-    )
-    
-    return parser.parse_args()
-
-
 def main() -> int:
     """Main entry point."""
-    args = parse_args()
-    
-    # Load quiz
-    try:
-        quiz = load_quiz(args.input)
-    except FileNotFoundError:
-        print(f"Error: Quiz file not found: {args.input}")
-        return 1
-    except Exception as e:
-        print(f"Error loading quiz: {e}")
-        return 1
-    
-    # Configure export
-    config = MoodleExportConfig(
-        category=args.category,
-        shuffle_answers=args.shuffle,
-        include_feedback=not args.no_feedback,
-        include_hints=not args.no_hints
+    parser = argparse.ArgumentParser(
+        description="Export quiz to LMS formats",
+        epilog="NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim",
     )
-    
-    # Export
+
+    parser.add_argument(
+        "--quiz",
+        type=Path,
+        default=Path(__file__).parent / "quiz.yaml",
+        help="Path to quiz YAML file",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["moodle", "json", "canvas"],
+        default="moodle",
+        help="Export format (default: moodle)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Output file path",
+    )
+
+    args = parser.parse_args()
+
     try:
-        export_to_moodle(quiz, args.output, config)
+        quiz = load_quiz(args.quiz)
+
+        if args.format == "moodle":
+            output = args.output or Path("quiz_moodle.xml")
+            export_moodle_xml(quiz, output)
+        elif args.format == "json":
+            output = args.output or Path("quiz_export.json")
+            export_json(quiz, output)
+        elif args.format == "canvas":
+            output = args.output or Path("quiz_canvas_qti.xml")
+            export_canvas_qti(quiz, output)
+
         return 0
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return 1
     except Exception as e:
-        print(f"Error exporting quiz: {e}")
+        print(f"Export failed: {e}")
         return 1
 
 

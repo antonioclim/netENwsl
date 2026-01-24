@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-run_quiz.py — Interactive Quiz Runner for Week 14
+run_quiz.py — Interactive Quiz Runner for Week 14.
+
 NETWORKING class — ASE, CSIE | Computer Networks Laboratory
 by ing. dr. Antonio Clim
 
@@ -9,18 +10,20 @@ Runs formative assessment quizzes from YAML format with:
 - Immediate feedback per question
 - Score tracking and LO coverage analysis
 - Export capabilities (JSON, Moodle XML)
+- Support for all question types including design tasks
 
 Usage:
     python formative/run_quiz.py                    # Interactive mode
-    python formative/run_quiz.py --random           # Randomize question order
+    python formative/run_quiz.py --random           # Randomise question order
     python formative/run_quiz.py --limit 5          # Limit to N questions
     python formative/run_quiz.py --lo LO1 LO2       # Filter by Learning Objectives
     python formative/run_quiz.py --export json      # Export to JSON
+    python formative/run_quiz.py --no-prediction    # Skip score prediction
     python formative/run_quiz.py --help             # Show all options
 """
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SETUP_ENVIRONMENT
+# IMPORTS
 # ═══════════════════════════════════════════════════════════════════════════════
 from __future__ import annotations
 
@@ -41,26 +44,27 @@ except ImportError:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# DISPLAY_UTILITIES
+# DISPLAY UTILITIES
 # ═══════════════════════════════════════════════════════════════════════════════
 class Colours:
     """ANSI colour codes for terminal output."""
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    CYAN = '\033[96m'
-    BLUE = '\033[94m'
-    MAGENTA = '\033[95m'
-    BOLD = '\033[1m'
-    DIM = '\033[2m'
-    ENDC = '\033[0m'
+
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    CYAN = "\033[96m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    ENDC = "\033[0m"
 
     @classmethod
     def disable(cls) -> None:
         """Disable colours for non-terminal output."""
         for attr in dir(cls):
-            if not attr.startswith('_') and attr.isupper():
-                setattr(cls, attr, '')
+            if not attr.startswith("_") and attr.isupper():
+                setattr(cls, attr, "")
 
 
 def print_banner(text: str, char: str = "═", width: int = 70) -> None:
@@ -74,7 +78,7 @@ def print_box(lines: List[str], title: str = "") -> None:
     """Print content in a box."""
     width = max(len(line) for line in lines) + 4
     width = max(width, len(title) + 4)
-    
+
     print(f"╔{'═' * width}╗")
     if title:
         print(f"║ {Colours.BOLD}{title}{Colours.ENDC}{' ' * (width - len(title) - 1)}║")
@@ -85,11 +89,12 @@ def print_box(lines: List[str], title: str = "") -> None:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# DATA_MODELS
+# DATA MODELS
 # ═══════════════════════════════════════════════════════════════════════════════
 @dataclass
 class QuestionResult:
     """Result of answering a single question."""
+
     question_id: str
     lo_ref: str
     bloom_level: str
@@ -98,163 +103,152 @@ class QuestionResult:
     correct: bool
     user_answer: str
     correct_answer: str
-    time_taken_seconds: float = 0.0
 
 
 @dataclass
 class QuizResult:
-    """Complete quiz session result."""
-    quiz_title: str
+    """Complete quiz result with statistics."""
+
+    student_id: str
+    quiz_version: str
     started_at: datetime
-    ended_at: Optional[datetime] = None
-    results: List[QuestionResult] = field(default_factory=list)
-    prediction: Optional[int] = None
-    
+    finished_at: Optional[datetime] = None
+    question_results: List[QuestionResult] = field(default_factory=list)
+    predicted_score: Optional[int] = None
+
     @property
     def total_questions(self) -> int:
-        return len(self.results)
-    
+        """Return total number of questions answered."""
+        return len(self.question_results)
+
     @property
     def correct_count(self) -> int:
-        return sum(1 for r in self.results if r.correct)
-    
+        """Return number of correct answers."""
+        return sum(1 for r in self.question_results if r.correct)
+
     @property
     def total_points(self) -> int:
-        return sum(r.points_possible for r in self.results)
-    
+        """Return total possible points."""
+        return sum(r.points_possible for r in self.question_results)
+
     @property
     def earned_points(self) -> int:
-        return sum(r.points_earned for r in self.results)
-    
+        """Return total earned points."""
+        return sum(r.points_earned for r in self.question_results)
+
     @property
     def percentage(self) -> float:
-        if self.total_points == 0:
-            return 0.0
-        return (self.earned_points / self.total_points) * 100
-    
+        """Return percentage score."""
+        return (self.earned_points / self.total_points * 100) if self.total_points > 0 else 0
+
     @property
     def lo_scores(self) -> Dict[str, Dict[str, int]]:
-        """Calculate scores per Learning Objective."""
+        """Return scores broken down by Learning Objective."""
         scores: Dict[str, Dict[str, int]] = {}
-        for r in self.results:
-            if r.lo_ref not in scores:
-                scores[r.lo_ref] = {"earned": 0, "possible": 0, "correct": 0, "total": 0}
-            scores[r.lo_ref]["earned"] += r.points_earned
-            scores[r.lo_ref]["possible"] += r.points_possible
-            scores[r.lo_ref]["total"] += 1
-            if r.correct:
-                scores[r.lo_ref]["correct"] += 1
+        for r in self.question_results:
+            lo = r.lo_ref
+            if lo not in scores:
+                scores[lo] = {"earned": 0, "possible": 0}
+            scores[lo]["earned"] += r.points_earned
+            scores[lo]["possible"] += r.points_possible
         return scores
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUIZ_LOADER
+# QUIZ LOADING
 # ═══════════════════════════════════════════════════════════════════════════════
 def load_quiz(path: Path) -> Dict[str, Any]:
     """Load quiz from YAML file."""
-    if not path.exists():
-        raise FileNotFoundError(f"Quiz file not found: {path}")
-    
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, encoding="utf-8") as f:
         quiz = yaml.safe_load(f)
-    
-    # Validate basic structure
-    if 'metadata' not in quiz:
+
+    # Validate required fields
+    if "metadata" not in quiz:
         raise ValueError("Quiz missing 'metadata' section")
-    if 'questions' not in quiz:
+    if "questions" not in quiz:
         raise ValueError("Quiz missing 'questions' section")
-    
+
     return quiz
 
 
 def filter_questions(
-    questions: List[Dict], 
+    questions: List[Dict],
     lo_filter: Optional[List[str]] = None,
     bloom_filter: Optional[List[str]] = None,
-    difficulty_filter: Optional[List[str]] = None
+    limit: Optional[int] = None,
+    randomise: bool = False,
 ) -> List[Dict]:
-    """Filter questions by criteria."""
-    filtered = questions
-    
+    """Filter and optionally randomise questions."""
+    filtered = questions.copy()
+
+    # Filter by LO
     if lo_filter:
-        filtered = [q for q in filtered if q.get('lo_ref') in lo_filter]
-    
+        filtered = [q for q in filtered if q.get("lo_ref") in lo_filter]
+
+    # Filter by Bloom level
     if bloom_filter:
-        filtered = [q for q in filtered if q.get('bloom_level') in bloom_filter]
-    
-    if difficulty_filter:
-        filtered = [q for q in filtered if q.get('difficulty') in difficulty_filter]
-    
+        filtered = [q for q in filtered if q.get("bloom_level") in bloom_filter]
+
+    # Randomise
+    if randomise:
+        random.shuffle(filtered)
+
+    # Limit
+    if limit and limit < len(filtered):
+        filtered = filtered[:limit]
+
     return filtered
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# QUESTION_HANDLERS
+# QUESTION HANDLERS
 # ═══════════════════════════════════════════════════════════════════════════════
 def ask_multiple_choice(question: Dict, index: int, total: int) -> QuestionResult:
-    """Handle multiple choice question."""
-    q_id = question.get('id', f'q{index}')
-    lo_ref = question.get('lo_ref', 'Unknown')
-    bloom = question.get('bloom_level', 'Unknown')
-    points = question.get('points', 1)
-    stem = question.get('stem', '').strip()
-    options = question.get('options', {})
-    correct = question.get('correct', '').lower()
-    explanation = question.get('explanation', '')
-    hint = question.get('hint', '')
-    
+    """Present and score a multiple choice question."""
+    q_id = question["id"]
+    lo_ref = question.get("lo_ref", "")
+    bloom = question.get("bloom_level", "")
+    points = question.get("points", 1)
+    stem = question["stem"].strip()
+    options = question["options"]
+    correct = question["correct"]
+    hint = question.get("hint", "")
+    explanation = question.get("explanation", "")
+
     # Display question
-    print(f"\n{Colours.BOLD}Question {index}/{total}{Colours.ENDC} "
-          f"{Colours.DIM}[{bloom}] [{lo_ref}] [{points} pt]{Colours.ENDC}")
+    print(f"\n{Colours.CYAN}Question {index}/{total}{Colours.ENDC} ", end="")
+    print(f"[{Colours.DIM}{q_id} | {bloom} | {lo_ref} | {points}pts{Colours.ENDC}]")
     print(f"\n{stem}\n")
-    
+
     # Display options
     for key, value in sorted(options.items()):
-        print(f"  {Colours.CYAN}{key.upper()}){Colours.ENDC} {value}")
-    
-    # Show hint if available
+        print(f"  {Colours.BOLD}{key}){Colours.ENDC} {value}")
+
     if hint:
-        print(f"\n  {Colours.DIM}💡 Hint: {hint}{Colours.ENDC}")
-    
-    # Get user input
-    valid_options = [k.lower() for k in options.keys()]
-    user_answer = ""
-    
+        print(f"\n{Colours.DIM}Hint: {hint}{Colours.ENDC}")
+
+    # Get answer
     while True:
-        try:
-            user_input = input(f"\n{Colours.YELLOW}Your answer ({'/'.join(valid_options)}, or 'skip'): {Colours.ENDC}").strip().lower()
-            
-            if user_input == 'skip':
-                user_answer = ""
-                break
-            elif user_input in valid_options:
-                user_answer = user_input
-                break
-            else:
-                print(f"  {Colours.RED}Invalid option. Try again.{Colours.ENDC}")
-        except (EOFError, KeyboardInterrupt):
-            print("\n")
-            user_answer = ""
+        answer = input(f"\nYour answer ({'/'.join(sorted(options.keys()))}): ").strip().lower()
+        if answer in options:
             break
-    
+        print(f"{Colours.YELLOW}Invalid option. Please enter one of: {', '.join(sorted(options.keys()))}{Colours.ENDC}")
+
     # Check answer
-    is_correct = user_answer == correct
-    points_earned = points if is_correct else 0
-    
-    # Display feedback
+    is_correct = answer == correct.lower()
+
+    # Display result
     if is_correct:
-        print(f"\n  {Colours.GREEN}✓ Correct!{Colours.ENDC}")
+        print(f"\n{Colours.GREEN}✓ Correct!{Colours.ENDC}")
+        points_earned = points
     else:
-        correct_text = options.get(correct, correct)
-        print(f"\n  {Colours.RED}✗ Incorrect.{Colours.ENDC}")
-        print(f"  {Colours.CYAN}Correct answer: {correct.upper()}) {correct_text}{Colours.ENDC}")
-    
-    # Show explanation
+        print(f"\n{Colours.RED}✗ Incorrect. The answer is: {correct}{Colours.ENDC}")
+        points_earned = 0
+
     if explanation:
-        print(f"\n  {Colours.DIM}📖 Explanation:{Colours.ENDC}")
-        for line in explanation.strip().split('\n'):
-            print(f"     {line}")
-    
+        print(f"\n{Colours.CYAN}Explanation:{Colours.ENDC}")
+        print(f"{Colours.DIM}{explanation.strip()}{Colours.ENDC}")
+
     return QuestionResult(
         question_id=q_id,
         lo_ref=lo_ref,
@@ -262,66 +256,52 @@ def ask_multiple_choice(question: Dict, index: int, total: int) -> QuestionResul
         points_possible=points,
         points_earned=points_earned,
         correct=is_correct,
-        user_answer=user_answer,
-        correct_answer=correct
+        user_answer=answer,
+        correct_answer=correct,
     )
 
 
 def ask_fill_blank(question: Dict, index: int, total: int) -> QuestionResult:
-    """Handle fill-in-the-blank question."""
-    q_id = question.get('id', f'q{index}')
-    lo_ref = question.get('lo_ref', 'Unknown')
-    bloom = question.get('bloom_level', 'Unknown')
-    points = question.get('points', 1)
-    stem = question.get('stem', '').strip()
-    correct_answers = question.get('correct', [])
-    case_sensitive = question.get('case_sensitive', False)
-    explanation = question.get('explanation', '')
-    hint = question.get('hint', '')
-    
-    if isinstance(correct_answers, str):
-        correct_answers = [correct_answers]
-    
+    """Present and score a fill-in-the-blank question."""
+    q_id = question["id"]
+    lo_ref = question.get("lo_ref", "")
+    bloom = question.get("bloom_level", "")
+    points = question.get("points", 1)
+    stem = question["stem"].strip()
+    correct_answers = question["correct"]  # List of acceptable answers
+    case_sensitive = question.get("case_sensitive", False)
+    hint = question.get("hint", "")
+    explanation = question.get("explanation", "")
+
     # Display question
-    print(f"\n{Colours.BOLD}Question {index}/{total}{Colours.ENDC} "
-          f"{Colours.DIM}[{bloom}] [{lo_ref}] [{points} pt]{Colours.ENDC}")
+    print(f"\n{Colours.CYAN}Question {index}/{total}{Colours.ENDC} ", end="")
+    print(f"[{Colours.DIM}{q_id} | {bloom} | {lo_ref} | {points}pts{Colours.ENDC}]")
     print(f"\n{stem}\n")
-    
-    # Show hint
+
     if hint:
-        print(f"  {Colours.DIM}💡 Hint: {hint}{Colours.ENDC}")
-    
-    # Get user input
-    try:
-        user_answer = input(f"\n{Colours.YELLOW}Your answer (or 'skip'): {Colours.ENDC}").strip()
-    except (EOFError, KeyboardInterrupt):
-        print("\n")
-        user_answer = ""
-    
-    if user_answer.lower() == 'skip':
-        user_answer = ""
-    
+        print(f"{Colours.DIM}Hint: {hint}{Colours.ENDC}")
+
+    # Get answer
+    answer = input("\nYour answer: ").strip()
+
     # Check answer
     if case_sensitive:
-        is_correct = user_answer in correct_answers
+        is_correct = answer in correct_answers
     else:
-        is_correct = user_answer.lower() in [a.lower() for a in correct_answers]
-    
-    points_earned = points if is_correct else 0
-    
-    # Display feedback
+        is_correct = answer.lower() in [a.lower() for a in correct_answers]
+
+    # Display result
     if is_correct:
-        print(f"\n  {Colours.GREEN}✓ Correct!{Colours.ENDC}")
+        print(f"\n{Colours.GREEN}✓ Correct!{Colours.ENDC}")
+        points_earned = points
     else:
-        print(f"\n  {Colours.RED}✗ Incorrect.{Colours.ENDC}")
-        print(f"  {Colours.CYAN}Accepted answers: {', '.join(correct_answers)}{Colours.ENDC}")
-    
-    # Show explanation
+        print(f"\n{Colours.RED}✗ Incorrect. Acceptable answers: {', '.join(correct_answers)}{Colours.ENDC}")
+        points_earned = 0
+
     if explanation:
-        print(f"\n  {Colours.DIM}📖 Explanation:{Colours.ENDC}")
-        for line in explanation.strip().split('\n'):
-            print(f"     {line}")
-    
+        print(f"\n{Colours.CYAN}Explanation:{Colours.ENDC}")
+        print(f"{Colours.DIM}{explanation.strip()}{Colours.ENDC}")
+
     return QuestionResult(
         question_id=q_id,
         lo_ref=lo_ref,
@@ -329,343 +309,372 @@ def ask_fill_blank(question: Dict, index: int, total: int) -> QuestionResult:
         points_possible=points,
         points_earned=points_earned,
         correct=is_correct,
-        user_answer=user_answer,
-        correct_answer=correct_answers[0] if correct_answers else ""
+        user_answer=answer,
+        correct_answer=correct_answers[0] if correct_answers else "",
+    )
+
+
+def ask_design_task(question: Dict, index: int, total: int) -> QuestionResult:
+    """Present a design/essay task (self-evaluated or manual grading)."""
+    q_id = question["id"]
+    lo_ref = question.get("lo_ref", "")
+    bloom = question.get("bloom_level", "")
+    points = question.get("points", 5)
+    stem = question["stem"].strip()
+    rubric = question.get("rubric", {})
+    model_answer = question.get("model_answer", "")
+    code_template = question.get("code_template", "")
+
+    # Display question
+    print(f"\n{Colours.CYAN}Question {index}/{total}{Colours.ENDC} ", end="")
+    print(f"[{Colours.DIM}{q_id} | {bloom} | {lo_ref} | {points}pts{Colours.ENDC}]")
+    print(f"\n{stem}\n")
+
+    if code_template:
+        print(f"{Colours.CYAN}Code Template:{Colours.ENDC}")
+        print(f"{Colours.DIM}{code_template.strip()}{Colours.ENDC}\n")
+
+    # Display rubric
+    if rubric:
+        print(f"{Colours.CYAN}Evaluation Criteria:{Colours.ENDC}")
+        for score, desc in sorted(rubric.items(), reverse=True):
+            print(f"  {Colours.BOLD}{score} pts:{Colours.ENDC} {desc}")
+
+    print("\n" + "─" * 50)
+    print(f"{Colours.YELLOW}This is a design task requiring manual evaluation.{Colours.ENDC}")
+    print("Write your answer below (press Enter twice to finish):")
+    print("─" * 50)
+
+    # Collect multi-line input
+    lines = []
+    while True:
+        line = input()
+        if line == "":
+            if lines and lines[-1] == "":
+                break
+        lines.append(line)
+
+    answer = "\n".join(lines).strip()
+
+    # Show model answer
+    if model_answer:
+        print(f"\n{Colours.CYAN}Model Answer:{Colours.ENDC}")
+        print(f"{Colours.DIM}{model_answer.strip()}{Colours.ENDC}")
+
+    # Self-evaluation
+    print(f"\n{Colours.YELLOW}Self-evaluate your answer:{Colours.ENDC}")
+    while True:
+        try:
+            self_score = int(input(f"Score (0-{points}): "))
+            if 0 <= self_score <= points:
+                break
+            print(f"Please enter a value between 0 and {points}")
+        except ValueError:
+            print("Please enter a number")
+
+    return QuestionResult(
+        question_id=q_id,
+        lo_ref=lo_ref,
+        bloom_level=bloom,
+        points_possible=points,
+        points_earned=self_score,
+        correct=self_score >= points * 0.7,  # 70% threshold
+        user_answer=answer[:200] + "..." if len(answer) > 200 else answer,
+        correct_answer="[Design task - see model answer]",
     )
 
 
 def ask_question(question: Dict, index: int, total: int) -> QuestionResult:
-    """Route question to appropriate handler."""
-    q_type = question.get('type', 'multiple_choice')
-    
-    if q_type == 'multiple_choice':
+    """Route question to appropriate handler based on type."""
+    q_type = question.get("type", "multiple_choice")
+
+    if q_type == "multiple_choice":
         return ask_multiple_choice(question, index, total)
-    elif q_type == 'fill_blank':
+    elif q_type in ("fill_blank", "short_answer"):
         return ask_fill_blank(question, index, total)
+    elif q_type in ("design_task", "architecture_design", "troubleshooting_design", "scenario_analysis"):
+        return ask_design_task(question, index, total)
     else:
-        print(f"  {Colours.YELLOW}Unknown question type: {q_type}, treating as multiple choice{Colours.ENDC}")
-        return ask_multiple_choice(question, index, total)
+        # Default to multiple choice for unknown types
+        if "options" in question:
+            return ask_multiple_choice(question, index, total)
+        else:
+            return ask_design_task(question, index, total)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# PREDICTION_PROMPT
+# SCORING AND RESULTS
 # ═══════════════════════════════════════════════════════════════════════════════
 def prompt_prediction(total_questions: int, total_points: int) -> Optional[int]:
-    """Ask student to predict their score before starting."""
-    print(f"\n{Colours.MAGENTA}💭 PREDICTION{Colours.ENDC}")
-    print(f"Before starting, predict how many points you'll score out of {total_points}.")
-    print("(This helps with metacognitive awareness - no penalty for being wrong!)")
-    
-    try:
-        prediction_str = input(f"\n{Colours.YELLOW}Your prediction (0-{total_points}, or Enter to skip): {Colours.ENDC}").strip()
-        if prediction_str:
-            prediction = int(prediction_str)
-            if 0 <= prediction <= total_points:
-                print(f"\n  You predicted: {prediction}/{total_points} points. Let's see how you do!\n")
-                return prediction
-    except (ValueError, EOFError, KeyboardInterrupt):
-        pass
-    
-    print("\n  Skipping prediction. Starting quiz...\n")
-    return None
+    """Ask for score prediction (metacognitive exercise)."""
+    print(f"\n{Colours.CYAN}Before starting, predict your score:{Colours.ENDC}")
+    print(f"  Total questions: {total_questions}")
+    print(f"  Total points: {total_points}")
+
+    while True:
+        try:
+            prediction = input(f"\nPredicted score (0-{total_points}): ").strip()
+            if not prediction:
+                return None
+            pred_int = int(prediction)
+            if 0 <= pred_int <= total_points:
+                return pred_int
+            print(f"Please enter a value between 0 and {total_points}")
+        except ValueError:
+            print("Please enter a number or press Enter to skip")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# RESULT_DISPLAY
-# ═══════════════════════════════════════════════════════════════════════════════
 def display_results(result: QuizResult, quiz: Dict) -> None:
     """Display comprehensive quiz results."""
-    scoring = quiz.get('scoring', {})
-    feedback = quiz.get('feedback', {})
-    passing_threshold = scoring.get('passing_threshold', 70)
-    
-    passed = result.earned_points >= passing_threshold
-    
-    print_banner(f"Quiz Complete: {result.quiz_title}")
-    
+    print_banner("QUIZ RESULTS")
+
     # Score summary
-    score_colour = Colours.GREEN if passed else Colours.RED
-    print(f"  {Colours.BOLD}Final Score:{Colours.ENDC} {score_colour}{result.earned_points}/{result.total_points} "
-          f"({result.percentage:.1f}%){Colours.ENDC}")
-    print(f"  {Colours.BOLD}Questions:{Colours.ENDC} {result.correct_count}/{result.total_questions} correct")
-    print(f"  {Colours.BOLD}Status:{Colours.ENDC} {score_colour}{'PASSED ✓' if passed else 'NEEDS REVIEW ✗'}{Colours.ENDC}")
-    
-    # Prediction comparison
-    if result.prediction is not None:
-        diff = result.earned_points - result.prediction
-        diff_str = f"+{diff}" if diff > 0 else str(diff)
-        print(f"\n  {Colours.MAGENTA}💭 Prediction comparison:{Colours.ENDC}")
-        print(f"     Predicted: {result.prediction} | Actual: {result.earned_points} | Diff: {diff_str}")
-        
-        if abs(diff) <= 2:
-            print(f"     {Colours.GREEN}Excellent self-assessment!{Colours.ENDC}")
-        elif diff > 0:
-            print(f"     {Colours.CYAN}You did better than expected!{Colours.ENDC}")
-        else:
-            print(f"     {Colours.YELLOW}Room for improvement in self-assessment.{Colours.ENDC}")
-    
-    # LO breakdown
-    print(f"\n  {Colours.BOLD}Learning Objective Breakdown:{Colours.ENDC}")
-    lo_scores = result.lo_scores
-    for lo, scores in sorted(lo_scores.items()):
-        pct = (scores['earned'] / scores['possible'] * 100) if scores['possible'] > 0 else 0
-        lo_colour = Colours.GREEN if pct >= 70 else Colours.YELLOW if pct >= 50 else Colours.RED
-        print(f"     {lo}: {lo_colour}{scores['earned']}/{scores['possible']} ({pct:.0f}%){Colours.ENDC} "
-              f"[{scores['correct']}/{scores['total']} questions]")
-    
-    # Grade
-    grade_boundaries = scoring.get('grade_boundaries', {})
-    grade = "F"
-    for g, info in sorted(grade_boundaries.items(), key=lambda x: x[1].get('min_points', 0), reverse=True):
-        if result.earned_points >= info.get('min_points', 0):
-            grade = g
-            break
-    
-    print(f"\n  {Colours.BOLD}Grade:{Colours.ENDC} {Colours.CYAN}{grade}{Colours.ENDC}")
-    
-    # Feedback
-    if passed:
-        on_pass = feedback.get('on_pass', '')
-        if on_pass:
-            print(f"\n{Colours.GREEN}{on_pass}{Colours.ENDC}")
+    percentage = result.percentage
+    if percentage >= 70:
+        colour = Colours.GREEN
+        status = "PASS"
     else:
-        on_fail = feedback.get('on_fail', '')
-        if on_fail:
-            print(f"\n{Colours.YELLOW}{on_fail}{Colours.ENDC}")
-        
-        # Per-LO feedback for weak areas
-        per_lo = feedback.get('per_lo_feedback', {})
-        weak_los = [lo for lo, scores in lo_scores.items() 
-                   if scores['possible'] > 0 and (scores['earned'] / scores['possible']) < 0.7]
-        
-        if weak_los and per_lo:
-            print(f"\n  {Colours.BOLD}Recommended review for weak areas:{Colours.ENDC}")
-            for lo in weak_los:
-                if lo in per_lo:
-                    print(f"\n  {Colours.CYAN}{lo}:{Colours.ENDC}")
-                    for line in per_lo[lo].strip().split('\n'):
-                        print(f"     {line}")
-    
-    print()
+        colour = Colours.RED
+        status = "FAIL"
+
+    print(f"  Score: {colour}{result.earned_points}/{result.total_points} ({percentage:.1f}%) - {status}{Colours.ENDC}")
+    print(f"  Correct: {result.correct_count}/{result.total_questions} questions")
+
+    # Prediction accuracy
+    if result.predicted_score is not None:
+        diff = result.earned_points - result.predicted_score
+        print(f"  Prediction: {result.predicted_score} (Difference: {diff:+d})")
+
+    # LO breakdown
+    print(f"\n{Colours.CYAN}Learning Objective Scores:{Colours.ENDC}")
+    for lo, scores in sorted(result.lo_scores.items()):
+        pct = (scores["earned"] / scores["possible"] * 100) if scores["possible"] > 0 else 0
+        bar_len = int(pct / 5)
+        bar = "█" * bar_len + "░" * (20 - bar_len)
+        print(f"  {lo}: [{bar}] {scores['earned']}/{scores['possible']} ({pct:.0f}%)")
+
+    # Bloom level breakdown
+    print(f"\n{Colours.CYAN}Bloom Level Performance:{Colours.ENDC}")
+    bloom_scores: Dict[str, Dict[str, int]] = {}
+    for r in result.question_results:
+        bl = r.bloom_level
+        if bl not in bloom_scores:
+            bloom_scores[bl] = {"earned": 0, "possible": 0}
+        bloom_scores[bl]["earned"] += r.points_earned
+        bloom_scores[bl]["possible"] += r.points_possible
+
+    for bl in ["Remember", "Understand", "Apply", "Analyse", "Evaluate", "Create"]:
+        if bl in bloom_scores:
+            scores = bloom_scores[bl]
+            pct = (scores["earned"] / scores["possible"] * 100) if scores["possible"] > 0 else 0
+            print(f"  {bl}: {scores['earned']}/{scores['possible']} ({pct:.0f}%)")
+
+    # Feedback
+    feedback = quiz.get("feedback", {})
+    if percentage >= 70:
+        msg = feedback.get("on_pass", "Well done! You have passed the quiz.")
+    else:
+        msg = feedback.get("on_fail", "More study needed. Review the learning materials.")
+
+    print(f"\n{Colours.CYAN}Feedback:{Colours.ENDC}")
+    print(f"  {msg.strip()}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# EXPORT_FUNCTIONS
+# EXPORT FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════════
 def export_to_json(quiz: Dict, output_path: Path) -> None:
-    """Export quiz to JSON format."""
-    export_config = quiz.get('export', {}).get('json', {})
-    include_explanations = export_config.get('include_explanations', True)
-    include_verification = export_config.get('include_verification', False)
-    
+    """Export quiz to JSON format for LMS import."""
+    export_config = quiz.get("export", {}).get("json", {})
+
     export_data = {
-        "metadata": quiz.get('metadata', {}),
-        "questions": []
+        "metadata": quiz["metadata"],
+        "questions": [],
     }
-    
-    for q in quiz.get('questions', []):
+
+    include_explanations = export_config.get("include_explanations", True)
+    include_hints = export_config.get("include_hints", True)
+
+    for q in quiz["questions"]:
         q_export = {
-            "id": q.get('id'),
-            "type": q.get('type'),
-            "bloom_level": q.get('bloom_level'),
-            "lo_ref": q.get('lo_ref'),
-            "difficulty": q.get('difficulty'),
-            "points": q.get('points'),
-            "stem": q.get('stem'),
-            "correct": q.get('correct')
+            "id": q["id"],
+            "type": q.get("type", "multiple_choice"),
+            "bloom_level": q.get("bloom_level"),
+            "lo_ref": q.get("lo_ref"),
+            "points": q.get("points", 1),
+            "stem": q["stem"],
         }
-        
-        if q.get('type') == 'multiple_choice':
-            q_export['options'] = q.get('options')
-        
-        if include_explanations:
-            q_export['explanation'] = q.get('explanation')
-            q_export['hint'] = q.get('hint')
-        
-        if include_verification:
-            q_export['verification'] = q.get('verification')
-        
-        export_data['questions'].append(q_export)
-    
-    with open(output_path, 'w', encoding='utf-8') as f:
+
+        if "options" in q:
+            q_export["options"] = q["options"]
+        q_export["correct"] = q.get("correct")
+
+        if include_explanations and "explanation" in q:
+            q_export["explanation"] = q["explanation"]
+        if include_hints and "hint" in q:
+            q_export["hint"] = q["hint"]
+
+        export_data["questions"].append(q_export)
+
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(export_data, f, indent=2, ensure_ascii=False)
-    
-    print(f"Quiz exported to: {output_path}")
+
+    print(f"Exported to {output_path}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAIN_QUIZ_RUNNER
+# MAIN QUIZ RUNNER
 # ═══════════════════════════════════════════════════════════════════════════════
 def run_quiz(
-    quiz: Dict,
-    randomize: bool = False,
+    quiz_path: Path,
+    randomise: bool = False,
     limit: Optional[int] = None,
     lo_filter: Optional[List[str]] = None,
-    show_prediction: bool = True
+    show_prediction: bool = True,
 ) -> QuizResult:
-    """Run interactive quiz session."""
-    metadata = quiz.get('metadata', {})
-    questions = quiz.get('questions', [])
-    
-    # Apply filters
-    questions = filter_questions(questions, lo_filter=lo_filter)
-    
-    # Randomize if requested
-    if randomize:
-        questions = questions.copy()
-        random.shuffle(questions)
-    
-    # Limit questions if requested
-    if limit and limit < len(questions):
-        questions = questions[:limit]
-    
-    total_points = sum(q.get('points', 1) for q in questions)
-    
-    # Start quiz
-    title = f"Week {metadata.get('week', '?')}: {metadata.get('topic', 'Quiz')}"
-    print_banner(title)
-    
-    print(f"  {Colours.BOLD}Questions:{Colours.ENDC} {len(questions)}")
-    print(f"  {Colours.BOLD}Total Points:{Colours.ENDC} {total_points}")
-    print(f"  {Colours.BOLD}Passing Score:{Colours.ENDC} {metadata.get('passing_score_percent', 70)}%")
-    print(f"  {Colours.BOLD}Estimated Time:{Colours.ENDC} {metadata.get('estimated_time_minutes', 15)} minutes")
-    
-    # Prediction
-    prediction = None
-    if show_prediction:
-        prediction = prompt_prediction(len(questions), total_points)
-    
-    # Initialize result
-    result = QuizResult(
-        quiz_title=title,
-        started_at=datetime.now(),
-        prediction=prediction
+    """Run the interactive quiz."""
+    # Load quiz
+    quiz = load_quiz(quiz_path)
+    meta = quiz["metadata"]
+
+    # Display header
+    print_banner(f"Formative Quiz — Week {meta.get('week', '?')}: {meta.get('topic', 'Assessment')}")
+
+    print(f"  Version: {meta.get('version', '1.0')}")
+    print(f"  Questions: {len(quiz['questions'])}")
+    print(f"  Estimated time: {meta.get('estimated_time_minutes', '?')} minutes")
+    print(f"  Passing score: {meta.get('passing_score_percent', 70)}%")
+
+    # Filter questions
+    questions = filter_questions(
+        quiz["questions"],
+        lo_filter=lo_filter,
+        limit=limit,
+        randomise=randomise,
     )
-    
-    # Run questions
+
+    if not questions:
+        print(f"\n{Colours.RED}No questions match the filter criteria{Colours.ENDC}")
+        sys.exit(1)
+
+    # Calculate total points
+    total_points = sum(q.get("points", 1) for q in questions)
+
+    # Start quiz
+    print(f"\n{Colours.YELLOW}Starting quiz with {len(questions)} questions ({total_points} points)...{Colours.ENDC}")
+
+    # Prediction (metacognitive)
+    predicted = None
+    if show_prediction:
+        predicted = prompt_prediction(len(questions), total_points)
+
+    input(f"\n{Colours.CYAN}Press Enter to begin...{Colours.ENDC}")
+
+    # Create result tracker
+    result = QuizResult(
+        student_id="interactive",
+        quiz_version=meta.get("version", "1.0"),
+        started_at=datetime.now(),
+        predicted_score=predicted,
+    )
+
+    # Run each question
     for i, question in enumerate(questions, 1):
         q_result = ask_question(question, i, len(questions))
-        result.results.append(q_result)
-        
-        # Progress indicator
-        progress = i / len(questions)
-        bar_width = 30
-        filled = int(bar_width * progress)
-        bar = f"[{'█' * filled}{'░' * (bar_width - filled)}]"
-        print(f"\n  {Colours.DIM}Progress: {bar} {i}/{len(questions)}{Colours.ENDC}")
-    
-    result.ended_at = datetime.now()
-    
+        result.question_results.append(q_result)
+
+    result.finished_at = datetime.now()
+
+    # Display results
+    display_results(result, quiz)
+
     return result
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# PARSE_ARGUMENTS
+# CLI
 # ═══════════════════════════════════════════════════════════════════════════════
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Interactive Quiz Runner for Week 14 Lab Kit",
-        epilog="NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim"
+        description="Run formative assessment quiz",
+        epilog="NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim",
     )
-    
+
     parser.add_argument(
-        '--quiz', '-q',
+        "--quiz",
         type=Path,
-        default=Path(__file__).parent / 'quiz_week14.yaml',
-        help='Path to quiz YAML file (default: quiz_week14.yaml)'
+        default=Path(__file__).parent / "quiz.yaml",
+        help="Path to quiz YAML file (default: formative/quiz.yaml)",
     )
-    
     parser.add_argument(
-        '--random', '-r',
-        action='store_true',
-        help='Randomize question order'
+        "--random",
+        action="store_true",
+        help="Randomise question order",
     )
-    
     parser.add_argument(
-        '--limit', '-l',
+        "--limit",
         type=int,
-        help='Limit number of questions'
+        help="Limit to N questions",
     )
-    
     parser.add_argument(
-        '--lo',
-        nargs='+',
-        help='Filter by Learning Objectives (e.g., --lo LO1 LO2)'
+        "--lo",
+        nargs="+",
+        help="Filter by Learning Objectives (e.g., --lo LO1 LO2)",
     )
-    
     parser.add_argument(
-        '--no-prediction',
-        action='store_true',
-        help='Skip prediction prompt'
+        "--no-prediction",
+        action="store_true",
+        help="Skip score prediction prompt",
     )
-    
     parser.add_argument(
-        '--export',
-        choices=['json'],
-        help='Export quiz to format instead of running'
+        "--export",
+        choices=["json"],
+        help="Export quiz format instead of running",
     )
-    
     parser.add_argument(
-        '--output', '-o',
+        "--output",
         type=Path,
-        help='Output path for export'
+        help="Output file for export",
     )
-    
     parser.add_argument(
-        '--no-colour',
-        action='store_true',
-        help='Disable coloured output'
+        "--no-colour",
+        action="store_true",
+        help="Disable coloured output",
     )
-    
+
     return parser.parse_args()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
 def main() -> int:
     """Main entry point."""
     args = parse_args()
-    
-    # Disable colours if requested
+
     if args.no_colour:
         Colours.disable()
-    
-    # Load quiz
-    try:
-        quiz = load_quiz(args.quiz)
-    except (FileNotFoundError, ValueError) as e:
-        print(f"{Colours.RED}Error: {e}{Colours.ENDC}")
-        return 1
-    
-    # Export mode
+
     if args.export:
-        output_path = args.output or Path(f"quiz_export.{args.export}")
-        if args.export == 'json':
-            export_to_json(quiz, output_path)
+        quiz = load_quiz(args.quiz)
+        output = args.output or Path(f"quiz_export.{args.export}")
+        if args.export == "json":
+            export_to_json(quiz, output)
         return 0
-    
-    # Interactive mode
+
     try:
-        result = run_quiz(
-            quiz,
-            randomize=args.random,
+        run_quiz(
+            args.quiz,
+            randomise=args.random,
             limit=args.limit,
             lo_filter=args.lo,
-            show_prediction=not args.no_prediction
+            show_prediction=not args.no_prediction,
         )
-        
-        display_results(result, quiz)
-        
-        # Return appropriate exit code
-        scoring = quiz.get('scoring', {})
-        passing = scoring.get('passing_threshold', 70)
-        return 0 if result.earned_points >= passing else 1
-        
+        return 0
     except KeyboardInterrupt:
-        print(f"\n\n{Colours.YELLOW}Quiz interrupted. Progress not saved.{Colours.ENDC}")
-        return 130
+        print(f"\n\n{Colours.YELLOW}Quiz cancelled.{Colours.ENDC}")
+        return 1
+    except FileNotFoundError as e:
+        print(f"{Colours.RED}Error: {e}{Colours.ENDC}")
+        return 1
 
 
 if __name__ == "__main__":
