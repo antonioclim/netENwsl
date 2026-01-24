@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "week": 5,
+    "topic": "IP Addressing, Subnetting, VLSM",
+    "version": "1.0.0",
+    "author": "ing. dr. Antonio Clim, ASE-CSIE Bucharest",
+    "description": "Parsons problems in JSON format for programmatic access"
+  },
+  "problems": [
+    {
+      "id": "p01",
+      "title": "Calculate Usable Hosts",
+      "lo_ref": "LO3",
+      "bloom_level": "apply",
+      "difficulty": "basic",
+      "description": "Arrange the code blocks to calculate the number of usable hosts for a given prefix length.",
+      "language": "python",
+      "correct_order": [
+        "def calculate_usable_hosts(prefix: int) -> int:",
+        "    \"\"\"Calculate usable hosts for a given CIDR prefix.\"\"\"",
+        "    host_bits = 32 - prefix",
+        "    total_addresses = 2 ** host_bits",
+        "    usable_hosts = total_addresses - 2",
+        "    return usable_hosts"
+      ],
+      "distractors": [
+        "    usable_hosts = total_addresses - 1  # WRONG: forgets broadcast",
+        "    host_bits = prefix  # WRONG: should be 32 - prefix"
+      ],
+      "explanation": "The formula is: usable_hosts = 2^(32-prefix) - 2. We subtract 2 for network and broadcast addresses.",
+      "test_cases": [
+        {"input": 24, "expected": 254},
+        {"input": 26, "expected": 62},
+        {"input": 28, "expected": 14}
+      ]
+    },
+    {
+      "id": "p02",
+      "title": "Network Address Calculation",
+      "lo_ref": "LO3",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "description": "Arrange the code blocks to calculate the network address from an IP and prefix.",
+      "language": "python",
+      "correct_order": [
+        "import ipaddress",
+        "",
+        "def get_network_address(ip: str, prefix: int) -> str:",
+        "    \"\"\"Calculate network address using bitwise AND.\"\"\"",
+        "    interface = ipaddress.ip_interface(f\"{ip}/{prefix}\")",
+        "    network = interface.network",
+        "    return str(network.network_address)"
+      ],
+      "distractors": [
+        "    return str(interface.ip)  # WRONG: returns original IP",
+        "    network = interface.network_address  # WRONG: not an attribute"
+      ],
+      "explanation": "We use ipaddress.ip_interface to parse the CIDR notation, then access .network.network_address for the network address.",
+      "test_cases": [
+        {"input": ["192.168.10.14", 26], "expected": "192.168.10.0"},
+        {"input": ["172.16.45.67", 20], "expected": "172.16.32.0"}
+      ]
+    },
+    {
+      "id": "p03",
+      "title": "VLSM Prefix Calculator",
+      "lo_ref": "LO5",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "description": "Arrange the code blocks to calculate the minimum prefix needed for a given number of hosts.",
+      "language": "python",
+      "correct_order": [
+        "import math",
+        "",
+        "def minimum_prefix_for_hosts(hosts_needed: int) -> int:",
+        "    \"\"\"Calculate minimum prefix for required hosts.\"\"\"",
+        "    total_needed = hosts_needed + 2",
+        "    host_bits = math.ceil(math.log2(total_needed))",
+        "    prefix = 32 - host_bits",
+        "    return prefix"
+      ],
+      "distractors": [
+        "    total_needed = hosts_needed  # WRONG: forgets network/broadcast",
+        "    host_bits = math.floor(math.log2(total_needed))  # WRONG: needs ceil",
+        "    prefix = host_bits  # WRONG: should be 32 - host_bits"
+      ],
+      "explanation": "VLSM formula: prefix = 32 - ceil(log2(hosts + 2)). The +2 accounts for network and broadcast addresses.",
+      "test_cases": [
+        {"input": 60, "expected": 26},
+        {"input": 100, "expected": 25},
+        {"input": 2, "expected": 30}
+      ]
+    },
+    {
+      "id": "p04",
+      "title": "IPv6 Address Expansion",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "description": "Arrange the code blocks to expand a compressed IPv6 address to full form.",
+      "language": "python",
+      "correct_order": [
+        "import ipaddress",
+        "",
+        "def expand_ipv6(compressed: str) -> str:",
+        "    \"\"\"Expand compressed IPv6 to full 8-group form.\"\"\"",
+        "    addr = ipaddress.ip_address(compressed)",
+        "    full = addr.exploded",
+        "    return full"
+      ],
+      "distractors": [
+        "    full = str(addr)  # WRONG: returns compressed form",
+        "    full = addr.compressed  # WRONG: returns compressed form"
+      ],
+      "explanation": "The ipaddress module provides .exploded for full form and .compressed for shortest form.",
+      "test_cases": [
+        {"input": "2001:db8::1", "expected": "2001:0db8:0000:0000:0000:0000:0000:0001"},
+        {"input": "::1", "expected": "0000:0000:0000:0000:0000:0000:0000:0001"}
+      ]
+    },
+    {
+      "id": "p05",
+      "title": "FLSM Subnet Generator",
+      "lo_ref": "LO4",
+      "bloom_level": "apply",
+      "difficulty": "advanced",
+      "description": "Arrange the code blocks to generate N equal subnets using FLSM.",
+      "language": "python",
+      "correct_order": [
+        "import ipaddress",
+        "import math",
+        "",
+        "def flsm_subnets(network_cidr: str, num_subnets: int):",
+        "    \"\"\"Generate N equal-sized subnets using FLSM.\"\"\"",
+        "    network = ipaddress.ip_network(network_cidr, strict=False)",
+        "    bits_needed = math.ceil(math.log2(num_subnets))",
+        "    new_prefix = network.prefixlen + bits_needed",
+        "    subnets = list(network.subnets(new_prefix=new_prefix))",
+        "    return subnets[:num_subnets]"
+      ],
+      "distractors": [
+        "    new_prefix = bits_needed  # WRONG: should add to original prefix",
+        "    subnets = network.subnets()  # WRONG: missing new_prefix parameter",
+        "    bits_needed = num_subnets  # WRONG: should be ceil(log2(n))"
+      ],
+      "explanation": "FLSM borrows bits from host portion: new_prefix = original + ceil(log2(num_subnets)). Use ipaddress.subnets(new_prefix=X) to generate.",
+      "test_cases": [
+        {"input": ["192.168.0.0/24", 4], "expected_prefix": 26},
+        {"input": ["10.0.0.0/16", 8], "expected_prefix": 19}
+      ]
+    }
+  ]
+}

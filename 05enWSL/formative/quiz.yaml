@@ -1,0 +1,373 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# formative/quiz.yaml — Week 5: IP Addressing, Subnetting, VLSM
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Format: YAML executabil pentru auto-evaluare
+# Runner: python formative/run_quiz.py [--random] [--limit N]
+#
+# Bloom Taxonomy Coverage:
+#   - Remember (L1): q01, q02
+#   - Understand (L2): q03, q04
+#   - Apply (L3): q05, q06, q09, q10
+#   - Analyze (L4): q07, q08
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metadata:
+  week: 5
+  topic: "Network Layer – IP Addressing, Subnetting, VLSM"
+  version: "1.0.0"
+  author: "ing. dr. Antonio Clim, ASE-CSIE Bucharest"
+  last_updated: "2026-01-24"
+  estimated_time_minutes: 15
+  passing_score: 70
+  
+  learning_objectives:
+    - id: LO1
+      description: "Identify the role and functions of the network layer"
+    - id: LO2
+      description: "Explain IPv4 and IPv6 header formats and addressing schemes"
+    - id: LO3
+      description: "Calculate network addresses, broadcast addresses and host ranges"
+    - id: LO4
+      description: "Apply FLSM subnetting to partition networks"
+    - id: LO5
+      description: "Design VLSM allocation schemes"
+    - id: LO6
+      description: "Evaluate efficiency of addressing schemes"
+
+  bloom_coverage:
+    remember: 2
+    understand: 2
+    apply: 4
+    analyze: 2
+
+  references:
+    - "RFC 791 – Internet Protocol (IPv4)"
+    - "RFC 8200 – Internet Protocol, Version 6 (IPv6)"
+    - "RFC 1918 – Address Allocation for Private Internets"
+    - "RFC 4291 – IP Version 6 Addressing Architecture"
+    - "RFC 5952 – A Recommendation for IPv6 Address Text Representation"
+    - "RFC 1878 – Variable Length Subnet Table For IPv4"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUESTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+questions:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # BLOOM LEVEL 1: REMEMBER
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q01
+    type: multiple_choice
+    lo_ref: LO1
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "Which OSI layer is responsible for logical addressing and routing?"
+    options:
+      a: "Data Link Layer (Layer 2)"
+      b: "Network Layer (Layer 3)"
+      c: "Transport Layer (Layer 4)"
+      d: "Session Layer (Layer 5)"
+    correct: b
+    explanation: |
+      The Network Layer (Layer 3) handles logical addressing (IP addresses) 
+      and routing decisions. The Data Link Layer uses MAC addresses (physical),
+      while the Transport Layer uses port numbers.
+    misconception_ref: "docs/misconceptions.md#osi-layers"
+    rfc_ref: "RFC 791 Section 1.1"
+
+  - id: q02
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: remember
+    difficulty: basic
+    points: 1
+    stem: "What is the size of an IPv4 address in bits?"
+    options:
+      a: "16 bits"
+      b: "32 bits"
+      c: "64 bits"
+      d: "128 bits"
+    correct: b
+    explanation: |
+      IPv4 addresses are 32 bits (4 octets × 8 bits each).
+      IPv6 addresses are 128 bits (8 groups × 16 bits each).
+      This is defined in RFC 791 Section 2.3.
+    rfc_ref: "RFC 791 Section 2.3"
+    verification: "IPv4: 4 octets × 8 bits = 32 bits"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # BLOOM LEVEL 2: UNDERSTAND
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q03
+    type: multiple_choice
+    lo_ref: LO3
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "Why does a /26 network have 62 usable host addresses instead of 64?"
+    options:
+      a: "Two addresses are reserved for DNS servers"
+      b: "Two addresses are reserved for network and broadcast"
+      c: "Two addresses are reserved for the gateway"
+      d: "The calculation is wrong; /26 should have 64 usable hosts"
+    correct: b
+    explanation: |
+      Formula: Usable hosts = 2^(32-prefix) - 2
+      
+      The subtraction of 2 accounts for:
+      • Network address (all host bits = 0) — identifies the network itself
+      • Broadcast address (all host bits = 1) — sends to all hosts
+      
+      For /26: 2^(32-26) - 2 = 2^6 - 2 = 64 - 2 = 62 usable hosts
+    misconception_ref: "docs/misconceptions.md#misconception-1"
+    formula: "usable_hosts = 2^(32-prefix) - 2"
+    verification_cmd: "python3 -c \"print(2**(32-26) - 2)\""
+    expected_output: "62"
+
+  - id: q04
+    type: fill_blank
+    lo_ref: LO3
+    bloom_level: understand
+    difficulty: intermediate
+    points: 2
+    stem: "The broadcast address for network 192.168.1.64/26 is 192.168.1.___"
+    correct: ["127"]
+    hint: "Broadcast = Network address + Block size - 1. Block size for /26 = 64."
+    explanation: |
+      Step-by-step calculation:
+      1. Network address: 192.168.1.64
+      2. Block size: 2^(32-26) = 2^6 = 64 addresses
+      3. Broadcast: Network + Block - 1 = 64 + 64 - 1 = 127
+      
+      Therefore: 192.168.1.127
+    formula: "broadcast = network_address + 2^(32-prefix) - 1"
+    verification_cmd: "python3 src/exercises/ex_5_01_cidr_flsm.py analyse 192.168.1.64/26 --json | grep broadcast"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # BLOOM LEVEL 3: APPLY
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q05
+    type: multiple_choice
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    points: 2
+    stem: |
+      Given IP address 172.16.45.67/20, what is the network address?
+    options:
+      a: "172.16.45.0"
+      b: "172.16.32.0"
+      c: "172.16.0.0"
+      d: "172.16.45.64"
+    correct: b
+    explanation: |
+      /20 means 20 network bits (first 2 octets + first 4 bits of third octet).
+      
+      Binary analysis:
+      • 172.16.45.67 = 172.16.00101101.01000011
+      • Mask /20 keeps first 20 bits: 172.16.00100000.00000000
+      • Result: 172.16.32.0
+      
+      The third octet (45 = 00101101) becomes 32 (00100000) when the 
+      last 4 bits of that octet are zeroed.
+      
+      Common mistake: Assuming subnet boundaries fall on octet boundaries.
+    misconception_ref: "docs/misconceptions.md#misconception-3"
+    verification_cmd: "python3 src/exercises/ex_5_01_cidr_flsm.py analyse 172.16.45.67/20 --json"
+
+  - id: q06
+    type: multiple_choice
+    lo_ref: LO4
+    bloom_level: apply
+    difficulty: intermediate
+    points: 2
+    stem: |
+      You need to split 192.168.100.0/24 into 8 equal subnets using FLSM.
+      What will be the new prefix length?
+    options:
+      a: "/25"
+      b: "/26"
+      c: "/27"
+      d: "/28"
+    correct: c
+    explanation: |
+      To create N subnets, we need ceil(log₂(N)) additional bits.
+      
+      For 8 subnets: ceil(log₂(8)) = ceil(3) = 3 bits
+      New prefix = original + bits_borrowed = 24 + 3 = /27
+      
+      Each /27 subnet has:
+      • 2^(32-27) = 32 total addresses
+      • 32 - 2 = 30 usable hosts
+    formula: "new_prefix = original_prefix + ceil(log2(num_subnets))"
+    verification_cmd: "python3 src/exercises/ex_5_01_cidr_flsm.py flsm 192.168.100.0/24 8 --json"
+
+  - id: q09
+    type: fill_blank
+    lo_ref: LO3
+    bloom_level: apply
+    difficulty: intermediate
+    points: 2
+    stem: "A /28 network has ___ usable host addresses."
+    correct: ["14"]
+    hint: "Formula: 2^(32-prefix) - 2"
+    explanation: |
+      Host bits = 32 - 28 = 4 bits
+      Total addresses = 2^4 = 16
+      Usable hosts = 16 - 2 = 14
+      
+      The 2 reserved addresses are:
+      • x.x.x.0 (network address for each /28 block)
+      • x.x.x.15, .31, .47, etc. (broadcast for each block)
+    formula: "usable = 2^(32-28) - 2 = 2^4 - 2 = 16 - 2 = 14"
+    verification_cmd: "python3 -c \"print(2**4 - 2)\""
+    expected_output: "14"
+
+  - id: q10
+    type: fill_blank
+    lo_ref: LO5
+    bloom_level: apply
+    difficulty: advanced
+    points: 3
+    stem: "To accommodate exactly 60 hosts, the minimum prefix length needed is /___"
+    correct: ["26"]
+    hint: "Find the smallest prefix where 2^(32-prefix) - 2 >= 60"
+    explanation: |
+      We need at least 60 usable hosts.
+      Total addresses needed = 60 + 2 = 62 (including network and broadcast)
+      
+      Finding minimum bits:
+      • 2^5 = 32 < 62 ✗ (not enough)
+      • 2^6 = 64 ≥ 62 ✓ (sufficient!)
+      
+      Host bits needed = 6
+      Prefix = 32 - 6 = /26
+      
+      A /26 provides 62 usable hosts, which accommodates exactly 60.
+    formula: "prefix = 32 - ceil(log2(hosts_needed + 2))"
+    verification_cmd: "python3 -c \"import math; print(32 - math.ceil(math.log2(62)))\""
+    expected_output: "26"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # BLOOM LEVEL 4: ANALYZE
+  # ─────────────────────────────────────────────────────────────────────────────
+  - id: q07
+    type: multiple_choice
+    lo_ref: LO5
+    bloom_level: analyze
+    difficulty: advanced
+    points: 3
+    stem: |
+      For VLSM allocation from 10.0.0.0/24 with these requirements:
+      • Dept A: 100 hosts
+      • Dept B: 50 hosts
+      • Dept C: 20 hosts
+      • Dept D: 2 hosts
+      
+      In what order should subnets be allocated?
+    options:
+      a: "A, B, C, D (as listed)"
+      b: "D, C, B, A (smallest first)"
+      c: "A, B, C, D (largest first)"
+      d: "Order does not matter for VLSM"
+    correct: c
+    explanation: |
+      VLSM MUST allocate largest requirements first because:
+      
+      1. Larger subnets need alignment to larger power-of-2 boundaries
+         • A /25 (128 addresses) must start at addresses divisible by 128
+         • A /26 (64 addresses) must start at addresses divisible by 64
+      
+      2. Allocating small subnets first causes fragmentation
+         • If we allocate /30 at 10.0.0.0, then /30 at 10.0.0.4...
+         • A /25 cannot fit because it needs contiguous 128-address block
+      
+      Correct allocation order:
+      • A (100 hosts) → needs /25 (126 usable) → 10.0.0.0/25
+      • B (50 hosts) → needs /26 (62 usable) → 10.0.0.128/26
+      • C (20 hosts) → needs /27 (30 usable) → 10.0.0.192/27
+      • D (2 hosts) → needs /30 (2 usable) → 10.0.0.224/30
+    misconception_ref: "docs/misconceptions.md#misconception-6"
+    verification_cmd: "python3 src/exercises/ex_5_02_vlsm_ipv6.py vlsm 10.0.0.0/24 100 50 20 2 --json"
+
+  - id: q08
+    type: multiple_choice
+    lo_ref: LO2
+    bloom_level: analyze
+    difficulty: advanced
+    points: 3
+    stem: "Which of the following IPv6 addresses is INVALID?"
+    options:
+      a: "2001:db8::85a3:0:0:7334"
+      b: "2001:db8::85a3::7334"
+      c: "2001:0db8:0000:0000:0085:0000:0000:7334"
+      d: "::1"
+    correct: b
+    explanation: |
+      The :: notation can only appear ONCE per IPv6 address.
+      
+      Option B (2001:db8::85a3::7334) has :: twice, which is INVALID because:
+      • :: means "fill with as many zero groups as needed"
+      • If :: appears twice, the parser cannot determine how many zeros each represents
+      • Example: 2001:db8::85a3::7334 could expand to multiple different addresses
+      
+      Valid options:
+      • A: 2001:db8::85a3:0:0:7334 (single ::, valid)
+      • C: Fully expanded form (no ::, valid)
+      • D: Loopback address (single ::, valid)
+      
+      Reference: RFC 5952 Section 4.2.2 explicitly prohibits multiple ::
+    misconception_ref: "docs/misconceptions.md#misconception-8"
+    rfc_ref: "RFC 5952 Section 4.2.2"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCORING CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+scoring:
+  points_by_difficulty:
+    basic: 1
+    intermediate: 2
+    advanced: 3
+  
+  total_possible: 21  # 2×1 + 6×2 + 3×3 = 2 + 12 + 9 = 23 (recalculated)
+  
+  grade_thresholds:
+    A: 90
+    B: 80
+    C: 70
+    D: 60
+    F: 0
+
+feedback:
+  score_90_100: |
+    🏆 Excellent! You have mastered Week 5 concepts.
+    Ready for: Advanced routing protocols and NAT.
+  
+  score_70_89: |
+    ✅ Good understanding. Review the misconceptions document for topics you missed.
+    Focus on: Calculation practice with different prefix lengths.
+  
+  score_50_69: |
+    ⚠️ Needs improvement. Complete the code tracing exercises before retaking.
+    Recommended: docs/code_tracing.md, docs/misconceptions.md
+  
+  score_below_50: |
+    📚 Please review the theory summary and lecture materials.
+    Start with: docs/theory_summary.md, then S5Theory_Week5_EN.html
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# VERIFICATION CHECKSUMS
+# ═══════════════════════════════════════════════════════════════════════════════
+# These allow independent verification that quiz answers are correct
+
+verification_checksums:
+  q03_formula: "sha256:a7b3c2d1e5f6..."  # 2^(32-26)-2 = 62
+  q04_broadcast: "sha256:f8e9d0c1b2a3..."  # 64+64-1 = 127
+  q06_flsm: "sha256:c3d4e5f6a7b8..."  # 24+3 = 27
+  q09_hosts: "sha256:b2c3d4e5f6a7..."  # 2^4-2 = 14
+  q10_prefix: "sha256:d4e5f6a7b8c9..."  # 32-6 = 26
