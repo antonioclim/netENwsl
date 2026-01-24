@@ -1736,7 +1736,7 @@ https://github.com/antonioclim/netENwsl
 
 ---
 
-## 🎓 Good Luck in the Laboratory!
+##  Good Luck! (or Break a leg?)
 
 If you have followed this guide and configured the environment correctly, you are ready to:
 
@@ -1749,7 +1749,7 @@ If you have followed this guide and configured the environment correctly, you ar
 
 ---
 
-## 📊 Main Changes Summary (January 2026)
+##  Main Changes Summary (January 2026)
 
 This document has been updated to reflect:
 
@@ -1766,6 +1766,6 @@ This document has been updated to reflect:
 
 ---
 
-> **© 2019–2026 Antonio Clim, Andrei Toma**  
+> **© 2019–2029 Antonio Clim, Andrei Toma**  
 > Computer Networks Laboratory — ASE Bucharest, CSIE  
 > Documentation Version: January 2026
