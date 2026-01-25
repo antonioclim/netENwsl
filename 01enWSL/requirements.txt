@@ -1,0 +1,26 @@
+# requirements.txt — Week 1 (root)
+# NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Use this file for local development and CI.
+# For the runtime baseline, see setup/requirements.txt.
+#
+# Install: pip install -r requirements.txt --break-system-packages
+
+-r setup/requirements.txt
+
+# Linting and formatting
+ruff>=0.6.0,<1.0.0
+flake8>=7.0.0,<8.0.0
+
+# Typing and quality
+mypy>=1.10.0,<2.0.0
+
+# Testing
+pytest>=7.0.0,<9.0.0
+pytest-cov>=4.0.0,<6.0.0
+
+# Git hooks
+pre-commit>=3.7.0,<5.0.0
+
+# JSON Schema validation (for quiz)
+jsonschema>=4.20.0,<5.0.0

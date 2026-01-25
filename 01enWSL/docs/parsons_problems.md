@@ -2,175 +2,278 @@
 
 > Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
-Parsons problems are code arrangement exercises with **distractors** (incorrect blocks).
+Parsons problems are code arrangement exercises. Each problem contains **two distractor blocks**: they look plausible but should not be used.
 
-## P1: Ping Latency Measurement (LO1)
+**How to use in class**
+- Give students the scrambled blocks first.
+- Ask for a predicted output.
+- Let pairs agree on an order then run the code.
+- Compare outputs and explain why each distractor is wrong.
 
-**Task:** Arrange blocks to ping a host 4 times and extract average RTT.
+---
 
-### Correct Blocks
+## P1: Ping RTT summary (LO1)
+
+**Task:** Arrange blocks to ping a host 4 times and extract the average RTT from the summary line.
+
+### Scrambled blocks
+
 ```python
-# A
+# Block A
+import re
 import subprocess
-# B
-result = subprocess.run(["ping", "-c", "4", "8.8.8.8"], capture_output=True, text=True)
-# C
-output = result.stdout
-# D
-for line in output.split("\n"):
-    if "avg" in line:
-        print(f"Average RTT: {line}")
+
+# Block B
+cmd = ["ping", "-c", "4", "8.8.8.8"]
+
+# Block C
+out = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+
+# Block D
+m = re.search(r"rtt .* = .*?/.*?/(.*?)/", out)
+
+# Block E
+print(float(m.group(1)))
+
+# Block F (DISTRACTOR 1)
+cmd = ["ping", "8.8.8.8", "-n", "4"]  # Windows flag, not WSL
+
+# Block G (DISTRACTOR 2)
+m = re.search(r"time=(\d+)", out)  # Only gets first packet, not average
 ```
 
-### Distractors
+### Correct order
+<details>
+<summary>Reveal</summary>
+
 ```python
-# E (wrong flag - Windows syntax)
-result = subprocess.run(["ping", "-n", "4", "8.8.8.8"], capture_output=True, text=True)
-# F (missing capture)
-result = subprocess.run(["ping", "-c", "4", "8.8.8.8"])
+import re
+import subprocess
+
+cmd = ["ping", "-c", "4", "8.8.8.8"]
+out = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+m = re.search(r"rtt .* = .*?/.*?/(.*?)/", out)
+print(float(m.group(1)))
 ```
 
-**Order:** A → B → C → D | Exclude: E, F
+**Why the distractors are wrong:**
+- **Block F:** `-n` is the Windows syntax. In WSL you need `-c`.
+- **Block G:** This regex only extracts the first packet's RTT, not the average from the summary line.
+</details>
 
 ---
 
-## P2: TCP Server Setup (LO2)
+## P2: Identify your active interface (LO1)
 
-**Task:** Create a TCP server listening on port 9090.
+**Task:** Parse `ip a` output and print the first non-loopback interface that has an IPv4 address.
 
-### Correct Blocks
+### Scrambled blocks
+
 ```python
-# A
-import socket
-# B
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# C
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-# D
-server_socket.bind(("0.0.0.0", 9090))
-# E
-server_socket.listen(1)
-# F
-client_socket, address = server_socket.accept()
+# Block A
+import re
+import subprocess
+
+# Block B
+out = subprocess.run(["ip", "a"], capture_output=True, text=True, check=True).stdout
+
+# Block C
+blocks = out.split("\n\n")
+
+# Block D
+for blk in blocks:
+    if " lo:" in blk:
+        continue
+    if re.search(r"\binet\s+\d+\.\d+\.\d+\.\d+/", blk):
+        name = re.search(r"^\d+:\s+([^:]+):", blk).group(1)
+        print(name)
+        break
+
+# Block E (DISTRACTOR 1)
+print("eth0")  # Assumes a fixed name
+
+# Block F (DISTRACTOR 2)
+out = subprocess.run(["ifconfig"], capture_output=True, text=True, check=True).stdout
 ```
 
-### Distractors
+### Correct order
+<details>
+<summary>Reveal</summary>
+
 ```python
-# G (UDP socket)
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# H (connect instead of bind)
-server_socket.connect(("0.0.0.0", 9090))
+import re
+import subprocess
+
+out = subprocess.run(["ip", "a"], capture_output=True, text=True, check=True).stdout
+blocks = out.split("\n\n")
+for blk in blocks:
+    if " lo:" in blk:
+        continue
+    if re.search(r"\binet\s+\d+\.\d+\.\d+\.\d+/", blk):
+        name = re.search(r"^\d+:\s+([^:]+):", blk).group(1)
+        print(name)
+        break
 ```
 
-**Order:** A → B → C → D → E → F | Exclude: G, H
+**Why the distractors are wrong:**
+- **Block E:** Interface names vary. In containers you may see `eth0`, in WSL you might see something else entirely.
+- **Block F:** `ifconfig` is deprecated and may not be installed. The modern tool is `ip`.
+</details>
 
 ---
 
-## P3: CSV Data Parsing (LO3)
+## P3: Listening sockets count (LO4)
 
-**Task:** Parse CSV file and extract unique IPs.
+**Task:** Count listening TCP sockets using `ss -tulpn` output.
 
-### Correct Blocks
+### Scrambled blocks
+
 ```python
-# A
-import csv
-# B
-ip_addresses = []
-# C
-with open("connections.csv", "r") as file:
-# D
-    reader = csv.DictReader(file)
-# E
-    for row in reader:
-# F
-        ip = row["source_ip"]
-        if ip not in ip_addresses:
-            ip_addresses.append(ip)
+# Block A
+import subprocess
+
+# Block B
+out = subprocess.run(["ss", "-tulpn"], capture_output=True, text=True, check=True).stdout
+
+# Block C
+lines = [ln for ln in out.splitlines() if ln.strip().startswith("tcp")]
+
+# Block D
+listen = [ln for ln in lines if "LISTEN" in ln]
+
+# Block E
+print(len(listen))
+
+# Block F (DISTRACTOR 1)
+out = subprocess.run(["netstat", "-an"], capture_output=True, text=True, check=True).stdout
+
+# Block G (DISTRACTOR 2)
+lines = out.split(",")  # Wrong delimiter for line splitting
 ```
 
-### Distractors
+### Correct order
+<details>
+<summary>Reveal</summary>
+
 ```python
-# G (wrong module)
-import json
-# H (string split - fails with quoted commas)
-    for line in file:
-        ip = line.split(",")[0]
+import subprocess
+
+out = subprocess.run(["ss", "-tulpn"], capture_output=True, text=True, check=True).stdout
+lines = [ln for ln in out.splitlines() if ln.strip().startswith("tcp")]
+listen = [ln for ln in lines if "LISTEN" in ln]
+print(len(listen))
 ```
 
-**Order:** A → B → C → D → E → F | Exclude: G, H
+**Why the distractors are wrong:**
+- **Block F:** `netstat` may not be installed and it produces different output format. Also drops the process mapping which is the point of `-p`.
+- **Block G:** Using `split(",")` is wrong — output is line-based, not comma-separated.
+</details>
 
 ---
 
-## P4: TCP Client Connection (LO2)
+## P4: Traceroute hop extraction (LO3)
 
-**Task:** Connect to server, send message, receive response.
+**Task:** Extract the hop numbers from `traceroute` output.
 
-### Correct Blocks
+### Scrambled blocks
+
 ```python
-# A
-import socket
-# B
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# C
-client_socket.connect(("127.0.0.1", 9090))
-# D
-client_socket.sendall("Hello".encode("utf-8"))
-# E
-response = client_socket.recv(4096)
-# F
-client_socket.close()
+# Block A
+import subprocess
+
+# Block B
+out = subprocess.run(["traceroute", "-n", "8.8.8.8"], capture_output=True, text=True, check=True).stdout
+
+# Block C
+hops = []
+for ln in out.splitlines():
+    if ln and ln[0].isdigit():
+        hops.append(int(ln.split()[0]))
+
+# Block D
+print(hops[:5])
+
+# Block E (DISTRACTOR 1)
+out = subprocess.run(["tracert", "8.8.8.8"], capture_output=True, text=True, check=True).stdout
+
+# Block F (DISTRACTOR 2)
+hops = out.count("\n")  # Counts all lines, not just hops
 ```
 
-### Distractors
+### Correct order
+<details>
+<summary>Reveal</summary>
+
 ```python
-# G (send before connect)
-client_socket.sendall("Hello".encode("utf-8"))
-client_socket.connect(("127.0.0.1", 9090))
-# H (no encode)
-client_socket.sendall("Hello")
+import subprocess
+
+out = subprocess.run(["traceroute", "-n", "8.8.8.8"], capture_output=True, text=True, check=True).stdout
+hops = []
+for ln in out.splitlines():
+    if ln and ln[0].isdigit():
+        hops.append(int(ln.split()[0]))
+print(hops[:5])
 ```
 
-**Order:** A → B → C → D → E → F | Exclude: G, H
+**Why the distractors are wrong:**
+- **Block E:** `tracert` is the Windows tool, not available in WSL by default.
+- **Block F:** Counting newlines includes the header line and blank lines, not just hop entries.
+</details>
 
 ---
 
-## P5: Docker Lab Startup (LO6)
+## P5: Loopback sanity check (LO1)
 
-**Task:** Start lab environment correctly.
+**Task:** Verify that `127.0.0.1` resolves to loopback by reading `ip route get 127.0.0.1`.
 
-### Correct Blocks
-```bash
-# A
-sudo service docker start
-# B  
-cd /mnt/d/NETWORKING/WEEK1/01enWSL
-# C
-docker compose -f docker/docker-compose.yml up -d
-# D
-docker ps
+### Scrambled blocks
+
+```python
+# Block A
+import subprocess
+
+# Block B
+out = subprocess.run(["ip", "route", "get", "127.0.0.1"], capture_output=True, text=True, check=True).stdout
+
+# Block C
+print("lo" in out)
+
+# Block D (DISTRACTOR 1)
+out = subprocess.run(["ipconfig"], capture_output=True, text=True, check=True).stdout
+
+# Block E (DISTRACTOR 2)
+out = subprocess.run(["route", "print"], capture_output=True, text=True, check=True).stdout
 ```
 
-### Distractors
-```bash
-# E (wrong directory)
-cd /mnt/c/Users/NETWORKING/
-# F (missing -d flag)
-docker compose -f docker/docker-compose.yml up
+### Correct order
+<details>
+<summary>Reveal</summary>
+
+```python
+import subprocess
+
+out = subprocess.run(["ip", "route", "get", "127.0.0.1"], capture_output=True, text=True, check=True).stdout
+print("lo" in out)
 ```
 
-**Order:** A → B → C → D | Exclude: E, F
+**Why the distractors are wrong:**
+- **Block D:** `ipconfig` is a Windows command and does not exist in WSL Linux.
+- **Block E:** `route print` is Windows syntax. Linux uses `ip route` or the deprecated `route` without `print`.
+</details>
 
 ---
 
 ## Summary
 
-| Problem | LO | Correct | Distractors | Difficulty |
-|---------|----|---------:|:-----------:|------------|
-| P1 | LO1 | 4 | 2 | Basic |
-| P2 | LO2 | 6 | 2 | Intermediate |
-| P3 | LO3 | 6 | 2 | Intermediate |
-| P4 | LO2 | 6 | 2 | Intermediate |
-| P5 | LO6 | 4 | 2 | Basic |
+| Problem | Topic | LO | Key Learning |
+|---------|-------|----|-|
+| P1 | Ping RTT | LO1 | Linux vs Windows flags, regex for summary |
+| P2 | Interface discovery | LO1 | Modern `ip` vs deprecated `ifconfig` |
+| P3 | Socket listing | LO4 | `ss` vs `netstat`, line parsing |
+| P4 | Traceroute | LO3 | Linux vs Windows tools, hop extraction |
+| P5 | Loopback routing | LO1 | `ip route` vs Windows commands |
 
 ---
+
 *NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*

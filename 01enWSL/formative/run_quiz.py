@@ -79,145 +79,484 @@ def save_quiz_json(quiz: dict[str, Any], path: Path) -> None:
 # QUIZ VALIDATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def validate_quiz(quiz: dict[str, Any]) -> tuple[bool, list[str]]:
-    """Validate quiz structure and content."""
-    errors = []
-
-    required_keys = ["metadata", "questions"]
-    for key in required_keys:
-        if key not in quiz:
-            errors.append(f"Missing required key: {key}")
-
-    if errors:
-        return False, errors
-
-    meta = quiz.get("metadata", {})
-    for key in ["week", "topic", "total_questions"]:
-        if key not in meta:
-            errors.append(f"Metadata missing: {key}")
-
-    questions = quiz.get("questions", [])
-    question_ids = set()
-
-    for i, q in enumerate(questions):
-        q_id = q.get("id", f"question_{i}")
-
-        if q_id in question_ids:
-            errors.append(f"Duplicate question ID: {q_id}")
-        question_ids.add(q_id)
-
-        for field in ["id", "type", "stem"]:
-            if field not in q:
-                errors.append(f"Question {q_id} missing field: {field}")
-
-        if "correct" not in q and "correct_answer" not in q and "correct_answers" not in q:
-            errors.append(f"Question {q_id} missing correct answer")
-
-    for section in quiz.get("sections", []):
-        for qid in section.get("questions", []):
-            if qid not in question_ids:
-                errors.append(f"Section '{section.get('id')}' references unknown question: {qid}")
-
-    declared_count = meta.get("total_questions", 0)
-    actual_count = len(questions)
-    if declared_count != actual_count:
-        errors.append(f"Metadata declares {declared_count} questions but found {actual_count}")
-
-    return len(errors) == 0, errors
-
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# INTERACTIVE QUIZ RUNNER
+# QUIZ HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def run_interactive_quiz(
-    quiz: dict[str, Any],
-    section_id: str | None = None,
-    randomise: bool = False,
-    limit: int | None = None
-) -> float:
-    """Run interactive quiz in terminal."""
-    questions = quiz.get("questions", [])
+def build_question_index(quiz: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    bank = quiz.get("questions") or []
+    index: dict[str, dict[str, Any]] = {}
+    if isinstance(bank, list):
+        for q in bank:
+            if isinstance(q, dict) and q.get("id"):
+                index[str(q["id"])] = q
+    elif isinstance(bank, dict):
+        for k, v in bank.items():
+            if isinstance(v, dict):
+                index[str(k)] = v
+    return index
 
-    if section_id:
-        section = next((s for s in quiz.get("sections", []) if s["id"] == section_id), None)
-        if not section:
-            print(f"Error: Section '{section_id}' not found")
-            return 0.0
-        section_qids = set(section.get("questions", []))
-        questions = [q for q in questions if q["id"] in section_qids]
 
-    if not questions:
-        print("No questions to run")
-        return 0.0
+def iter_questions(quiz: dict[str, Any], section: str | None = None):
+    """Yield (section_id, question_dict) pairs, resolving question references."""
+    q_index = build_question_index(quiz)
+    sections = quiz.get("sections", [])
+    if isinstance(sections, dict):
+        items = [(str(k), v) for k, v in sections.items()]
+    elif isinstance(sections, list):
+        items = [(str(s.get("id") or s.get("name") or ""), s) for s in sections if isinstance(s, dict)]
+    else:
+        items = []
 
-    if randomise:
-        random.shuffle(questions)
-    if limit:
-        questions = questions[:limit]
-
-    meta = quiz.get("metadata", {})
-    print("\n" + "=" * 70)
-    print(f"  QUIZ: {meta.get('topic', 'Unknown Topic')}")
-    print(f"  Week {meta.get('week', '?')} | Questions: {len(questions)}")
-    print(f"  Passing Score: {meta.get('passing_score', 70)}%")
-    print("=" * 70)
-
-    correct = 0
-    total_points = 0
-    earned_points = 0
-
-    for i, q in enumerate(questions, 1):
-        points = q.get("points", 1)
-        total_points += points
-
-        print(f"\n{'─' * 70}")
-        print(f"Q{i}/{len(questions)} [{q.get('lo_ref', '?')}] [{q.get('difficulty', '?')}] ({points} pts)")
-        print(f"\n{q['stem']}\n")
-
-        q_type = q.get("type", "multiple_choice")
-        user_correct = False
-
-        if q_type == "multiple_choice":
-            user_correct = _ask_multiple_choice(q)
-        elif q_type == "fill_blank":
-            user_correct = _ask_fill_blank(q)
-        elif q_type == "true_false":
-            user_correct = _ask_true_false(q)
-        elif q_type == "numeric":
-            user_correct = _ask_numeric(q)
-        elif q_type == "ordering":
-            user_correct = _ask_ordering(q)
-        else:
-            print(f"  [Skipped: Unsupported question type '{q_type}']")
+    for sec_id, sec in items:
+        if section and sec_id != section:
             continue
+        refs = sec.get("questions", []) or []
+        for ref in refs:
+            if isinstance(ref, dict):
+                yield sec_id, ref
+                continue
+            qid = str(ref)
+            q = q_index.get(qid)
+            if q is not None:
+                yield sec_id, q
 
-        if user_correct:
-            correct += 1
-            earned_points += points
-            print("  ✅ Correct!")
+def normalise_options(options: Any) -> list[dict[str, Any]]:
+    """Return options as a list of {key, text} dicts."""
+    if options is None:
+        return []
+    if isinstance(options, dict):
+        return [{"key": k, "text": str(v)} for k, v in options.items()]
+    if isinstance(options, list):
+        return _normalise_list_options(options)
+    return []
+
+
+def _normalise_list_options(options: list[Any]) -> list[dict[str, Any]]:
+    if not options:
+        return []
+    if all(isinstance(x, str) for x in options):
+        return _options_from_strings(options)
+    if all(isinstance(x, dict) for x in options):
+        return _options_from_dicts(options)
+    return []
+
+
+def _options_from_strings(items: list[str]) -> list[dict[str, Any]]:
+    keys = [chr(ord("A") + i) for i in range(len(items))]
+    return [{"key": k, "text": t} for k, t in zip(keys, items)]
+
+
+def _options_from_dicts(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for item in items:
+        key = str(item.get("key") or item.get("id") or item.get("label") or "")
+        text = str(item.get("text") or item.get("value") or "")
+        out.append({"key": key, "text": text})
+    return out
+
+def quiz_title(quiz: dict[str, Any]) -> str:
+    meta = quiz.get("metadata", {})
+    return str(meta.get("title") or "Week 1 Formative Quiz")
+
+
+
+def _et_text(parent, tag: str, text: str, attrs: dict[str, str] | None = None):
+    import xml.etree.ElementTree as ET
+    el = ET.SubElement(parent, tag, attrs or {})
+    el_text = ET.SubElement(el, "text")
+    el_text.text = text
+    return el
+
+def validate_quiz(quiz: dict[str, Any]) -> tuple[bool, list[str]]:
+    """Validate quiz structure, section references and question fields."""
+    errors: list[str] = []
+    errors.extend(_validate_top_level(quiz))
+
+    q_index = build_question_index(quiz)
+    errors.extend(_validate_question_bank(q_index))
+
+    for sec_name, sec in _iter_sections(quiz):
+        errors.extend(_validate_section(sec_name, sec))
+        errors.extend(_validate_section_refs(sec_name, sec, q_index))
+
+    return (len(errors) == 0), errors
+
+
+def _validate_question_bank(q_index: dict[str, dict[str, Any]]) -> list[str]:
+    errors: list[str] = []
+    if not q_index:
+        errors.append("Question bank is empty or missing ids")
+        return errors
+    for qid, q in q_index.items():
+        errors.extend(_validate_question("bank", qid, q))
+    return errors
+
+
+def _validate_section_refs(section: str, sec: dict[str, Any], q_index: dict[str, dict[str, Any]]) -> list[str]:
+    errors: list[str] = []
+    refs = sec.get("questions", []) or []
+    for idx, ref in enumerate(refs, start=1):
+        if isinstance(ref, dict):
+            continue
+        qid = str(ref)
+        if qid not in q_index:
+            errors.append(f"{section} ref{idx}: unknown question id '{qid}'")
+    return errors
+
+def _validate_top_level(quiz: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if "metadata" not in quiz:
+        errors.append("Missing top-level key: metadata")
+    if "sections" not in quiz:
+        errors.append("Missing top-level key: sections")
+    if "questions" not in quiz:
+        errors.append("Missing top-level key: questions")
+    sections = quiz.get("sections")
+    if sections is not None and not isinstance(sections, (list, dict)):
+        errors.append("Invalid sections: must be a list or dict")
+    bank = quiz.get("questions")
+    if bank is not None and not isinstance(bank, (list, dict)):
+        errors.append("Invalid questions: must be a list or dict")
+    return errors
+
+def _iter_sections(quiz: dict[str, Any]):
+    sections = quiz.get("sections") or []
+    if isinstance(sections, dict):
+        for name, sec in sections.items():
+            yield str(name), sec
+    elif isinstance(sections, list):
+        for sec in sections:
+            if not isinstance(sec, dict):
+                continue
+            sec_id = str(sec.get("id") or sec.get("name") or "")
+            yield sec_id, sec
+
+
+def _validate_section(name: str, sec: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(sec, dict):
+        return [f"Section {name}: section must be a mapping"]
+    if "questions" not in sec or not isinstance(sec.get("questions"), list):
+        errors.append(f"Section {name}: missing or invalid questions list")
+    return errors
+
+
+def _validate_question(section: str, idx: int, q: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    prefix = f"{section} q{idx}"
+    if not isinstance(q, dict):
+        return [f"{prefix}: question must be a mapping"]
+    qtype = str(q.get("type") or "").strip()
+    stem = str(q.get("stem") or q.get("question") or "").strip()
+    if not qtype:
+        errors.append(f"{prefix}: missing type")
+    if not stem:
+        errors.append(f"{prefix}: missing stem")
+    if qtype in {"multiple_choice", "mcq"}:
+        errors.extend(_validate_mcq(prefix, q))
+    elif qtype == "ordering":
+        errors.extend(_validate_ordering(prefix, q))
+    elif qtype in {"true_false", "fill_blank", "numeric"}:
+        errors.extend(_validate_simple_answer(prefix, q))
+    else:
+        if qtype:
+            errors.append(f"{prefix}: unsupported type '{qtype}'")
+    return errors
+
+
+def _validate_mcq(prefix: str, q: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    opts = normalise_options(q.get("options"))
+    if len(opts) < 2:
+        errors.append(f"{prefix}: multiple_choice needs at least 2 options")
+        return errors
+    correct = q.get("correct")
+    keys = {o.get("key") for o in opts if o.get("key")}
+    if correct is None:
+        errors.append(f"{prefix}: missing correct option key")
+    elif str(correct) not in keys:
+        errors.append(f"{prefix}: correct '{correct}' not in options keys")
+    return errors
+
+
+def _validate_ordering(prefix: str, q: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    items_raw = q.get("items")
+    order_raw = q.get("correct_order")
+
+    items = _ordering_tokens(items_raw)
+    correct_order = _ordering_tokens(order_raw)
+
+    if len(items) < 2:
+        errors.append(f"{prefix}: ordering needs items list (>=2)")
+    if len(correct_order) < 2:
+        errors.append(f"{prefix}: ordering needs correct_order list (>=2)")
+    if items and correct_order and set(items) != set(correct_order):
+        errors.append(f"{prefix}: correct_order must be a permutation of items")
+    return errors
+
+
+def _ordering_tokens(raw: Any) -> list[str]:
+    if not isinstance(raw, list):
+        return []
+    out: list[str] = []
+    for x in raw:
+        if isinstance(x, dict):
+            out.append(str(x.get("id") or x.get("text") or x.get("value") or ""))
         else:
-            correct_answer = q.get("correct", q.get("correct_answer", "?"))
-            print(f"  ❌ Incorrect. Answer: {correct_answer}")
+            out.append(str(x))
+    return [t for t in out if t]
 
-        if "explanation" in q:
-            explanation = q["explanation"]
-            if isinstance(explanation, str):
-                print(f"\n  📖 {explanation[:200]}...")
+def _validate_simple_answer(prefix: str, q: dict[str, Any]) -> list[str]:
+    if "answer" in q or "correct" in q:
+        return []
+    return [f"{prefix}: missing answer/correct value"]
 
-    score = (earned_points / total_points * 100) if total_points > 0 else 0
-    passed = score >= meta.get("passing_score", 70)
+def export_to_canvas_json(quiz: dict[str, Any], output_path: Path) -> None:
+    """Export quiz to a Canvas-friendly JSON payload."""
+    payload = {
+        "title": quiz_title(quiz),
+        "exported_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "questions": [],
+    }
 
-    print("\n" + "=" * 70)
-    print("  RESULTS")
-    print(f"  Correct: {correct}/{len(questions)}")
-    print(f"  Points: {earned_points}/{total_points}")
-    print(f"  Score: {score:.1f}%")
-    print(f"  Status: {'✅ PASSED' if passed else '❌ NEEDS REVIEW'}")
-    print("=" * 70 + "\n")
+    for sec_name, q in iter_questions(quiz):
+        item = _canvas_map_question(sec_name, q)
+        if item:
+            payload["questions"].append(item)
 
-    return score
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
 
+
+def _canvas_map_question(section: str, q: dict[str, Any]) -> dict[str, Any] | None:
+    qtype = str(q.get("type") or "").strip()
+    stem = str(q.get("stem") or q.get("question") or "").strip()
+    if not qtype or not stem:
+        return None
+
+    if qtype == "true_false":
+        opts = [{"key": "A", "text": "True"}, {"key": "B", "text": "False"}]
+        correct = "A" if bool(q.get("correct")) else "B"
+        return _canvas_mcq_payload(section, stem, opts, correct)
+
+    if qtype in {"multiple_choice", "mcq"}:
+        opts = normalise_options(q.get("options"))
+        correct = str(q.get("correct") or "").strip()
+        if not opts or not correct:
+            return None
+        return _canvas_mcq_payload(section, stem, opts, correct)
+
+    return None
+
+
+def _canvas_mcq_payload(section: str, stem: str, opts: list[dict[str, Any]], correct: str) -> dict[str, Any]:
+    return {
+        "section": section,
+        "type": "multiple_choice",
+        "stem": stem,
+        "options": [{"id": o["key"], "text": o["text"]} for o in opts],
+        "correct": correct,
+    }
+
+def run_interactive_quiz(quiz: dict[str, Any], section: str | None = None, limit: int | None = None, randomise: bool = True) -> None:
+    """Run the quiz in interactive mode."""
+    questions = _collect_questions_for_run(quiz, section, limit, randomise)
+    if not questions:
+        print("No questions found for the selected section.")
+        return
+
+    print(f"Quiz: {quiz_title(quiz)}")
+    print(f"Questions: {len(questions)}")
+    print("-" * 60)
+
+    results = _run_question_loop(questions)
+    _print_quiz_summary(results)
+
+
+def _collect_questions_for_run(quiz: dict[str, Any], section: str | None, limit: int | None, randomise: bool) -> list[dict[str, Any]]:
+    pool = [q for _, q in iter_questions(quiz, section)]
+    if randomise:
+        random.shuffle(pool)
+    if limit is not None:
+        return pool[: max(0, int(limit))]
+    return pool
+
+
+def _run_question_loop(questions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
+    for idx, q in enumerate(questions, start=1):
+        outcome = _ask_single_question(idx, q)
+        if outcome is not None:
+            results.append(outcome)
+    return results
+
+
+def _ask_single_question(number: int, q: dict[str, Any]) -> dict[str, Any] | None:
+    qtype = str(q.get("type") or "").strip()
+    stem = str(q.get("stem") or q.get("question") or "").strip()
+    if not qtype or not stem:
+        return None
+
+    print()
+    print(f"Q{number}. {stem}")
+    grader = _GRADERS.get(qtype)
+    if grader is None and qtype in {"mcq"}:
+        grader = _GRADERS.get("multiple_choice")
+    if grader is None:
+        print("Unsupported question type.")
+        return {"type": qtype, "correct": False}
+    return {"type": qtype, "correct": grader(q)}
+
+
+def _grade_mcq(q: dict[str, Any]) -> bool:
+    correct = str(q.get("correct") or "")
+    answer = _ask_multiple_choice(normalise_options(q.get("options")))
+    return answer == correct
+
+
+def _grade_fill_blank(q: dict[str, Any]) -> bool:
+    answer = _ask_fill_blank()
+    target = str(q.get("answer", "")).strip().lower()
+    return answer.strip().lower() == target
+
+
+def _grade_true_false(q: dict[str, Any]) -> bool:
+    answer = _ask_true_false()
+    return bool(answer) == bool(q.get("correct"))
+
+
+def _grade_numeric(q: dict[str, Any]) -> bool:
+    answer = _ask_numeric()
+    return _numeric_ok(answer, q)
+
+
+def _grade_ordering(q: dict[str, Any]) -> bool:
+    items = q.get("items") or []
+    answer = _ask_ordering(items)
+    return answer == (q.get("correct_order") or [])
+
+
+_GRADERS = {
+    "multiple_choice": _grade_mcq,
+    "mcq": _grade_mcq,
+    "fill_blank": _grade_fill_blank,
+    "true_false": _grade_true_false,
+    "numeric": _grade_numeric,
+    "ordering": _grade_ordering,
+}
+
+def _numeric_ok(answer: float | None, q: dict[str, Any]) -> bool:
+    if answer is None:
+        return False
+    target = q.get("answer")
+    tol = float(q.get("tolerance", 0))
+    try:
+        target_f = float(target)
+    except (TypeError, ValueError):
+        return False
+    return abs(answer - target_f) <= tol
+
+
+def _print_quiz_summary(results: list[dict[str, Any]]) -> None:
+    total = len(results)
+    correct = sum(1 for r in results if r.get("correct"))
+    print()
+    print("=" * 60)
+    print(f"Score: {correct}/{total}")
+    print("=" * 60)
+
+def _collect_questions_for_run(quiz: dict[str, Any], section: str | None, limit: int | None) -> list[dict[str, Any]]:
+    pool = [q for _, q in iter_questions(quiz, section)]
+    random.shuffle(pool)
+    if limit is not None:
+        return pool[: max(0, int(limit))]
+    return pool
+
+
+def _run_question_loop(questions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
+    for idx, q in enumerate(questions, start=1):
+        outcome = _ask_single_question(idx, q)
+        if outcome is not None:
+            results.append(outcome)
+    return results
+
+
+def _ask_single_question(number: int, q: dict[str, Any]) -> dict[str, Any] | None:
+    qtype = str(q.get("type") or "").strip()
+    stem = str(q.get("stem") or q.get("question") or "").strip()
+    if not qtype or not stem:
+        return None
+
+    print()
+    print(f"Q{number}. {stem}")
+    grader = _GRADERS.get(qtype)
+    if grader is None and qtype in {"mcq"}:
+        grader = _GRADERS.get("multiple_choice")
+    if grader is None:
+        print("Unsupported question type.")
+        return {"type": qtype, "correct": False}
+    return {"type": qtype, "correct": grader(q)}
+
+
+def _grade_mcq(q: dict[str, Any]) -> bool:
+    correct = str(q.get("correct") or "")
+    answer = _ask_multiple_choice(normalise_options(q.get("options")))
+    return answer == correct
+
+
+def _grade_fill_blank(q: dict[str, Any]) -> bool:
+    answer = _ask_fill_blank()
+    target = str(q.get("answer", "")).strip().lower()
+    return answer.strip().lower() == target
+
+
+def _grade_true_false(q: dict[str, Any]) -> bool:
+    answer = _ask_true_false()
+    return bool(answer) == bool(q.get("correct"))
+
+
+def _grade_numeric(q: dict[str, Any]) -> bool:
+    answer = _ask_numeric()
+    return _numeric_ok(answer, q)
+
+
+def _grade_ordering(q: dict[str, Any]) -> bool:
+    items = q.get("items") or []
+    answer = _ask_ordering(items)
+    return answer == (q.get("correct_order") or [])
+
+
+_GRADERS = {
+    "multiple_choice": _grade_mcq,
+    "mcq": _grade_mcq,
+    "fill_blank": _grade_fill_blank,
+    "true_false": _grade_true_false,
+    "numeric": _grade_numeric,
+    "ordering": _grade_ordering,
+}
+
+def _numeric_ok(answer: float | None, q: dict[str, Any]) -> bool:
+    if answer is None:
+        return False
+    target = q.get("answer")
+    tol = float(q.get("tolerance", 0))
+    try:
+        target_f = float(target)
+    except (TypeError, ValueError):
+        return False
+    return abs(answer - target_f) <= tol
+
+
+def _print_quiz_summary(results: list[dict[str, Any]]) -> None:
+    total = len(results)
+    correct = sum(1 for r in results if r.get("correct"))
+    print()
+    print("=" * 60)
+    print(f"Score: {correct}/{total}")
+    print("=" * 60)
 
 def _ask_multiple_choice(q: dict) -> bool:
     """Handle multiple choice question."""
@@ -298,242 +637,203 @@ def _ask_ordering(q: dict) -> bool:
 
 def export_to_moodle_xml(quiz: dict[str, Any], output_path: Path) -> None:
     """Export quiz to Moodle XML format."""
-    meta = quiz.get("metadata", {})
+    import xml.etree.ElementTree as ET
 
-    xml_parts = [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<quiz>',
-        f'  <!-- Week {meta.get("week")} - {meta.get("topic")} -->',
-        f'  <!-- Exported: {datetime.now().isoformat()} -->',
-    ]
+    root_xml = ET.Element("quiz")
+    for sec_name, q in iter_questions(quiz):
+        qtype = str(q.get("type") or "").strip()
+        if qtype in {"multiple_choice", "mcq"}:
+            root_xml.append(_moodle_multichoice(sec_name, q))
+        elif qtype == "true_false":
+            root_xml.append(_moodle_truefalse(sec_name, q))
+        elif qtype == "fill_blank":
+            root_xml.append(_moodle_shortanswer(sec_name, q))
 
-    for q in quiz.get("questions", []):
-        q_type = q.get("type", "multiple_choice")
+    tree = ET.ElementTree(root_xml)
+    tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
-        if q_type == "multiple_choice":
-            xml_parts.append(_moodle_multichoice(q))
-        elif q_type == "true_false":
-            xml_parts.append(_moodle_truefalse(q))
-        elif q_type in ("fill_blank", "numeric"):
-            xml_parts.append(_moodle_shortanswer(q))
+def _moodle_multichoice(section: str, q: dict[str, Any]):
+    import xml.etree.ElementTree as ET
 
-    xml_parts.append('</quiz>')
+    stem = str(q.get("stem") or q.get("question") or "").strip()
+    correct = str(q.get("correct") or "").strip()
+    opts = normalise_options(q.get("options"))
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(xml_parts))
+    question = ET.Element("question", {"type": "multichoice"})
+    _et_text(question, "name", f"{section}: {stem[:60]}")
+    _moodle_question_text(question, stem)
+    _moodle_mcq_settings(question)
 
-    print(f"Exported to Moodle XML: {output_path}")
+    for o in opts:
+        question.append(_moodle_answer(o["text"], o["key"] == correct))
 
-
-def _moodle_multichoice(q: dict) -> str:
-    """Generate Moodle XML for multiple choice question."""
-    lines = [
-        '  <question type="multichoice">',
-        f'    <name><text>{q["id"]}</text></name>',
-        f'    <questiontext format="html"><text><![CDATA[{q["stem"]}]]></text></questiontext>',
-        '    <shuffleanswers>true</shuffleanswers>',
-        '    <single>true</single>',
-    ]
-
-    correct = q.get("correct", q.get("correct_answer", ""))
-    options = q.get("options", {})
-
-    if isinstance(options, list):
-        for opt in options:
-            fraction = "100" if opt["key"] == correct else "0"
-            lines.append(f'    <answer fraction="{fraction}" format="html">')
-            lines.append(f'      <text><![CDATA[{opt["text"]}]]></text>')
-            lines.append('    </answer>')
-    else:
-        for key, text in options.items():
-            fraction = "100" if key == correct else "0"
-            lines.append(f'    <answer fraction="{fraction}" format="html">')
-            lines.append(f'      <text><![CDATA[{text}]]></text>')
-            lines.append('    </answer>')
-
-    if "explanation" in q:
-        exp = q["explanation"] if isinstance(q["explanation"], str) else str(q["explanation"])
-        lines.append(f'    <generalfeedback format="html"><text><![CDATA[{exp}]]></text></generalfeedback>')
-
-    lines.append('  </question>')
-    return "\n".join(lines)
+    return question
 
 
-def _moodle_truefalse(q: dict) -> str:
-    """Generate Moodle XML for true/false question."""
-    correct = q.get("correct", q.get("correct_answer", True))
-    true_fraction = "100" if correct else "0"
-    false_fraction = "0" if correct else "100"
-
-    return f"""  <question type="truefalse">
-    <name><text>{q["id"]}</text></name>
-    <questiontext format="html"><text><![CDATA[{q["stem"]}]]></text></questiontext>
-    <answer fraction="{true_fraction}" format="html"><text>true</text></answer>
-    <answer fraction="{false_fraction}" format="html"><text>false</text></answer>
-  </question>"""
+def _moodle_question_text(question, stem: str) -> None:
+    import xml.etree.ElementTree as ET
+    qtext = ET.SubElement(question, "questiontext", {"format": "html"})
+    ET.SubElement(qtext, "text").text = stem
 
 
-def _moodle_shortanswer(q: dict) -> str:
-    """Generate Moodle XML for short answer question."""
-    correct = q.get("correct", q.get("correct_answers", q.get("correct_answer", "")))
-    if not isinstance(correct, list):
-        correct = [str(correct)]
-
-    lines = [
-        '  <question type="shortanswer">',
-        f'    <name><text>{q["id"]}</text></name>',
-        f'    <questiontext format="html"><text><![CDATA[{q["stem"]}]]></text></questiontext>',
-        f'    <usecase>{1 if q.get("case_sensitive") else 0}</usecase>',
-    ]
-
-    for ans in correct:
-        lines.append(f'    <answer fraction="100" format="html"><text>{ans}</text></answer>')
-
-    lines.append('  </question>')
-    return "\n".join(lines)
+def _moodle_mcq_settings(question) -> None:
+    import xml.etree.ElementTree as ET
+    ET.SubElement(question, "single").text = "true"
+    ET.SubElement(question, "shuffleanswers").text = "true"
+    ET.SubElement(question, "answernumbering").text = "ABCD"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# STATISTICS
-# ═══════════════════════════════════════════════════════════════════════════════
+def _moodle_answer(text: str, is_correct: bool):
+    import xml.etree.ElementTree as ET
+    fraction = "100" if is_correct else "0"
+    ans = ET.Element("answer", {"fraction": fraction, "format": "html"})
+    ET.SubElement(ans, "text").text = text
+    fb = ET.SubElement(ans, "feedback", {"format": "html"})
+    ET.SubElement(fb, "text").text = ""
+    return ans
+
+def _moodle_truefalse(section: str, q: dict[str, Any]):
+    import xml.etree.ElementTree as ET
+
+    stem = str(q.get("stem") or q.get("question") or "").strip()
+    correct = bool(q.get("correct"))
+    question = ET.Element("question", {"type": "truefalse"})
+
+    name = ET.SubElement(question, "name")
+    ET.SubElement(name, "text").text = f"{section}: {stem[:60]}"
+
+    qtext = ET.SubElement(question, "questiontext", {"format": "html"})
+    ET.SubElement(qtext, "text").text = stem
+
+    for text, is_true in (("true", True), ("false", False)):
+        fraction = "100" if (is_true == correct) else "0"
+        ans = ET.SubElement(question, "answer", {"fraction": fraction, "format": "html"})
+        ET.SubElement(ans, "text").text = text
+        fb = ET.SubElement(ans, "feedback", {"format": "html"})
+        ET.SubElement(fb, "text").text = ""
+
+    return question
+
+def _moodle_shortanswer(section: str, q: dict[str, Any]):
+    import xml.etree.ElementTree as ET
+
+    stem = str(q.get("stem") or q.get("question") or "").strip()
+    answer = str(q.get("answer") or q.get("correct") or "").strip()
+
+    question = ET.Element("question", {"type": "shortanswer"})
+    name = ET.SubElement(question, "name")
+    ET.SubElement(name, "text").text = f"{section}: {stem[:60]}"
+
+    qtext = ET.SubElement(question, "questiontext", {"format": "html"})
+    ET.SubElement(qtext, "text").text = stem
+
+    ans = ET.SubElement(question, "answer", {"fraction": "100", "format": "html"})
+    ET.SubElement(ans, "text").text = answer
+    fb = ET.SubElement(ans, "feedback", {"format": "html"})
+    ET.SubElement(fb, "text").text = ""
+    return question
 
 def show_statistics(quiz: dict[str, Any]) -> None:
-    """Display quiz statistics."""
-    meta = quiz.get("metadata", {})
-    questions = quiz.get("questions", [])
+    """Print quick quiz statistics."""
+    sections = quiz.get("sections") or {}
+    total_q = sum(len(sec.get("questions", [])) for sec in sections.values())
+    by_type = _count_by_type(quiz)
 
-    print("\n" + "=" * 60)
-    print(f"  QUIZ STATISTICS: {meta.get('topic', 'Unknown')}")
-    print("=" * 60)
-
-    print(f"\n  Total Questions: {len(questions)}")
-    print(f"  Passing Score: {meta.get('passing_score', 70)}%")
-    print(f"  Estimated Time: {meta.get('estimated_time_minutes', '?')} minutes")
-
-    type_counts: dict[str, int] = {}
-    for q in questions:
-        qt = q.get("type", "unknown")
-        type_counts[qt] = type_counts.get(qt, 0) + 1
-
-    print("\n  By Type:")
-    for qt, count in sorted(type_counts.items()):
-        print(f"    {qt}: {count}")
-
-    lo_counts: dict[str, int] = {}
-    for q in questions:
-        lo = q.get("lo_ref", "unspecified")
-        lo_counts[lo] = lo_counts.get(lo, 0) + 1
-
-    print("\n  By Learning Objective:")
-    for lo, count in sorted(lo_counts.items()):
-        bar = "█" * count
-        print(f"    {lo}: {bar} ({count})")
-
-    diff_counts: dict[str, int] = {}
-    for q in questions:
-        diff = q.get("difficulty", "unspecified")
-        diff_counts[diff] = diff_counts.get(diff, 0) + 1
-
-    print("\n  By Difficulty:")
-    for diff, count in sorted(diff_counts.items()):
-        print(f"    {diff}: {count}")
-
-    bloom_counts: dict[str, int] = {}
-    for q in questions:
-        bloom = q.get("bloom_level", "unspecified")
-        bloom_counts[bloom] = bloom_counts.get(bloom, 0) + 1
-
-    print("\n  By Bloom Level:")
-    for bloom, count in sorted(bloom_counts.items()):
-        print(f"    {bloom}: {count}")
-
-    print("\n  Sections:")
-    for section in quiz.get("sections", []):
-        q_count = len(section.get("questions", []))
-        print(f"    {section['id']}: {q_count} questions")
-
-    print("\n" + "=" * 60 + "\n")
+    print(f"Quiz: {quiz_title(quiz)}")
+    print(f"Sections: {len(sections)}")
+    print(f"Questions: {total_q}")
+    print("-" * 60)
+    for t, n in sorted(by_type.items(), key=lambda x: (-x[1], x[0])):
+        print(f"{t:16s} {n}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
+def _count_by_type(quiz: dict[str, Any]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for _, q in iter_questions(quiz):
+        t = str(q.get("type") or "unknown").strip()
+        counts[t] = counts.get(t, 0) + 1
+    return counts
 
 def main() -> int:
-    """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Week 1 Formative Quiz Runner",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-    python run_quiz.py                      # Run full quiz
-    python run_quiz.py --section pre_lab    # Run pre-lab section
-    python run_quiz.py --random --limit 5   # Random 5 questions
-    python run_quiz.py --validate           # Validate quiz file
-    python run_quiz.py --export-json        # Export to JSON
-    python run_quiz.py --export-moodle      # Export to Moodle XML
-    python run_quiz.py --stats              # Show statistics
-        """
-    )
-
-    parser.add_argument("--quiz", type=Path, help="Quiz file path")
-    parser.add_argument("--section", help="Run specific section only")
-    parser.add_argument("--random", action="store_true", help="Randomise question order")
-    parser.add_argument("--limit", type=int, help="Limit number of questions")
-    parser.add_argument("--list-sections", action="store_true", help="List available sections")
-    parser.add_argument("--validate", action="store_true", help="Validate quiz file")
-    parser.add_argument("--export-json", action="store_true", help="Export to JSON format")
-    parser.add_argument("--export-moodle", action="store_true", help="Export to Moodle XML")
-    parser.add_argument("--stats", action="store_true", help="Show quiz statistics")
-
-    args = parser.parse_args()
+    """Command-line entry point."""
+    args = _build_parser().parse_args()
 
     try:
         quiz = load_quiz(args.quiz)
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        return 1
     except Exception as e:
         print(f"Error loading quiz: {e}")
         return 1
 
-    if args.validate:
-        is_valid, errors = validate_quiz(quiz)
-        if is_valid:
-            print("✅ Quiz validation passed!")
-            return 0
-        print("❌ Quiz validation failed:")
-        for err in errors:
-            print(f"  - {err}")
-        return 1
-
     if args.list_sections:
-        print("\nAvailable sections:")
-        for section in quiz.get("sections", []):
-            q_count = len(section.get("questions", []))
-            time_limit = section.get("time_limit_minutes", "unlimited")
-            print(f"  {section['id']}: {section.get('name', '?')} ({q_count} questions, {time_limit} min)")
-        print()
+        _print_sections(quiz)
         return 0
+
+    if args.validate:
+        return _run_validation(quiz)
 
     if args.stats:
         show_statistics(quiz)
         return 0
 
-    if args.export_json:
-        output = QUIZ_DIR / "quiz_lms_export.json"
-        save_quiz_json(quiz, output)
-        print(f"Exported to JSON: {output}")
-        return 0
+    if args.export_json or args.export_canvas or args.export_moodle:
+        return _run_exports(quiz, args)
 
-    if args.export_moodle:
-        output = QUIZ_DIR / "quiz_moodle.xml"
-        export_to_moodle_xml(quiz, output)
-        return 0
+    return _run_default(quiz, args)
 
-    run_interactive_quiz(quiz, args.section, args.random, args.limit)
+
+def _run_default(quiz: dict[str, Any], args: argparse.Namespace) -> int:
+    run_interactive_quiz(quiz, section=args.section, limit=args.limit, randomise=args.random)
     return 0
 
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Week 1 Formative Quiz Runner")
+    parser.add_argument("--quiz", type=Path, help="Quiz file path")
+    parser.add_argument("--section", help="Run a single section")
+    parser.add_argument("--random", action="store_true", help="Shuffle questions")
+    parser.add_argument("--limit", type=int, help="Limit number of questions")
+    parser.add_argument("--list-sections", action="store_true", help="List available sections")
+    parser.add_argument("--validate", action="store_true", help="Validate quiz file")
+    parser.add_argument("--export-json", action="store_true", help="Export to JSON format")
+    parser.add_argument("--export-moodle", action="store_true", help="Export to Moodle XML")
+    parser.add_argument("--export-canvas", action="store_true", help="Export Canvas quiz JSON")
+    parser.add_argument("--stats", action="store_true", help="Show quiz statistics")
+    return parser
 
-if __name__ == "__main__":
-    sys.exit(main())
+
+def _print_sections(quiz: dict[str, Any]) -> None:
+    sections = quiz.get("sections") or []
+    print("Available sections:")
+    if isinstance(sections, dict):
+        for name, sec in sections.items():
+            count = len(sec.get("questions", []))
+            title = sec.get("title") or sec.get("name") or name
+            print(f"  {name}: {title} ({count} questions)")
+        return
+    for sec in sections:
+        if not isinstance(sec, dict):
+            continue
+        sec_id = sec.get("id") or sec.get("name") or "?"
+        title = sec.get("name") or sec.get("title") or sec_id
+        count = len(sec.get("questions", []))
+        print(f"  {sec_id}: {title} ({count} questions)")
+
+def _run_validation(quiz: dict[str, Any]) -> int:
+    ok, errors = validate_quiz(quiz)
+    if ok:
+        print("Quiz validation passed.")
+        return 0
+    print("Quiz validation failed:")
+    for err in errors:
+        print(f"  - {err}")
+    return 1
+
+
+def _run_exports(quiz: dict[str, Any], args: argparse.Namespace) -> int:
+    if args.export_json:
+        save_quiz_json(quiz, QUIZ_DIR / "quiz_lms_export.json")
+    if args.export_canvas:
+        export_to_canvas_json(quiz, QUIZ_DIR / "quiz_canvas.json")
+    if args.export_moodle:
+        export_to_moodle_xml(quiz, QUIZ_DIR / "quiz_moodle.xml")
+    return 0
+

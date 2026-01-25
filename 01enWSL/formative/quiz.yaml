@@ -56,8 +56,8 @@ sections:
     time_limit_minutes: 10
     questions: [q11, q12, q13, q14, q15]
 
-  - id: comprehensive_review
-    name: "Comprehensive Review"
+  - id: full_review
+    name: "Full Review"
     description: "Additional questions covering all learning objectives"
     time_limit_minutes: 15
     questions: [q16, q17, q18, q19, q20, q21, q22]

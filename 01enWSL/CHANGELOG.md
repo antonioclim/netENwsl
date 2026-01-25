@@ -5,13 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2026-01-25
+## [1.2.0] - 2026-01-25
+
+### Added
+
+#### Code Quality Improvements
+- **Refactored Python exercises**: Split long functions (>25 lines) into smaller helpers (15-20 lines)
+- **Extended unit tests**: Added tests for Canvas/Moodle exports and validator coverage
+- **Bloom level coverage tests**: Automated verification of LO coverage in quiz
+
+#### Documentation
+- **SVG Diagrams**: Added proper SVG diagrams to `docs/images/`
+  - `tcp_handshake.svg` — TCP three-way handshake sequence
+  - `docker_architecture.svg` — Lab environment architecture
+- **Enhanced Parsons Problems**: Added second distractor to each problem
+
+### Changed
+
+- Quiz section renamed from `comprehensive_review` to `full_review` (British English)
+- Fixed American spelling "Analyze" → "Analyse" in formative/README.md
+- Fixed CI pipeline typo (`pip installl` → `pip install`)
+
+### Fixed
+
+- AI fingerprint words removed ("comprehensive" replaced with "complete"/"full")
+- All American spellings corrected to British English
+
+---
+
+## [1.1.0] - 2026-01-24
 
 ### Added
 
 #### Pedagogical Improvements
 - **Formative Quiz System**: Complete quiz with 22 questions in YAML and JSON formats
-  - Pre-lab, during-lab, exit-ticket and comprehensive review sections
+  - Pre-lab, during-lab, exit-ticket and full review sections
   - Full Bloom taxonomy coverage (remember, understand, apply, analyse)
   - LMS export support (Moodle XML, Canvas QTI)
 - **Quiz Runner**: Standalone Python script (`formative/run_quiz.py`)
@@ -83,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Core exercises (ex_1_01 through ex_1_05)
 - Homework assignments (hw_1_01, hw_1_02)
 - Docker environment configuration
-- Comprehensive README with Wireshark guide
+- Detailed README with Wireshark guide
 - Troubleshooting documentation
 - Glossary and theory summary
 - Misconceptions documentation

@@ -10,6 +10,7 @@ This directory contains the **machine-readable formative assessment system** for
 | File | Purpose |
 |------|---------|
 | `quiz.yaml` | Quiz questions in structured YAML format |
+| `quiz.json` | Quiz questions in JSON format (LMS compatible) |
 | `run_quiz.py` | Interactive CLI quiz runner |
 | `quiz_schema.json` | JSON Schema for validation |
 
@@ -65,6 +66,7 @@ python formative/run_quiz.py --random --limit 5
 | `pre_lab` | 5 | ~5 min | Before starting lab |
 | `during_lab` | 5 | No limit | At checkpoints |
 | `exit_ticket` | 5 | ~10 min | Before leaving |
+| `full_review` | 7 | ~15 min | End of week |
 
 ### Question Types
 
@@ -78,6 +80,7 @@ python formative/run_quiz.py --random --limit 5
 | `code_trace` | Predict output | "What will print?" |
 | `matching` | Match pairs | "Command → Purpose" |
 | `short_answer` | Keywords | "Why use UDP?" |
+| `ordering` | Sequence | "Order the handshake steps" |
 
 ### Difficulty Levels
 
@@ -85,7 +88,7 @@ python formative/run_quiz.py --random --limit 5
 |-------|--------|-------------|
 | Basic | 1 pt | Remember/Recall |
 | Intermediate | 2 pts | Understand/Apply |
-| Advanced | 3 pts | Apply/Analyze |
+| Advanced | 3 pts | Apply/Analyse |
 
 ---
 
@@ -110,10 +113,13 @@ Each question maps to a Learning Objective (LO):
 
 | LO | Topic | Questions |
 |----|-------|-----------|
-| LO1 | ICMP ping & latency | q01, q06, q11 |
+| LO1 | ICMP ping and latency | q01, q06, q11 |
 | LO2 | TCP sockets | q03, q07, q08, q12, q14 |
-| LO4 | Traffic capture | q15 |
-| LO6 | Docker containers | q02, q04, q05, q07, q13 |
+| LO3 | Data parsing | q16, q17 |
+| LO4 | Traffic capture | q15, q22 |
+| LO5 | Transmission delay | q18, q19 |
+| LO6 | Docker containers | q02, q04, q05, q09, q10, q13 |
+| LO7 | Wireshark capture | q15, q20, q21 |
 
 ---
 
@@ -125,21 +131,42 @@ Each question maps to a Learning Objective (LO):
 # Validate YAML
 python -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))"
 
-# Validate against schema
-python -c "
-import yaml, json
-from jsonschema import validate
-with open('formative/quiz.yaml') as f:
-    quiz = yaml.safe_load(f)
-with open('formative/quiz_schema.json') as f:
-    schema = json.load(f)
-validate(quiz, schema)
-print('✓ Quiz is valid')
-"
+# Validate using the quiz runner
+python formative/run_quiz.py --validate
 
 # Or using Makefile
-make quiz-validate
+make validate-quiz
 ```
+
+---
+
+## Export Formats
+
+The quiz supports multiple export formats for LMS integration:
+
+### Export Commands
+
+```bash
+# Export to JSON (internal format)
+python formative/run_quiz.py --export-json
+
+# Export to Canvas JSON
+python formative/run_quiz.py --export-canvas
+
+# Export to Moodle XML
+python formative/run_quiz.py --export-moodle
+
+# Or export all at once
+make export-quiz
+```
+
+### Generated Files
+
+| File | Format | LMS Compatibility |
+|------|--------|-------------------|
+| `quiz_lms_export.json` | JSON | Generic LMS import |
+| `quiz_canvas.json` | Canvas JSON | Canvas LMS |
+| `quiz_moodle.xml` | Moodle XML | Moodle question bank |
 
 ---
 
@@ -175,6 +202,12 @@ make quiz-validate
     correct: "✅ Well done!"
     incorrect: "❌ Review section X"
 ```
+
+---
+
+## Support
+
+If you need help: Issues: Open an issue in GitHub.
 
 ---
 

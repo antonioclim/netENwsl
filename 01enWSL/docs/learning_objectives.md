@@ -72,3 +72,10 @@ LO7: ███░░░░░░░░░ (3 questions)
 
 ---
 *NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim*
+
+
+---
+
+## Traceability
+
+A formal LO-to-activity traceability matrix is available in `docs/lo_traceability_matrix.md`.

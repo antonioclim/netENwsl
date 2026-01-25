@@ -8,6 +8,13 @@
 >
 > by ing. dr. Antonio Clim
 
+## Instructor notes (from the lab)
+
+In previous years, students often lose ten minutes on Week 1 because they run commands in Windows instead of WSL. If you see a path like `C:\Users\...`, stop and open a WSL terminal.
+
+This usually breaks when Docker is not started inside WSL2. If `docker ps` hangs or returns a daemon error, start Docker in WSL with `sudo service docker start` then try again.
+
+If this feels confusing, ignore Portainer for ten minutes and focus on two observations only: what `ip a` shows for interfaces and what `ss -tulpn` shows for listening sockets.
 ---
 
 ## ⚠️ Environment Notice
@@ -33,7 +40,7 @@ This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portain
 
 Press `Win + X` → Select "Windows Terminal" or "PowerShell"
 
-### Step 2: Navigate and Clone
+### Step 2: Open and Clone
 
 ```powershell
 # Create networking folder if it doesn't exist
@@ -97,16 +104,16 @@ abc123...      portainer/portainer-ce   Up 2 hours      portainer
 
 ### Step 3: Verify Portainer Access
 
-Open browser and navigate to: **http://localhost:9000**
+Open your browser and go to: **http://localhost:9000**
 
 **Login credentials:**
 - Username: `stud`
 - Password: `studstudstud`
 
-### Step 4: Navigate to Laboratory Directory
+### Step 4: Open the Laboratory Directory
 
 ```bash
-# From WSL, navigate to the cloned repository
+# From WSL, change into the cloned repository
 cd /mnt/d/NETWORKING/WEEK1/1enWSL
 
 # Verify you're in the correct directory
@@ -126,7 +133,7 @@ After login at http://localhost:9000, you will see:
 
 ### Viewing Containers
 
-Navigate: **Home → local → Containers**
+In Portainer, open **Home → local → Containers**
 
 You will see a table showing all containers with:
 - Name, State, Image, Created, IP Address, Ports
@@ -142,7 +149,7 @@ For any container, you can:
 
 ### Modifying Container IP Address
 
-1. Navigate: **Networks → week1_network**
+1. Work through: **Networks → week1_network**
 2. View current IPAM configuration (e.g., 172.20.1.0/24)
 3. To change:
    - Stop containers using the network
@@ -285,7 +292,7 @@ Filter to see only handshakes: `tcp.flags.syn == 1`
 ### Saving Captures
 
 1. **File → Save As** (or Ctrl+Shift+S)
-2. Navigate to: `D:\NETWORKING\WEEK1\pcap\`
+2. Move to to: `D:\NETWORKING\WEEK1\pcap\`
 3. Filename: `capture_exercise_N.pcap`
 4. Format: Wireshark/pcap or pcapng (default)
 
@@ -349,7 +356,7 @@ By the end of this laboratory session, you will be able to:
 # Open Ubuntu terminal (WSL)
 wsl
 
-# Navigate to the laboratory directory
+# Go to to the laboratory directory
 cd /mnt/d/NETWORKING/WEEK1/1enWSL
 
 # Start Docker if not running
@@ -616,7 +623,7 @@ docker exec week1_lab tcpdump -i any -w /work/pcap/capture.pcap
 
 ### Opening Captures in Wireshark (Windows)
 
-1. Navigate to the `pcap/` directory
+1. Open to the `pcap/` directory
 2. Double-click any `.pcap` file to open in Wireshark
 3. Apply display filters as needed
 
@@ -704,6 +711,22 @@ Create a detailed network configuration report for your home or university netwo
 ### Assignment 2: Protocol Analysis
 
 Capture and analyse a complete HTTP transaction (use `curl` or a web browser). Identify all TCP connection phases: establishment, data transfer and termination. Submit annotated screenshots and the PCAP file.
+
+## Prediction prompts
+
+Use these before you run the first commands. Write your guess in one sentence then run the command and compare.
+
+- **PREDICTION:** After `ip a`, which interface in WSL has a private address and which one is loopback.  
+  **Check:** the `inet` lines under `eth0` and `lo`.  
+  **If it differs:** you may be in Windows PowerShell or you may be looking at the wrong Linux namespace.
+
+- **PREDICTION:** After `ss -tulpn`, how many services are listening on your machine right now.  
+  **Check:** count lines with `LISTEN`.  
+  **If it differs:** you may need `sudo` or the output may be filtered by permissions.
+
+- **PREDICTION:** Before `ping -c 4 8.8.8.8`, what range of RTT do you expect on your network.  
+  **Check:** look at `avg` in the summary line.  
+  **If it differs:** Wi-Fi congestion and DNS choice do not affect ICMP, routing and local load do.
 
 ## Troubleshooting
 

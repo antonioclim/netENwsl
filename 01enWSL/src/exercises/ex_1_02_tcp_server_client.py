@@ -36,16 +36,13 @@ import socket
 import sys
 import threading
 import time
-from typing import Optional
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PREDICTION_PROMPTS
 # ═══════════════════════════════════════════════════════════════════════════════
 def prompt_server_prediction(host: str, port: int) -> None:
-    """
-    Ask student to predict server behaviour (Brown & Wilson Principle 4).
-    """
+    """Ask student to predict server behaviour (Brown & Wilson Principle 4)."""
     print("\n" + "=" * 60)
     print("💭 PREDICTION: SERVER SETUP")
     print("=" * 60)
@@ -62,9 +59,7 @@ def prompt_server_prediction(host: str, port: int) -> None:
 
 
 def prompt_client_prediction(host: str, port: int) -> None:
-    """
-    Ask student to predict client connection behaviour.
-    """
+    """Ask student to predict client connection behaviour."""
     print("\n" + "=" * 60)
     print("💭 PREDICTION: CLIENT CONNECTION")
     print("=" * 60)
@@ -72,9 +67,7 @@ def prompt_client_prediction(host: str, port: int) -> None:
     print()
     print("Predict:")
     print("  1. How many packets are exchanged for the TCP handshake?")
-    print("     (1 / 2 / 3 / 4)")
     print("  2. After connection, what state will both sockets show?")
-    print("     (LISTEN / ESTABLISHED / TIME_WAIT)")
     print("=" * 60)
     input("Press Enter to continue...")
     print()
@@ -83,16 +76,26 @@ def prompt_client_prediction(host: str, port: int) -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERVER_IMPLEMENTATION
 # ═══════════════════════════════════════════════════════════════════════════════
+def _create_server_socket(host: str, port: int) -> socket.socket:
+    """Create and configure a TCP server socket."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((host, port))
+    s.listen(1)
+    s.settimeout(0.5)
+    return s
+
+
+def _handle_client_connection(conn: socket.socket) -> None:
+    """Receive data and echo back with ACK prefix."""
+    with conn:
+        data = conn.recv(4096)
+        conn.sendall(b"ACK:" + data)
+
+
 def run_server(host: str, port: int, ready: threading.Event, stop: threading.Event) -> None:
     """
     Run a simple TCP echo server.
-    
-    The server:
-    1. Binds to the specified address and port
-    2. Listens for incoming connections
-    3. Accepts one connection
-    4. Receives data and echoes it back with "ACK:" prefix
-    5. Closes the connection
     
     Args:
         host: IP address to bind to
@@ -100,30 +103,15 @@ def run_server(host: str, port: int, ready: threading.Event, stop: threading.Eve
         ready: Event to signal when server is ready
         stop: Event to signal server should stop
     """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        # Allow address reuse (avoids "Address already in use" errors)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        
-        # Bind to address and start listening
-        s.bind((host, port))
-        s.listen(1)  # backlog of 1 connection
-        ready.set()  # Signal that server is ready
-        
-        # Set timeout to allow periodic stop checks
-        s.settimeout(0.5)
-        
+    with _create_server_socket(host, port) as s:
+        ready.set()
         while not stop.is_set():
             try:
-                conn, client_addr = s.accept()
+                conn, _ = s.accept()
+                _handle_client_connection(conn)
+                break
             except socket.timeout:
                 continue
-            
-            with conn:
-                # Receive data from client
-                data = conn.recv(4096)
-                # Echo back with acknowledgement prefix
-                conn.sendall(b"ACK:" + data)
-                break  # Handle one connection then exit
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -132,12 +120,6 @@ def run_server(host: str, port: int, ready: threading.Event, stop: threading.Eve
 def run_client(host: str, port: int, payload: bytes, timeout_s: float) -> bytes:
     """
     Run a simple TCP client.
-    
-    The client:
-    1. Connects to the server (three-way handshake happens here)
-    2. Sends the payload
-    3. Receives the response
-    4. Closes the connection
     
     Args:
         host: Server IP address
@@ -156,31 +138,36 @@ def run_client(host: str, port: int, payload: bytes, timeout_s: float) -> bytes:
 # ═══════════════════════════════════════════════════════════════════════════════
 # OUTPUT_RESULTS
 # ═══════════════════════════════════════════════════════════════════════════════
-def display_results(host: str, port: int, elapsed_ms: float, 
-                    request: str, response: str) -> None:
-    """
-    Display the exchange results with interpretation.
-    """
+def _print_exchange_header(host: str, port: int, elapsed_ms: float) -> None:
+    """Print the results header."""
     print("\n" + "=" * 60)
     print("📊 TCP EXCHANGE RESULTS")
     print("=" * 60)
     print(f"  Server:   {host}:{port}")
     print(f"  RTT:      {elapsed_ms:.2f} ms")
-    print(f"  Sent:     {request!r}")
-    print(f"  Received: {response!r}")
-    print()
-    
-    # Verify echo behaviour
+
+
+def _verify_echo(request: str, response: str) -> None:
+    """Verify the server echoed correctly."""
     if response.startswith("ACK:"):
         print("  ✅ Server acknowledged the message correctly")
-        echoed = response[4:]  # Remove "ACK:" prefix
+        echoed = response[4:]
         if echoed.strip() == request.strip():
             print("  ✅ Echo matches original message")
         else:
             print("  ⚠️  Echo differs from original (check encoding)")
     else:
         print("  ❌ Unexpected response format")
-    
+
+
+def display_results(host: str, port: int, elapsed_ms: float, 
+                    request: str, response: str) -> None:
+    """Display the exchange results with interpretation."""
+    _print_exchange_header(host, port, elapsed_ms)
+    print(f"  Sent:     {request!r}")
+    print(f"  Received: {response!r}")
+    print()
+    _verify_echo(request, response)
     print()
     print("💡 To see socket states during exchange, run in another terminal:")
     print(f"   ss -tn | grep {port}")
@@ -216,74 +203,64 @@ Examples:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# MAIN_HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+def _start_server_thread(host: str, port: int) -> tuple[threading.Thread, threading.Event, threading.Event]:
+    """Start the server in a background thread."""
+    ready = threading.Event()
+    stop = threading.Event()
+    thread = threading.Thread(target=run_server, args=(host, port, ready, stop), daemon=True)
+    thread.start()
+    return thread, ready, stop
+
+
+def _wait_for_server(ready: threading.Event, timeout: float = 2.0) -> bool:
+    """Wait for server to become ready."""
+    return ready.wait(timeout=timeout)
+
+
+def _run_client_exchange(host: str, port: int, message: str, timeout_s: float) -> tuple[bytes, float]:
+    """Execute client exchange and measure time."""
+    payload = (message + "\n").encode("utf-8")
+    start = time.time()
+    response = run_client(host, port, payload, timeout_s)
+    elapsed_ms = (time.time() - start) * 1000.0
+    return response, elapsed_ms
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 def main() -> int:
-    """
-    Main entry point.
-    
-    Orchestrates the server/client exchange:
-    1. Start server in background thread
-    2. Wait for server to be ready
-    3. Connect client and exchange data
-    4. Stop server and display results
-    
-    Returns:
-        Exit code (0 for success, 1 for failure)
-    """
+    """Main entry point."""
     args = parse_args()
     
-    # Prediction prompts (pedagogical feature)
     if not args.no_predict:
         prompt_server_prediction(args.host, args.port)
     
-    # Thread synchronisation events
-    ready = threading.Event()
-    stop = threading.Event()
-    
-    # Start server in background
     print(f"Starting TCP server on {args.host}:{args.port}...")
-    server_thread = threading.Thread(
-        target=run_server, 
-        args=(args.host, args.port, ready, stop), 
-        daemon=True
-    )
-    server_thread.start()
+    thread, ready, stop = _start_server_thread(args.host, args.port)
     
-    # Wait for server to be ready
-    if not ready.wait(timeout=2.0):
+    if not _wait_for_server(ready):
         print("❌ TCP server failed to start")
         return 1
     
     print("✅ Server is listening")
     
-    # Client prediction
     if not args.no_predict:
         prompt_client_prediction(args.host, args.port)
     
-    # Connect and exchange
     print(f"Connecting client to {args.host}:{args.port}...")
-    payload = (args.message + "\n").encode("utf-8")
+    response, elapsed_ms = _run_client_exchange(args.host, args.port, args.message, args.timeout_s)
     
-    start = time.time()
-    response = run_client(args.host, args.port, payload, args.timeout_s)
-    elapsed_ms = (time.time() - start) * 1000.0
-    
-    # Cleanup
     stop.set()
-    server_thread.join(timeout=1.0)
+    thread.join(timeout=1.0)
     
-    # Display results
-    display_results(
-        args.host, 
-        args.port, 
-        elapsed_ms,
-        args.message,
-        response.decode("utf-8", errors="replace").strip()
-    )
+    response_str = response.decode("utf-8", errors="replace").strip()
+    display_results(args.host, args.port, elapsed_ms, args.message, response_str)
     
     # Legacy format for test compatibility
-    print(f"\nTCP host={args.host} port={args.port} rtt_ms={elapsed_ms:.2f} response={response.decode('utf-8', errors='replace').strip()}")
+    print(f"\nTCP host={args.host} port={args.port} rtt_ms={elapsed_ms:.2f} response={response_str}")
     
     return 0
 
