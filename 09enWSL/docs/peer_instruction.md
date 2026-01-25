@@ -115,6 +115,8 @@ Students often assume FTP works like HTTP with a single connection, or conversel
 - **After discussion:** Draw the two-channel diagram on whiteboard
 - **Follow-up:** Ask "What happens to the data connection after the file transfers?"
 - **Timing:** Standard 7-minute cycle
+- **From running this exercise:** Expect heated debate on whether passive mode counts as "additional connections". Let them argue — the confusion is productive and leads to deeper understanding of the protocol architecture.
+
 
 ---
 

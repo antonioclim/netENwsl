@@ -158,6 +158,9 @@ The presentation layer defines how complex data types are represented in bytes:
 | `Q`       | Unsigned long long         | 8 bytes |
 | `s`       | String (bytes)             | n bytes |
 
+> **Heads up:** This usually breaks when students mix format characters. Using `<I` (little-endian) instead of `!I` (network order) causes silent data corruption that only shows up when testing between different machines. Always double-check the byte order prefix.
+
+
 ### Example: Protocol Header
 
 ```python

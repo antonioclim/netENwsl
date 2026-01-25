@@ -316,55 +316,6 @@ questions:
       is Transport Layer; error correction is Data Link/Transport.
     time_seconds: 45
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SCORING CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-scoring:
-  basic_questions_weight: 1.0
-  intermediate_questions_weight: 1.5
-  advanced_questions_weight: 2.0
-  
-  # Partial credit for fill_blank questions
-  partial_credit_enabled: false
-  
-  # Time bonus (disabled by default)
-  time_bonus_enabled: false
-  time_bonus_threshold_percent: 50  # Must answer in <50% of allotted time
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# FEEDBACK CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-feedback:
-  show_correct_answer: true
-  show_explanation: true
-  show_misconception_ref: true
-  show_lo_coverage_summary: true
-  
-  # Score thresholds for feedback messages
-  thresholds:
-    excellent: 90
-    good: 70
-    needs_improvement: 50
-    
-  messages:
-    excellent: |
-      🌟 Excellent! You have a strong understanding of Session and Presentation
-      Layer concepts. Consider exploring the advanced homework assignments.
-    good: |
-      ✅ Good work! Review the explanations for missed questions and revisit
-      the relevant sections in docs/theory_summary.md.
-    needs_improvement: |
-      📚 More practice needed. Focus on the misconceptions document
-      (docs/misconceptions.md) and re-run the quiz after reviewing.
-    below_threshold: |
-      ⚠️ Please review the laboratory materials before proceeding.
-      Start with docs/theory_summary.md and docs/misconceptions.md.
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# END OF QUIZ
-# ═══════════════════════════════════════════════════════════════════════════════
 
   # ─────────────────────────────────────────────────────────────────────────────
   # LO5: Additional PCAP Analysis Question (Analyse)
@@ -454,8 +405,55 @@ feedback:
     misconception_ref: "docs/misconceptions.md#misconception-4"
     time_seconds: 60
 
+
 # ═══════════════════════════════════════════════════════════════════════════════
-# UPDATED STATISTICS
+# SCORING CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+scoring:
+  basic_questions_weight: 1.0
+  intermediate_questions_weight: 1.5
+  advanced_questions_weight: 2.0
+  
+  # Partial credit for fill_blank questions
+  partial_credit_enabled: false
+  
+  # Time bonus (disabled by default)
+  time_bonus_enabled: false
+  time_bonus_threshold_percent: 50  # Must answer in <50% of allotted time
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FEEDBACK CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+feedback:
+  show_correct_answer: true
+  show_explanation: true
+  show_misconception_ref: true
+  show_lo_coverage_summary: true
+  
+  # Score thresholds for feedback messages
+  thresholds:
+    excellent: 90
+    good: 70
+    needs_improvement: 50
+    
+  messages:
+    excellent: |
+      🌟 Excellent! You have a strong understanding of Session and Presentation
+      Layer concepts. Consider exploring the advanced homework assignments.
+    good: |
+      ✅ Good work! Review the explanations for missed questions and revisit
+      the relevant sections in docs/theory_summary.md.
+    needs_improvement: |
+      📚 More practice needed. Focus on the misconceptions document
+      (docs/misconceptions.md) and re-run the quiz after reviewing.
+    below_threshold: |
+      ⚠️ Please review the laboratory materials before proceeding.
+      Start with docs/theory_summary.md and docs/misconceptions.md.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STATISTICS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 statistics:

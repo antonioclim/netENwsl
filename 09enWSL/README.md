@@ -345,6 +345,9 @@ Demonstrates Presentation Layer concepts:
 python src/exercises/ex_9_01_demonstrate_endianness.py --selftest --demo
 ```
 
+> If the `struct` module feels confusing at first, focus only on `!I` (network order unsigned int) and `!H` (network order unsigned short) — these two format strings cover 90% of what you need for this lab's exercises.
+
+
 ### Exercise 2: Pseudo-FTP Protocol (ex_9_02)
 
 Implements a simplified FTP-like protocol:

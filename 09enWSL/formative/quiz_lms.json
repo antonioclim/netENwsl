@@ -1,60 +1,272 @@
 {
   "metadata": {
     "title": "Week 9: Session Layer and Presentation Layer",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "author": "ing. dr. Antonio Clim",
     "institution": "ASE Bucharest - CSIE",
+    "course": "Computer Networks / Rețele de Calculatoare",
     "week": 9,
     "total_questions": 15,
     "total_points": 30,
     "passing_score_percent": 70,
-    "export_format": "LMS compatible JSON",
-    "generated_from": "formative/quiz.yaml"
+    "estimated_time_minutes": 20,
+    "export_format": "LMS compatible JSON (Canvas/Moodle)",
+    "generated_from": "formative/quiz.yaml",
+    "last_updated": "2026-01-25"
   },
   "learning_objectives": [
-    {"id": "LO1", "description": "Identify connection vs session characteristics"},
-    {"id": "LO2", "description": "Explain endianness and byte-order mechanisms"},
-    {"id": "LO3", "description": "Implement binary framing protocol"},
-    {"id": "LO4", "description": "Demonstrate multi-client FTP session management"},
-    {"id": "LO5", "description": "Analyse packet captures for protocol events"},
-    {"id": "LO6", "description": "Design checkpoint-recovery mechanisms"}
+    {"id": "LO1", "description": "Identify connection vs session characteristics", "questions": ["q01", "q02"]},
+    {"id": "LO2", "description": "Explain endianness and byte-order mechanisms", "questions": ["q03", "q04", "q05"]},
+    {"id": "LO3", "description": "Implement binary framing protocol", "questions": ["q06", "q07"]},
+    {"id": "LO4", "description": "Demonstrate multi-client FTP session management", "questions": ["q08", "q09"]},
+    {"id": "LO5", "description": "Analyse packet captures for protocol events", "questions": ["q10", "q13"]},
+    {"id": "LO6", "description": "Design checkpoint-recovery mechanisms", "questions": ["q11", "q12", "q14", "q15"]}
   ],
   "questions": [
     {
-      "id": "q01", "type": "multiple_choice", "lo_ref": "LO1", "bloom_level": "remember",
-      "points": 1, "stem": "Which layer of the OSI model is responsible for managing dialogue control, authentication state and session checkpoints?",
-      "options": [{"key": "a", "text": "Layer 4 (Transport)"}, {"key": "b", "text": "Layer 5 (Session)"}, {"key": "c", "text": "Layer 6 (Presentation)"}, {"key": "d", "text": "Layer 7 (Application)"}],
+      "id": "q01",
+      "type": "multiple_choice",
+      "lo_ref": "LO1",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "Which layer of the OSI model is responsible for managing dialogue control, authentication state and session checkpoints?",
+      "options": [
+        {"key": "a", "text": "Layer 4 (Transport)"},
+        {"key": "b", "text": "Layer 5 (Session)"},
+        {"key": "c", "text": "Layer 6 (Presentation)"},
+        {"key": "d", "text": "Layer 7 (Application)"}
+      ],
       "correct_answer": "b"
     },
     {
-      "id": "q02", "type": "multiple_choice", "lo_ref": "LO1", "bloom_level": "understand",
-      "points": 2, "stem": "A user is logged into an FTP server. The network cable is unplugged for 30 seconds, causing the TCP connection to drop. When reconnected, what happens to the FTP session state?",
-      "options": [{"key": "a", "text": "Session is preserved"}, {"key": "b", "text": "Session is lost — user must re-authenticate"}, {"key": "c", "text": "Session is cached for 5 minutes"}, {"key": "d", "text": "Session is partially preserved"}],
+      "id": "q02",
+      "type": "multiple_choice",
+      "lo_ref": "LO1",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "A user is logged into an FTP server. The network cable is unplugged for 30 seconds, causing the TCP connection to drop. When reconnected, what happens to the FTP session state?",
+      "options": [
+        {"key": "a", "text": "Session is preserved — FTP maintains state independently"},
+        {"key": "b", "text": "Session is lost — user must re-authenticate"},
+        {"key": "c", "text": "Session is cached on server for 5 minutes"},
+        {"key": "d", "text": "Session is partially preserved — CWD lost but auth remains"}
+      ],
       "correct_answer": "b"
     },
     {
-      "id": "q03", "type": "multiple_choice", "lo_ref": "LO2", "bloom_level": "remember",
-      "points": 1, "stem": "In network byte order (big-endian), how is 0x12345678 stored?",
-      "options": [{"key": "a", "text": "78 56 34 12"}, {"key": "b", "text": "12 34 56 78"}, {"key": "c", "text": "21 43 65 87"}, {"key": "d", "text": "87 65 43 21"}],
+      "id": "q03",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "remember",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "In network byte order (big-endian), how is the 32-bit integer 0x12345678 stored in memory?",
+      "options": [
+        {"key": "a", "text": "78 56 34 12 (LSB first)"},
+        {"key": "b", "text": "12 34 56 78 (MSB first)"},
+        {"key": "c", "text": "21 43 65 87 (nibble swapped)"},
+        {"key": "d", "text": "87 65 43 21 (reversed and nibble swapped)"}
+      ],
       "correct_answer": "b"
     },
     {
-      "id": "q13", "type": "multiple_choice", "lo_ref": "LO5", "bloom_level": "analyse",
-      "points": 3, "stem": "In a Wireshark capture with TCP handshake then FTP commands, at which packet does the SESSION layer become active?",
-      "options": [{"key": "a", "text": "Packet 1 — TCP SYN"}, {"key": "b", "text": "Packet 3 — TCP handshake complete"}, {"key": "c", "text": "Packet 4 — server banner"}, {"key": "d", "text": "Packet 5 — USER command"}],
+      "id": "q04",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "You pack a 32-bit value as struct.pack('>I', 0xCAFEBABE) on a little-endian machine. What bytes are sent?",
+      "options": [
+        {"key": "a", "text": "BE BA FE CA (native order)"},
+        {"key": "b", "text": "CA FE BA BE (network order)"},
+        {"key": "c", "text": "AB CD EF 12 (converted)"},
+        {"key": "d", "text": "FE CA BE BA (partial swap)"}
+      ],
+      "correct_answer": "b"
+    },
+    {
+      "id": "q05",
+      "type": "multiple_choice",
+      "lo_ref": "LO2",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "What is the result of struct.unpack('<I', b'\\x12\\x34\\x56\\x78')[0] in hexadecimal?",
+      "options": [
+        {"key": "a", "text": "0x12345678"},
+        {"key": "b", "text": "0x78563412"},
+        {"key": "c", "text": "0x21436587"},
+        {"key": "d", "text": "0x87654321"}
+      ],
+      "correct_answer": "b"
+    },
+    {
+      "id": "q06",
+      "type": "multiple_choice",
+      "lo_ref": "LO3",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "A protocol header uses format '>4sHI': magic(4) + length(2) + checksum(4). What is struct.calcsize('>4sHI')?",
+      "options": [
+        {"key": "a", "text": "8 bytes"},
+        {"key": "b", "text": "10 bytes"},
+        {"key": "c", "text": "12 bytes"},
+        {"key": "d", "text": "14 bytes"}
+      ],
+      "correct_answer": "b"
+    },
+    {
+      "id": "q07",
+      "type": "multiple_choice",
+      "lo_ref": "LO3",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "Why do we apply '& 0xFFFFFFFF' to zlib.crc32() results in Python?",
+      "options": [
+        {"key": "a", "text": "To speed up calculation"},
+        {"key": "b", "text": "To ensure unsigned 32-bit result on all platforms"},
+        {"key": "c", "text": "To add error correction bits"},
+        {"key": "d", "text": "To convert to network byte order"}
+      ],
+      "correct_answer": "b"
+    },
+    {
+      "id": "q08",
+      "type": "multiple_choice",
+      "lo_ref": "LO4",
+      "bloom_level": "understand",
+      "difficulty": "basic",
+      "points": 1,
+      "stem": "How many TCP connections does FTP use to download one file?",
+      "options": [
+        {"key": "a", "text": "1 — multiplexed commands and data"},
+        {"key": "b", "text": "2 — control (port 21) and data (dynamic port)"},
+        {"key": "c", "text": "3 — auth, commands, and data"},
+        {"key": "d", "text": "4 — one per FTP command"}
+      ],
+      "correct_answer": "b"
+    },
+    {
+      "id": "q09",
+      "type": "multiple_choice",
+      "lo_ref": "LO4",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "FTP PASV response: '227 Entering Passive Mode (192,168,1,5,234,100)'. What port should the client connect to?",
+      "options": [
+        {"key": "a", "text": "234"},
+        {"key": "b", "text": "334 (234+100)"},
+        {"key": "c", "text": "60004 (234*256+100)"},
+        {"key": "d", "text": "25700 (100*256+234)"}
+      ],
+      "correct_answer": "c"
+    },
+    {
+      "id": "q10",
+      "type": "multiple_choice",
+      "lo_ref": "LO5",
+      "bloom_level": "apply",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "Which Wireshark filter shows FTP control and passive data traffic for our lab?",
+      "options": [
+        {"key": "a", "text": "ftp"},
+        {"key": "b", "text": "tcp.port == 21"},
+        {"key": "c", "text": "(tcp.port == 2121) || (tcp.port >= 60000 && tcp.port <= 60010)"},
+        {"key": "d", "text": "tcp.port == 2121 || tcp.port == 20"}
+      ],
+      "correct_answer": "c"
+    },
+    {
+      "id": "q11",
+      "type": "multiple_choice",
+      "lo_ref": "LO6",
+      "bloom_level": "understand",
+      "difficulty": "intermediate",
+      "points": 2,
+      "stem": "What is the purpose of a checkpoint in session-layer protocols?",
+      "options": [
+        {"key": "a", "text": "To encrypt data at regular intervals"},
+        {"key": "b", "text": "To mark confirmed progress for recovery after failure"},
+        {"key": "c", "text": "To limit bandwidth usage"},
+        {"key": "d", "text": "To authenticate the connection"}
+      ],
+      "correct_answer": "b"
+    },
+    {
+      "id": "q12",
+      "type": "multiple_choice",
+      "lo_ref": "LO6",
+      "bloom_level": "apply",
+      "difficulty": "advanced",
+      "points": 2,
+      "stem": "Which Session Layer concept allows a sender to ensure the receiver has successfully processed data before continuing?",
+      "options": [
+        {"key": "a", "text": "Flow control"},
+        {"key": "b", "text": "Synchronisation points (checkpoints)"},
+        {"key": "c", "text": "Error correction"},
+        {"key": "d", "text": "Multiplexing"}
+      ],
+      "correct_answer": "b"
+    },
+    {
+      "id": "q13",
+      "type": "multiple_choice",
+      "lo_ref": "LO5",
+      "bloom_level": "analyse",
+      "difficulty": "advanced",
+      "points": 3,
+      "stem": "In a Wireshark capture, you see: Packet 1: TCP SYN to port 2121, Packet 2: TCP SYN-ACK, Packet 3: TCP ACK, Packet 4: '220 FTP Server Ready', Packet 5: 'USER test'. At which packet does the SESSION layer become active?",
+      "options": [
+        {"key": "a", "text": "Packet 1 — when TCP connection initiates"},
+        {"key": "b", "text": "Packet 3 — when TCP handshake completes"},
+        {"key": "c", "text": "Packet 4 — when FTP server sends banner"},
+        {"key": "d", "text": "Packet 5 — when authentication begins"}
+      ],
       "correct_answer": "d"
     },
     {
-      "id": "q14", "type": "open_response", "lo_ref": "LO6", "bloom_level": "create",
-      "points": 5, "stem": "Design a checkpoint format for resumable file transfers including: session ID, file path, bytes transferred, timestamp and integrity verification.",
-      "rubric": ["Session ID (1pt)", "File path with length prefix (1pt)", "Byte offset 64-bit (1pt)", "Timestamp (1pt)", "CRC/hash (1pt)"]
+      "id": "q14",
+      "type": "open_response",
+      "lo_ref": "LO6",
+      "bloom_level": "create",
+      "difficulty": "advanced",
+      "points": 5,
+      "stem": "Design a checkpoint format for resumable file transfers. Your format must include: session ID, file path, bytes transferred, timestamp and integrity verification. Describe the binary layout.",
+      "rubric": [
+        "Session ID present (1 point)",
+        "File path with length prefix (1 point)",
+        "Byte offset as 64-bit integer (1 point)",
+        "Timestamp in Unix epoch (1 point)",
+        "CRC or hash for verification (1 point)"
+      ]
     },
     {
-      "id": "q15", "type": "multiple_choice", "lo_ref": "LO6", "bloom_level": "evaluate",
-      "points": 3, "stem": "A file transfer uses 1MB checkpoints. Fails at 47.3MB. Which recovery approach minimises retransmission?",
-      "options": [{"key": "a", "text": "Restart from 0MB"}, {"key": "b", "text": "Resume from 47MB checkpoint"}, {"key": "c", "text": "Resume from 46MB"}, {"key": "d", "text": "Resume from 47.3MB"}],
+      "id": "q15",
+      "type": "multiple_choice",
+      "lo_ref": "LO6",
+      "bloom_level": "evaluate",
+      "difficulty": "advanced",
+      "points": 3,
+      "stem": "A file transfer uses 1MB checkpoints. The transfer fails at 47.3MB. Which recovery approach minimises retransmission whilst ensuring integrity?",
+      "options": [
+        {"key": "a", "text": "Restart from 0MB — ensures complete data integrity"},
+        {"key": "b", "text": "Resume from 47MB checkpoint — latest complete checkpoint"},
+        {"key": "c", "text": "Resume from 46MB — adds safety margin for partial writes"},
+        {"key": "d", "text": "Resume from 47.3MB — continue exactly where stopped"}
+      ],
       "correct_answer": "b"
     }
   ],
-  "note": "This is a simplified export. Full quiz in formative/quiz.yaml"
+  "import_notes": {
+    "canvas": "Import as QTI 1.2 quiz. Open response questions may need manual rubric setup.",
+    "moodle": "Import as Moodle XML or convert to GIFT format using quiz converter.",
+    "general": "Review point values and time limits after import."
+  }
 }

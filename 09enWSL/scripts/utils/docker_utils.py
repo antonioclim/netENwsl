@@ -358,7 +358,7 @@ class DockerManager:
         dry_run: bool = False
     ) -> None:
         """
-        Remove containers, networks, and volumes by name prefix.
+        Remove containers, networks and volumes by name prefix.
         
         Args:
             prefix: Prefix to match (e.g., "week9")

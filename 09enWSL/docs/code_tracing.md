@@ -355,7 +355,7 @@ demonstrate_crc_detection()
 
 1. **No** — All corrupted versions will have different CRCs
 2. **Yes** — CRC-32 is specifically designed to detect single-bit errors
-3. **Yes** — An attacker can craft a message that produces any desired CRC (CRC is not cryptographically secure)
+3. **Yes** — An attacker can create a message that produces any desired CRC (CRC is not cryptographically secure)
 
 **Output:**
 ```

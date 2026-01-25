@@ -1,16 +1,66 @@
+# ═══════════════════════════════════════════════════════════════════════════════
 # Week 9: Session Layer and Presentation Layer
+# Python Dependencies
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# ═══════════════════════════════════════════════════════════════════════════════
+#
 # Python >= 3.10 required
+# Install: pip install -r setup/requirements.txt
+#
+# Last updated: 2026-01-25 (v1.6.0)
+# ═══════════════════════════════════════════════════════════════════════════════
 
+# ─────────────────────────────────────────────────────────────────────────────
 # Core Dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Docker SDK for Python - container management
 docker>=6.0.0
+
+# HTTP requests library - API interactions
 requests>=2.28.0
+
+# YAML parser - quiz and config files
 pyyaml>=6.0
+
+# FTP server library - laboratory FTP server
 pyftpdlib>=1.5.7
+
+# Terminal colors - pretty output
 colorama>=0.4.6
 
-# Development
+# ─────────────────────────────────────────────────────────────────────────────
+# Development and Testing
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Linter - code quality checks
 ruff>=0.1.0
+
+# Testing framework
 pytest>=7.0.0
+
+# Test timeout support
 pytest-timeout>=2.0.0
 
-# Last updated: 2026-01-25
+# ─────────────────────────────────────────────────────────────────────────────
+# Optional Dependencies (uncomment if needed)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# scapy>=2.5.0        # Packet crafting (advanced exercises)
+# wireshark-cli       # tshark - install via apt, not pip
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Version Compatibility Notes
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Tested with:
+#   - Python 3.10, 3.11, 3.12
+#   - Ubuntu 22.04 LTS (WSL2)
+#   - Docker Engine 24.x
+#   - Portainer CE 2.x
+#
+# Known issues:
+#   - pyftpdlib 1.5.9+ may have different default permissions
+#   - docker-py 7.x has breaking changes; use 6.x for now
+#
+# ═══════════════════════════════════════════════════════════════════════════════

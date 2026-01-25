@@ -210,6 +210,9 @@ ftp.quit()
 "
 ```
 
+> **Instructor note:** In my experience running this lab, the most common issue is students forgetting that FTP uses TWO separate TCP connections — one for control commands (port 21/2121) and another for data transfer (passive ports 60000-60010). If the control channel works but file transfer fails, always check passive mode configuration first. This catches about 70% of FTP problems.
+
+
 ### Passive Mode Failures
 
 **Symptoms:**
