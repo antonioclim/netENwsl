@@ -1,0 +1,41 @@
+TLS 1.3 Handshake — Simplified
+═══════════════════════════════════════════════════════════════════════════════
+
+  Client                                                Server
+    │                                                      │
+    │  ──────── ClientHello + Key Share ────────────────▶  │
+    │           (supported ciphers, random,                │
+    │            SNI: domain visible here!)                │
+    │                                                      │
+    │  ◀─────── ServerHello + Key Share ─────────────────  │
+    │           (selected cipher, random,                  │
+    │            Certificate, CertificateVerify,           │
+    │            Finished)                                 │
+    │                                                      │
+    │  ──────── Finished ────────────────────────────────▶ │
+    │                                                      │
+    │  ═══════════════════════════════════════════════════ │
+    │            APPLICATION DATA (encrypted)              │
+    │  ═══════════════════════════════════════════════════ │
+
+
+Key Points:
+───────────────────────────────────────────────────────────────────────────────
+• SNI (Server Name Indication) is sent in PLAINTEXT in ClientHello
+• TLS 1.3 reduces handshake to 1-RTT (one round trip)
+• Certificate proves server identity
+• Key Share enables forward secrecy (ECDHE)
+• After handshake: symmetric encryption (AES-GCM or ChaCha20)
+
+
+What's Visible to Network Observer:
+───────────────────────────────────────────────────────────────────────────────
+✗ Domain name (via SNI)         — visible
+✗ Server IP address             — visible
+✗ Timing and packet sizes       — visible
+✓ URL path and query            — encrypted
+✓ HTTP headers                  — encrypted
+✓ Request/response body         — encrypted
+
+
+Related: See docs/concept_analogies.md for everyday analogies

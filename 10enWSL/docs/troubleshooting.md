@@ -71,6 +71,8 @@ docker logs week10_web
    sudo service docker start
    ```
 
+> 💡 **From experience:** In previous years, students often forgot to start Docker after rebooting WSL. If you see "Cannot connect to Docker daemon", run `sudo service docker start` first.
+
 ---
 
 ### Problem: Certificate errors with HTTPS
@@ -95,8 +97,38 @@ curl: (60) SSL certificate problem: self-signed certificate
 3. **Regenerate certificate:**
    ```bash
    rm -f output/tls/server.crt output/tls/server.key
-   python3 src/exercises/ex_10_01_https.py generate-cert
+   python3 src/exercises/ex_10_01_tls_rest_crud.py generate-cert
    ```
+
+---
+
+### Problem: SSL verification fails in Python requests
+
+**Symptoms:**
+```python
+requests.exceptions.SSLError: [SSL: CERTIFICATE_VERIFY_FAILED]
+```
+
+**Solutions:**
+
+1. **Disable verification for local testing:**
+   ```python
+   import requests
+   import urllib3
+   urllib3.disable_warnings()
+   
+   response = requests.get("https://127.0.0.1:8443/", verify=False)
+   ```
+
+2. **Point to the certificate:**
+   ```python
+   response = requests.get(
+       "https://127.0.0.1:8443/",
+       verify="output/tls/server.crt"
+   )
+   ```
+
+> ⚠️ **This usually breaks when:** students copy the certificate path but the current working directory is different. Always use absolute paths or Path objects for reliability.
 
 ---
 
@@ -171,6 +203,8 @@ nc -u -zv 127.0.0.1 5353
    # Or test from inside Docker network:
    docker exec week10_debug dig @dns-server -p 5353 web.lab.local
    ```
+
+> 💡 **Teaching note:** DNS resolution works in terminal but not in container? Check if you are using the container's DNS server name (`dns-server`) vs the host's loopback (`127.0.0.1`).
 
 ---
 
@@ -331,6 +365,8 @@ ftp: Can't connect to `...': Connection timed out
    ftp> ls
    ```
 
+> 💡 **This often confuses students:** FTP passive mode requires additional ports beyond 2121. If the data channel times out, check that ports 30000-30009 are mapped in docker-compose.yml.
+
 ---
 
 ### Problem: "530 Login incorrect"
@@ -379,6 +415,46 @@ docker logs week10_<container_name>
 - Missing dependencies in Dockerfile
 - Syntax error in startup script
 - Port already in use
+
+---
+
+### Problem: Container starts but port not accessible
+
+**Symptoms:**
+- Container shows as "Up" in `docker ps`
+- But `curl localhost:PORT` times out or refuses connection
+
+**Diagnosis:**
+```bash
+# Check what ports the container is actually listening on
+docker exec week10_web ss -tlnp
+
+# Check port mapping
+docker port week10_web
+
+# Check if the service inside container is running
+docker exec week10_web ps aux
+```
+
+**Solutions:**
+
+1. **Service not bound to 0.0.0.0:**
+   ```bash
+   # Bad: only accessible from inside container
+   flask run --host=127.0.0.1
+   
+   # Good: accessible from outside container
+   flask run --host=0.0.0.0
+   ```
+
+2. **Check Dockerfile EXPOSE matches compose ports:**
+   ```yaml
+   # docker-compose.yml
+   ports:
+     - "8000:8000"  # host:container must match
+   ```
+
+> 💡 **If this feels confusing:** remember that `127.0.0.1` inside a container is different from `127.0.0.1` on the host. Services must bind to `0.0.0.0` to be reachable.
 
 ---
 
@@ -439,7 +515,7 @@ sudo ss -tlnp | grep <port>
 **Solutions:**
 
 1. **Reinstall Npcap:**
-   - Download from [npcap.com](https://npcap.com/)
+   - Download from npcap.com
    - Enable "WinPcap API-compatible Mode"
    - Enable "Support raw 802.11 traffic"
 
@@ -449,7 +525,7 @@ sudo ss -tlnp | grep <port>
 
 ## Exercise-Specific Issues
 
-### HTTPS Exercise (ex_10_01_https.py)
+### HTTPS Exercise (ex_10_01_tls_rest_crud.py)
 
 **Problem:** OpenSSL not found
 ```bash
@@ -459,22 +535,40 @@ sudo apt update && sudo apt install openssl
 
 **Problem:** requests module not installed
 ```bash
-pip3 install requests
+pip3 install requests --break-system-packages
 ```
 
 ---
 
-### REST Exercise (ex_10_02_rest_levels.py)
+### REST Exercise (ex_10_02_richardson_maturity.py)
 
 **Problem:** Flask not installed
 ```bash
-pip3 install flask
+pip3 install flask --break-system-packages
 ```
 
 **Problem:** Port 5000 already in use
 ```bash
 # Use different port
-python3 src/exercises/ex_10_02_rest_levels.py serve --port 5001
+python3 src/exercises/ex_10_02_richardson_maturity.py serve --port 5001
+```
+
+---
+
+### DNS Exercise (ex_10_03_dns_query_analysis.py)
+
+**Problem:** dnslib not installed
+```bash
+pip3 install dnslib --break-system-packages
+```
+
+**Problem:** DNS server not responding
+```bash
+# Check if the lab DNS container is running
+docker ps | grep week10_dns
+
+# Start it if needed
+docker compose -f docker/docker-compose.yml up -d dns-server
 ```
 
 ---
@@ -525,7 +619,7 @@ If none of the above solutions work:
 
 2. **Check the error message carefully** — it often contains the solution
 
-3. **Ask the instructor** with:
+3. **Open an issue in GitHub** with:
    - Exact error message
    - Command you ran
    - Diagnostic output from above

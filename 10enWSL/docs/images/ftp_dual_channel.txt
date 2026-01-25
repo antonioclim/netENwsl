@@ -1,0 +1,59 @@
+FTP Dual-Channel Architecture
+═══════════════════════════════════════════════════════════════════════════════
+
+
+                        CONTROL CHANNEL (persistent)
+                              Port 21
+  ┌──────────┐         ═══════════════════════         ┌──────────┐
+  │          │ ──────▶  USER labftp              ──────▶│          │
+  │          │ ◀──────  331 Password required    ◀──────│          │
+  │          │ ──────▶  PASS labftp              ──────▶│          │
+  │          │ ◀──────  230 Login successful     ◀──────│          │
+  │  CLIENT  │ ──────▶  PASV                     ──────▶│  SERVER  │
+  │          │ ◀──────  227 (192,168,1,10,117,48)◀──────│          │
+  │          │ ──────▶  RETR file.txt            ──────▶│          │
+  │          │ ◀──────  150 Opening data conn    ◀──────│          │
+  │          │         ═══════════════════════         │          │
+  │          │                                         │          │
+  │          │          DATA CHANNEL (temporary)       │          │
+  │          │              Port 30000                 │          │
+  │          │         ═══════════════════════         │          │
+  │          │ ◀══════════ [file contents] ════════════│          │
+  │          │         ═══════════════════════         │          │
+  │          │                                         │          │
+  │          │ ◀──────  226 Transfer complete    ◀──────│          │
+  └──────────┘         ═══════════════════════         └──────────┘
+
+
+Passive Mode Port Calculation:
+───────────────────────────────────────────────────────────────────────────────
+Server response: 227 Entering Passive Mode (192,168,1,10,117,48)
+
+IP Address:  192.168.1.10
+Port:        117 × 256 + 48 = 30000
+
+Formula:     (p1 × 256) + p2 = data_port
+
+
+Active vs Passive Mode:
+───────────────────────────────────────────────────────────────────────────────
+┌─────────────┬──────────────────────────────┬────────────────────────────────┐
+│             │        ACTIVE (PORT)         │       PASSIVE (PASV)           │
+├─────────────┼──────────────────────────────┼────────────────────────────────┤
+│ Who opens   │ Server connects TO client    │ Client connects TO server      │
+│ data conn?  │                              │                                │
+├─────────────┼──────────────────────────────┼────────────────────────────────┤
+│ Firewall    │ Client must allow incoming   │ Server must allow incoming     │
+│ issue       │ (often blocked by NAT)       │ (usually works through NAT)    │
+├─────────────┼──────────────────────────────┼────────────────────────────────┤
+│ Modern use  │ Rarely used                  │ Preferred method               │
+└─────────────┴──────────────────────────────┴────────────────────────────────┘
+
+
+Key Insight:
+───────────────────────────────────────────────────────────────────────────────
+Unlike HTTP (single connection), FTP separates:
+• Commands and responses  →  Control channel (port 21)
+• Actual file data        →  Data channel (negotiated port)
+
+This allows monitoring transfer progress while sending additional commands.

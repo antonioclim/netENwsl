@@ -1,0 +1,62 @@
+Richardson Maturity Model — REST API Levels
+═══════════════════════════════════════════════════════════════════════════════
+
+
+Level 3: Hypermedia Controls (HATEOAS)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  GET /users/123                                                             │
+│  Response includes links:                                                   │
+│  {                                                                          │
+│    "id": 123, "name": "Alice",                                              │
+│    "_links": {                                                              │
+│      "self": {"href": "/users/123"},                                        │
+│      "orders": {"href": "/users/123/orders"},                               │
+│      "delete": {"href": "/users/123", "method": "DELETE"}                   │
+│    }                                                                        │
+│  }                                                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ▲
+                                    │ + Hypermedia links
+────────────────────────────────────┼──────────────────────────────────────────
+                                    │
+Level 2: HTTP Verbs + Status Codes
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  GET    /users         → 200 OK + list                                      │
+│  POST   /users         → 201 Created + new resource                         │
+│  GET    /users/123     → 200 OK or 404 Not Found                            │
+│  PUT    /users/123     → 200 OK (updated)                                   │
+│  DELETE /users/123     → 204 No Content                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ▲
+                                    │ + Correct HTTP verbs
+────────────────────────────────────┼──────────────────────────────────────────
+                                    │
+Level 1: Resources (but action-style URLs)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  POST /users/123/update     ← verb in URL (wrong!)                          │
+│  POST /users/123/delete     ← verb in URL (wrong!)                          │
+│  POST /users/create         ← verb in URL (wrong!)                          │
+│  GET  /users/123/get        ← redundant (wrong!)                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    ▲
+                                    │ + Resource URIs
+────────────────────────────────────┼──────────────────────────────────────────
+                                    │
+Level 0: The Swamp of POX (Plain Old XML/JSON)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  POST /api/service                                                          │
+│  Body: {"action": "getUser", "userId": 123}                                 │
+│                                                                             │
+│  POST /api/service                                                          │
+│  Body: {"action": "deleteUser", "userId": 123}                              │
+│                                                                             │
+│  (Single endpoint, action in body — RPC style)                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+Quick Reference:
+───────────────────────────────────────────────────────────────────────────────
+Level 0  →  HTTP as tunnel, single endpoint
+Level 1  →  Resources exist, but verbs in URLs
+Level 2  →  Proper HTTP verbs (GET/POST/PUT/DELETE)
+Level 3  →  Hypermedia: responses contain navigation links

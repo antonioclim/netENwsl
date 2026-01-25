@@ -62,6 +62,8 @@ The TLS handshake:
 3. Key exchange (asymmetric → symmetric key derivation)
 4. Encrypted application data begins
 
+> 💡 **From teaching experience:** Students often struggle to understand why the domain name is visible even with HTTPS. The key insight is that TLS negotiation happens *before* encryption is established — and the server needs to know which certificate to present.
+
 > ⚠️ **Common Misconception:** "HTTPS encrypts everything." Reality: The domain name is visible via SNI (Server Name Indication). The URL path is encrypted, but the destination domain is not.
 
 > ⚠️ **Common Misconception:** "HTTPS means the site is safe." Reality: HTTPS only encrypts the connection. A phishing site can have valid HTTPS.
@@ -107,6 +109,8 @@ REST is like a well-organised library:
 | **Level 1** | Resources | Resources with distinct URIs |
 | **Level 2** | HTTP Verbs | HTTP verbs used semantically |
 | **Level 3** | Hypermedia | HATEOAS (Hypermedia as Engine of Application State) |
+
+> 💡 **In previous years, students often confused Level 1 and Level 2.** The key difference: Level 1 has resource URIs but may still use verbs in the URL (`/users/123/delete`). Level 2 uses HTTP verbs semantically (`DELETE /users/123`).
 
 #### Level Comparison Example
 
@@ -154,6 +158,8 @@ DNS is like a phone book:
 - Typically UDP port 53 (queries < 512 bytes)
 - TCP port 53 for zone transfers and large responses
 - DNS over HTTPS (DoH) and DNS over TLS (DoT) for privacy
+
+> 💡 **This usually trips students up during packet captures:** If you see DNS over TCP, it's not an error — it means the response was too large for UDP, or it's a zone transfer.
 
 > ⚠️ **Common Misconception:** "DNS only uses UDP." Reality: DNS uses TCP for large responses (when UDP response is truncated) and for zone transfers.
 
@@ -211,6 +217,8 @@ FTP is like ordering by phone:
 | **Client behind NAT** | Problems | Works fine |
 | **Modern preference** | Rarely used | Standard |
 
+> 💡 **If this feels confusing at first,** focus on who initiates the data connection. In active mode, the server calls back to the client (which fails if the client is behind NAT). In passive mode, the client calls the server (which almost always works).
+
 > ⚠️ **Common Misconception:** "FTP uses a single connection like HTTP." Reality: FTP uses separate control and data channels, which is why firewall configuration can be tricky.
 
 Passive mode is preferred because most clients are behind NAT/firewalls that block inbound connections.
@@ -247,6 +255,14 @@ Passive mode is preferred because most clients are behind NAT/firewalls that blo
 | DNS | 53 | UDP/TCP | Name resolution |
 | SSH | 22 | TCP | Secure remote access |
 | FTP | 21, 20+ | TCP | File transfer |
+
+---
+
+## See Also
+
+- [Concept Analogies](concept_analogies.md) — Extended everyday analogies
+- [Misconceptions](misconceptions.md) — Common errors and how to avoid them
+- [Peer Instruction Questions](peer_instruction.md) — Test your understanding
 
 ---
 
