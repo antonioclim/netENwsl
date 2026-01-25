@@ -1,269 +1,151 @@
-# 📚 Learning Objectives Traceability Matrix
+# Week 13: IoT and Security — Learning Objectives
 
-> Week 13: IoT and Security in Computer Networks  
-> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
-
----
-
-## Overview
-
-This document provides a complete traceability matrix mapping each Learning Objective (LO) to its corresponding course materials, exercises, assessments and verification methods. This ensures alignment between intended outcomes and actual course delivery.
+**Computer Networks** — ASE, CSIE | ing. dr. Antonio Clim
 
 ---
 
-## Learning Objectives Summary
+## Learning Objectives
 
-| ID | Bloom Level | Verb | Description |
-|----|-------------|------|-------------|
-| LO1 | Remember (1) | Recall | MQTT architecture components |
-| LO2 | Understand (2) | Explain | Plaintext vs TLS differences |
-| LO3 | Apply (3) | Implement | TCP connect scanning |
-| LO4 | Apply (3) | Demonstrate | MQTT pub/sub operations |
-| LO5 | Analyse (4) | Analyse | Packet captures |
-| LO6 | Create (6) | Design | Reconnaissance workflow |
-| LO7 | Evaluate (5) | Evaluate | Security posture |
+Upon successful completion of this module, students will be able to:
 
----
+### LO1: MQTT Protocol Architecture
+**Explain** the MQTT publish-subscribe architecture, including the roles of publishers, subscribers, and brokers.
 
-## Detailed Traceability Matrix
+- Bloom Level: **Remember/Understand**
+- Assessment: Quiz Q01-Q03, Exercise 13.01
+- Key Concepts: Topic hierarchy, client identification, connection lifecycle
 
-### LO1: Recall MQTT Architecture Components
+### LO2: Quality of Service Semantics
+**Differentiate** between MQTT QoS levels (0, 1, 2) and select appropriate levels for given application requirements.
 
-**Bloom Level:** Remember (Level 1)  
-**Full Description:** Recall the fundamental components of MQTT architecture including brokers, publishers, subscribers and topic hierarchies.
+- Bloom Level: **Understand/Apply**
+- Assessment: Quiz Q04-Q06, Exercise 13.01
+- Key Concepts: At-most-once, at-least-once, exactly-once delivery guarantees
 
-| Artifact Type | Reference | Coverage |
-|--------------|-----------|----------|
-| **Theory** | `docs/theory_summary.md` §2 "MQTT Protocol Fundamentals" | ✅ Complete |
-| **Exercise** | `ex_13_02_mqtt_client.py` (subscribe/publish modes) | ✅ Complete |
-| **Test** | `tests/test_exercises.py::TestExercise2MQTTClient` | ✅ Complete |
-| **Quiz** | `formative/quiz.yaml` q01, q02, q03 | ✅ Complete |
-| **Misconceptions** | `docs/misconceptions.md` #1 (QoS≠encryption), #2 (wildcards), #3 (anonymous) | ✅ Complete |
-| **Parsons** | `docs/parsons_problems.md` P1 (MQTT Publish with QoS) | ✅ Complete |
-| **Peer Instruction** | `docs/peer_instruction.md` Q1 (broker role) | ✅ Complete |
+### LO3: Network Traffic Analysis
+**Analyse** captured network traffic to identify protocol behaviours and potential security weaknesses.
 
-**Assessment Criteria:**
-- Can identify the three main components: Publisher, Broker, Subscriber
-- Can explain the role of topics in message routing
-- Can describe QoS levels (0, 1, 2) and their guarantees
-- Can draw a basic MQTT architecture diagram
+- Bloom Level: **Analyse**
+- Assessment: Quiz Q07-Q08, Exercises 13.01-13.02
+- Key Concepts: Packet capture, protocol dissection, traffic patterns
 
----
+### LO4: Broker Security Configuration
+**Configure** MQTT broker security controls including authentication, authorisation, and TLS encryption.
 
-### LO2: Explain Plaintext vs TLS Differences
+- Bloom Level: **Apply**
+- Assessment: Quiz Q09-Q10, Exercises 13.02-13.03
+- Key Concepts: ACLs, certificate management, secure defaults
 
-**Bloom Level:** Understand (Level 2)  
-**Full Description:** Explain the differences between plaintext and TLS-encrypted network communications and what metadata remains observable under encryption.
+### LO5: OWASP IoT Vulnerability Identification
+**Identify** vulnerabilities in IoT deployments using the OWASP IoT Top 10 framework.
 
-| Artifact Type | Reference | Coverage |
-|--------------|-----------|----------|
-| **Theory** | `docs/theory_summary.md` §3 "Transport Layer Security" | ✅ Complete |
-| **Exercise** | `ex_13_02_mqtt_client.py --tls` flag | ✅ Complete |
-| **Test** | `tests/test_exercises.py::test_tls_connection` | ✅ Complete |
-| **Quiz** | `formative/quiz.yaml` q04, q05, q06 | ✅ Complete |
-| **Misconceptions** | `docs/misconceptions.md` #4 (TLS metadata), #5 (TLS 1.3 compatibility) | ✅ Complete |
-| **Parsons** | `docs/parsons_problems.md` P3 (TLS Context Configuration) | ✅ Complete |
-| **Peer Instruction** | `docs/peer_instruction.md` Q2 (what TLS hides) | ✅ Complete |
-| **Wireshark** | Compare captures: port 1883 vs 8883 | ✅ Complete |
+- Bloom Level: **Analyse/Evaluate**
+- Assessment: Quiz Q11-Q12, Exercise 13.04
+- Key Concepts: Vulnerability taxonomy, risk prioritisation, remediation strategies
 
-**Assessment Criteria:**
-- Can explain what TLS encrypts (payload) and what remains visible (metadata)
-- Can identify TLS handshake packets in Wireshark
-- Can configure TLS client with CA certificate
-- Can articulate why TLS is necessary for IoT security
+### LO6: Defence-in-Depth Strategies
+**Design** defence-in-depth security architectures for IoT deployments.
+
+- Bloom Level: **Evaluate/Create**
+- Assessment: Quiz Q15-Q16, Exercise 13.04
+- Key Concepts: Layered security, network segmentation, secure boot
+
+### LO7: Security Posture Evaluation
+**Evaluate** the overall security posture of IoT deployments and recommend improvements.
+
+- Bloom Level: **Evaluate**
+- Assessment: Quiz Q13-Q14, Final Project
+- Key Concepts: Risk assessment, security auditing, compliance
 
 ---
 
-### LO3: Implement TCP Connect Scanning
+## Bloom Taxonomy Distribution
 
-**Bloom Level:** Apply (Level 3)  
-**Full Description:** Implement TCP connect scanning using concurrent programming techniques and interpret the resulting port states (open, closed, filtered).
-
-| Artifact Type | Reference | Coverage |
-|--------------|-----------|----------|
-| **Theory** | `docs/theory_summary.md` §4 "Port Scanning Techniques" | ✅ Complete |
-| **Exercise** | `ex_13_01_port_scanner.py` (full implementation) | ✅ Complete |
-| **Test** | `tests/test_exercises.py::TestExercise1PortScanner` | ✅ Complete |
-| **Quiz** | `formative/quiz.yaml` q07, q08 | ✅ Complete |
-| **Misconceptions** | `docs/misconceptions.md` #6 (filtered), #7 (legality), #8 (open≠vulnerable) | ✅ Complete |
-| **Parsons** | `docs/parsons_problems.md` P2 (TCP Port Scanner Function) | ✅ Complete |
-| **Code Tracing** | `docs/code_tracing.md` Exercise 1 | ✅ Complete |
-
-**Assessment Criteria:**
-- Can explain TCP three-way handshake
-- Can differentiate between open, closed and filtered port states
-- Can implement socket-based port scanning
-- Can use ThreadPoolExecutor for concurrent scanning
-- Can interpret scan results and correlate with services
+| Level | Count | Questions | Exercises |
+|-------|-------|-----------|-----------|
+| Remember | 3 | Q01, Q02, Q03 | — |
+| Understand | 3 | Q04, Q05, Q06 | Ex 13.01 |
+| Apply | 3 | Q07, Q08, Q09 | Ex 13.02, 13.03 |
+| Analyse | 3 | Q10, Q11, Q12 | Ex 13.01, 13.04 |
+| Evaluate | 2 | Q13, Q14 | Ex 13.04 |
+| Create | 2 | Q15, Q16 | Final Project |
 
 ---
 
-### LO4: Demonstrate MQTT Pub/Sub Operations
+## LO-to-Exercise Traceability Matrix
 
-**Bloom Level:** Apply (Level 3)  
-**Full Description:** Demonstrate MQTT publish/subscribe operations using Python client libraries with both plaintext and TLS transport configurations.
+| Exercise | LO1 | LO2 | LO3 | LO4 | LO5 | LO6 | LO7 |
+|----------|-----|-----|-----|-----|-----|-----|-----|
+| Ex 13.01 MQTT Traffic Analysis | ● | ● | ● | ○ | ○ | ○ | ○ |
+| Ex 13.02 Broker Configuration | ○ | ○ | ● | ● | ○ | ○ | ○ |
+| Ex 13.03 TLS Implementation | ○ | ○ | ○ | ● | ○ | ● | ○ |
+| Ex 13.04 Vulnerability Scanner | ○ | ○ | ○ | ○ | ● | ● | ● |
+| Quiz | ● | ● | ● | ● | ● | ● | ● |
 
-| Artifact Type | Reference | Coverage |
-|--------------|-----------|----------|
-| **Theory** | `docs/theory_summary.md` §2.2 "Publish/Subscribe Pattern" | ✅ Complete |
-| **Exercise** | `ex_13_02_mqtt_client.py` (both modes) | ✅ Complete |
-| **Test** | `tests/test_exercises.py::test_mqtt_publish`, `::test_mqtt_subscribe` | ✅ Complete |
-| **Quiz** | `formative/quiz.yaml` q09, q10 | ✅ Complete |
-| **Misconceptions** | `docs/misconceptions.md` #2 (wildcards) | ✅ Complete |
-| **Parsons** | `docs/parsons_problems.md` P1 (MQTT Publish with QoS) | ✅ Complete |
-| **Peer Instruction** | `docs/peer_instruction.md` Q3 (QoS selection) | ✅ Complete |
-
-**Assessment Criteria:**
-- Can write MQTT publisher code using paho-mqtt
-- Can write MQTT subscriber code with topic filters
-- Can use topic wildcards (+ and #) correctly
-- Can configure client for TLS transport
+**Legend**: ● = Primary coverage | ○ = Secondary/partial coverage
 
 ---
 
-### LO5: Analyse Packet Captures
+## LO-to-Quiz Traceability Matrix
 
-**Bloom Level:** Analyse (Level 4)  
-**Full Description:** Analyse packet captures to distinguish between encrypted and unencrypted traffic flows and identify protocol-specific patterns.
-
-| Artifact Type | Reference | Coverage |
-|--------------|-----------|----------|
-| **Theory** | `docs/theory_summary.md` §3 "Traffic Analysis" | ✅ Complete |
-| **Exercise** | `ex_13_03_packet_sniffer.py` | ✅ Complete |
-| **Smoke Test** | `tests/smoke_test.py::test_scapy_available` | ✅ Complete |
-| **Quiz** | `formative/quiz.yaml` q11, q12 | ✅ Complete |
-| **Misconceptions** | `docs/misconceptions.md` #4 (TLS metadata visible) | ✅ Complete |
-| **Parsons** | `docs/parsons_problems.md` P4 (Packet Capture Filter) | ✅ Complete |
-| **Wireshark Guide** | `README.md` Wireshark section | ✅ Complete |
-
-**Assessment Criteria:**
-- Can capture packets using Scapy or Wireshark
-- Can write BPF filter expressions
-- Can identify MQTT packets in plaintext captures
-- Can distinguish TLS Application Data from plaintext
-- Can analyse TCP handshake sequence
-
----
-
-### LO6: Design Reconnaissance Workflow
-
-**Bloom Level:** Create (Level 6)  
-**Full Description:** Design a systematic reconnaissance workflow that combines service enumeration, banner grabbing and vulnerability fingerprinting.
-
-| Artifact Type | Reference | Coverage |
-|--------------|-----------|----------|
-| **Theory** | `docs/theory_summary.md` §4 "Security Assessment Methodology" | ✅ Complete |
-| **Exercise** | `ex_13_04_vuln_checker.py` | ✅ Complete |
-| **Test** | `tests/test_exercises.py::TestExercise4VulnChecker` | ✅ Complete |
-| **Quiz** | `formative/quiz.yaml` q15, q16 | ✅ Complete |
-| **Misconceptions** | `docs/misconceptions.md` #6 (filtered), #7 (legality) | ✅ Complete |
-| **Parsons** | `docs/parsons_problems.md` P5 (Vulnerability Check Workflow) | ✅ Complete |
-| **Architecture** | `docs/images/architecture_week13.md` Diagram 6 | ✅ Complete |
-
-**Assessment Criteria:**
-- Can describe phases of security assessment (discovery, enumeration, analysis)
-- Can combine multiple tools into coherent workflow
-- Can document findings in structured format
-- Can prioritise findings by risk level
-
----
-
-### LO7: Evaluate Security Posture
-
-**Bloom Level:** Evaluate (Level 5)  
-**Full Description:** Evaluate the security posture of network services based on exposed ports, protocol versions and known vulnerability indicators.
-
-| Artifact Type | Reference | Coverage |
-|--------------|-----------|----------|
-| **Theory** | `docs/theory_summary.md` §5 "Risk Assessment" | ✅ Complete |
-| **Exercise** | `ex_13_04_vuln_checker.py` (report generation) | ✅ Complete |
-| **Manual Evaluation** | Laboratory report rubric | ✅ Complete |
-| **Quiz** | `formative/quiz.yaml` q13, q14 | ✅ Complete |
-| **Misconceptions** | `docs/misconceptions.md` #9 (simple≠safe), #10 (encrypt vs authenticate) | ✅ Complete |
-| **SECURITY.md** | Ethical guidelines and compliance | ✅ Complete |
-
-**Assessment Criteria:**
-- Can assess risk based on service exposure
-- Can identify insecure configurations (anonymous access, plaintext)
-- Can recommend mitigations for identified vulnerabilities
-- Can articulate trade-offs between security and usability
-
----
-
-## Coverage Summary
-
-### By Artifact Type
-
-| Artifact | LO1 | LO2 | LO3 | LO4 | LO5 | LO6 | LO7 | Total |
+| Question | LO1 | LO2 | LO3 | LO4 | LO5 | LO6 | LO7 | Bloom |
 |----------|-----|-----|-----|-----|-----|-----|-----|-------|
-| Theory | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 7/7 |
-| Exercise | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 7/7 |
-| Test | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 7/7 |
-| Quiz | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 7/7 |
-| Misconceptions | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 7/7 |
-| Parsons | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | 6/7 |
-| Peer Instruction | ✅ | ✅ | — | ✅ | — | — | — | 3/7 |
-
-### By Bloom Level
-
-| Bloom Level | LOs | Quiz Questions | Exercises |
-|-------------|-----|----------------|-----------|
-| Remember (1) | LO1 | q01, q02, q03 | ex_13_02 |
-| Understand (2) | LO2 | q04, q05, q06 | ex_13_02 |
-| Apply (3) | LO3, LO4 | q07, q08, q09, q10 | ex_13_01, ex_13_02 |
-| Analyse (4) | LO5 | q11, q12 | ex_13_03 |
-| Evaluate (5) | LO7 | q13, q14 | ex_13_04 |
-| Create (6) | LO6 | q15, q16 | ex_13_04 |
+| Q01 | ● | | | | | | | Remember |
+| Q02 | ● | | | | | | | Remember |
+| Q03 | ● | | | | | | | Remember |
+| Q04 | | ● | | | | | | Understand |
+| Q05 | | ● | | | | | | Understand |
+| Q06 | | ● | | | | | | Understand |
+| Q07 | | | ● | | | | | Apply |
+| Q08 | | | ● | | | | | Apply |
+| Q09 | | | | ● | | | | Apply |
+| Q10 | | | | ● | | | | Analyse |
+| Q11 | | | | | ● | | | Analyse |
+| Q12 | | | | | ● | | | Analyse |
+| Q13 | | | | | | | ● | Evaluate |
+| Q14 | | | | | | | ● | Evaluate |
+| Q15 | | | | | | ● | | Create |
+| Q16 | | | | | | ● | | Create |
 
 ---
 
-## Verification Checklist
+## Assessment Weights
 
-Before each laboratory session, verify:
-
-- [ ] All exercises are syntactically correct: `make lint`
-- [ ] Tests pass: `make test`
-- [ ] Quiz loads correctly: `make quiz --dry-run`
-- [ ] Docker services start: `make start && make status`
-- [ ] Ground truth validates: `make validate`
-
----
-
-## Cross-Reference: Quiz Questions to LOs
-
-| Question | LO | Bloom | Topic |
-|----------|-----|-------|-------|
-| q01 | LO1 | Remember | MQTT port number |
-| q02 | LO1 | Remember | QoS levels |
-| q03 | LO1 | Remember | MQTT components |
-| q04 | LO2 | Understand | TLS encryption scope |
-| q05 | LO2 | Understand | Port states |
-| q06 | LO2 | Understand | TLS compatibility |
-| q07 | LO3 | Apply | TCP handshake |
-| q08 | LO3 | Apply | Socket programming |
-| q09 | LO4 | Apply | MQTT publish |
-| q10 | LO4 | Apply | MQTT subscribe |
-| q11 | LO5 | Analyse | Packet analysis |
-| q12 | LO5 | Analyse | Traffic patterns |
-| q13 | LO7 | Evaluate | Risk assessment |
-| q14 | LO7 | Evaluate | Security posture |
-| q15 | LO6 | Create | Workflow design |
-| q16 | LO6 | Create | Report generation |
+| Component | Weight | LOs Assessed |
+|-----------|--------|--------------|
+| Formative Quiz | 0% (practice) | LO1-LO7 |
+| Laboratory Exercises | 40% | LO1-LO6 |
+| Final Project | 30% | LO6-LO7 |
+| Written Examination | 30% | LO1-LO5 |
 
 ---
 
-## Continuous Improvement
+## Prerequisites
 
-This matrix should be reviewed and updated:
+Students should have completed:
 
-1. **After each semester**: Incorporate student feedback
-2. **When exercises change**: Update artifact references
-3. **When quiz questions change**: Update LO mappings
-4. **When new tools emerge**: Consider coverage gaps
-
-**Feedback:** Open an issue in the GitHub repository
+- Week 1-4: Network fundamentals (OSI model, TCP/IP)
+- Week 5-7: Transport layer protocols (TCP, UDP)
+- Week 8-9: Application layer protocols (HTTP, DNS)
+- Week 10-12: Network security fundamentals (TLS, firewalls)
 
 ---
 
-*Computer Networks — Week 13: IoT and Security*  
-*ASE Bucharest, CSIE | by ing. dr. Antonio Clim*
+## Resources
+
+### Required Reading
+- OWASP IoT Top 10 (2024 edition)
+- MQTT v5.0 Specification (Sections 1-4)
+
+### Recommended Reading
+- Mosquitto Documentation
+- NIST IR 8259: IoT Device Cybersecurity Capability Core Baseline
+
+### Laboratory Resources
+- Docker environment with Mosquitto broker
+- DVWA (Damn Vulnerable Web Application) for security testing
+- tcpdump and Wireshark for traffic analysis
+
+---
+
+*Document version: 2.0 | Language: en-GB | Last updated: January 2026*

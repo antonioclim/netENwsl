@@ -1,209 +1,206 @@
-# 🏗️ Architecture Diagrams — Week 13
+# Week 13: Architecture Diagrams
 
-> Visual representations of the laboratory environment and protocol flows.
+**Computer Networks** — ASE, CSIE | ing. dr. Antonio Clim
+
+This document contains Mermaid diagram definitions for Week 13 IoT and Security materials.
 
 ---
 
-## 1. Laboratory Network Architecture
+## 1. MQTT Publish-Subscribe Architecture
 
 ```mermaid
-graph TB
-    subgraph Windows["Windows 11 Host"]
-        Browser["🌐 Browser"]
-        Wireshark["🦈 Wireshark"]
-        PS["PowerShell"]
+flowchart TB
+    subgraph Publishers
+        P1[Temperature Sensor]
+        P2[Humidity Sensor]
+        P3[Motion Detector]
     end
     
-    subgraph WSL2["WSL2 Ubuntu 22.04"]
-        subgraph Docker["Docker Engine"]
-            subgraph Network["week13net (10.0.13.0/24)"]
-                Mosquitto["🦟 Mosquitto<br/>10.0.13.100<br/>:1883 (plain)<br/>:8883 (TLS)"]
-                DVWA["🎯 DVWA<br/>10.0.13.11<br/>:80 (HTTP)"]
-                VSFTPD["📁 vsftpd<br/>10.0.13.12<br/>:21 (FTP)<br/>:6200 (stub)"]
-            end
-        end
-        Portainer["🐳 Portainer<br/>:9000"]
-        Scripts["📜 Python Scripts"]
+    subgraph Broker
+        B[Mosquitto Broker<br/>Port 1883/8883]
     end
     
-    Browser -->|":9000"| Portainer
-    Browser -->|":8080"| DVWA
-    Wireshark -.->|"capture"| Network
-    PS -->|"wsl"| Scripts
-    Scripts -->|"docker"| Docker
+    subgraph Subscribers
+        S1[Dashboard App]
+        S2[Alert Service]
+        S3[Data Logger]
+    end
+    
+    P1 -->|PUBLISH sensors/temp| B
+    P2 -->|PUBLISH sensors/humidity| B
+    P3 -->|PUBLISH sensors/motion| B
+    
+    B -->|SUBSCRIBE sensors/#| S1
+    B -->|SUBSCRIBE sensors/motion| S2
+    B -->|SUBSCRIBE sensors/+| S3
 ```
 
 ---
 
-## 2. MQTT Publish/Subscribe Flow
-
-```mermaid
-sequenceDiagram
-    participant P as Publisher<br/>(Sensor)
-    participant B as Broker<br/>(Mosquitto)
-    participant S as Subscriber<br/>(Dashboard)
-    
-    Note over P,S: Connection Phase
-    P->>B: CONNECT
-    B->>P: CONNACK (rc=0)
-    S->>B: CONNECT
-    B->>S: CONNACK (rc=0)
-    
-    Note over P,S: Subscription Phase
-    S->>B: SUBSCRIBE "sensors/#" QoS=1
-    B->>S: SUBACK (granted QoS=1)
-    
-    Note over P,S: Publish Phase
-    P->>B: PUBLISH "sensors/temp" QoS=0
-    B->>S: PUBLISH "sensors/temp" QoS=0
-    
-    P->>B: PUBLISH "sensors/temp" QoS=1
-    B->>P: PUBACK
-    B->>S: PUBLISH "sensors/temp" QoS=1
-    S->>B: PUBACK
-```
-
----
-
-## 3. Plaintext vs TLS Traffic Comparison
-
-```mermaid
-graph LR
-    subgraph Plaintext["Port 1883 (Plaintext)"]
-        direction TB
-        P1["Client"] -->|"CONNECT<br/>topic: sensors/temp<br/>payload: 23.5"| B1["Broker"]
-        B1 -->|"CONNACK<br/>PUBLISH visible"| P1
-        style P1 fill:#ffcccc
-        style B1 fill:#ffcccc
-    end
-    
-    subgraph TLS["Port 8883 (TLS)"]
-        direction TB
-        P2["Client"] -->|"🔒 Encrypted<br/>Application Data"| B2["Broker"]
-        B2 -->|"🔒 Encrypted<br/>Application Data"| P2
-        style P2 fill:#ccffcc
-        style B2 fill:#ccffcc
-    end
-    
-    subgraph Observer["Network Observer Sees"]
-        O1["Plaintext: topics, payloads, credentials"]
-        O2["TLS: IPs, ports, sizes, timing only"]
-    end
-```
-
----
-
-## 4. Port Scanner State Machine
-
-```mermaid
-stateDiagram-v2
-    [*] --> CreateSocket
-    CreateSocket --> SetTimeout
-    SetTimeout --> ConnectEx
-    
-    ConnectEx --> Open: return 0
-    ConnectEx --> Closed: return non-zero<br/>(ECONNREFUSED)
-    ConnectEx --> Filtered: timeout<br/>(no response)
-    
-    Open --> [*]: Service listening
-    Closed --> [*]: No service (RST)
-    Filtered --> [*]: Firewall DROP
-```
-
----
-
-## 5. TLS Handshake Sequence
+## 2. MQTT QoS Handshakes
 
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant S as Server (Broker)
+    participant B as Broker
     
-    Note over C,S: Handshake Phase
-    C->>S: ClientHello<br/>(supported ciphers, random)
-    S->>C: ServerHello<br/>(chosen cipher, random)
-    S->>C: Certificate<br/>(server's public key)
-    S->>C: ServerHelloDone
+    Note over C,B: QoS 0 - At Most Once
+    C->>B: PUBLISH (QoS 0)
     
-    Note over C: Verify certificate<br/>against CA
+    Note over C,B: QoS 1 - At Least Once
+    C->>B: PUBLISH (QoS 1)
+    B->>C: PUBACK
     
-    C->>S: ClientKeyExchange<br/>(pre-master secret)
-    C->>S: ChangeCipherSpec
-    C->>S: Finished (encrypted)
-    
-    S->>C: ChangeCipherSpec
-    S->>C: Finished (encrypted)
-    
-    Note over C,S: Encrypted Application Data
-    C->>S: 🔒 MQTT CONNECT
-    S->>C: 🔒 MQTT CONNACK
+    Note over C,B: QoS 2 - Exactly Once
+    C->>B: PUBLISH (QoS 2)
+    B->>C: PUBREC
+    C->>B: PUBREL
+    B->>C: PUBCOMP
 ```
 
 ---
 
-## 6. Vulnerability Assessment Pipeline
+## 3. Laboratory Environment Topology
+
+```mermaid
+flowchart LR
+    subgraph Host["Host Machine (WSL2)"]
+        subgraph Docker["Docker Network: iot_lab_net"]
+            M[Mosquitto<br/>1883, 8883]
+            D[DVWA<br/>8080]
+            V[vsftpd<br/>2121]
+        end
+        P[Portainer<br/>9000]
+    end
+    
+    U[Student Workstation] -->|localhost:1883| M
+    U -->|localhost:8080| D
+    U -->|localhost:9000| P
+    U -->|localhost:2121| V
+```
+
+---
+
+## 4. TLS Certificate Chain
 
 ```mermaid
 flowchart TB
-    subgraph Phase1["Phase 1: Discovery"]
-        A1[Port Scan] --> A2[Identify Open Ports]
-        A2 --> A3[List: 1883, 2121, 8080]
+    CA[Certificate Authority<br/>ca.crt]
+    
+    subgraph Server
+        SC[Server Certificate<br/>server.crt]
+        SK[Server Key<br/>server.key]
     end
     
-    subgraph Phase2["Phase 2: Enumeration"]
-        B1[Banner Grabbing] --> B2[Service Detection]
-        B2 --> B3[Version Identification]
+    subgraph Client
+        CC[Client Certificate<br/>client.crt]
+        CK[Client Key<br/>client.key]
     end
     
-    subgraph Phase3["Phase 3: Analysis"]
-        C1[CVE Lookup] --> C2[Risk Assessment]
-        C2 --> C3[Generate Report]
-    end
-    
-    Phase1 --> Phase2
-    Phase2 --> Phase3
-    
-    style A1 fill:#e1f5fe
-    style B1 fill:#fff3e0
-    style C1 fill:#ffebee
+    CA -->|Signs| SC
+    CA -->|Signs| CC
+    SC --- SK
+    CC --- CK
 ```
 
 ---
 
-## 7. QoS Level Comparison
+## 5. OWASP IoT Vulnerability Categories
 
 ```mermaid
-graph TB
-    subgraph QoS0["QoS 0: At Most Once"]
-        Q0P[Publisher] -->|"PUBLISH"| Q0B[Broker]
-        Q0B -->|"PUBLISH"| Q0S[Subscriber]
-    end
-    
-    subgraph QoS1["QoS 1: At Least Once"]
-        Q1P[Publisher] -->|"PUBLISH"| Q1B[Broker]
-        Q1B -->|"PUBACK"| Q1P
-        Q1B -->|"PUBLISH"| Q1S[Subscriber]
-        Q1S -->|"PUBACK"| Q1B
-    end
-    
-    subgraph QoS2["QoS 2: Exactly Once"]
-        Q2P[Publisher] -->|"PUBLISH"| Q2B[Broker]
-        Q2B -->|"PUBREC"| Q2P
-        Q2P -->|"PUBREL"| Q2B
-        Q2B -->|"PUBCOMP"| Q2P
-    end
+pie showData
+    title OWASP IoT Top 10 Distribution
+    "I1 Weak Passwords" : 20
+    "I2 Insecure Services" : 15
+    "I3 Insecure Interfaces" : 18
+    "I4 Lack of Update" : 12
+    "I5 Insecure Components" : 10
+    "I6 Privacy Concerns" : 8
+    "I7 Insecure Transfer" : 7
+    "I8 Device Management" : 5
+    "I9 Insecure Defaults" : 3
+    "I10 Physical Security" : 2
 ```
 
 ---
 
-## How to Use These Diagrams
+## 6. Defence-in-Depth Layers
 
-1. **In presentations:** Copy Mermaid code to [Mermaid Live Editor](https://mermaid.live/) and export as image
-2. **In GitHub:** Mermaid renders automatically in `.md` files
-3. **In VS Code:** Install "Markdown Preview Mermaid Support" extension
-4. **For print:** Export as SVG for best quality
+```mermaid
+flowchart TB
+    subgraph Physical["Physical Layer"]
+        P1[Tamper Detection]
+        P2[Secure Enclosure]
+    end
+    
+    subgraph Network["Network Layer"]
+        N1[VLAN Segmentation]
+        N2[Firewall Rules]
+        N3[IDS/IPS]
+    end
+    
+    subgraph Transport["Transport Layer"]
+        T1[TLS 1.3]
+        T2[Certificate Pinning]
+    end
+    
+    subgraph Application["Application Layer"]
+        A1[Authentication]
+        A2[Authorisation]
+        A3[Input Validation]
+    end
+    
+    Physical --> Network --> Transport --> Application
+```
 
 ---
 
-*Computer Networks — Week 13: IoT and Security*
-*ASE Bucharest, CSIE | by ing. dr. Antonio Clim*
+## 7. Exercise Workflow
+
+```mermaid
+flowchart LR
+    subgraph "Ex 13.01"
+        E1[Capture MQTT Traffic]
+    end
+    
+    subgraph "Ex 13.02"
+        E2[Configure ACLs]
+    end
+    
+    subgraph "Ex 13.03"
+        E3[Implement TLS]
+    end
+    
+    subgraph "Ex 13.04"
+        E4[Run Vuln Scanner]
+    end
+    
+    E1 --> E2 --> E3 --> E4
+    
+    E1 -.->|Identifies weaknesses| E2
+    E2 -.->|Requires encryption| E3
+    E3 -.->|Validates security| E4
+```
+
+---
+
+## Usage
+
+These diagrams can be rendered using:
+
+1. **GitHub**: Automatically renders in Markdown files
+2. **VS Code**: Install Mermaid Preview extension
+3. **Mermaid Live Editor**: https://mermaid.live/
+4. **pandoc**: With mermaid-filter for PDF export
+
+### Export to PNG
+
+```bash
+# Using mmdc (Mermaid CLI)
+npm install -g @mermaid-js/mermaid-cli
+mmdc -i architecture_week13.md -o diagram.png -t default
+```
+
+---
+
+*Document version: 2.0 | Language: en-GB | Last updated: January 2026*

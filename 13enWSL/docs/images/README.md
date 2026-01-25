@@ -1,48 +1,49 @@
-# 📁 Images Directory — Week 13
+# Documentation Images
 
-> Storage location for diagrams and visual resources.
+**Week 13: IoT and Security**
 
----
+This directory contains visual assets for the Week 13 laboratory materials.
 
-## Purpose
+## Contents
 
-This directory contains visual resources for the Week 13 laboratory:
-- Architecture diagrams
-- Protocol flow visualisations
-- Screenshot references
+| File | Description | Format |
+|------|-------------|--------|
+| `architecture_week13.md` | Mermaid diagram definitions | Markdown/Mermaid |
 
-## Diagram Files
+## Diagram Types
 
-| File | Description |
-|------|-------------|
-| `architecture_week13.md` | Mermaid diagram of laboratory architecture |
+The architecture document includes:
 
-## Creating Diagrams
+1. **MQTT Pub/Sub Architecture** — Publisher, broker, subscriber relationships
+2. **QoS Handshakes** — Sequence diagrams for QoS 0, 1, 2
+3. **Lab Environment Topology** — Docker container network layout
+4. **TLS Certificate Chain** — CA, server, and client certificate relationships
+5. **OWASP IoT Distribution** — Pie chart of vulnerability categories
+6. **Defence-in-Depth Layers** — Security layer hierarchy
+7. **Exercise Workflow** — Dependencies between laboratory exercises
 
-For new diagrams, use [Mermaid](https://mermaid.js.org/) syntax in Markdown files. These render automatically on GitHub and in most Markdown viewers.
+## Rendering
 
-Example:
-```mermaid
-graph LR
-    A[Publisher] --> B[Broker]
-    B --> C[Subscriber]
+Diagrams are defined in Mermaid syntax and can be rendered via:
+
+- GitHub Markdown preview (automatic)
+- VS Code with Mermaid extension
+- Mermaid Live Editor (https://mermaid.live/)
+- PDF export via pandoc with mermaid-filter
+
+## Export Commands
+
+```bash
+# Install Mermaid CLI
+npm install -g @mermaid-js/mermaid-cli
+
+# Export individual diagram to PNG
+mmdc -i architecture_week13.md -o mqtt_architecture.png
+
+# Export with custom theme
+mmdc -i architecture_week13.md -o diagram.png -t dark
 ```
 
-## Exporting to Images
-
-If static images are needed:
-1. Use the [Mermaid Live Editor](https://mermaid.live/)
-2. Paste the diagram code
-3. Export as PNG or SVG
-4. Save to this directory with descriptive names
-
-## Naming Convention
-
-- Use lowercase with underscores: `mqtt_flow_diagram.png`
-- Include week number for context: `week13_architecture.svg`
-- Add version if updating: `network_topology_v2.png`
-
 ---
 
-*Computer Networks — Week 13: IoT and Security*
-*ASE Bucharest, CSIE | by ing. dr. Antonio Clim*
+*Document version: 2.0 | Language: en-GB*

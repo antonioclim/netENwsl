@@ -1,16 +1,28 @@
-# ══════════════════════════════════════════════════════════════════════════════
 # Week 13: IoT and Security — Python Dependencies
 # Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
-# ══════════════════════════════════════════════════════════════════════════════
-#
-# Installation: pip install -r setup/requirements.txt
-# Python version: >= 3.11
-#
-# ══════════════════════════════════════════════════════════════════════════════
+# 
+# Install: pip install -r setup/requirements.txt
+# ═══════════════════════════════════════════════════════════════════════════════
 
 # Core dependencies
-docker>=6.0.0,<8.0.0
-requests>=2.28.0,<3.0.0
-pyyaml>=6.0,<7.0
-paho-mqtt>=1.6.0,<2.0.0
-scapy>=2.5.0,<3.0.0
+PyYAML>=6.0.1              # YAML parsing for quiz files
+
+# Testing
+pytest>=7.4.0              # Unit testing framework
+pytest-cov>=4.1.0          # Coverage reporting
+
+# Code quality
+flake8>=6.1.0              # Linting
+black>=23.12.0             # Code formatting
+isort>=5.13.0              # Import sorting
+
+# MQTT (optional, for live exercises)
+paho-mqtt>=1.6.1           # MQTT client library
+
+# Documentation (optional)
+# mkdocs>=1.5.0            # Documentation generator
+# mkdocs-material>=9.5.0   # Material theme
+
+# Development utilities (optional)
+# ipython>=8.18.0          # Enhanced REPL
+# rich>=13.7.0             # Rich terminal output

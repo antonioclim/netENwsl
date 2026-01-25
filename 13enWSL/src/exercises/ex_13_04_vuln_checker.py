@@ -1,457 +1,476 @@
 #!/usr/bin/env python3
 """
-Exercise 4: Vulnerability Checker (Defensive and Educational)
-=============================================================
-Week 13 - IoT and Security in Computer Networks
-ASE Bucharest, CSIE | by ing. dr. Antonio Clim
+Exercise 13.04: IoT Vulnerability Checker
+Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
-LEARNING OBJECTIVES (Anderson-Bloom Taxonomy):
-1. UNDERSTAND defensive security assessment methodology
-2. APPLY banner grabbing and service fingerprinting techniques
-3. ANALYSE service responses to identify potential vulnerabilities
-4. EVALUATE findings based on severity and context
-5. CREATE structured security reports in JSON format
-
-PAIR PROGRAMMING NOTES:
-- Driver: Implement service probing, parse responses
-- Navigator: Research CVEs, verify finding severity classifications
-- Swap after: Completing HTTP service checks
-
-ETHICAL NOTICE:
-This script performs light-weight, DEFENSIVE checks only:
-- Service reachability verification
-- Basic fingerprinting (banners and HTTP headers)
-- Identification of *intentionally vulnerable* lab services
-
-It does NOT exploit vulnerabilities and does NOT attempt privilege escalation.
-Only use against systems you own or have explicit permission to test.
-
-SUPPORTED SERVICES:
-- http   - GET /, header inspection, DVWA fingerprint
-- ftp    - Banner inspection, vsftpd version check
-- mqtt   - Broker reachability via TCP connect
+LEARNING OBJECTIVES:
+- LO5: Identify OWASP IoT vulnerabilities
+- LO6: Design defence-in-depth strategies
+- LO7: Evaluate security posture
 
 USAGE:
-    python3 ex_13_04_vuln_checker.py --target 127.0.0.1 --port 8080 --service http
-    python3 ex_13_04_vuln_checker.py --target 127.0.0.1 --port 2121 --service ftp
-    python3 ex_13_04_vuln_checker.py --target 127.0.0.1 --port 1883 --service mqtt
-    python3 ex_13_04_vuln_checker.py --target 127.0.0.1 --port 8080 --service http --json-out report.json
+    python ex_13_04_vuln_checker.py --target localhost
+    python ex_13_04_vuln_checker.py --target 192.168.1.100 --ports 1883,8883
+    python ex_13_04_vuln_checker.py --target localhost --output report.json
 """
 
 from __future__ import annotations
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# IMPORT_DEPENDENCIES
-# ═══════════════════════════════════════════════════════════════════════════════
 import argparse
 import json
 import socket
 import sys
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# DATA_STRUCTURES
+# DATA STRUCTURES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @dataclass
-class Finding:
-    """A single security finding from the assessment."""
+class Vulnerability:
+    """Represents a discovered vulnerability."""
+    owasp_id: str
     title: str
-    severity: str  # informational, low, medium, high
-    evidence: str
+    severity: str
+    description: str
+    remediation: str
+    port: Optional[int] = None
+    service: Optional[str] = None
 
 
 @dataclass
-class Report:
-    """Complete vulnerability assessment report."""
+class ScanResult:
+    """Complete scan result for a target."""
     target: str
-    port: int
-    service: str
-    timestamp_utc: str
-    reachable: bool
-    banner: Optional[str]
-    http_headers: Optional[Dict[str, str]]
-    findings: List[Finding]
+    timestamp: str
+    duration_seconds: float
+    ports_scanned: List[int]
+    open_ports: List[int]
+    vulnerabilities: List[Vulnerability]
+    risk_score: float
+    summary: str
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SERVICE_PROBING_FUNCTIONS
+# TERMINAL OUTPUT
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def tcp_banner(host: str, port: int, timeout: float = 2.0) -> Optional[str]:
-    """
-    Attempt to read a service banner via TCP connection.
-    
-    💭 PREDICTION: What will vsftpd 2.3.4 send as its banner?
-       (Answer: "220 (vsFTPd 2.3.4)" or similar version string)
-    
-    Many services send identification banners upon connection.
-    This is useful for fingerprinting but also a security consideration.
-    
-    Args:
-        host: Target hostname or IP
-        port: Target port
-        timeout: Connection timeout in seconds
-    
-    Returns:
-        Banner string if received, None otherwise
-    """
+class Clr:
+    """ANSI colour codes for terminal output."""
+    G = "\033[92m"   # Green
+    R = "\033[91m"   # Red
+    Y = "\033[93m"   # Yellow
+    B = "\033[94m"   # Blue
+    C = "\033[96m"   # Cyan
+    BD = "\033[1m"   # Bold
+    RS = "\033[0m"   # Reset
+
+
+if not sys.stdout.isatty():
+    Clr.G = Clr.R = Clr.Y = Clr.B = Clr.C = Clr.BD = Clr.RS = ""
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SEVERITY HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def severity_colour(severity: str) -> str:
+    """Return ANSI colour code for severity level."""
+    mapping = {
+        "critical": Clr.R,
+        "high": Clr.R,
+        "medium": Clr.Y,
+        "low": Clr.G,
+        "info": Clr.B
+    }
+    return mapping.get(severity.lower(), Clr.RS)
+
+
+def severity_score(severity: str) -> float:
+    """Return numeric score for severity level."""
+    mapping = {
+        "critical": 10.0,
+        "high": 7.5,
+        "medium": 5.0,
+        "low": 2.5,
+        "info": 0.5
+    }
+    return mapping.get(severity.lower(), 0.0)
+
+
+def format_severity(severity: str) -> str:
+    """Format severity with colour for display."""
+    clr = severity_colour(severity)
+    return f"{clr}{severity.upper()}{Clr.RS}"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PORT SCANNING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def scan_port(host: str, port: int, timeout: float = 1.0) -> bool:
+    """Check if a port is open on the target host."""
     try:
-        with socket.create_connection((host, port), timeout=timeout) as s:
-            s.settimeout(timeout)
-            # Send stimulus to trigger response from some services
-            try:
-                s.sendall(b"\r\n")
-            except Exception:
-                pass
-            data = s.recv(1024)
-        text = data.decode(errors="replace").strip()
-        return text or None
-    except Exception:
-        return None
-
-
-def http_probe(
-    host: str,
-    port: int,
-    timeout: float = 3.0
-) -> Tuple[bool, Optional[str], Dict[str, str], Optional[str]]:
-    """
-    Perform HTTP GET request and analyse response.
-    
-    💭 PREDICTION: What HTTP header reveals the web server software?
-       (Answer: "Server" header, e.g., "Server: Apache/2.4.41")
-    
-    Args:
-        host: Target hostname or IP
-        port: Target port
-        timeout: Request timeout in seconds
-    
-    Returns:
-        Tuple of (reachable, status_line, headers_dict, body_snippet)
-    """
-    # ─────────────────────────────────────────────────────────────────────────
-    # CONSTRUCT_HTTP_REQUEST
-    # ─────────────────────────────────────────────────────────────────────────
-    req = (
-        f"GET / HTTP/1.1\r\n"
-        f"Host: {host}\r\n"
-        f"User-Agent: week13-vuln-checker\r\n"
-        f"Connection: close\r\n\r\n"
-    ).encode()
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # SEND_REQUEST_AND_RECEIVE_RESPONSE
-    # ─────────────────────────────────────────────────────────────────────────
-    try:
-        with socket.create_connection((host, port), timeout=timeout) as s:
-            s.sendall(req)
-            s.settimeout(timeout)
-            raw = b""
-            while len(raw) < 65536:
-                chunk = s.recv(4096)
-                if not chunk:
-                    break
-                raw += chunk
-    except Exception:
-        return False, None, {}, None
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # PARSE_HTTP_RESPONSE
-    # ─────────────────────────────────────────────────────────────────────────
-    text = raw.decode(errors="replace")
-    head, _, body = text.partition("\r\n\r\n")
-    lines = head.split("\r\n")
-    status_line = lines[0].strip() if lines else None
-
-    headers: Dict[str, str] = {}
-    for line in lines[1:]:
-        if ":" in line:
-            k, v = line.split(":", 1)
-            headers[k.strip()] = v.strip()
-
-    snippet = body[:500].strip() or None
-    return True, status_line, headers, snippet
-
-
-def check_mqtt_reachability(host: str, port: int, timeout: float = 2.0) -> bool:
-    """
-    Check if MQTT broker is reachable via TCP connect.
-    
-    💭 PREDICTION: Does a successful TCP connection mean the broker
-       allows anonymous access? (Answer: No - only means port is open)
-    
-    Note: This only checks TCP connectivity, not MQTT protocol or auth.
-    
-    Args:
-        host: Target hostname or IP
-        port: Target port
-        timeout: Connection timeout
-    
-    Returns:
-        True if connection succeeded, False otherwise
-    """
-    try:
-        with socket.create_connection((host, port), timeout=timeout):
-            return True
-    except Exception:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout)
+            result = sock.connect_ex((host, port))
+            return result == 0
+    except (socket.error, socket.timeout):
         return False
 
 
+def scan_ports(host: str, ports: List[int]) -> List[int]:
+    """Scan multiple ports and return list of open ports."""
+    open_ports = []
+    for port in ports:
+        if scan_port(host, port):
+            open_ports.append(port)
+    return open_ports
+
+
+def get_service_name(port: int) -> str:
+    """Return service name for common IoT ports."""
+    services = {
+        21: "FTP",
+        22: "SSH",
+        23: "Telnet",
+        80: "HTTP",
+        443: "HTTPS",
+        1883: "MQTT",
+        2121: "FTP-alt",
+        5683: "CoAP",
+        8080: "HTTP-alt",
+        8443: "HTTPS-alt",
+        8883: "MQTT-TLS",
+        9000: "Portainer"
+    }
+    return services.get(port, "Unknown")
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
-# SERVICE_SPECIFIC_CHECKS
+# VULNERABILITY CHECKS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def check_http_service(host: str, port: int) -> Tuple[bool, Optional[str], Optional[Dict[str, str]], List[Finding]]:
-    """
-    Perform HTTP service assessment.
-    
-    Args:
-        host: Target host
-        port: Target port
-    
-    Returns:
-        Tuple of (reachable, banner, headers, findings)
-    """
-    findings: List[Finding] = []
-    
-    reachable, status_line, http_headers, body_snippet = http_probe(host, port)
-    
-    if not reachable:
-        findings.append(Finding(
-            title="HTTP service not reachable",
+def check_insecure_mqtt(open_ports: List[int]) -> Optional[Vulnerability]:
+    """Check for unencrypted MQTT (OWASP I7)."""
+    if 1883 in open_ports and 8883 not in open_ports:
+        return Vulnerability(
+            owasp_id="I7",
+            title="Insecure Data Transfer",
             severity="high",
-            evidence=f"Could not connect to {host}:{port}",
-        ))
-        return False, None, None, findings
-    
-    # ─────────────────────────────────────────────────────────────────────────
-    # CHECK_SERVER_HEADER
-    # ─────────────────────────────────────────────────────────────────────────
-    server = http_headers.get("Server")
-    if server:
-        findings.append(Finding(
-            title="HTTP Server header observed",
-            severity="informational",
-            evidence=f"Server: {server}",
-        ))
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # CHECK_FOR_DVWA (intentionally vulnerable application)
-    # ─────────────────────────────────────────────────────────────────────────
-    if body_snippet:
-        if "Damn Vulnerable Web Application" in body_snippet:
-            findings.append(Finding(
-                title="DVWA detected (intentionally vulnerable lab target)",
-                severity="informational",
-                evidence="Page contains 'Damn Vulnerable Web Application'",
-            ))
-        elif "DVWA" in body_snippet:
-            findings.append(Finding(
-                title="Possible DVWA instance detected (heuristic)",
-                severity="low",
-                evidence="Body snippet contains 'DVWA'",
-            ))
-    
-    return True, status_line, http_headers, findings
+            description="MQTT broker accepts plaintext connections on port 1883 "
+                       "without TLS alternative on port 8883.",
+            remediation="Enable TLS on port 8883 and disable plaintext port 1883.",
+            port=1883,
+            service="MQTT"
+        )
+    return None
 
 
-def check_ftp_service(host: str, port: int) -> Tuple[bool, Optional[str], List[Finding]]:
-    """
-    Perform FTP service assessment.
+def check_telnet_enabled(open_ports: List[int]) -> Optional[Vulnerability]:
+    """Check for Telnet service (OWASP I2)."""
+    if 23 in open_ports:
+        return Vulnerability(
+            owasp_id="I2",
+            title="Insecure Network Services",
+            severity="critical",
+            description="Telnet service is running on port 23. Telnet transmits "
+                       "credentials in plaintext.",
+            remediation="Disable Telnet and use SSH for remote administration.",
+            port=23,
+            service="Telnet"
+        )
+    return None
+
+
+def check_ftp_enabled(open_ports: List[int]) -> Optional[Vulnerability]:
+    """Check for FTP service (OWASP I2)."""
+    ftp_ports = [p for p in open_ports if p in [21, 2121]]
+    if ftp_ports:
+        return Vulnerability(
+            owasp_id="I2",
+            title="Insecure Network Services",
+            severity="high",
+            description=f"FTP service detected on port {ftp_ports[0]}. FTP transmits "
+                       "credentials in plaintext unless FTPS is configured.",
+            remediation="Replace FTP with SFTP or configure FTPS with TLS.",
+            port=ftp_ports[0],
+            service="FTP"
+        )
+    return None
+
+
+def check_http_unencrypted(open_ports: List[int]) -> Optional[Vulnerability]:
+    """Check for unencrypted HTTP (OWASP I3)."""
+    http_ports = [p for p in open_ports if p in [80, 8080]]
+    https_ports = [p for p in open_ports if p in [443, 8443]]
     
-    Args:
-        host: Target host
-        port: Target port
-    
-    Returns:
-        Tuple of (reachable, banner, findings)
-    """
-    findings: List[Finding] = []
-    
-    banner = tcp_banner(host, port)
-    reachable = banner is not None
-    
-    if not reachable:
-        findings.append(Finding(
-            title="FTP service not reachable or no banner received",
+    if http_ports and not https_ports:
+        return Vulnerability(
+            owasp_id="I3",
+            title="Insecure Ecosystem Interfaces",
             severity="medium",
-            evidence=f"Could not read banner from {host}:{port}",
-        ))
-        return False, None, findings
-    
-    # ─────────────────────────────────────────────────────────────────────────
-    # ANALYSE_FTP_BANNER
-    # ─────────────────────────────────────────────────────────────────────────
-    findings.append(Finding(
-        title="FTP banner observed",
-        severity="informational",
-        evidence=banner,
-    ))
-    
-    # Check for known vulnerable version
-    if "vsftpd" in banner.lower() and "2.3.4" in banner:
-        findings.append(Finding(
-            title="vsftpd 2.3.4 detected",
-            severity="high",
-            evidence="This version is associated with CVE-2011-2523 (backdoor vulnerability).",
-        ))
-    
-    return True, banner, findings
+            description=f"HTTP service on port {http_ports[0]} without HTTPS alternative. "
+                       "Web interfaces may transmit sensitive data unencrypted.",
+            remediation="Enable HTTPS with valid TLS certificate.",
+            port=http_ports[0],
+            service="HTTP"
+        )
+    return None
 
 
-def check_mqtt_service(host: str, port: int) -> Tuple[bool, List[Finding]]:
-    """
-    Perform MQTT service assessment.
+def check_management_exposed(open_ports: List[int]) -> Optional[Vulnerability]:
+    """Check for exposed management interfaces (OWASP I8)."""
+    mgmt_ports = [p for p in open_ports if p in [9000]]
+    if mgmt_ports:
+        return Vulnerability(
+            owasp_id="I8",
+            title="Lack of Device Management",
+            severity="medium",
+            description=f"Management interface (Portainer) exposed on port {mgmt_ports[0]}. "
+                       "Ensure strong authentication is configured.",
+            remediation="Restrict management interface access via firewall rules.",
+            port=mgmt_ports[0],
+            service="Portainer"
+        )
+    return None
+
+
+def run_vulnerability_checks(open_ports: List[int]) -> List[Vulnerability]:
+    """Run all vulnerability checks against open ports."""
+    checks = [
+        check_insecure_mqtt,
+        check_telnet_enabled,
+        check_ftp_enabled,
+        check_http_unencrypted,
+        check_management_exposed
+    ]
     
-    Args:
-        host: Target host
-        port: Target port
+    vulnerabilities = []
+    for check in checks:
+        result = check(open_ports)
+        if result:
+            vulnerabilities.append(result)
     
-    Returns:
-        Tuple of (reachable, findings)
-    """
-    findings: List[Finding] = []
-    
-    reachable = check_mqtt_reachability(host, port)
-    
-    if reachable:
-        findings.append(Finding(
-            title="MQTT broker reachable (TCP connect)",
-            severity="informational",
-            evidence=f"Connected to {host}:{port}",
-        ))
-        # Note: We don't test anonymous auth here as that requires MQTT protocol
-    else:
-        findings.append(Finding(
-            title="MQTT broker not reachable",
-            severity="high",
-            evidence=f"Could not connect to {host}:{port}",
-        ))
-    
-    return reachable, findings
+    return vulnerabilities
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# REPORT_GENERATION
+# RISK CALCULATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def print_report(report: Report) -> None:
-    """Display report in human-readable format."""
-    print("=" * 72)
-    print("Week 13 - Vulnerability Checker (Defensive)")
-    print("=" * 72)
-    print(f"Target:    {report.target}")
-    print(f"Service:   {report.service}")
-    print(f"Port:      {report.port}")
-    print(f"Reachable: {report.reachable}")
-    print(f"Timestamp: {report.timestamp_utc}")
+def calculate_risk_score(vulnerabilities: List[Vulnerability]) -> float:
+    """Calculate overall risk score from vulnerabilities."""
+    if not vulnerabilities:
+        return 0.0
     
-    if report.banner:
-        print(f"Banner:    {report.banner}")
-    
-    if report.http_headers:
-        print("\nHTTP Headers:")
-        for k, v in report.http_headers.items():
-            print(f"  {k}: {v}")
-    
-    print("\nFindings:")
-    if not report.findings:
-        print("  (none)")
+    total = sum(severity_score(v.severity) for v in vulnerabilities)
+    normalised = min(10.0, total / len(vulnerabilities) * 1.5)
+    return round(normalised, 1)
+
+
+def risk_rating(score: float) -> str:
+    """Return risk rating label for score."""
+    if score >= 8.0:
+        return "CRITICAL"
+    elif score >= 6.0:
+        return "HIGH"
+    elif score >= 4.0:
+        return "MEDIUM"
+    elif score >= 2.0:
+        return "LOW"
+    return "MINIMAL"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REPORT GENERATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def print_scan_header(target: str, ports: List[int]) -> None:
+    """Print scan header."""
+    print(f"\n{Clr.BD}{'═' * 64}{Clr.RS}")
+    print(f"{Clr.BD}  🔍 IoT VULNERABILITY SCANNER{Clr.RS}")
+    print(f"  Target: {target}")
+    print(f"  Ports: {len(ports)} to scan")
+    print(f"{Clr.BD}{'═' * 64}{Clr.RS}\n")
+
+
+def print_port_results(open_ports: List[int]) -> None:
+    """Print port scan results."""
+    print(f"{Clr.BD}Open Ports:{Clr.RS}")
+    if open_ports:
+        for port in open_ports:
+            service = get_service_name(port)
+            print(f"  {Clr.G}●{Clr.RS} {port}/tcp — {service}")
     else:
-        for f in report.findings:
-            severity_color = {
-                "high": "\033[91m",      # Red
-                "medium": "\033[93m",    # Yellow
-                "low": "\033[94m",       # Blue
-                "informational": "\033[0m"  # Normal
-            }.get(f.severity, "\033[0m")
-            reset = "\033[0m"
-            print(f"  - {severity_color}[{f.severity.upper()}]{reset} {f.title}")
-            print(f"    Evidence: {f.evidence}")
+        print(f"  {Clr.Y}No open ports detected{Clr.RS}")
     print()
 
 
-def save_json_report(report: Report, output_path: str) -> None:
-    """Save report as JSON file."""
-    out = asdict(report)
-    out["findings"] = [asdict(x) for x in report.findings]
+def print_vulnerability(vuln: Vulnerability, idx: int) -> None:
+    """Print single vulnerability details."""
+    sev_fmt = format_severity(vuln.severity)
+    print(f"{Clr.BD}[{idx}] {vuln.owasp_id}: {vuln.title}{Clr.RS}")
+    print(f"    Severity: {sev_fmt}")
+    if vuln.port:
+        print(f"    Port: {vuln.port} ({vuln.service})")
+    print(f"    {vuln.description}")
+    print(f"    {Clr.C}→ {vuln.remediation}{Clr.RS}")
+    print()
+
+
+def print_vulnerabilities(vulnerabilities: List[Vulnerability]) -> None:
+    """Print all vulnerabilities."""
+    print(f"{Clr.BD}Vulnerabilities Found:{Clr.RS}")
+    if vulnerabilities:
+        for i, vuln in enumerate(vulnerabilities, 1):
+            print_vulnerability(vuln, i)
+    else:
+        print(f"  {Clr.G}✅ No vulnerabilities detected{Clr.RS}\n")
+
+
+def print_summary(result: ScanResult) -> None:
+    """Print scan summary."""
+    rating = risk_rating(result.risk_score)
+    clr = severity_colour(rating.lower())
     
-    with open(output_path, "w", encoding="utf-8") as fp:
-        json.dump(out, fp, indent=2)
-    
-    print(f"[+] JSON report written to: {output_path}")
+    print(f"{Clr.BD}{'─' * 64}{Clr.RS}")
+    print(f"{Clr.BD}Summary:{Clr.RS}")
+    print(f"  Risk Score: {clr}{result.risk_score}/10.0 ({rating}){Clr.RS}")
+    print(f"  Open Ports: {len(result.open_ports)}/{len(result.ports_scanned)}")
+    print(f"  Vulnerabilities: {len(result.vulnerabilities)}")
+    print(f"  Duration: {result.duration_seconds:.2f}s")
+    print(f"{Clr.BD}{'═' * 64}{Clr.RS}\n")
+
+
+def generate_report(result: ScanResult) -> None:
+    """Generate and print complete scan report."""
+    print_port_results(result.open_ports)
+    print_vulnerabilities(result.vulnerabilities)
+    print_summary(result)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAIN_ENTRY_POINT
+# JSON EXPORT
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def main() -> int:
-    """Main entry point."""
+def export_json(result: ScanResult, output_path: Path) -> None:
+    """Export scan result to JSON file."""
+    data = asdict(result)
+    data["vulnerabilities"] = [asdict(v) for v in result.vulnerabilities]
+    
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    
+    print(f"{Clr.G}Report exported to: {output_path}{Clr.RS}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MAIN SCANNER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+DEFAULT_PORTS = [21, 22, 23, 80, 443, 1883, 2121, 5683, 8080, 8443, 8883, 9000]
+
+
+def parse_ports(port_str: str) -> List[int]:
+    """Parse port specification string."""
+    ports = []
+    for part in port_str.split(","):
+        part = part.strip()
+        if "-" in part:
+            start, end = map(int, part.split("-"))
+            ports.extend(range(start, end + 1))
+        else:
+            ports.append(int(part))
+    return sorted(set(ports))
+
+
+def run_scan(target: str, ports: List[int]) -> ScanResult:
+    """Execute vulnerability scan against target."""
+    import time
+    
+    print_scan_header(target, ports)
+    
+    start_time = time.time()
+    print(f"Scanning {len(ports)} ports...")
+    
+    open_ports = scan_ports(target, ports)
+    vulnerabilities = run_vulnerability_checks(open_ports)
+    risk_score = calculate_risk_score(vulnerabilities)
+    
+    duration = time.time() - start_time
+    
+    return ScanResult(
+        target=target,
+        timestamp=datetime.now().isoformat(),
+        duration_seconds=round(duration, 2),
+        ports_scanned=ports,
+        open_ports=open_ports,
+        vulnerabilities=vulnerabilities,
+        risk_score=risk_score,
+        summary=f"{len(vulnerabilities)} vulnerabilities, risk score {risk_score}/10"
+    )
+
+
+def parse_arguments() -> argparse.Namespace:
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Week 13 - Vulnerability checker (defensive)",
+        description="IoT Vulnerability Checker — OWASP IoT Top 10",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --target 127.0.0.1 --port 8080 --service http
-  %(prog)s --target 127.0.0.1 --port 2121 --service ftp --json-out ftp_report.json
-  %(prog)s --target 127.0.0.1 --port 1883 --service mqtt
+  %(prog)s --target localhost
+  %(prog)s --target 192.168.1.100 --ports 1883,8883,8080
+  %(prog)s --target localhost --output report.json
         """
     )
-    parser.add_argument("--target", required=True,
-                        help="Target host, e.g., 127.0.0.1")
-    parser.add_argument("--port", type=int, required=True,
-                        help="Target port")
-    parser.add_argument("--service", choices=["http", "ftp", "mqtt"], required=True,
-                        help="Service type to check")
-    parser.add_argument("--json-out", default=None,
-                        help="Optional JSON output path")
-    args = parser.parse_args()
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # EXECUTE_SERVICE_SPECIFIC_CHECKS
-    # ─────────────────────────────────────────────────────────────────────────
-    findings: List[Finding] = []
-    banner: Optional[str] = None
-    headers: Optional[Dict[str, str]] = None
-    reachable = False
-
-    if args.service == "http":
-        reachable, banner, headers, findings = check_http_service(args.target, args.port)
     
-    elif args.service == "ftp":
-        reachable, banner, findings = check_ftp_service(args.target, args.port)
-    
-    elif args.service == "mqtt":
-        reachable, findings = check_mqtt_service(args.target, args.port)
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # GENERATE_REPORT
-    # ─────────────────────────────────────────────────────────────────────────
-    report = Report(
-        target=args.target,
-        port=args.port,
-        service=args.service,
-        timestamp_utc=datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        reachable=reachable,
-        banner=banner,
-        http_headers=headers,
-        findings=findings,
+    parser.add_argument(
+        "--target", "-t",
+        required=True,
+        help="Target host to scan"
     )
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # OUTPUT_RESULTS
-    # ─────────────────────────────────────────────────────────────────────────
-    print_report(report)
+    parser.add_argument(
+        "--ports", "-p",
+        default=",".join(map(str, DEFAULT_PORTS)),
+        help=f"Ports to scan (default: {','.join(map(str, DEFAULT_PORTS))})"
+    )
+    parser.add_argument(
+        "--output", "-o",
+        type=Path,
+        help="Export report to JSON file"
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=1.0,
+        help="Port scan timeout in seconds (default: 1.0)"
+    )
     
-    if args.json_out:
-        save_json_report(report, args.json_out)
+    return parser.parse_args()
 
-    return 0
+
+def main() -> int:
+    """Main entry point."""
+    args = parse_arguments()
+    
+    try:
+        ports = parse_ports(args.ports)
+    except ValueError as e:
+        print(f"{Clr.R}ERROR: Invalid port specification: {e}{Clr.RS}")
+        return 1
+    
+    result = run_scan(args.target, ports)
+    generate_report(result)
+    
+    if args.output:
+        export_json(result, args.output)
+    
+    return 0 if result.risk_score < 6.0 else 1
 
 
 if __name__ == "__main__":
