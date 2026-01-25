@@ -39,7 +39,7 @@ Implement a basic SMTP client following RFC 5321.
 
 ### hw_12_02_rpc_comparison.py
 
-Compare XML-RPC, JSON-RPC, and gRPC protocols through analysis and benchmarking.
+Compare XML-RPC, JSON-RPC and gRPC protocols through analysis and benchmarking.
 
 **Learning Objectives:**
 - Understand trade-offs between RPC protocols

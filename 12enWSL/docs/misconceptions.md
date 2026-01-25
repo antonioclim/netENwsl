@@ -109,6 +109,8 @@ nc localhost 1025
 
 The DATA command returns **354** (not 250) because it's transitioning to a different state — the server is now waiting for message content, not another command.
 
+In previous years, roughly half of students confused the 354 response code with 250 during the first manual SMTP exercise. The state transition is the key — DATA switches the server into content-receiving mode, which is fundamentally different from command acknowledgement.
+
 **Why this matters:** Parsing SMTP responses requires handling different code classes. A client that only checks for "250" will fail when DATA returns 354.
 
 **Practical verification:**
@@ -202,6 +204,8 @@ Content-Type: application/json
 ```
 
 **Why this matters:** Batch requests can have mixed results — some succeed, some fail — all in one HTTP 200 response. HTTP status only indicates transport success.
+
+This trips up students who have REST experience. In REST, HTTP 404 means "resource not found". In JSON-RPC, HTTP 200 with an error object means "method not found". Different paradigms entirely.
 
 **Practical verification:**
 ```bash

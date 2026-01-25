@@ -8,7 +8,7 @@ NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
-This script removes all containers, networks, and optionally volumes
+This script removes all containers, networks and optionally volumes
 to prepare the system for the next laboratory session.
 
 IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
@@ -87,12 +87,79 @@ def check_portainer_status() -> tuple:
         return False, "Unknown"
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLEANUP_HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+def _stop_lab_containers(docker: DockerManager, full: bool, dry_run: bool) -> None:
+    """Stop and remove lab containers (preserving Portainer)."""
+    logger.info("Stopping and removing lab containers...")
+    logger.info("(Portainer is preserved)")
+    docker.compose_down(volumes=full, dry_run=dry_run)
+
+
+def _remove_week_resources(docker: DockerManager, dry_run: bool) -> None:
+    """Remove week-specific Docker resources."""
+    logger.info(f"Removing {WEEK_PREFIX}* resources...")
+    docker.remove_by_prefix(WEEK_PREFIX, dry_run=dry_run)
+
+
+def _clean_local_directories(dry_run: bool) -> None:
+    """Clean spool, pcap and artifacts directories."""
+    if dry_run:
+        logger.info("[DRY RUN] Would clean spool, pcap and artifacts directories")
+        return
+    
+    logger.info("Cleaning spool directory...")
+    count = clean_directory(PROJECT_ROOT / "docker/volumes/spool", "*.eml")
+    if count > 0:
+        logger.info(f"  Removed {count} email files")
+    
+    logger.info("Cleaning pcap directory...")
+    count = clean_directory(PROJECT_ROOT / "pcap", "*.pcap")
+    count += clean_directory(PROJECT_ROOT / "pcap", "*.pcapng")
+    if count > 0:
+        logger.info(f"  Removed {count} capture files")
+    
+    logger.info("Cleaning artifacts directory...")
+    count = clean_directory(PROJECT_ROOT / "artifacts", "*.log")
+    count += clean_directory(PROJECT_ROOT / "artifacts", "*.json")
+    if count > 0:
+        logger.info(f"  Removed {count} artifact files")
+
+
+def _run_system_prune(docker: DockerManager, dry_run: bool) -> None:
+    """Prune unused Docker resources."""
+    if dry_run:
+        logger.info("[DRY RUN] Would prune Docker system")
+        return
+    logger.info("Pruning unused Docker resources...")
+    docker.system_prune()
+
+
+def _print_completion_summary(full: bool) -> None:
+    """Print cleanup completion summary."""
+    print()
+    print("=" * 60)
+    print("  \033[92mCleanup complete!\033[0m")
+    if full:
+        print("  System is ready for the next laboratory session.")
+    
+    portainer_running, _ = check_portainer_status()
+    if portainer_running:
+        print(f"\n  \033[92mPortainer still running:\033[0m http://localhost:9000")
+    else:
+        print(f"\n  \033[93mPortainer is not running.\033[0m")
+        print("  Start with: docker start portainer")
+    
+    print("=" * 60)
+    print()
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAIN_FUNCTION
+# PARSE_ARGUMENTS
 # ═══════════════════════════════════════════════════════════════════════════════
-def main() -> int:
-    """Main entry point."""
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
         description="Cleanup Week 12 Laboratory Environment (WSL2)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -128,7 +195,15 @@ Notes:
         help="Enable verbose output"
     )
     
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MAIN_FUNCTION
+# ═══════════════════════════════════════════════════════════════════════════════
+def main() -> int:
+    """Main entry point."""
+    args = parse_arguments()
     
     print()
     print("=" * 60)
@@ -148,60 +223,16 @@ Notes:
         return 1
     
     try:
-        # Stop and remove containers (NOT Portainer)
-        logger.info("Stopping and removing lab containers...")
-        logger.info("(Portainer is preserved)")
-        docker.compose_down(volumes=args.full, dry_run=args.dry_run)
+        _stop_lab_containers(docker, args.full, args.dry_run)
+        _remove_week_resources(docker, args.dry_run)
         
-        # Remove week-specific resources
-        logger.info(f"Removing {WEEK_PREFIX}* resources...")
-        docker.remove_by_prefix(WEEK_PREFIX, dry_run=args.dry_run)
-        
-        # Clean local directories
-        if args.full and not args.dry_run:
-            logger.info("Cleaning spool directory...")
-            count = clean_directory(PROJECT_ROOT / "docker/volumes/spool", "*.eml")
-            if count > 0:
-                logger.info(f"  Removed {count} email files")
-            
-            logger.info("Cleaning pcap directory...")
-            count = clean_directory(PROJECT_ROOT / "pcap", "*.pcap")
-            count += clean_directory(PROJECT_ROOT / "pcap", "*.pcapng")
-            if count > 0:
-                logger.info(f"  Removed {count} capture files")
-            
-            logger.info("Cleaning artifacts directory...")
-            count = clean_directory(PROJECT_ROOT / "artifacts", "*.log")
-            count += clean_directory(PROJECT_ROOT / "artifacts", "*.json")
-            if count > 0:
-                logger.info(f"  Removed {count} artifact files")
-        elif args.full and args.dry_run:
-            logger.info("[DRY RUN] Would clean spool, pcap, and artifacts directories")
-        
-        # Optional system prune
-        if args.prune and not args.dry_run:
-            logger.info("Pruning unused Docker resources...")
-            docker.system_prune()
-        elif args.prune and args.dry_run:
-            logger.info("[DRY RUN] Would prune Docker system")
-        
-        print()
-        print("=" * 60)
-        print("  \033[92mCleanup complete!\033[0m")
         if args.full:
-            print("  System is ready for the next laboratory session.")
+            _clean_local_directories(args.dry_run)
         
-        # Confirm Portainer status
-        portainer_running, portainer_status = check_portainer_status()
-        if portainer_running:
-            print(f"\n  \033[92mPortainer still running:\033[0m http://localhost:9000")
-        else:
-            print(f"\n  \033[93mPortainer is not running.\033[0m")
-            print("  Start with: docker start portainer")
+        if args.prune:
+            _run_system_prune(docker, args.dry_run)
         
-        print("=" * 60)
-        print()
-        
+        _print_completion_summary(args.full)
         return 0
     
     except KeyboardInterrupt:

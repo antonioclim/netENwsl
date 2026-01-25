@@ -31,6 +31,8 @@ docker info
 
 **Symptoms:**
 - `Bind for 0.0.0.0:1025 failed: port is already allocated`
+
+This usually breaks when students have Postfix or another MTA installed system-wide. Check with `sudo systemctl status postfix` first.
 - `Error starting userland proxy: listen tcp4 0.0.0.0:6200: bind: address already in use`
 
 **Diagnosis:**

@@ -329,6 +329,295 @@ import grpc
 
 ---
 
+
+## Problem P6: SMTP Response Code Handling (LO1)
+
+### Task
+
+Arrange the code blocks to create a function that checks SMTP response codes.
+
+**Difficulty:** ⭐⭐ Intermediate  
+**Estimated time:** 4 minutes
+
+### Scrambled Blocks
+
+```python
+# Block A
+def check_smtp_response(response_line):
+    code = int(response_line[:3])
+    message = response_line[4:].strip()
+
+# Block B
+    if code >= 500:
+        raise SMTPPermanentError(code, message)
+
+# Block C
+    if code >= 400:
+        raise SMTPTemporaryError(code, message)
+
+# Block D
+    if code == 354:
+        return "intermediate", message
+
+# Block E
+    if code >= 200 and code < 300:
+        return "success", message
+
+# Block F
+    return "unknown", message
+
+# Block G (DISTRACTOR ❌)
+    if code == 250:
+        return "intermediate", message
+
+# Block H (DISTRACTOR ❌)
+    if code >= 200:
+        return "success", message
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**Correct sequence: A → B → C → D → E → F**
+
+**Why Block G is wrong:** 250 is success, not intermediate. 354 is intermediate.
+
+**Why Block H is wrong:** Does not exclude 3xx, 4xx, 5xx codes.
+
+</details>
+
+---
+
+## Problem P7: XML-RPC Client Call (LO4)
+
+### Task
+
+Arrange the code blocks to create an XML-RPC client function.
+
+**Difficulty:** ⭐ Basic  
+**Estimated time:** 3 minutes
+
+### Scrambled Blocks
+
+```python
+# Block A
+import xmlrpc.client
+
+# Block B
+def call_xmlrpc(host, port, method, *args):
+
+# Block C
+    url = f"http://{host}:{port}"
+    proxy = xmlrpc.client.ServerProxy(url)
+
+# Block D
+    func = getattr(proxy, method)
+    return func(*args)
+
+# Block E (DISTRACTOR ❌)
+    proxy = xmlrpc.client.ServerProxy(url, allow_none=False)
+    return proxy.call(method, *args)
+
+# Block F (DISTRACTOR ❌)
+    url = f"tcp://{host}:{port}"
+    proxy = xmlrpc.client.ServerProxy(url)
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**Correct sequence: A → B → C → D**
+
+**Why Block E is wrong:** XML-RPC uses attribute access, not a `call()` method.
+
+**Why Block F is wrong:** XML-RPC uses HTTP, not TCP protocol prefix.
+
+</details>
+
+---
+
+## Problem P8: gRPC Service Definition (LO3)
+
+### Task
+
+Arrange the Protocol Buffer definition blocks to create a valid calculator service.
+
+**Difficulty:** ⭐⭐ Intermediate  
+**Estimated time:** 4 minutes
+
+### Scrambled Blocks
+
+```protobuf
+// Block A
+syntax = "proto3";
+
+// Block B
+message CalcRequest {
+    double a = 1;
+    double b = 2;
+}
+
+// Block C
+message CalcResponse {
+    double result = 1;
+}
+
+// Block D
+service Calculator {
+    rpc Add(CalcRequest) returns (CalcResponse);
+    rpc Subtract(CalcRequest) returns (CalcResponse);
+}
+
+// Block E (DISTRACTOR ❌)
+syntax = "proto2";
+
+// Block F (DISTRACTOR ❌)
+service Calculator {
+    rpc Add(double a, double b) returns (double);
+}
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**Correct sequence: A → B → C → D**
+
+**Why Block E is wrong:** We use proto3, not proto2.
+
+**Why Block F is wrong:** gRPC methods take message types, not primitives directly.
+
+</details>
+
+---
+
+## Problem P9: JSON-RPC Error Response (LO5)
+
+### Task
+
+Arrange the code blocks to create a proper JSON-RPC error response handler.
+
+**Difficulty:** ⭐⭐ Intermediate  
+**Estimated time:** 5 minutes
+
+### Scrambled Blocks
+
+```python
+# Block A
+def build_error_response(request_id, code, message):
+
+# Block B
+    return {
+        "jsonrpc": "2.0",
+        "error": {
+            "code": code,
+            "message": message
+        },
+        "id": request_id
+    }
+
+# Block C
+ERROR_CODES = {
+    "parse_error": -32700,
+    "invalid_request": -32600,
+    "method_not_found": -32601,
+    "invalid_params": -32602,
+}
+
+# Block D
+def handle_error(request, error_type):
+    code = ERROR_CODES.get(error_type, -32000)
+    return build_error_response(request.get("id"), code, error_type)
+
+# Block E (DISTRACTOR ❌)
+    return {
+        "jsonrpc": "2.0",
+        "error": message,
+        "id": request_id
+    }
+
+# Block F (DISTRACTOR ❌)
+def handle_error(request, error_type):
+    return {"error": error_type, "status": 500}
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**Correct sequence: C → A → B → D**
+
+**Why Block E is wrong:** Error must be an object with code and message, not a string.
+
+**Why Block F is wrong:** JSON-RPC errors don't use HTTP status in the body.
+
+</details>
+
+---
+
+## Problem P10: SMTP Message Formatting (LO1)
+
+### Task
+
+Arrange the code blocks to format an email message correctly for SMTP DATA phase.
+
+**Difficulty:** ⭐⭐ Intermediate  
+**Estimated time:** 4 minutes
+
+### Scrambled Blocks
+
+```python
+# Block A
+def format_email(sender, recipient, subject, body):
+    lines = []
+
+# Block B
+    lines.append(f"From: {sender}")
+    lines.append(f"To: {recipient}")
+    lines.append(f"Subject: {subject}")
+
+# Block C
+    lines.append("")  # Blank line separates headers from body
+
+# Block D
+    for line in body.split("\n"):
+        if line.startswith("."):
+            lines.append("." + line)  # Dot-stuffing
+        else:
+            lines.append(line)
+
+# Block E
+    lines.append(".")  # End of message
+    return "\r\n".join(lines)
+
+# Block F (DISTRACTOR ❌)
+    lines.append("\n")  # Blank line
+
+# Block G (DISTRACTOR ❌)
+    return "\n".join(lines)
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal solution</summary>
+
+**Correct sequence: A → B → C → D → E**
+
+**Why Block F is wrong:** Should append empty string, not "\n" (join adds separators).
+
+**Why Block G is wrong:** SMTP requires CRLF (\r\n), not just LF (\n).
+
+</details>
+
+---
+
 ## Summary Table
 
 | Problem | LO | Difficulty | Blocks | Distractors | Key Concept |
@@ -338,6 +627,13 @@ import grpc
 | P3 | LO3 | ⭐⭐⭐ | 7 | 2 | HTTP server implementation |
 | P4 | LO4 | ⭐ | 5 | 2 | curl command construction |
 | P5 | LO5 | ⭐⭐⭐ | 6 | 2 | Protocol benchmarking |
+| P6 | LO1 | ⭐⭐ | 6 | 2 | SMTP response codes |
+| P7 | LO4 | ⭐ | 4 | 2 | XML-RPC client |
+| P8 | LO3 | ⭐⭐ | 4 | 2 | Protocol Buffers definition |
+| P9 | LO5 | ⭐⭐ | 4 | 2 | JSON-RPC error handling |
+| P10 | LO1 | ⭐⭐ | 5 | 2 | SMTP message formatting |
+
+**Total: 10 problems with 20 distractor blocks**
 
 ---
 
