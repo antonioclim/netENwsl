@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 320" width="700" height="320">
+  <title>Port States — Week 7</title>
+  <style>
+    .title { font: bold 16px sans-serif; fill: #2c3e50; }
+    .state { font: bold 14px sans-serif; fill: #fff; }
+    .label { font: 11px sans-serif; fill: #34495e; }
+    .detail { font: 10px sans-serif; fill: #7f8c8d; }
+    .code { font: 10px monospace; fill: #2c3e50; }
+  </style>
+  
+  <!-- Title -->
+  <text x="350" y="25" text-anchor="middle" class="title">TCP Port States: What the Scanner Observes</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- OPEN STATE -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="30" y="50" width="200" height="240" rx="8" fill="#d5f5e3" stroke="#27ae60" stroke-width="2"/>
+  
+  <rect x="50" y="65" width="160" height="30" rx="4" fill="#27ae60"/>
+  <text x="130" y="85" text-anchor="middle" class="state">OPEN</text>
+  
+  <text x="130" y="115" text-anchor="middle" class="label" style="font-weight:bold;">Service listening</text>
+  
+  <!-- Flow diagram -->
+  <rect x="55" y="130" width="60" height="20" rx="3" fill="#3498db"/>
+  <text x="85" y="144" text-anchor="middle" style="font:9px sans-serif;fill:#fff;">Client</text>
+  
+  <text x="130" y="144" text-anchor="middle" class="code">→ SYN →</text>
+  
+  <rect x="155" y="130" width="60" height="20" rx="3" fill="#27ae60"/>
+  <text x="185" y="144" text-anchor="middle" style="font:9px sans-serif;fill:#fff;">Server</text>
+  
+  <text x="130" y="168" text-anchor="middle" class="code">← SYN-ACK ←</text>
+  <text x="130" y="185" text-anchor="middle" class="code">→ ACK →</text>
+  
+  <!-- Evidence -->
+  <rect x="45" y="200" width="170" height="75" rx="4" fill="#fff" stroke="#27ae60"/>
+  <text x="130" y="218" text-anchor="middle" class="label" style="font-weight:bold;">Evidence:</text>
+  <text x="130" y="235" text-anchor="middle" class="detail">✓ SYN-ACK received</text>
+  <text x="130" y="250" text-anchor="middle" class="detail">✓ Handshake completes</text>
+  <text x="130" y="265" text-anchor="middle" class="detail">✓ Connection established</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- CLOSED STATE -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="250" y="50" width="200" height="240" rx="8" fill="#fadbd8" stroke="#e74c3c" stroke-width="2"/>
+  
+  <rect x="270" y="65" width="160" height="30" rx="4" fill="#e74c3c"/>
+  <text x="350" y="85" text-anchor="middle" class="state">CLOSED</text>
+  
+  <text x="350" y="115" text-anchor="middle" class="label" style="font-weight:bold;">No service listening</text>
+  
+  <!-- Flow diagram -->
+  <rect x="275" y="130" width="60" height="20" rx="3" fill="#3498db"/>
+  <text x="305" y="144" text-anchor="middle" style="font:9px sans-serif;fill:#fff;">Client</text>
+  
+  <text x="350" y="144" text-anchor="middle" class="code">→ SYN →</text>
+  
+  <rect x="375" y="130" width="60" height="20" rx="3" fill="#95a5a6"/>
+  <text x="405" y="144" text-anchor="middle" style="font:9px sans-serif;fill:#fff;">Host</text>
+  
+  <text x="350" y="168" text-anchor="middle" class="code">← RST ←</text>
+  <text x="350" y="185" text-anchor="middle" class="detail">(immediate reset)</text>
+  
+  <!-- Evidence -->
+  <rect x="265" y="200" width="170" height="75" rx="4" fill="#fff" stroke="#e74c3c"/>
+  <text x="350" y="218" text-anchor="middle" class="label" style="font-weight:bold;">Evidence:</text>
+  <text x="350" y="235" text-anchor="middle" class="detail">✓ RST packet received</text>
+  <text x="350" y="250" text-anchor="middle" class="detail">✓ Host is reachable</text>
+  <text x="350" y="265" text-anchor="middle" class="detail">✗ No service on port</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- FILTERED STATE -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="470" y="50" width="200" height="240" rx="8" fill="#fef9e7" stroke="#f39c12" stroke-width="2"/>
+  
+  <rect x="490" y="65" width="160" height="30" rx="4" fill="#f39c12"/>
+  <text x="570" y="85" text-anchor="middle" class="state">FILTERED</text>
+  
+  <text x="570" y="115" text-anchor="middle" class="label" style="font-weight:bold;">Firewall blocking</text>
+  
+  <!-- Flow diagram -->
+  <rect x="495" y="130" width="60" height="20" rx="3" fill="#3498db"/>
+  <text x="525" y="144" text-anchor="middle" style="font:9px sans-serif;fill:#fff;">Client</text>
+  
+  <text x="570" y="144" text-anchor="middle" class="code">→ SYN →</text>
+  
+  <rect x="595" y="130" width="60" height="20" rx="3" fill="#f39c12"/>
+  <text x="625" y="144" text-anchor="middle" style="font:9px sans-serif;fill:#fff;">FW</text>
+  
+  <text x="570" y="168" text-anchor="middle" class="code" style="fill:#c0392b;">✗ (DROP)</text>
+  <text x="570" y="185" text-anchor="middle" class="detail">(no response)</text>
+  
+  <!-- Evidence -->
+  <rect x="485" y="200" width="170" height="75" rx="4" fill="#fff" stroke="#f39c12"/>
+  <text x="570" y="218" text-anchor="middle" class="label" style="font-weight:bold;">Evidence:</text>
+  <text x="570" y="235" text-anchor="middle" class="detail">✗ No response at all</text>
+  <text x="570" y="250" text-anchor="middle" class="detail">? Cannot determine if</text>
+  <text x="570" y="265" text-anchor="middle" class="detail">  host exists or is alive</text>
+  
+  <!-- Footer -->
+  <text x="350" y="310" text-anchor="middle" class="detail">Week 7 — Understanding port states is essential for network debugging</text>
+</svg>

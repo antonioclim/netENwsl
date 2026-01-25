@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 400" width="650" height="400">
+  <title>Week 7 Lab Topology — Docker Network</title>
+  <style>
+    .title { font: bold 16px sans-serif; fill: #2c3e50; }
+    .container { font: bold 11px sans-serif; fill: #fff; }
+    .port { font: 10px monospace; fill: #2c3e50; }
+    .label { font: 11px sans-serif; fill: #34495e; }
+    .note { font: italic 10px sans-serif; fill: #7f8c8d; }
+    .network { font: bold 12px sans-serif; fill: #8e44ad; }
+  </style>
+  
+  <!-- Title -->
+  <text x="325" y="25" text-anchor="middle" class="title">Week 7 Laboratory Network Topology</text>
+  
+  <!-- Docker Network Background -->
+  <rect x="50" y="45" width="550" height="280" rx="10" fill="#f5eef8" stroke="#8e44ad" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="325" y="65" text-anchor="middle" class="network">Docker Network: week7net (172.20.0.0/16)</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- TCP Server Container -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="80" y="90" width="140" height="80" rx="6" fill="#3498db"/>
+  <text x="150" y="115" text-anchor="middle" class="container">TCP Echo Server</text>
+  <rect x="90" y="125" width="120" height="35" rx="4" fill="#2980b9"/>
+  <text x="150" y="142" text-anchor="middle" class="port">Port: 9090/tcp</text>
+  <text x="150" y="155" text-anchor="middle" class="port">172.20.0.10</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- UDP Receiver Container -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="255" y="90" width="140" height="80" rx="6" fill="#27ae60"/>
+  <text x="325" y="115" text-anchor="middle" class="container">UDP Receiver</text>
+  <rect x="265" y="125" width="120" height="35" rx="4" fill="#1e8449"/>
+  <text x="325" y="142" text-anchor="middle" class="port">Port: 9091/udp</text>
+  <text x="325" y="155" text-anchor="middle" class="port">172.20.0.11</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Packet Filter Proxy Container -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="430" y="90" width="140" height="80" rx="6" fill="#e74c3c"/>
+  <text x="500" y="115" text-anchor="middle" class="container">Packet Filter</text>
+  <rect x="440" y="125" width="120" height="35" rx="4" fill="#c0392b"/>
+  <text x="500" y="142" text-anchor="middle" class="port">Port: 8888/tcp</text>
+  <text x="500" y="155" text-anchor="middle" class="port">172.20.0.12</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Host Machine -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="180" y="210" width="290" height="100" rx="6" fill="#34495e"/>
+  <text x="325" y="235" text-anchor="middle" class="container" style="font-size:13px;">WSL2 Host (stud@ubuntu)</text>
+  
+  <!-- Scripts inside host -->
+  <rect x="195" y="250" width="80" height="45" rx="4" fill="#5d6d7e"/>
+  <text x="235" y="268" text-anchor="middle" class="port" style="fill:#fff;">tcp_client.py</text>
+  <text x="235" y="282" text-anchor="middle" class="port" style="fill:#fff;">udp_sender.py</text>
+  
+  <rect x="285" y="250" width="80" height="45" rx="4" fill="#5d6d7e"/>
+  <text x="325" y="268" text-anchor="middle" class="port" style="fill:#fff;">port_probe.py</text>
+  <text x="325" y="282" text-anchor="middle" class="port" style="fill:#fff;">firewallctl.py</text>
+  
+  <rect x="375" y="250" width="80" height="45" rx="4" fill="#5d6d7e"/>
+  <text x="415" y="268" text-anchor="middle" class="port" style="fill:#fff;">tcpdump</text>
+  <text x="415" y="282" text-anchor="middle" class="port" style="fill:#fff;">Wireshark</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Connections -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  
+  <!-- TCP connection -->
+  <line x1="235" y1="250" x2="150" y2="175" stroke="#3498db" stroke-width="2" stroke-dasharray="4"/>
+  <text x="170" y="218" class="note">TCP</text>
+  
+  <!-- UDP connection -->
+  <line x1="285" y1="250" x2="325" y2="175" stroke="#27ae60" stroke-width="2" stroke-dasharray="4"/>
+  <text x="320" y="218" class="note">UDP</text>
+  
+  <!-- Probe connection -->
+  <line x1="375" y1="250" x2="500" y2="175" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4"/>
+  <text x="460" y="218" class="note">Probe</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Portainer (External) -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <rect x="510" y="340" width="120" height="40" rx="4" fill="#f39c12"/>
+  <text x="570" y="358" text-anchor="middle" class="container">Portainer</text>
+  <text x="570" y="372" text-anchor="middle" class="port" style="fill:#fff;">localhost:9000</text>
+  
+  <!-- Windows Host -->
+  <rect x="20" y="340" width="140" height="40" rx="4" fill="#9b59b6"/>
+  <text x="90" y="358" text-anchor="middle" class="container">Windows Host</text>
+  <text x="90" y="372" text-anchor="middle" class="port" style="fill:#fff;">Wireshark GUI</text>
+  
+  <!-- Arrows -->
+  <line x1="160" y1="360" x2="180" y2="310" stroke="#9b59b6" stroke-width="1" stroke-dasharray="3"/>
+  <line x1="510" y1="360" x2="470" y2="310" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
+  
+  <!-- Legend -->
+  <text x="325" y="390" text-anchor="middle" class="note">Week 7 — Packet Interception, Filtering and Defensive Port Probing</text>
+</svg>

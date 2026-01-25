@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 350" width="650" height="350">
+  <title>Packet Capture Flow — Week 7</title>
+  <style>
+    .title { font: bold 16px sans-serif; fill: #2c3e50; }
+    .box { font: bold 11px sans-serif; fill: #fff; }
+    .label { font: 11px sans-serif; fill: #34495e; }
+    .note { font: italic 10px sans-serif; fill: #7f8c8d; }
+    .code { font: 10px monospace; fill: #2c3e50; }
+  </style>
+  
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#34495e"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="325" y="25" text-anchor="middle" class="title">Packet Capture: From Wire to Analysis</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Layer 1: Physical/Network -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  
+  <rect x="30" y="50" width="590" height="55" rx="6" fill="#e8f8f5" stroke="#1abc9c" stroke-width="1"/>
+  <text x="50" y="70" class="label" style="font-weight:bold;fill:#1abc9c;">Layer 1: Network Interface</text>
+  
+  <rect x="50" y="78" width="100" height="20" rx="3" fill="#1abc9c"/>
+  <text x="100" y="92" text-anchor="middle" class="box">eth0 / docker0</text>
+  
+  <line x1="155" y1="88" x2="185" y2="88" stroke="#34495e" stroke-width="1" marker-end="url(#arr)"/>
+  
+  <rect x="190" y="78" width="120" height="20" rx="3" fill="#16a085"/>
+  <text x="250" y="92" text-anchor="middle" class="box">vEthernet (WSL)</text>
+  
+  <text x="430" y="92" class="note">← Select correct interface!</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Layer 2: Kernel -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  
+  <rect x="30" y="115" width="590" height="55" rx="6" fill="#fef9e7" stroke="#f39c12" stroke-width="1"/>
+  <text x="50" y="135" class="label" style="font-weight:bold;fill:#f39c12;">Layer 2: Kernel Packet Processing</text>
+  
+  <rect x="50" y="143" width="80" height="20" rx="3" fill="#f39c12"/>
+  <text x="90" y="157" text-anchor="middle" class="box">NIC Driver</text>
+  
+  <line x1="135" y1="153" x2="165" y2="153" stroke="#34495e" stroke-width="1" marker-end="url(#arr)"/>
+  
+  <rect x="170" y="143" width="80" height="20" rx="3" fill="#e67e22"/>
+  <text x="210" y="157" text-anchor="middle" class="box">IP Stack</text>
+  
+  <line x1="255" y1="153" x2="285" y2="153" stroke="#34495e" stroke-width="1" marker-end="url(#arr)"/>
+  
+  <rect x="290" y="143" width="80" height="20" rx="3" fill="#d35400"/>
+  <text x="330" y="157" text-anchor="middle" class="box">iptables</text>
+  
+  <line x1="375" y1="153" x2="405" y2="153" stroke="#34495e" stroke-width="1" marker-end="url(#arr)"/>
+  
+  <rect x="410" y="143" width="90" height="20" rx="3" fill="#e74c3c"/>
+  <text x="455" y="157" text-anchor="middle" class="box">BPF Filter</text>
+  
+  <text x="530" y="157" class="code">port 9090</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Layer 3: Capture Tool -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  
+  <rect x="30" y="180" width="590" height="55" rx="6" fill="#ebf5fb" stroke="#3498db" stroke-width="1"/>
+  <text x="50" y="200" class="label" style="font-weight:bold;fill:#3498db;">Layer 3: Capture Tool (Userspace)</text>
+  
+  <rect x="50" y="208" width="80" height="20" rx="3" fill="#3498db"/>
+  <text x="90" y="222" text-anchor="middle" class="box">tcpdump</text>
+  
+  <rect x="150" y="208" width="80" height="20" rx="3" fill="#2980b9"/>
+  <text x="190" y="222" text-anchor="middle" class="box">tshark</text>
+  
+  <rect x="250" y="208" width="100" height="20" rx="3" fill="#1a5276"/>
+  <text x="300" y="222" text-anchor="middle" class="box">dumpcap</text>
+  
+  <line x1="380" y1="218" x2="420" y2="218" stroke="#34495e" stroke-width="1" marker-end="url(#arr)"/>
+  
+  <rect x="430" y="208" width="100" height="20" rx="3" fill="#154360"/>
+  <text x="480" y="222" text-anchor="middle" class="box">capture.pcap</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Layer 4: Analysis -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  
+  <rect x="30" y="245" width="590" height="55" rx="6" fill="#f5eef8" stroke="#9b59b6" stroke-width="1"/>
+  <text x="50" y="265" class="label" style="font-weight:bold;fill:#9b59b6;">Layer 4: Analysis &amp; Visualisation</text>
+  
+  <rect x="50" y="273" width="100" height="20" rx="3" fill="#9b59b6"/>
+  <text x="100" y="287" text-anchor="middle" class="box">Wireshark GUI</text>
+  
+  <rect x="170" y="273" width="110" height="20" rx="3" fill="#8e44ad"/>
+  <text x="225" y="287" text-anchor="middle" class="box">Display Filters</text>
+  
+  <rect x="300" y="273" width="110" height="20" rx="3" fill="#7d3c98"/>
+  <text x="355" y="287" text-anchor="middle" class="box">Follow Stream</text>
+  
+  <rect x="430" y="273" width="100" height="20" rx="3" fill="#6c3483"/>
+  <text x="480" y="287" text-anchor="middle" class="box">Statistics</text>
+  
+  <!-- Vertical flow arrow -->
+  <line x1="325" y1="108" x2="325" y2="115" stroke="#34495e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="325" y1="173" x2="325" y2="180" stroke="#34495e" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="325" y1="238" x2="325" y2="245" stroke="#34495e" stroke-width="2" marker-end="url(#arr)"/>
+  
+  <!-- Footer -->
+  <text x="325" y="325" text-anchor="middle" class="note">Week 7 — Capture at Layer 1, filter at Layer 2, analyse at Layer 4</text>
+  <text x="325" y="340" text-anchor="middle" class="code">sudo tcpdump -i eth0 -w capture.pcap 'port 9090'</text>
+</svg>

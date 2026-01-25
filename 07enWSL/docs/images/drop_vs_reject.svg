@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 450" width="700" height="450">
+  <title>DROP vs REJECT — Week 7</title>
+  <style>
+    .title { font: bold 18px sans-serif; fill: #2c3e50; }
+    .subtitle { font: bold 14px sans-serif; fill: #34495e; }
+    .label { font: 12px sans-serif; fill: #34495e; }
+    .packet { font: bold 10px monospace; fill: #fff; }
+    .note { font: italic 10px sans-serif; fill: #7f8c8d; }
+    .box { stroke: #bdc3c7; stroke-width: 1; }
+  </style>
+  
+  <defs>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#e74c3c"/>
+    </marker>
+    <marker id="arrow-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#95a5a6"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#27ae60"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="350" y="30" text-anchor="middle" class="title">DROP vs REJECT: Firewall Actions Compared</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- LEFT SIDE: DROP -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  
+  <rect x="20" y="50" width="310" height="370" rx="8" fill="#fff5f5" class="box"/>
+  <text x="175" y="75" text-anchor="middle" class="subtitle" style="fill:#c0392b;">DROP (Silent Discard)</text>
+  
+  <!-- Client -->
+  <rect x="40" y="100" width="60" height="30" rx="4" fill="#3498db"/>
+  <text x="70" y="120" text-anchor="middle" class="packet">Client</text>
+  
+  <!-- Firewall -->
+  <rect x="145" y="100" width="60" height="30" rx="4" fill="#e74c3c"/>
+  <text x="175" y="120" text-anchor="middle" class="packet">Firewall</text>
+  
+  <!-- Server -->
+  <rect x="250" y="100" width="60" height="30" rx="4" fill="#95a5a6"/>
+  <text x="280" y="120" text-anchor="middle" class="packet">Server</text>
+  
+  <!-- SYN packet -->
+  <line x1="100" y1="150" x2="140" y2="150" stroke="#3498db" stroke-width="2" marker-end="url(#arrow-red)"/>
+  <text x="120" y="143" text-anchor="middle" class="note">SYN</text>
+  
+  <!-- X mark (dropped) -->
+  <text x="175" y="158" text-anchor="middle" style="font: bold 20px sans-serif; fill: #c0392b;">✗</text>
+  <text x="175" y="175" text-anchor="middle" class="note">silently dropped</text>
+  
+  <!-- Timeout waiting -->
+  <rect x="50" y="195" width="100" height="60" rx="4" fill="#ecf0f1" stroke="#bdc3c7"/>
+  <text x="100" y="215" text-anchor="middle" class="label">Client waits...</text>
+  <text x="100" y="232" text-anchor="middle" class="label">⏱️ timeout</text>
+  <text x="100" y="248" text-anchor="middle" class="note">(no response)</text>
+  
+  <!-- Retransmit -->
+  <line x1="100" y1="270" x2="140" y2="270" stroke="#95a5a6" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrow-gray)"/>
+  <text x="120" y="285" text-anchor="middle" class="note">SYN retry 1</text>
+  <text x="175" y="278" text-anchor="middle" style="font: bold 14px sans-serif; fill: #c0392b;">✗</text>
+  
+  <line x1="100" y1="305" x2="140" y2="305" stroke="#95a5a6" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrow-gray)"/>
+  <text x="120" y="320" text-anchor="middle" class="note">SYN retry 2</text>
+  <text x="175" y="313" text-anchor="middle" style="font: bold 14px sans-serif; fill: #c0392b;">✗</text>
+  
+  <!-- Final result -->
+  <rect x="40" y="340" width="280" height="60" rx="4" fill="#fadbd8"/>
+  <text x="180" y="362" text-anchor="middle" class="label" style="font-weight:bold;">Result: Connection timed out</text>
+  <text x="180" y="380" text-anchor="middle" class="note">Client cannot distinguish DROP from packet loss</text>
+  <text x="180" y="392" text-anchor="middle" class="note">or non-existent host</text>
+  
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- RIGHT SIDE: REJECT -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  
+  <rect x="370" y="50" width="310" height="370" rx="8" fill="#f0fff0" class="box"/>
+  <text x="525" y="75" text-anchor="middle" class="subtitle" style="fill:#27ae60;">REJECT (Active Refusal)</text>
+  
+  <!-- Client -->
+  <rect x="390" y="100" width="60" height="30" rx="4" fill="#3498db"/>
+  <text x="420" y="120" text-anchor="middle" class="packet">Client</text>
+  
+  <!-- Firewall -->
+  <rect x="495" y="100" width="60" height="30" rx="4" fill="#27ae60"/>
+  <text x="525" y="120" text-anchor="middle" class="packet">Firewall</text>
+  
+  <!-- Server -->
+  <rect x="600" y="100" width="60" height="30" rx="4" fill="#95a5a6"/>
+  <text x="630" y="120" text-anchor="middle" class="packet">Server</text>
+  
+  <!-- SYN packet -->
+  <line x1="450" y1="150" x2="490" y2="150" stroke="#3498db" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="470" y="143" text-anchor="middle" class="note">SYN</text>
+  
+  <!-- Process at firewall -->
+  <text x="525" y="165" text-anchor="middle" class="note">blocked</text>
+  
+  <!-- RST/ICMP response -->
+  <line x1="490" y1="190" x2="450" y2="190" stroke="#27ae60" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <rect x="455" y="178" width="60" height="16" rx="2" fill="#27ae60"/>
+  <text x="485" y="190" text-anchor="middle" class="packet" style="font-size:9px;">RST/ICMP</text>
+  
+  <!-- Immediate response -->
+  <rect x="390" y="215" width="120" height="50" rx="4" fill="#d5f5e3" stroke="#27ae60"/>
+  <text x="450" y="235" text-anchor="middle" class="label">Immediate</text>
+  <text x="450" y="252" text-anchor="middle" class="label">notification!</text>
+  
+  <!-- Final result -->
+  <rect x="390" y="340" width="280" height="60" rx="4" fill="#d5f5e3"/>
+  <text x="530" y="362" text-anchor="middle" class="label" style="font-weight:bold;">Result: Connection refused</text>
+  <text x="530" y="380" text-anchor="middle" class="note">Client knows immediately that host exists</text>
+  <text x="530" y="392" text-anchor="middle" class="note">and a firewall is blocking</text>
+  
+  <!-- Comparison arrow -->
+  <text x="350" y="240" text-anchor="middle" style="font: bold 24px sans-serif; fill: #7f8c8d;">⟷</text>
+  
+  <!-- Footer -->
+  <text x="350" y="440" text-anchor="middle" class="note">Week 7 — Use REJECT for debugging, DROP for stealth</text>
+</svg>

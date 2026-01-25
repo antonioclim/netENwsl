@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+  <title>TCP Three-Way Handshake — Week 7</title>
+  <style>
+    .title { font: bold 16px sans-serif; fill: #2c3e50; }
+    .label { font: 12px sans-serif; fill: #34495e; }
+    .packet { font: bold 11px monospace; fill: #fff; }
+    .note { font: italic 10px sans-serif; fill: #7f8c8d; }
+    .timeline { stroke: #3498db; stroke-width: 3; }
+    .arrow { stroke: #e74c3c; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    .arrow-ack { stroke: #27ae60; stroke-width: 2; fill: none; marker-end: url(#arrowhead-green); }
+  </style>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#27ae60"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="250" y="30" text-anchor="middle" class="title">TCP Three-Way Handshake</text>
+  
+  <!-- Client timeline -->
+  <line x1="100" y1="60" x2="100" y2="350" class="timeline"/>
+  <text x="100" y="50" text-anchor="middle" class="label">Client</text>
+  <rect x="60" y="55" width="80" height="20" rx="3" fill="#3498db"/>
+  <text x="100" y="68" text-anchor="middle" class="packet">TCP Client</text>
+  
+  <!-- Server timeline -->
+  <line x1="400" y1="60" x2="400" y2="350" class="timeline"/>
+  <text x="400" y="50" text-anchor="middle" class="label">Server</text>
+  <rect x="360" y="55" width="80" height="20" rx="3" fill="#3498db"/>
+  <text x="400" y="68" text-anchor="middle" class="packet">TCP Server</text>
+  
+  <!-- Step 1: SYN -->
+  <line x1="105" y1="120" x2="395" y2="150" class="arrow"/>
+  <rect x="200" y="118" width="100" height="22" rx="3" fill="#e74c3c"/>
+  <text x="250" y="133" text-anchor="middle" class="packet">SYN seq=100</text>
+  <text x="95" y="115" text-anchor="end" class="note">1. Request</text>
+  
+  <!-- Step 2: SYN-ACK -->
+  <line x1="395" y1="190" x2="105" y2="220" class="arrow-ack"/>
+  <rect x="175" y="188" width="150" height="22" rx="3" fill="#27ae60"/>
+  <text x="250" y="203" text-anchor="middle" class="packet">SYN-ACK seq=200 ack=101</text>
+  <text x="405" y="185" text-anchor="start" class="note">2. Acknowledge</text>
+  
+  <!-- Step 3: ACK -->
+  <line x1="105" y1="260" x2="395" y2="290" class="arrow-ack"/>
+  <rect x="200" y="258" width="100" height="22" rx="3" fill="#27ae60"/>
+  <text x="250" y="273" text-anchor="middle" class="packet">ACK ack=201</text>
+  <text x="95" y="255" text-anchor="end" class="note">3. Confirm</text>
+  
+  <!-- Connection established -->
+  <rect x="150" y="320" width="200" height="25" rx="5" fill="#2ecc71" opacity="0.3"/>
+  <text x="250" y="337" text-anchor="middle" class="label" style="fill:#27ae60; font-weight:bold;">Connection Established</text>
+  
+  <!-- Footer -->
+  <text x="250" y="380" text-anchor="middle" class="note">Week 7 — Packet Interception, Filtering and Defensive Port Probing</text>
+</svg>
