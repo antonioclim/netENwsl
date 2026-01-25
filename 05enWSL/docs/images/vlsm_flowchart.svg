@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 650">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#22c55e"/>
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="850" height="650" fill="#f8fafc"/>
+  
+  <!-- Title -->
+  <text x="425" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#1e293b">VLSM Allocation Algorithm</text>
+  <text x="425" y="55" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#64748b">Variable Length Subnet Mask — Largest-First Strategy</text>
+  
+  <!-- Input box -->
+  <rect x="300" y="75" width="250" height="60" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="425" y="100" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e40af">INPUT</text>
+  <text x="425" y="120" font-family="monospace" font-size="12" text-anchor="middle" fill="#1e40af">Base: 10.0.0.0/24</text>
+  <text x="425" y="135" font-family="monospace" font-size="11" text-anchor="middle" fill="#64748b">Requirements: [60, 30, 10, 2] hosts</text>
+  
+  <!-- Arrow down -->
+  <line x1="425" y1="140" x2="425" y2="165" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 1: Sort -->
+  <rect x="275" y="170" width="300" height="55" rx="25" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="425" y="195" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#92400e">1. SORT LARGEST FIRST</text>
+  <text x="425" y="215" font-family="monospace" font-size="12" text-anchor="middle" fill="#78350f">[60, 30, 10, 2] → [60, 30, 10, 2] ✓</text>
+  
+  <!-- Arrow down -->
+  <line x1="425" y1="230" x2="425" y2="255" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 2: Loop start -->
+  <polygon points="425,260 525,300 425,340 325,300" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+  <text x="425" y="305" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#4338ca">More reqs?</text>
+  
+  <!-- Yes arrow to right -->
+  <line x1="525" y1="300" x2="580" y2="300" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="545" y="290" font-family="Arial, sans-serif" font-size="11" fill="#16a34a">Yes</text>
+  
+  <!-- No arrow down -->
+  <line x1="425" y1="340" x2="425" y2="600" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="440" y="360" font-family="Arial, sans-serif" font-size="11" fill="#dc2626">No</text>
+  
+  <!-- Step 3: Calculate prefix -->
+  <rect x="585" y="265" width="230" height="70" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+  <text x="700" y="290" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#166534">2. CALC PREFIX</text>
+  <text x="700" y="310" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#15803d">hosts + 2 → next power of 2</text>
+  <text x="700" y="325" font-family="monospace" font-size="10" text-anchor="middle" fill="#166534">60+2=62 → 64 → /26</text>
+  
+  <!-- Arrow down -->
+  <line x1="700" y1="340" x2="700" y2="365" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 4: Align boundary -->
+  <rect x="585" y="370" width="230" height="60" rx="8" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
+  <text x="700" y="395" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#9d174d">3. ALIGN BOUNDARY</text>
+  <text x="700" y="415" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#be185d">Ensure start address is</text>
+  <text x="700" y="428" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#be185d">multiple of block size</text>
+  
+  <!-- Arrow down -->
+  <line x1="700" y1="435" x2="700" y2="460" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 5: Allocate -->
+  <rect x="585" y="465" width="230" height="55" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+  <text x="700" y="490" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#065f46">4. ALLOCATE SUBNET</text>
+  <text x="700" y="508" font-family="monospace" font-size="10" text-anchor="middle" fill="#047857">Record network, advance cursor</text>
+  
+  <!-- Arrow back to loop -->
+  <path d="M 585 492 L 540 492 L 540 300 L 525 300" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Output box -->
+  <rect x="275" y="605" width="300" height="40" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+  <text x="425" y="630" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#166534">OUTPUT: Allocation Complete</text>
+  
+  <!-- Example allocation table -->
+  <rect x="30" y="170" width="220" height="200" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="140" y="195" font-family="Arial, sans-serif" font-size="13" font-weight="bold" text-anchor="middle" fill="#334155">Allocation Result</text>
+  
+  <line x1="40" y1="205" x2="240" y2="205" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <text x="50" y="225" font-family="monospace" font-size="11" fill="#64748b">Req</text>
+  <text x="90" y="225" font-family="monospace" font-size="11" fill="#64748b">Prefix</text>
+  <text x="140" y="225" font-family="monospace" font-size="11" fill="#64748b">Network</text>
+  
+  <line x1="40" y1="235" x2="240" y2="235" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <text x="50" y="255" font-family="monospace" font-size="11" fill="#059669">60</text>
+  <text x="90" y="255" font-family="monospace" font-size="11" fill="#059669">/26</text>
+  <text x="140" y="255" font-family="monospace" font-size="11" fill="#059669">10.0.0.0/26</text>
+  
+  <text x="50" y="280" font-family="monospace" font-size="11" fill="#2563eb">30</text>
+  <text x="90" y="280" font-family="monospace" font-size="11" fill="#2563eb">/26</text>
+  <text x="140" y="280" font-family="monospace" font-size="11" fill="#2563eb">10.0.0.64/26</text>
+  
+  <text x="50" y="305" font-family="monospace" font-size="11" fill="#7c3aed">10</text>
+  <text x="90" y="305" font-family="monospace" font-size="11" fill="#7c3aed">/28</text>
+  <text x="140" y="305" font-family="monospace" font-size="11" fill="#7c3aed">10.0.0.128/28</text>
+  
+  <text x="50" y="330" font-family="monospace" font-size="11" fill="#dc2626">2</text>
+  <text x="90" y="330" font-family="monospace" font-size="11" fill="#dc2626">/30</text>
+  <text x="140" y="330" font-family="monospace" font-size="11" fill="#dc2626">10.0.0.144/30</text>
+  
+  <line x1="40" y1="345" x2="240" y2="345" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="140" y="362" font-family="Arial, sans-serif" font-size="10" font-style="italic" text-anchor="middle" fill="#64748b">Used: 148/256 (58%)</text>
+  
+  <!-- Visual address space -->
+  <rect x="30" y="400" width="220" height="85" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="140" y="420" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#334155">Address Space Visual</text>
+  
+  <!-- Address bar -->
+  <rect x="40" y="435" width="200" height="25" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  
+  <!-- Allocated segments -->
+  <rect x="40" y="435" width="50" height="25" rx="2" fill="#dcfce7"/>
+  <text x="65" y="452" font-family="monospace" font-size="8" text-anchor="middle" fill="#166534">/26</text>
+  
+  <rect x="90" y="435" width="50" height="25" rx="2" fill="#dbeafe"/>
+  <text x="115" y="452" font-family="monospace" font-size="8" text-anchor="middle" fill="#1e40af">/26</text>
+  
+  <rect x="140" y="435" width="13" height="25" rx="2" fill="#ede9fe"/>
+  <text x="146" y="452" font-family="monospace" font-size="7" text-anchor="middle" fill="#6d28d9">/28</text>
+  
+  <rect x="153" y="435" width="4" height="25" rx="1" fill="#fee2e2"/>
+  
+  <!-- Free space -->
+  <rect x="157" y="435" width="83" height="25" rx="2" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="3,3"/>
+  <text x="198" y="452" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Free</text>
+  
+  <text x="140" y="475" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">0 ──────────────────────── 255</text>
+  
+  <!-- Important note -->
+  <rect x="30" y="510" width="220" height="70" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="140" y="532" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#991b1b">⚠️ Critical Rule</text>
+  <text x="140" y="550" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#7f1d1d">Always allocate LARGEST first!</text>
+  <text x="140" y="568" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#991b1b">Prevents fragmentation issues</text>
+</svg>

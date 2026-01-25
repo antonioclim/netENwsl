@@ -10,14 +10,14 @@
 
 | Version | Last Updated | Quiz Questions | LO Coverage |
 |---------|--------------|----------------|-------------|
-| 1.1.0 | 2026-01-24 | 12 (Bloom L1-L6) | 6/6 Complete |
+| 1.2.0 | 2026-01-25 | 12 (Bloom L1-L6) | 6/6 Complete |
 
 ---
 
 ## Quick Start
 
 ```bash
-# Navigate to kit directory
+# Go to kit directory
 cd /mnt/d/NETWORKING/WEEK5/05enWSL
 
 # Start Docker
@@ -98,6 +98,18 @@ python3 formative/export_to_lms.py --format json --pretty
 | Python Container | 10.5.0.10 |
 | UDP Server | 10.5.0.20:9999 |
 | UDP Client | 10.5.0.30 |
+
+---
+
+## Known Issues
+
+In previous cohorts, these problems appeared frequently:
+
+1. **Docker not starting** — Run `sudo service docker start` inside WSL, not PowerShell
+2. **Port 9999 already in use** — Check with `ss -tlnp | grep 9999` and kill the process
+3. **Quiz YAML parse errors** — Ensure no tabs in quiz.yaml (spaces only)
+
+If this breaks unexpectedly, check the Docker daemon first. Nine times out of ten, that's the culprit.
 
 ---
 

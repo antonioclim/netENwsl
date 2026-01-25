@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #1a1a2e; }
+    .layer-name { font: bold 12px sans-serif; fill: white; }
+    .layer-desc { font: 10px sans-serif; fill: #333; }
+    .highlight { fill: #3498db; }
+    .normal { fill: #95a5a6; }
+    .arrow { fill: #2c3e50; }
+  </style>
+  
+  <!-- Title -->
+  <text x="350" y="25" text-anchor="middle" class="title">OSI Model: Network Layer (Layer 3) in Context</text>
+  
+  <!-- Layer 7 - Application -->
+  <rect x="50" y="50" width="250" height="35" class="normal" rx="4"/>
+  <text x="175" y="72" text-anchor="middle" class="layer-name">Layer 7: Application</text>
+  <text x="320" y="72" class="layer-desc">HTTP, FTP, DNS, SMTP</text>
+  
+  <!-- Layer 6 - Presentation -->
+  <rect x="50" y="90" width="250" height="35" class="normal" rx="4"/>
+  <text x="175" y="112" text-anchor="middle" class="layer-name">Layer 6: Presentation</text>
+  <text x="320" y="112" class="layer-desc">SSL/TLS, JPEG, ASCII</text>
+  
+  <!-- Layer 5 - Session -->
+  <rect x="50" y="130" width="250" height="35" class="normal" rx="4"/>
+  <text x="175" y="152" text-anchor="middle" class="layer-name">Layer 5: Session</text>
+  <text x="320" y="152" class="layer-desc">NetBIOS, RPC</text>
+  
+  <!-- Layer 4 - Transport -->
+  <rect x="50" y="170" width="250" height="35" class="normal" rx="4"/>
+  <text x="175" y="192" text-anchor="middle" class="layer-name">Layer 4: Transport</text>
+  <text x="320" y="192" class="layer-desc">TCP, UDP — Ports</text>
+  
+  <!-- Layer 3 - Network (HIGHLIGHTED) -->
+  <rect x="45" y="205" width="260" height="50" class="highlight" rx="4" stroke="#2980b9" stroke-width="3"/>
+  <text x="175" y="228" text-anchor="middle" class="layer-name" style="font-size:14px">Layer 3: Network</text>
+  <text x="175" y="245" text-anchor="middle" style="font:10px sans-serif;fill:#fff">IP, ICMP, ARP — Logical Addressing</text>
+  <text x="320" y="225" class="layer-desc" style="font-weight:bold;fill:#3498db">← THIS WEEK</text>
+  <text x="320" y="242" class="layer-desc">IPv4, IPv6, Routing</text>
+  
+  <!-- Layer 2 - Data Link -->
+  <rect x="50" y="260" width="250" height="35" class="normal" rx="4"/>
+  <text x="175" y="282" text-anchor="middle" class="layer-name">Layer 2: Data Link</text>
+  <text x="320" y="282" class="layer-desc">Ethernet, Wi-Fi — MAC</text>
+  
+  <!-- Layer 1 - Physical -->
+  <rect x="50" y="300" width="250" height="35" class="normal" rx="4"/>
+  <text x="175" y="322" text-anchor="middle" class="layer-name">Layer 1: Physical</text>
+  <text x="320" y="322" class="layer-desc">Cables, Signals, Bits</text>
+  
+  <!-- Device boxes -->
+  <rect x="520" y="170" width="150" height="40" fill="#f39c12" rx="4"/>
+  <text x="595" y="195" text-anchor="middle" class="layer-name">Router (L3)</text>
+  
+  <rect x="520" y="260" width="150" height="40" fill="#9b59b6" rx="4"/>
+  <text x="595" y="285" text-anchor="middle" class="layer-name">Switch (L2)</text>
+  
+  <!-- Arrows connecting devices to layers -->
+  <path d="M520 190 L305 220" stroke="#f39c12" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M520 280 L305 277" stroke="#9b59b6" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+  
+  <!-- Key concepts box -->
+  <rect x="50" y="350" width="620" height="40" fill="#e8f4f8" stroke="#3498db" rx="4"/>
+  <text x="360" y="375" text-anchor="middle" class="layer-desc" style="font-size:11px">
+    Layer 3 Key Concepts: IP Addressing • Subnetting (FLSM/VLSM) • Routing • CIDR Notation • IPv4/IPv6
+  </text>
+</svg>

@@ -4,6 +4,34 @@ All notable changes to the Week 5 Laboratory Kit will be documented in this file
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2.0] - 2026-01-25
+
+### Added
+- **Code Quality Refactoring**: Split large functions into focused helpers (15-25 lines)
+  - `run_quiz.py`: Extracted `_display_score_header()`, `_display_bloom_breakdown()`, `_display_study_plan()`
+  - `export_to_lms.py`: Extracted `_build_moodle_question()`, `_build_canvas_question()`
+- **New Tests**: Added focused unit tests for LMS export validation
+  - `tests/test_lms_export.py`: JSON structure, Moodle XML, Canvas format tests
+  - `tests/test_validators.py`: Quiz schema validation, Parsons JSON checks
+- **Parsons Problems**: Extended to 8 problems with distractors
+- **Authorial Anchors**: Added instructor experience notes throughout docs
+
+### Changed
+- **British English**: Fixed remaining American spellings (initialise, analyse)
+- **Oxford Comma Removal**: Standardised list formatting throughout
+- **Misconceptions**: Extended with practical verification commands
+- `requirements.txt`: Updated with test and development dependencies
+- Removed all AI-pattern vocabulary ("comprehensive" → "complete/detailed")
+
+### Fixed
+- Minor style inconsistencies in documentation headers
+
+### Documentation
+- `docs/misconceptions.md`: Added binary examples and verification commands
+- `docs/parsons_problems.md`: Extended from 5 to 8 problems
+- `docs/troubleshooting.md`: Added cohort experience notes
+- `README.md`: Added known issues section
+
 ## [1.1.0] - 2026-01-24
 
 ### Added
@@ -28,7 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Total possible points: 21 → 28
 - `run_quiz.py`: Added evaluate/create to --category choices
 - `learning_objectives.md`: Complete traceability matrix with all LOs covered
-- `requirements.txt`: Comprehensive dependency list with categories
+- `requirements.txt`: Full dependency list with categories
 - British English throughout (analyse, colour, etc.)
 
 ### Fixed
@@ -37,11 +65,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Quiz runner now executes without errors
 
 ### Documentation
-- `pcap/README.md`: Comprehensive packet capture guide
+- `pcap/README.md`: Detailed packet capture guide
 - `docs/ci_setup.md`: CI/CD setup and troubleshooting guide
 - `docs/learning_objectives.md`: Complete LO traceability matrix
 - `docs/misconceptions.md`: Added Misconception #0 for OSI layers
-- `README.md`: Updated with badges, LMS export instructions
+- `README.md`: Updated with badges and LMS export instructions
 
 ## [1.0.0] - 2026-01-07
 

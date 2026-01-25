@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 500">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #1a1a2e; }
+    .step-num { font: bold 14px sans-serif; fill: white; }
+    .step-title { font: bold 12px sans-serif; fill: #1a1a2e; }
+    .step-desc { font: 11px sans-serif; fill: #333; }
+    .mono { font: 11px monospace; fill: #2c3e50; }
+    .formula { font: italic 11px sans-serif; fill: #8e44ad; }
+    .result { font: bold 11px sans-serif; fill: #27ae60; }
+  </style>
+  
+  <!-- Title -->
+  <text x="375" y="25" text-anchor="middle" class="title">Subnet Calculation Steps: 172.16.45.67/20</text>
+  
+  <!-- Step 1 -->
+  <circle cx="50" cy="70" r="20" fill="#3498db"/>
+  <text x="50" y="75" text-anchor="middle" class="step-num">1</text>
+  <text x="85" y="65" class="step-title">Convert IP to Binary</text>
+  <text x="85" y="82" class="mono">172.16.45.67 → 10101100.00010000.00101101.01000011</text>
+  
+  <!-- Step 2 -->
+  <circle cx="50" cy="130" r="20" fill="#3498db"/>
+  <text x="50" y="135" text-anchor="middle" class="step-num">2</text>
+  <text x="85" y="125" class="step-title">Create Subnet Mask from Prefix /20</text>
+  <text x="85" y="142" class="mono">20 ones, then 12 zeros → 11111111.11111111.11110000.00000000</text>
+  <text x="85" y="158" class="step-desc">Dotted decimal: 255.255.240.0</text>
+  
+  <!-- Step 3 -->
+  <circle cx="50" cy="205" r="20" fill="#3498db"/>
+  <text x="50" y="210" text-anchor="middle" class="step-num">3</text>
+  <text x="85" y="195" class="step-title">AND Operation → Network Address</text>
+  <rect x="85" y="205" width="500" height="70" fill="#f8f9fa" stroke="#ddd" rx="4"/>
+  <text x="100" y="225" class="mono">IP:   10101100.00010000.00101101.01000011</text>
+  <text x="100" y="242" class="mono">Mask: 11111111.11111111.11110000.00000000</text>
+  <text x="100" y="259" class="mono">AND:  10101100.00010000.00100000.00000000</text>
+  <text x="470" y="259" class="result">= 172.16.32.0</text>
+  
+  <!-- Step 4 -->
+  <circle cx="50" cy="310" r="20" fill="#3498db"/>
+  <text x="50" y="315" text-anchor="middle" class="step-num">4</text>
+  <text x="85" y="305" class="step-title">Calculate Block Size and Broadcast</text>
+  <text x="85" y="325" class="formula">Host bits = 32 - 20 = 12</text>
+  <text x="85" y="342" class="formula">Block size = 2¹² = 4096 addresses</text>
+  <text x="85" y="359" class="step-desc">Broadcast = Network + Block - 1 = 172.16.32.0 + 4096 - 1 =</text>
+  <text x="490" y="359" class="result">172.16.47.255</text>
+  
+  <!-- Step 5 -->
+  <circle cx="50" cy="400" r="20" fill="#3498db"/>
+  <text x="50" y="405" text-anchor="middle" class="step-num">5</text>
+  <text x="85" y="395" class="step-title">Calculate Usable Host Range</text>
+  <text x="85" y="415" class="formula">Usable hosts = 2¹² - 2 = 4094</text>
+  <text x="85" y="432" class="step-desc">First host = Network + 1 =</text>
+  <text x="280" y="432" class="result">172.16.32.1</text>
+  <text x="370" y="432" class="step-desc">Last host = Broadcast - 1 =</text>
+  <text x="570" y="432" class="result">172.16.47.254</text>
+  
+  <!-- Summary box -->
+  <rect x="50" y="455" width="650" height="35" fill="#e8f5e9" stroke="#27ae60" rx="4"/>
+  <text x="375" y="478" text-anchor="middle" class="result" style="font-size:12px">
+    Result: 172.16.45.67/20 belongs to network 172.16.32.0/20 (range: .32.1 — .47.254, 4094 hosts)
+  </text>
+</svg>

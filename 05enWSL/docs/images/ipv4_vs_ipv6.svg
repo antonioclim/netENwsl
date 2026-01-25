@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480">
+  <!-- Background -->
+  <rect width="800" height="480" fill="#f8fafc"/>
+  
+  <!-- Title -->
+  <text x="400" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#1e293b">IPv4 vs IPv6 Addressing</text>
+  <text x="400" y="55" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#64748b">Week 5: IP Addressing — ASE-CSIE Bucharest</text>
+  
+  <!-- IPv4 Column -->
+  <rect x="40" y="75" width="350" height="380" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="215" y="105" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#1e40af">IPv4</text>
+  
+  <!-- IPv4 Address format -->
+  <rect x="60" y="120" width="310" height="60" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="215" y="142" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e40af">Address Format</text>
+  <text x="215" y="165" font-family="monospace" font-size="14" text-anchor="middle" fill="#334155">192.168.10.14</text>
+  <text x="215" y="178" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#64748b">4 octets, dotted decimal</text>
+  
+  <!-- IPv4 Size -->
+  <rect x="60" y="190" width="310" height="50" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="215" y="212" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e40af">Address Size</text>
+  <text x="215" y="232" font-family="monospace" font-size="13" text-anchor="middle" fill="#334155">32 bits (4 bytes)</text>
+  
+  <!-- IPv4 Address space -->
+  <rect x="60" y="250" width="310" height="55" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="215" y="272" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e40af">Address Space</text>
+  <text x="215" y="292" font-family="monospace" font-size="12" text-anchor="middle" fill="#334155">2³² ≈ 4.3 billion</text>
+  <text x="215" y="304" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#dc2626">⚠️ Exhausted globally</text>
+  
+  <!-- IPv4 Notation -->
+  <rect x="60" y="315" width="310" height="55" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="215" y="337" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e40af">CIDR Notation</text>
+  <text x="215" y="357" font-family="monospace" font-size="13" text-anchor="middle" fill="#334155">192.168.0.0/24</text>
+  <text x="215" y="368" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Prefix: /0 to /32</text>
+  
+  <!-- IPv4 Special -->
+  <rect x="60" y="380" width="310" height="60" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="215" y="400" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e40af">Private Ranges (RFC 1918)</text>
+  <text x="215" y="420" font-family="monospace" font-size="10" text-anchor="middle" fill="#334155">10.0.0.0/8, 172.16.0.0/12</text>
+  <text x="215" y="435" font-family="monospace" font-size="10" text-anchor="middle" fill="#334155">192.168.0.0/16</text>
+  
+  <!-- IPv6 Column -->
+  <rect x="410" y="75" width="350" height="380" rx="12" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+  <text x="585" y="105" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#166534">IPv6</text>
+  
+  <!-- IPv6 Address format -->
+  <rect x="430" y="120" width="310" height="60" rx="6" fill="#ffffff" stroke="#86efac"/>
+  <text x="585" y="142" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">Address Format</text>
+  <text x="585" y="163" font-family="monospace" font-size="11" text-anchor="middle" fill="#334155">2001:0db8:85a3::7334</text>
+  <text x="585" y="178" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#64748b">8 groups, hexadecimal, colon-separated</text>
+  
+  <!-- IPv6 Size -->
+  <rect x="430" y="190" width="310" height="50" rx="6" fill="#ffffff" stroke="#86efac"/>
+  <text x="585" y="212" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">Address Size</text>
+  <text x="585" y="232" font-family="monospace" font-size="13" text-anchor="middle" fill="#334155">128 bits (16 bytes)</text>
+  
+  <!-- IPv6 Address space -->
+  <rect x="430" y="250" width="310" height="55" rx="6" fill="#ffffff" stroke="#86efac"/>
+  <text x="585" y="272" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">Address Space</text>
+  <text x="585" y="292" font-family="monospace" font-size="12" text-anchor="middle" fill="#334155">2¹²⁸ ≈ 340 undecillion</text>
+  <text x="585" y="304" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#22c55e">✓ Virtually unlimited</text>
+  
+  <!-- IPv6 Notation -->
+  <rect x="430" y="315" width="310" height="55" rx="6" fill="#ffffff" stroke="#86efac"/>
+  <text x="585" y="337" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">CIDR Notation</text>
+  <text x="585" y="357" font-family="monospace" font-size="12" text-anchor="middle" fill="#334155">2001:db8::/32</text>
+  <text x="585" y="368" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Prefix: /0 to /128 (common: /64)</text>
+  
+  <!-- IPv6 Special -->
+  <rect x="430" y="380" width="310" height="60" rx="6" fill="#ffffff" stroke="#86efac"/>
+  <text x="585" y="400" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">Special Addresses</text>
+  <text x="585" y="418" font-family="monospace" font-size="10" text-anchor="middle" fill="#334155">fe80::/10 — Link-local</text>
+  <text x="585" y="433" font-family="monospace" font-size="10" text-anchor="middle" fill="#334155">::1 — Loopback, :: — Unspecified</text>
+  
+  <!-- Comparison arrows/notes -->
+  <text x="400" y="465" font-family="Arial, sans-serif" font-size="11" font-style="italic" text-anchor="middle" fill="#64748b">IPv6 provides 2⁹⁶ times more addresses than IPv4</text>
+</svg>

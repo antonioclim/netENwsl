@@ -6,7 +6,7 @@ NETWORKING class - ASE, Informatics | by Revolvix
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
 Checks that all prerequisites are installed and configured correctly
-for the Week 5 IP Addressing, Subnetting, and VLSM laboratory.
+for the Week 5 IP Addressing, Subnetting and VLSM laboratory.
 """
 
 
@@ -307,7 +307,7 @@ def main() -> int:
     print()
     print("=" * 60)
     print("  Environment Verification for Week 5 Laboratory")
-    print("  IP Addressing, Subnetting, VLSM, and IPv6")
+    print("  IP Addressing, Subnetting, VLSM and IPv6")
     print("  NETWORKING class - ASE, Informatics")
     print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
     print("=" * 60)

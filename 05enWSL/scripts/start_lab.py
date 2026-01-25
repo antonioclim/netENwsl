@@ -202,7 +202,7 @@ def print_banner() -> None:
     print()
     print("=" * 60)
     print("  Week 5: Network Layer – IP Addressing, Subnetting, VLSM")
-    print("  CIDR, FLSM, VLSM, and IPv6 Operations")
+    print("  CIDR, FLSM, VLSM and IPv6 Operations")
     print("  NETWORKING class - ASE, Informatics")
     print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
     print("=" * 60)

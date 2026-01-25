@@ -2,117 +2,130 @@
   "metadata": {
     "week": 5,
     "topic": "IP Addressing, Subnetting and VLSM",
-    "version": "1.1.0",
-    "total_problems": 5,
-    "description": "Parsons problems for code/command block reordering with distractors"
+    "version": "1.2.0",
+    "problem_count": 8
   },
   "problems": [
     {
-      "id": "parsons_01",
-      "title": "Calculate Usable Hosts from CIDR",
-      "lo_ref": "LO3",
-      "bloom_level": "apply",
+      "id": "P1",
+      "title": "Calculate Usable Hosts",
       "difficulty": "basic",
-      "instructions": "Arrange the code blocks to create a function that calculates usable hosts from a CIDR prefix. Some blocks are distractors and should not be used.",
-      "language": "python",
       "blocks": [
-        {"id": 1, "code": "def usable_hosts(prefix: int) -> int:", "indent": 0, "is_distractor": false},
-        {"id": 2, "code": "    \"\"\"Calculate usable hosts from CIDR prefix.\"\"\"", "indent": 1, "is_distractor": false},
-        {"id": 3, "code": "    host_bits = 32 - prefix", "indent": 1, "is_distractor": false},
-        {"id": 4, "code": "    total_addresses = 2 ** host_bits", "indent": 1, "is_distractor": false},
-        {"id": 5, "code": "    return total_addresses - 2", "indent": 1, "is_distractor": false},
-        {"id": 6, "code": "    host_bits = prefix - 32", "indent": 1, "is_distractor": true},
-        {"id": 7, "code": "    return total_addresses", "indent": 1, "is_distractor": true},
-        {"id": 8, "code": "    return total_addresses + 2", "indent": 1, "is_distractor": true}
+        {"id": "A", "code": "    return total - 2", "distractor": false},
+        {"id": "B", "code": "def usable_hosts(prefix: int) -> int:", "distractor": false},
+        {"id": "C", "code": "    host_bits = 32 - prefix", "distractor": false},
+        {"id": "D", "code": "    total = 2 ** host_bits", "distractor": false},
+        {"id": "E", "code": "    total = host_bits ** 2", "distractor": true},
+        {"id": "F", "code": "    return total", "distractor": true}
       ],
-      "correct_order": [1, 2, 3, 4, 5],
-      "explanation": "The function calculates host bits (32 - prefix), then total addresses (2^host_bits), then subtracts 2 for network and broadcast addresses."
+      "solution": ["B", "C", "D", "A"],
+      "explanation": "Block E uses wrong formula (should be 2^bits). Block F forgets to subtract 2."
     },
     {
-      "id": "parsons_02",
-      "title": "VLSM Allocation Algorithm",
-      "lo_ref": "LO5",
-      "bloom_level": "apply",
+      "id": "P2",
+      "title": "VLSM Sort Requirements",
       "difficulty": "intermediate",
-      "instructions": "Arrange the steps to correctly perform VLSM allocation. Include only the correct steps in the right order.",
-      "language": "pseudocode",
       "blocks": [
-        {"id": 1, "code": "1. Sort requirements by host count (LARGEST FIRST)", "indent": 0, "is_distractor": false},
-        {"id": 2, "code": "2. Set cursor to network start address", "indent": 0, "is_distractor": false},
-        {"id": 3, "code": "3. For each requirement:", "indent": 0, "is_distractor": false},
-        {"id": 4, "code": "    a. Calculate minimum prefix for hosts needed", "indent": 1, "is_distractor": false},
-        {"id": 5, "code": "    b. Align cursor to block boundary", "indent": 1, "is_distractor": false},
-        {"id": 6, "code": "    c. Allocate subnet at cursor position", "indent": 1, "is_distractor": false},
-        {"id": 7, "code": "    d. Advance cursor by block size", "indent": 1, "is_distractor": false},
-        {"id": 8, "code": "1. Sort requirements by host count (SMALLEST FIRST)", "indent": 0, "is_distractor": true},
-        {"id": 9, "code": "    a. Use /24 for all allocations", "indent": 1, "is_distractor": true},
-        {"id": 10, "code": "    b. Skip alignment (not needed)", "indent": 1, "is_distractor": true}
+        {"id": "A", "code": "    return sorted_reqs", "distractor": false},
+        {"id": "B", "code": "def sort_vlsm_requirements(hosts: list) -> list:", "distractor": false},
+        {"id": "C", "code": "    sorted_reqs = sorted(indexed, key=lambda x: -x[1])", "distractor": false},
+        {"id": "D", "code": "    indexed = list(enumerate(hosts))", "distractor": false},
+        {"id": "E", "code": "    sorted_reqs = sorted(indexed, key=lambda x: x[1])", "distractor": true},
+        {"id": "F", "code": "    indexed = hosts.copy()", "distractor": true}
       ],
-      "correct_order": [1, 2, 3, 4, 5, 6, 7],
-      "explanation": "VLSM requires largest-first sorting to prevent fragmentation."
+      "solution": ["B", "D", "C", "A"],
+      "explanation": "Block E sorts ascending (wrong for VLSM). Block F doesn't preserve indices."
     },
     {
-      "id": "parsons_03",
-      "title": "IPv6 Address Compression",
-      "lo_ref": "LO2",
-      "bloom_level": "understand",
+      "id": "P3",
+      "title": "Calculate Network Address",
       "difficulty": "intermediate",
-      "instructions": "Arrange the steps to correctly compress an IPv6 address. Avoid the distractor blocks.",
-      "language": "pseudocode",
       "blocks": [
-        {"id": 1, "code": "1. Remove leading zeros from each group", "indent": 0, "is_distractor": false},
-        {"id": 2, "code": "2. Find the longest run of consecutive all-zero groups", "indent": 0, "is_distractor": false},
-        {"id": 3, "code": "3. Replace that run with :: (only once!)", "indent": 0, "is_distractor": false},
-        {"id": 4, "code": "4. If multiple equal-length runs exist, replace the leftmost", "indent": 0, "is_distractor": false},
-        {"id": 5, "code": "2. Find any zero group and remove it", "indent": 0, "is_distractor": true},
-        {"id": 6, "code": "3. Replace all zero groups with ::", "indent": 0, "is_distractor": true},
-        {"id": 7, "code": "4. Add :: at both ends for safety", "indent": 0, "is_distractor": true}
+        {"id": "A", "code": "    return str(ipaddress.IPv4Address(network_int))", "distractor": false},
+        {"id": "B", "code": "def get_network_address(ip: str, prefix: int) -> str:", "distractor": false},
+        {"id": "C", "code": "    mask = (0xFFFFFFFF << (32 - prefix)) & 0xFFFFFFFF", "distractor": false},
+        {"id": "D", "code": "    ip_int = int(ipaddress.IPv4Address(ip))", "distractor": false},
+        {"id": "E", "code": "    network_int = ip_int & mask", "distractor": false},
+        {"id": "F", "code": "    network_int = ip_int | mask", "distractor": true},
+        {"id": "G", "code": "    mask = 0xFFFFFFFF >> prefix", "distractor": true}
       ],
-      "correct_order": [1, 2, 3, 4],
-      "explanation": "IPv6 compression follows RFC 5952: remove leading zeros, find longest consecutive zero run, replace with :: (only once)."
+      "solution": ["B", "D", "C", "E", "A"],
+      "explanation": "Block F uses OR (sets bits). Block G creates wrong mask direction."
     },
     {
-      "id": "parsons_04",
-      "title": "Network Address Calculation",
-      "lo_ref": "LO3",
-      "bloom_level": "apply",
+      "id": "P4",
+      "title": "IPv6 Compression Check",
       "difficulty": "basic",
-      "instructions": "Arrange the Python code to calculate the network address from an IP and prefix. Exclude distractors.",
-      "language": "python",
       "blocks": [
-        {"id": 1, "code": "import ipaddress", "indent": 0, "is_distractor": false},
-        {"id": 2, "code": "", "indent": 0, "is_distractor": false},
-        {"id": 3, "code": "def get_network_address(ip_cidr: str) -> str:", "indent": 0, "is_distractor": false},
-        {"id": 4, "code": "    interface = ipaddress.ip_interface(ip_cidr)", "indent": 1, "is_distractor": false},
-        {"id": 5, "code": "    network = interface.network", "indent": 1, "is_distractor": false},
-        {"id": 6, "code": "    return str(network.network_address)", "indent": 1, "is_distractor": false},
-        {"id": 7, "code": "    return str(interface)", "indent": 1, "is_distractor": true},
-        {"id": 8, "code": "    network = interface.broadcast_address", "indent": 1, "is_distractor": true},
-        {"id": 9, "code": "from socket import inet_aton", "indent": 0, "is_distractor": true}
+        {"id": "A", "code": "    return address.count('::') <= 1", "distractor": false},
+        {"id": "B", "code": "def is_valid_ipv6_compression(address: str) -> bool:", "distractor": false},
+        {"id": "C", "code": "    return '::' in address", "distractor": true},
+        {"id": "D", "code": "    return address.count('::') == 1", "distractor": true}
       ],
-      "correct_order": [1, 2, 3, 4, 5, 6],
-      "explanation": "Use ipaddress module to parse the interface, get its network, then extract the network_address."
+      "solution": ["B", "A"],
+      "explanation": "Block C only checks presence. Block D requires exactly one (but zero is valid)."
     },
     {
-      "id": "parsons_05",
-      "title": "Start Week 5 Lab Environment",
-      "lo_ref": "LO1",
-      "bloom_level": "remember",
+      "id": "P5",
+      "title": "Lab Startup Sequence",
       "difficulty": "basic",
-      "instructions": "Arrange the commands in the correct order to start the Week 5 laboratory environment. Avoid distractor commands.",
-      "language": "bash",
       "blocks": [
-        {"id": 1, "code": "cd /mnt/d/NETWORKING/WEEK5/05enWSL", "indent": 0, "is_distractor": false},
-        {"id": 2, "code": "sudo service docker start", "indent": 0, "is_distractor": false},
-        {"id": 3, "code": "python3 setup/verify_environment.py", "indent": 0, "is_distractor": false},
-        {"id": 4, "code": "python3 scripts/start_lab.py", "indent": 0, "is_distractor": false},
-        {"id": 5, "code": "docker ps", "indent": 0, "is_distractor": false},
-        {"id": 6, "code": "docker compose up -d", "indent": 0, "is_distractor": true},
-        {"id": 7, "code": "sudo apt install docker", "indent": 0, "is_distractor": true},
-        {"id": 8, "code": "cd /home/WEEK5", "indent": 0, "is_distractor": true}
+        {"id": "A", "code": "Check containers are running", "distractor": false},
+        {"id": "B", "code": "Go to kit directory", "distractor": false},
+        {"id": "C", "code": "Start Docker service", "distractor": false},
+        {"id": "D", "code": "Run docker-compose up", "distractor": false},
+        {"id": "E", "code": "Verify environment prerequisites", "distractor": false},
+        {"id": "F", "code": "Install Docker Desktop", "distractor": true}
       ],
-      "correct_order": [1, 2, 3, 4, 5],
-      "explanation": "Navigate to kit directory, start Docker service, verify environment, run start script, then verify with docker ps."
+      "solution": ["B", "C", "E", "D", "A"],
+      "explanation": "Block F is only for initial setup, not every lab start."
+    },
+    {
+      "id": "P6",
+      "title": "Prefix for Hosts Calculation",
+      "difficulty": "intermediate",
+      "blocks": [
+        {"id": "A", "code": "    return 32 - host_bits", "distractor": false},
+        {"id": "B", "code": "def prefix_for_hosts(needed: int) -> int:", "distractor": false},
+        {"id": "C", "code": "import math", "distractor": false},
+        {"id": "D", "code": "    total_needed = needed + 2", "distractor": false},
+        {"id": "E", "code": "    host_bits = math.ceil(math.log2(total_needed))", "distractor": false},
+        {"id": "F", "code": "    host_bits = math.floor(math.log2(needed))", "distractor": true},
+        {"id": "G", "code": "    total_needed = needed", "distractor": true}
+      ],
+      "solution": ["C", "B", "D", "E", "A"],
+      "explanation": "Block F uses floor and no +2. Block G forgets network/broadcast."
+    },
+    {
+      "id": "P7",
+      "title": "Broadcast Address Calculation",
+      "difficulty": "intermediate",
+      "blocks": [
+        {"id": "A", "code": "    return str(ipaddress.IPv4Address(broadcast_int))", "distractor": false},
+        {"id": "B", "code": "def get_broadcast(network: str, prefix: int) -> str:", "distractor": false},
+        {"id": "C", "code": "    block_size = 2 ** (32 - prefix)", "distractor": false},
+        {"id": "D", "code": "    network_int = int(ipaddress.IPv4Address(network))", "distractor": false},
+        {"id": "E", "code": "    broadcast_int = network_int + block_size - 1", "distractor": false},
+        {"id": "F", "code": "    broadcast_int = network_int + block_size", "distractor": true},
+        {"id": "G", "code": "    block_size = 32 - prefix", "distractor": true}
+      ],
+      "solution": ["B", "D", "C", "E", "A"],
+      "explanation": "Block F doesn't subtract 1. Block G confuses block size with host bits."
+    },
+    {
+      "id": "P8",
+      "title": "FLSM Subnet Validation",
+      "difficulty": "advanced",
+      "blocks": [
+        {"id": "A", "code": "    return is_power_of_2", "distractor": false},
+        {"id": "B", "code": "def validate_flsm_count(n: int) -> bool:", "distractor": false},
+        {"id": "C", "code": "    if n <= 0:\n        return False", "distractor": false},
+        {"id": "D", "code": "    is_power_of_2 = (n & (n - 1)) == 0", "distractor": false},
+        {"id": "E", "code": "    is_power_of_2 = n % 2 == 0", "distractor": true},
+        {"id": "F", "code": "    if n < 0:\n        return False", "distractor": true}
+      ],
+      "solution": ["B", "C", "D", "A"],
+      "explanation": "Block E only checks even (6 is even but not power of 2). Block F allows 0."
     }
   ]
 }

@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #1a1a2e; }
+    .subtitle { font: 13px sans-serif; fill: #4a4a6a; }
+    .label { font: 11px sans-serif; fill: #333; }
+    .small { font: 10px sans-serif; fill: #666; }
+    .mono { font: 11px monospace; fill: #1a1a2e; }
+    .used { fill: #27ae60; }
+    .wasted { fill: #e74c3c; opacity: 0.6; }
+    .subnet { stroke: #333; stroke-width: 1; }
+  </style>
+  
+  <!-- Title -->
+  <text x="400" y="25" text-anchor="middle" class="title">FLSM vs VLSM Efficiency Comparison</text>
+  <text x="400" y="45" text-anchor="middle" class="subtitle">Allocating for 100, 50, 20, 2 hosts from 10.0.0.0/24</text>
+  
+  <!-- FLSM Section -->
+  <text x="200" y="80" text-anchor="middle" class="title">FLSM (/26 each)</text>
+  
+  <!-- FLSM blocks - 4 equal /26 subnets (64 addresses each) -->
+  <g transform="translate(50, 95)">
+    <!-- Subnet 1: 100 hosts needed, 62 available - OVERFLOW! -->
+    <rect x="0" y="0" width="150" height="60" fill="#e74c3c" class="subnet"/>
+    <rect x="0" y="0" width="150" height="60" class="used" style="opacity:0.7"/>
+    <text x="75" y="25" text-anchor="middle" class="label" fill="white">Dept A: 100 needed</text>
+    <text x="75" y="42" text-anchor="middle" class="small" fill="white">⚠️ OVERFLOW (62 max)</text>
+    <text x="75" y="75" text-anchor="middle" class="mono">.0/26</text>
+    
+    <!-- Subnet 2: 50 hosts -->
+    <rect x="155" y="0" width="150" height="60" class="used subnet"/>
+    <rect x="155" y="38" width="150" height="22" class="wasted"/>
+    <text x="230" y="20" text-anchor="middle" class="label" fill="white">Dept B: 50 hosts</text>
+    <text x="230" y="55" text-anchor="middle" class="small" fill="white">12 wasted</text>
+    <text x="230" y="75" text-anchor="middle" class="mono">.64/26</text>
+    
+    <!-- Subnet 3: 20 hosts -->
+    <rect x="0" y="90" width="150" height="60" class="used subnet"/>
+    <rect x="0" y="109" width="150" height="41" class="wasted"/>
+    <text x="75" y="108" text-anchor="middle" class="label" fill="white">Dept C: 20 hosts</text>
+    <text x="75" y="145" text-anchor="middle" class="small" fill="white">42 wasted</text>
+    <text x="75" y="165" text-anchor="middle" class="mono">.128/26</text>
+    
+    <!-- Subnet 4: 2 hosts -->
+    <rect x="155" y="90" width="150" height="60" class="used subnet"/>
+    <rect x="155" y="96" width="150" height="54" class="wasted"/>
+    <text x="230" y="108" text-anchor="middle" class="label" fill="white">Link: 2 hosts</text>
+    <text x="230" y="145" text-anchor="middle" class="small" fill="white">60 wasted</text>
+    <text x="230" y="165" text-anchor="middle" class="mono">.192/26</text>
+  </g>
+  
+  <!-- FLSM Stats -->
+  <rect x="50" y="280" width="255" height="70" fill="#fff3e0" stroke="#ff9800" rx="4"/>
+  <text x="177" y="300" text-anchor="middle" class="label">FLSM Results:</text>
+  <text x="177" y="318" text-anchor="middle" class="small">• Cannot fit 100 hosts in /26!</text>
+  <text x="177" y="333" text-anchor="middle" class="small">• Total wasted: 114+ addresses</text>
+  <text x="177" y="348" text-anchor="middle" class="small">• Efficiency: ~32%</text>
+  
+  <!-- VLSM Section -->
+  <text x="600" y="80" text-anchor="middle" class="title">VLSM (Variable Prefixes)</text>
+  
+  <!-- VLSM blocks - different sizes -->
+  <g transform="translate(450, 95)">
+    <!-- Subnet 1: /25 for 100 hosts (126 usable) -->
+    <rect x="0" y="0" width="300" height="50" class="used subnet"/>
+    <rect x="238" y="0" width="62" height="50" class="wasted"/>
+    <text x="119" y="22" text-anchor="middle" class="label" fill="white">Dept A: 100 hosts</text>
+    <text x="119" y="38" text-anchor="middle" class="small" fill="white">✓ /25 = 126 usable</text>
+    <text x="270" y="30" text-anchor="middle" class="small" fill="white">26</text>
+    <text x="150" y="65" text-anchor="middle" class="mono">.0/25 (128 addr)</text>
+    
+    <!-- Subnet 2: /26 for 50 hosts (62 usable) -->
+    <rect x="0" y="75" width="150" height="40" class="used subnet"/>
+    <rect x="121" y="75" width="29" height="40" class="wasted"/>
+    <text x="60" y="92" text-anchor="middle" class="label" fill="white">Dept B: 50</text>
+    <text x="60" y="107" text-anchor="middle" class="small" fill="white">✓ /26</text>
+    <text x="135" y="98" text-anchor="middle" class="small" fill="white">12</text>
+    <text x="75" y="130" text-anchor="middle" class="mono">.128/26</text>
+    
+    <!-- Subnet 3: /27 for 20 hosts (30 usable) -->
+    <rect x="155" y="75" width="75" height="40" class="used subnet"/>
+    <rect x="205" y="75" width="25" height="40" class="wasted"/>
+    <text x="192" y="92" text-anchor="middle" class="label" fill="white">C: 20</text>
+    <text x="192" y="107" text-anchor="middle" class="small" fill="white">/27</text>
+    <text x="75" y="155" text-anchor="middle" class="mono">.192/27</text>
+    
+    <!-- Subnet 4: /30 for 2 hosts -->
+    <rect x="235" y="75" width="20" height="40" class="used subnet"/>
+    <text x="245" y="98" text-anchor="middle" class="label" fill="white" style="font-size:9px">2</text>
+    <text x="170" y="155" text-anchor="middle" class="mono">.224/30</text>
+    
+    <!-- Remaining space -->
+    <rect x="260" y="75" width="40" height="40" fill="#bdc3c7" stroke="#333"/>
+    <text x="280" y="98" text-anchor="middle" class="small">free</text>
+  </g>
+  
+  <!-- VLSM Stats -->
+  <rect x="495" y="280" width="255" height="70" fill="#e8f5e9" stroke="#4caf50" rx="4"/>
+  <text x="622" y="300" text-anchor="middle" class="label">VLSM Results:</text>
+  <text x="622" y="318" text-anchor="middle" class="small">• All requirements satisfied ✓</text>
+  <text x="622" y="333" text-anchor="middle" class="small">• Total wasted: 48 addresses</text>
+  <text x="622" y="348" text-anchor="middle" class="small">• Efficiency: ~78%</text>
+  
+  <!-- Legend -->
+  <g transform="translate(250, 370)">
+    <rect x="0" y="0" width="300" height="60" fill="#fafafa" stroke="#ddd" rx="4"/>
+    <rect x="20" y="15" width="20" height="15" class="used"/>
+    <text x="50" y="27" class="small">Used addresses</text>
+    <rect x="130" y="15" width="20" height="15" class="wasted"/>
+    <text x="160" y="27" class="small">Wasted addresses</text>
+    <text x="150" y="50" text-anchor="middle" class="label">VLSM = More efficient use of address space</text>
+  </g>
+</svg>

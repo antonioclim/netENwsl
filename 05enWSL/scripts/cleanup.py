@@ -6,7 +6,7 @@ NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
-This script removes all containers, networks, and optionally volumes
+This script removes all containers, networks and optionally volumes
 to prepare the system for the next laboratory session.
 
 IMPORTANT: Portainer runs as a GLOBAL service on port 9000.

@@ -1,0 +1,19 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#3498db', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2980b9', 'lineColor': '#2c3e50', 'secondaryColor': '#e74c3c', 'tertiaryColor': '#f1f1f1'}}}%%
+flowchart TD
+    A[Start: Base Network + Host Requirements] --> B[Sort requirements LARGEST first]
+    B --> C[Set cursor to network start address]
+    C --> D{More requirements?}
+    D -->|Yes| E[Calculate prefix for current requirement]
+    E --> F[Align cursor to block boundary]
+    F --> G{Sufficient space remaining?}
+    G -->|Yes| H[Allocate subnet at cursor]
+    H --> I[Advance cursor by block size]
+    I --> D
+    G -->|No| J[ERROR: Insufficient address space]
+    D -->|No| K[Reorder allocations to original order]
+    K --> L[End: Return allocated subnets]
+    
+    style A fill:#27ae60,stroke:#1e8449,color:#fff
+    style L fill:#27ae60,stroke:#1e8449,color:#fff
+    style J fill:#e74c3c,stroke:#c0392b,color:#fff
+    style B fill:#f39c12,stroke:#d68910,color:#fff

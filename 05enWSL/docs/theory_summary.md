@@ -6,7 +6,13 @@
 
 ## 1. The Network Layer in Context
 
+
+If subnetting feels overwhelming at first, focus just on the formula: usable hosts = 2^(32-prefix) - 2. Master that before moving to VLSM.
+
 The network layer (Layer 3 of the OSI model) provides logical addressing and routing capabilities that allow end-to-end communication across different physical networks. Unlike data link layer (Layer 2) addresses which have only local significance within a single network segment, network layer addresses provide global reachability across the entire internetwork.
+
+> 📊 **Visual aids:** See `docs/images/` for diagrams (CIDR calculation, VLSM flowchart, IPv4/IPv6 comparison, OSI model).
+
 
 ### Key Functions
 

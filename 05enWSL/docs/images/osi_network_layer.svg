@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 520">
+  <!-- Background -->
+  <rect width="700" height="520" fill="#f8fafc"/>
+  
+  <!-- Title -->
+  <text x="350" y="35" font-family="Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#1e293b">OSI Model — Network Layer Focus</text>
+  <text x="350" y="52" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#64748b">Week 5: Understanding Layer 3 — ASE-CSIE Bucharest</text>
+  
+  <!-- OSI Layers stack -->
+  <g transform="translate(50, 70)">
+    <!-- Layer 7: Application -->
+    <rect x="0" y="0" width="280" height="45" rx="4" fill="#f3e8ff" stroke="#a855f7" stroke-width="1"/>
+    <text x="140" y="20" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#7e22ce">Layer 7: Application</text>
+    <text x="140" y="35" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#9333ea">HTTP, FTP, SMTP, DNS</text>
+    
+    <!-- Layer 6: Presentation -->
+    <rect x="0" y="50" width="280" height="45" rx="4" fill="#fce7f3" stroke="#ec4899" stroke-width="1"/>
+    <text x="140" y="70" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#be185d">Layer 6: Presentation</text>
+    <text x="140" y="85" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#db2777">Encryption, Compression</text>
+    
+    <!-- Layer 5: Session -->
+    <rect x="0" y="100" width="280" height="45" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+    <text x="140" y="120" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#b45309">Layer 5: Session</text>
+    <text x="140" y="135" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#d97706">Session management</text>
+    
+    <!-- Layer 4: Transport -->
+    <rect x="0" y="150" width="280" height="45" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+    <text x="140" y="170" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1d4ed8">Layer 4: Transport</text>
+    <text x="140" y="185" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2563eb">TCP, UDP — Port numbers</text>
+    
+    <!-- Layer 3: Network (HIGHLIGHTED) -->
+    <rect x="-10" y="200" width="300" height="60" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="3"/>
+    <text x="140" y="225" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#166534">Layer 3: NETWORK</text>
+    <text x="140" y="245" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#15803d">IP Addressing, Routing</text>
+    <text x="140" y="258" font-family="monospace" font-size="9" text-anchor="middle" fill="#166534">← This week's focus!</text>
+    
+    <!-- Layer 2: Data Link -->
+    <rect x="0" y="265" width="280" height="45" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+    <text x="140" y="285" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#4338ca">Layer 2: Data Link</text>
+    <text x="140" y="300" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#4f46e5">MAC addresses, Switches</text>
+    
+    <!-- Layer 1: Physical -->
+    <rect x="0" y="315" width="280" height="45" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+    <text x="140" y="335" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#475569">Layer 1: Physical</text>
+    <text x="140" y="350" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Cables, Signals, Bits</text>
+  </g>
+  
+  <!-- Network Layer details -->
+  <g transform="translate(370, 70)">
+    <rect x="0" y="0" width="280" height="360" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+    <text x="140" y="25" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#166534">Network Layer Details</text>
+    
+    <!-- Addressing -->
+    <rect x="15" y="40" width="250" height="70" rx="4" fill="#ffffff" stroke="#bbf7d0"/>
+    <text x="140" y="60" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">🔢 Logical Addressing</text>
+    <text x="140" y="80" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#334155">IPv4: 32-bit addresses</text>
+    <text x="140" y="95" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#334155">IPv6: 128-bit addresses</text>
+    <text x="140" y="108" font-family="monospace" font-size="9" text-anchor="middle" fill="#64748b">e.g., 192.168.1.1/24</text>
+    
+    <!-- Routing -->
+    <rect x="15" y="120" width="250" height="60" rx="4" fill="#ffffff" stroke="#bbf7d0"/>
+    <text x="140" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">🛤️ Routing</text>
+    <text x="140" y="158" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#334155">Path selection between networks</text>
+    <text x="140" y="173" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Routing tables, protocols (OSPF, BGP)</text>
+    
+    <!-- Fragmentation -->
+    <rect x="15" y="190" width="250" height="50" rx="4" fill="#ffffff" stroke="#bbf7d0"/>
+    <text x="140" y="210" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">📦 Fragmentation</text>
+    <text x="140" y="228" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#334155">Breaking packets for MTU limits</text>
+    
+    <!-- Devices -->
+    <rect x="15" y="250" width="250" height="60" rx="4" fill="#ffffff" stroke="#bbf7d0"/>
+    <text x="140" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#166534">🖥️ Layer 3 Devices</text>
+    <text x="140" y="288" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#334155">Routers, Layer 3 Switches</text>
+    <text x="140" y="303" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#dc2626">NOT switches (those are L2!)</text>
+    
+    <!-- PDU -->
+    <rect x="15" y="320" width="250" height="30" rx="4" fill="#dcfce7" stroke="#22c55e"/>
+    <text x="140" y="340" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#166534">PDU: Packet</text>
+  </g>
+  
+  <!-- Misconception callout -->
+  <rect x="50" y="445" width="600" height="60" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="2"/>
+  <text x="350" y="468" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#991b1b">⚠️ Common Misconception #0</text>
+  <text x="350" y="488" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#7f1d1d">"Routers work at Layer 2 because they forward frames" — WRONG!</text>
+  <text x="350" y="502" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#991b1b">Routers make decisions based on IP addresses (Layer 3), not MAC addresses (Layer 2)</text>
+</svg>

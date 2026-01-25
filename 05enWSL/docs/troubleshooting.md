@@ -6,6 +6,9 @@
 
 ## Docker Issues
 
+In previous cohorts, roughly 70% of issues came from Docker not running or ports being in use. Check those first before diving deeper.
+
+
 ### Docker Desktop Not Running
 
 **Symptoms:**

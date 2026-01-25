@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 380">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #1a1a2e; }
+    .header { font: bold 11px sans-serif; fill: white; }
+    .cell { font: 11px sans-serif; fill: #333; }
+    .mono { font: 11px monospace; fill: #2c3e50; }
+    .highlight { fill: #fff3e0; }
+  </style>
+  
+  <!-- Title -->
+  <text x="350" y="25" text-anchor="middle" class="title">Common IPv4 Subnet Sizes Quick Reference</text>
+  
+  <!-- Table header -->
+  <rect x="30" y="45" width="640" height="30" fill="#3498db" rx="4 4 0 0"/>
+  <text x="70" y="65" text-anchor="middle" class="header">Prefix</text>
+  <text x="170" y="65" text-anchor="middle" class="header">Netmask</text>
+  <text x="290" y="65" text-anchor="middle" class="header">Addresses</text>
+  <text x="390" y="65" text-anchor="middle" class="header">Usable</text>
+  <text x="500" y="65" text-anchor="middle" class="header">Common Use</text>
+  <text x="620" y="65" text-anchor="middle" class="header">Block</text>
+  
+  <!-- Row backgrounds -->
+  <rect x="30" y="75" width="640" height="25" fill="#f8f9fa"/>
+  <rect x="30" y="100" width="640" height="25" fill="#fff"/>
+  <rect x="30" y="125" width="640" height="25" fill="#f8f9fa"/>
+  <rect x="30" y="150" width="640" height="25" fill="#fff"/>
+  <rect x="30" y="175" width="640" height="25" class="highlight"/>
+  <rect x="30" y="200" width="640" height="25" fill="#fff"/>
+  <rect x="30" y="225" width="640" height="25" class="highlight"/>
+  <rect x="30" y="250" width="640" height="25" fill="#fff"/>
+  <rect x="30" y="275" width="640" height="25" fill="#f8f9fa"/>
+  <rect x="30" y="300" width="640" height="25" fill="#fff"/>
+  
+  <!-- Table border -->
+  <rect x="30" y="45" width="640" height="280" fill="none" stroke="#ddd" rx="4"/>
+  
+  <!-- Data rows -->
+  <!-- /8 -->
+  <text x="70" y="92" text-anchor="middle" class="mono">/8</text>
+  <text x="170" y="92" text-anchor="middle" class="mono">255.0.0.0</text>
+  <text x="290" y="92" text-anchor="middle" class="cell">16,777,216</text>
+  <text x="390" y="92" text-anchor="middle" class="cell">16,777,214</text>
+  <text x="500" y="92" text-anchor="middle" class="cell">Class A network</text>
+  <text x="620" y="92" text-anchor="middle" class="cell">16M</text>
+  
+  <!-- /16 -->
+  <text x="70" y="117" text-anchor="middle" class="mono">/16</text>
+  <text x="170" y="117" text-anchor="middle" class="mono">255.255.0.0</text>
+  <text x="290" y="117" text-anchor="middle" class="cell">65,536</text>
+  <text x="390" y="117" text-anchor="middle" class="cell">65,534</text>
+  <text x="500" y="117" text-anchor="middle" class="cell">Class B / Large org</text>
+  <text x="620" y="117" text-anchor="middle" class="cell">64K</text>
+  
+  <!-- /20 -->
+  <text x="70" y="142" text-anchor="middle" class="mono">/20</text>
+  <text x="170" y="142" text-anchor="middle" class="mono">255.255.240.0</text>
+  <text x="290" y="142" text-anchor="middle" class="cell">4,096</text>
+  <text x="390" y="142" text-anchor="middle" class="cell">4,094</text>
+  <text x="500" y="142" text-anchor="middle" class="cell">Large subnet</text>
+  <text x="620" y="142" text-anchor="middle" class="cell">4K</text>
+  
+  <!-- /24 -->
+  <text x="70" y="167" text-anchor="middle" class="mono">/24</text>
+  <text x="170" y="167" text-anchor="middle" class="mono">255.255.255.0</text>
+  <text x="290" y="167" text-anchor="middle" class="cell">256</text>
+  <text x="390" y="167" text-anchor="middle" class="cell">254</text>
+  <text x="500" y="167" text-anchor="middle" class="cell">Standard LAN</text>
+  <text x="620" y="167" text-anchor="middle" class="cell">256</text>
+  
+  <!-- /25 (highlighted) -->
+  <text x="70" y="192" text-anchor="middle" class="mono">/25</text>
+  <text x="170" y="192" text-anchor="middle" class="mono">255.255.255.128</text>
+  <text x="290" y="192" text-anchor="middle" class="cell">128</text>
+  <text x="390" y="192" text-anchor="middle" class="cell" style="font-weight:bold">126</text>
+  <text x="500" y="192" text-anchor="middle" class="cell">Medium dept</text>
+  <text x="620" y="192" text-anchor="middle" class="cell">128</text>
+  
+  <!-- /26 -->
+  <text x="70" y="217" text-anchor="middle" class="mono">/26</text>
+  <text x="170" y="217" text-anchor="middle" class="mono">255.255.255.192</text>
+  <text x="290" y="217" text-anchor="middle" class="cell">64</text>
+  <text x="390" y="217" text-anchor="middle" class="cell" style="font-weight:bold">62</text>
+  <text x="500" y="217" text-anchor="middle" class="cell">Small dept</text>
+  <text x="620" y="217" text-anchor="middle" class="cell">64</text>
+  
+  <!-- /27 (highlighted) -->
+  <text x="70" y="242" text-anchor="middle" class="mono">/27</text>
+  <text x="170" y="242" text-anchor="middle" class="mono">255.255.255.224</text>
+  <text x="290" y="242" text-anchor="middle" class="cell">32</text>
+  <text x="390" y="242" text-anchor="middle" class="cell" style="font-weight:bold">30</text>
+  <text x="500" y="242" text-anchor="middle" class="cell">Small office</text>
+  <text x="620" y="242" text-anchor="middle" class="cell">32</text>
+  
+  <!-- /28 -->
+  <text x="70" y="267" text-anchor="middle" class="mono">/28</text>
+  <text x="170" y="267" text-anchor="middle" class="mono">255.255.255.240</text>
+  <text x="290" y="267" text-anchor="middle" class="cell">16</text>
+  <text x="390" y="267" text-anchor="middle" class="cell">14</text>
+  <text x="500" y="267" text-anchor="middle" class="cell">Very small</text>
+  <text x="620" y="267" text-anchor="middle" class="cell">16</text>
+  
+  <!-- /30 -->
+  <text x="70" y="292" text-anchor="middle" class="mono">/30</text>
+  <text x="170" y="292" text-anchor="middle" class="mono">255.255.255.252</text>
+  <text x="290" y="292" text-anchor="middle" class="cell">4</text>
+  <text x="390" y="292" text-anchor="middle" class="cell">2</text>
+  <text x="500" y="292" text-anchor="middle" class="cell">Point-to-point</text>
+  <text x="620" y="292" text-anchor="middle" class="cell">4</text>
+  
+  <!-- /32 -->
+  <text x="70" y="317" text-anchor="middle" class="mono">/32</text>
+  <text x="170" y="317" text-anchor="middle" class="mono">255.255.255.255</text>
+  <text x="290" y="317" text-anchor="middle" class="cell">1</text>
+  <text x="390" y="317" text-anchor="middle" class="cell">1</text>
+  <text x="500" y="317" text-anchor="middle" class="cell">Host route</text>
+  <text x="620" y="317" text-anchor="middle" class="cell">1</text>
+  
+  <!-- Formula reminder -->
+  <rect x="30" y="340" width="640" height="30" fill="#e8f4f8" stroke="#3498db" rx="4"/>
+  <text x="350" y="360" text-anchor="middle" class="cell" style="font-style:italic">
+    Formula: Usable Hosts = 2^(32 - prefix) - 2 | Block Size = 2^(32 - prefix)
+  </text>
+</svg>

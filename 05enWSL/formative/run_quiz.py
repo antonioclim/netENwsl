@@ -6,7 +6,7 @@ Interactive CLI for running self-assessment quizzes from YAML definitions.
 
 Usage:
     python formative/run_quiz.py                    # Run full quiz
-    python formative/run_quiz.py --random           # Randomize question order
+    python formative/run_quiz.py --random           # Randomise question order
     python formative/run_quiz.py --limit 5          # Run only 5 questions
     python formative/run_quiz.py --category apply   # Filter by Bloom level
     python formative/run_quiz.py --review           # Show answers after each question
@@ -18,7 +18,7 @@ Learning Objectives:
     - Track progress across multiple attempts
 
 Author: ing. dr. Antonio Clim, ASE-CSIE Bucharest
-Version: 1.1.0 (January 2026)
+Version: 1.2.0 (January 2026)
 """
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -33,7 +33,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 try:
     import yaml
@@ -140,7 +140,6 @@ def display_question(q: Dict[str, Any], index: int, total: int) -> None:
     print()
     print(colourise("─" * 60, Colours.DIM))
     
-    # Header with metadata
     difficulty_colours = {
         'basic': Colours.GREEN,
         'intermediate': Colours.YELLOW,
@@ -157,13 +156,11 @@ def display_question(q: Dict[str, Any], index: int, total: int) -> None:
           f"  {colourise(f'{points} pts', Colours.CYAN)}")
     print()
     
-    # Question stem
     stem = q.get('stem', '').strip()
     for line in stem.split('\n'):
         print(f"  {line}")
     print()
     
-    # Options for multiple choice
     if q.get('type') == 'multiple_choice':
         options = q.get('options', {})
         for key, value in sorted(options.items()):
@@ -190,7 +187,6 @@ def display_feedback(q: Dict[str, Any], user_answer: str, correct: bool,
             for line in explanation.split('\n'):
                 print(f"     {line}")
         
-        # Show verification command if available
         verification = q.get('verification_cmd')
         if verification:
             print()
@@ -227,7 +223,7 @@ def get_user_answer(q: Dict[str, Any]) -> str:
             return 'skip'
         if answer.lower() == 'h' and q.get('hint'):
             print(colourise(f"  💡 Hint: {q['hint']}", Colours.YELLOW))
-            return get_user_answer(q)  # Recursively ask again
+            return get_user_answer(q)
         return answer
     
     return input(colourise("  Your answer: ", Colours.CYAN)).strip()
@@ -238,10 +234,8 @@ def check_answer(q: Dict[str, Any], user_answer: str) -> bool:
     correct = q.get('correct')
     
     if isinstance(correct, list):
-        # Multiple acceptable answers (fill_blank)
         return user_answer.lower() in [str(c).lower() for c in correct]
     else:
-        # Single correct answer
         return user_answer.lower() == str(correct).lower()
 
 
@@ -266,40 +260,24 @@ def run_quiz(quiz: Dict[str, Any], randomize: bool = False, limit: Optional[int]
     metadata = quiz.get('metadata', {})
     questions = quiz.get('questions', [])
     
-    # Filter by Bloom level if specified
     if category:
         questions = [q for q in questions if q.get('bloom_level', '').lower() == category.lower()]
     
-    # Randomize if requested
     if randomize:
         questions = questions.copy()
         random.shuffle(questions)
     
-    # Limit number of questions
     if limit and limit < len(questions):
         questions = questions[:limit]
     
-    # Initialize session
+    # Initialise session
     session = QuizSession(
         quiz_topic=metadata.get('topic', 'Unknown'),
         start_time=datetime.now()
     )
     
-    # Display header
-    print()
-    print(colourise("═" * 60, Colours.BLUE))
-    print(colourise(f"  📝 QUIZ: {metadata.get('topic', 'Unknown')}", Colours.BOLD))
-    print(colourise("═" * 60, Colours.BLUE))
-    print()
-    print(f"  Questions: {len(questions)}")
-    print(f"  Passing score: {metadata.get('passing_score', 70)}%")
-    print(f"  Estimated time: {metadata.get('estimated_time_minutes', '?')} minutes")
-    print()
-    print(colourise("  Commands: 'h' = hint, 's' = skip, 'q' = quit", Colours.DIM))
-    print()
-    input(colourise("  Press Enter to begin...", Colours.CYAN))
+    _display_quiz_header(metadata, len(questions))
     
-    # Run through questions
     for i, q in enumerate(questions, 1):
         q_start = time.time()
         
@@ -312,36 +290,7 @@ def run_quiz(quiz: Dict[str, Any], randomize: bool = False, limit: Optional[int]
             print(colourise("\n  Quiz ended early.", Colours.YELLOW))
             break
         
-        if user_answer == 'skip':
-            result = QuizResult(
-                question_id=q.get('id', f'q{i}'),
-                correct=False,
-                user_answer='[SKIPPED]',
-                correct_answer=str(q.get('correct', '?')),
-                points_earned=0,
-                points_possible=q.get('points', 1),
-                time_seconds=q_time,
-                bloom_level=q.get('bloom_level', 'unknown'),
-                lo_ref=q.get('lo_ref', 'unknown')
-            )
-        else:
-            correct = check_answer(q, user_answer)
-            points = q.get('points', 1) if correct else 0
-            
-            result = QuizResult(
-                question_id=q.get('id', f'q{i}'),
-                correct=correct,
-                user_answer=user_answer,
-                correct_answer=str(q.get('correct', '?')),
-                points_earned=points,
-                points_possible=q.get('points', 1),
-                time_seconds=q_time,
-                bloom_level=q.get('bloom_level', 'unknown'),
-                lo_ref=q.get('lo_ref', 'unknown')
-            )
-            
-            display_feedback(q, user_answer, correct, show_review)
-        
+        result = _process_answer(q, user_answer, i, q_time, show_review)
         session.results.append(result)
         session.total_points += result.points_earned
         session.max_points += result.points_possible
@@ -350,19 +299,84 @@ def run_quiz(quiz: Dict[str, Any], randomize: bool = False, limit: Optional[int]
     return session
 
 
+def _display_quiz_header(metadata: Dict[str, Any], question_count: int) -> None:
+    """Display quiz header with metadata."""
+    print()
+    print(colourise("═" * 60, Colours.BLUE))
+    print(colourise(f"  📝 QUIZ: {metadata.get('topic', 'Unknown')}", Colours.BOLD))
+    print(colourise("═" * 60, Colours.BLUE))
+    print()
+    print(f"  Questions: {question_count}")
+    print(f"  Passing score: {metadata.get('passing_score', 70)}%")
+    print(f"  Estimated time: {metadata.get('estimated_time_minutes', '?')} minutes")
+    print()
+    print(colourise("  Commands: 'h' = hint, 's' = skip, 'q' = quit", Colours.DIM))
+    print()
+    input(colourise("  Press Enter to begin...", Colours.CYAN))
+
+
+def _process_answer(q: Dict[str, Any], user_answer: str, index: int, 
+                    time_taken: float, show_review: bool) -> QuizResult:
+    """Process a single answer and return result."""
+    if user_answer == 'skip':
+        return QuizResult(
+            question_id=q.get('id', f'q{index}'),
+            correct=False,
+            user_answer='[SKIPPED]',
+            correct_answer=str(q.get('correct', '?')),
+            points_earned=0,
+            points_possible=q.get('points', 1),
+            time_seconds=time_taken,
+            bloom_level=q.get('bloom_level', 'unknown'),
+            lo_ref=q.get('lo_ref', 'unknown')
+        )
+    
+    correct = check_answer(q, user_answer)
+    points = q.get('points', 1) if correct else 0
+    
+    display_feedback(q, user_answer, correct, show_review)
+    
+    return QuizResult(
+        question_id=q.get('id', f'q{index}'),
+        correct=correct,
+        user_answer=user_answer,
+        correct_answer=str(q.get('correct', '?')),
+        points_earned=points,
+        points_possible=q.get('points', 1),
+        time_seconds=time_taken,
+        bloom_level=q.get('bloom_level', 'unknown'),
+        lo_ref=q.get('lo_ref', 'unknown')
+    )
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # DISPLAY_RESULTS
 # ═══════════════════════════════════════════════════════════════════════════════
 def display_results(session: QuizSession, quiz: Dict[str, Any]) -> None:
     """Display final quiz results and feedback."""
+    score = session.score_percentage
+    passing = quiz.get('metadata', {}).get('passing_score', 70)
+    
+    _display_score_header(session, score)
+    _display_question_results(session)
+    _display_bloom_breakdown(session)
+    _display_pass_fail_status(score, passing, quiz.get('feedback', {}))
+    
+    failed_los, failed_blooms = _collect_failures(session)
+    if failed_los:
+        _display_study_plan(failed_los, failed_blooms)
+    
+    print(colourise("═" * 60, Colours.BLUE))
+
+
+def _display_score_header(session: QuizSession, score: float) -> None:
+    """Display score summary at top of results."""
     print()
     print(colourise("═" * 60, Colours.BLUE))
     print(colourise("  📊 QUIZ RESULTS", Colours.BOLD))
     print(colourise("═" * 60, Colours.BLUE))
     print()
     
-    # Score
-    score = session.score_percentage
     if score >= 90:
         score_colour = Colours.GREEN
     elif score >= 70:
@@ -374,16 +388,20 @@ def display_results(session: QuizSession, quiz: Dict[str, Any]) -> None:
           f" ({colourise(f'{score:.1f}%', score_colour)})")
     print(f"  Time: {session.duration_minutes:.1f} minutes")
     print()
-    
-    # Results by question
+
+
+def _display_question_results(session: QuizSession) -> None:
+    """Display individual question outcomes."""
     print(colourise("  Question Results:", Colours.CYAN))
     for r in session.results:
         status = colourise("✅", Colours.GREEN) if r.correct else colourise("❌", Colours.RED)
         print(f"    {status} {r.question_id}: {r.points_earned}/{r.points_possible} pts "
               f"({r.bloom_level}, {r.lo_ref})")
     print()
-    
-    # Breakdown by Bloom level
+
+
+def _display_bloom_breakdown(session: QuizSession) -> None:
+    """Display performance breakdown by Bloom taxonomy level."""
     bloom_stats: Dict[str, Dict[str, int]] = {}
     for r in session.results:
         level = r.bloom_level
@@ -400,11 +418,10 @@ def display_results(session: QuizSession, quiz: Dict[str, Any]) -> None:
             pct = (stats['correct'] / stats['total']) * 100 if stats['total'] > 0 else 0
             print(f"    {level.capitalize():12} {stats['correct']}/{stats['total']} ({pct:.0f}%)")
     print()
-    
-    # Feedback based on score
-    feedback = quiz.get('feedback', {})
-    passing = quiz.get('metadata', {}).get('passing_score', 70)
-    
+
+
+def _display_pass_fail_status(score: float, passing: int, feedback: Dict[str, str]) -> None:
+    """Display pass/fail status with feedback message."""
     if score >= 90:
         print(colourise("  " + feedback.get('score_90_100', '🏆 Excellent work!'), Colours.GREEN))
     elif score >= 70:
@@ -419,68 +436,66 @@ def display_results(session: QuizSession, quiz: Dict[str, Any]) -> None:
         print(colourise(f"  ✅ PASSED (≥{passing}%)", Colours.GREEN))
     else:
         print(colourise(f"  ❌ NOT PASSED (<{passing}%)", Colours.RED))
-    
     print()
-    
-    # ─────────────────────────────────────────────────────────────────────────
-    # PERSONALIZED SELF-ASSESSMENT RECOMMENDATIONS
-    # ─────────────────────────────────────────────────────────────────────────
-    failed_los = set()
-    failed_blooms = set()
+
+
+def _collect_failures(session: QuizSession) -> tuple[Set[str], Set[str]]:
+    """Collect failed LOs and Bloom levels from session results."""
+    failed_los: Set[str] = set()
+    failed_blooms: Set[str] = set()
     for r in session.results:
         if not r.correct:
             failed_los.add(r.lo_ref)
             failed_blooms.add(r.bloom_level)
+    return failed_los, failed_blooms
+
+
+def _display_study_plan(failed_los: Set[str], failed_blooms: Set[str]) -> None:
+    """Display personalised study recommendations based on failures."""
+    print(colourise("  📋 PERSONALISED STUDY PLAN", Colours.YELLOW))
+    print(colourise("  " + "─" * 40, Colours.YELLOW))
+    print()
     
-    if failed_los:
-        print(colourise("  📋 PERSONALIZED STUDY PLAN", Colours.YELLOW))
-        print(colourise("  " + "─" * 40, Colours.YELLOW))
-        print()
-        
-        # LO-specific recommendations
-        lo_resources = {
-            'LO1': ('Network Layer basics', 'docs/theory_summary.md', 'docs/misconceptions.md#osi-layers'),
-            'LO2': ('IPv4/IPv6 addressing', 'docs/theory_summary.md', 'docs/code_tracing.md (T4)'),
-            'LO3': ('CIDR calculations', 'docs/misconceptions.md#1-4', 'src/exercises/ex_5_01_cidr_flsm.py'),
-            'LO4': ('FLSM subnetting', 'docs/code_tracing.md (T2)', 'src/exercises/ex_5_01_cidr_flsm.py'),
-            'LO5': ('VLSM design', 'docs/misconceptions.md#5-6', 'src/exercises/ex_5_02_vlsm_ipv6.py'),
-            'LO6': ('Efficiency evaluation', 'docs/theory_summary.md', 'tests/expected_outputs.md'),
-        }
-        
-        print("  🎯 Focus areas based on missed questions:")
-        for lo in sorted(failed_los):
-            if lo in lo_resources:
-                topic, resource1, resource2 = lo_resources[lo]
-                print(f"     • {lo}: {topic}")
-                print(f"       → Review: {resource1}")
-                print(f"       → Practice: {resource2}")
-        print()
-        
-        # Bloom-level recommendations
-        if 'remember' in failed_blooms or 'understand' in failed_blooms:
-            print("  📚 Foundation gaps detected:")
-            print("     → Re-read: docs/theory_summary.md")
-            print("     → Review: docs/glossary.md for definitions")
-        
-        if 'apply' in failed_blooms:
-            print("  🔧 Application practice needed:")
-            print("     → Complete: docs/code_tracing.md exercises")
-            print("     → Run: make ex1 and make ex2 for hands-on practice")
-        
-        if 'analyse' in failed_blooms or 'evaluate' in failed_blooms:
-            print("  🔍 Analysis skills to develop:")
-            print("     → Study: docs/misconceptions.md (understand WHY)")
-            print("     → Try: homework/exercises/ for complex scenarios")
-        
-        print()
-        print("  💡 Recommended next steps:")
-        print("     1. Review the resources above")
-        print("     2. Re-run quiz: python formative/run_quiz.py --category " + 
-              list(failed_blooms)[0] if failed_blooms else "apply")
-        print("     3. Check understanding: make test")
-        print()
+    lo_resources = {
+        'LO1': ('Network Layer basics', 'docs/theory_summary.md', 'docs/misconceptions.md#osi-layers'),
+        'LO2': ('IPv4/IPv6 addressing', 'docs/theory_summary.md', 'docs/code_tracing.md (T4)'),
+        'LO3': ('CIDR calculations', 'docs/misconceptions.md#1-4', 'src/exercises/ex_5_01_cidr_flsm.py'),
+        'LO4': ('FLSM subnetting', 'docs/code_tracing.md (T2)', 'src/exercises/ex_5_01_cidr_flsm.py'),
+        'LO5': ('VLSM design', 'docs/misconceptions.md#5-6', 'src/exercises/ex_5_02_vlsm_ipv6.py'),
+        'LO6': ('Efficiency evaluation', 'docs/theory_summary.md', 'tests/expected_outputs.md'),
+    }
     
-    print(colourise("═" * 60, Colours.BLUE))
+    print("  🎯 Focus areas based on missed questions:")
+    for lo in sorted(failed_los):
+        if lo in lo_resources:
+            topic, resource1, resource2 = lo_resources[lo]
+            print(f"     • {lo}: {topic}")
+            print(f"       → Review: {resource1}")
+            print(f"       → Practice: {resource2}")
+    print()
+    
+    if 'remember' in failed_blooms or 'understand' in failed_blooms:
+        print("  📚 Foundation gaps detected:")
+        print("     → Re-read: docs/theory_summary.md")
+        print("     → Review: docs/glossary.md for definitions")
+    
+    if 'apply' in failed_blooms:
+        print("  🔧 Application practice needed:")
+        print("     → Complete: docs/code_tracing.md exercises")
+        print("     → Run: make ex1 and make ex2 for hands-on practice")
+    
+    if 'analyse' in failed_blooms or 'evaluate' in failed_blooms:
+        print("  🔍 Analysis skills to develop:")
+        print("     → Study: docs/misconceptions.md (understand WHY)")
+        print("     → Try: homework/exercises/ for complex scenarios")
+    
+    print()
+    print("  💡 Recommended next steps:")
+    print("     1. Review the resources above")
+    bloom_to_retry = list(failed_blooms)[0] if failed_blooms else "apply"
+    print(f"     2. Re-run quiz: python formative/run_quiz.py --category {bloom_to_retry}")
+    print("     3. Check understanding: make test")
+    print()
 
 
 def export_results(session: QuizSession, path: Path) -> None:
@@ -513,7 +528,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         epilog="""
 Examples:
   %(prog)s                          Run full quiz
-  %(prog)s --random                 Randomize questions
+  %(prog)s --random                 Randomise questions
   %(prog)s --limit 5                Run only 5 questions
   %(prog)s --category apply         Filter by Bloom level
   %(prog)s --review                 Show explanations for all answers
@@ -531,7 +546,7 @@ Examples:
     parser.add_argument(
         '--random', '-r',
         action='store_true',
-        help='Randomize question order'
+        help='Randomise question order'
     )
     parser.add_argument(
         '--limit', '-l',
@@ -556,7 +571,6 @@ Examples:
     
     args = parser.parse_args(argv)
     
-    # Load quiz
     try:
         quiz = load_quiz(args.quiz)
     except FileNotFoundError as e:
@@ -566,7 +580,6 @@ Examples:
         print(colourise(f"Error parsing quiz file: {e}", Colours.RED))
         return 1
     
-    # Run quiz
     try:
         session = run_quiz(
             quiz,
@@ -579,14 +592,11 @@ Examples:
         print(colourise("\n\nQuiz cancelled.", Colours.YELLOW))
         return 1
     
-    # Display results
     display_results(session, quiz)
     
-    # Export if requested
     if args.export:
         export_results(session, args.export)
     
-    # Return exit code based on pass/fail
     passing = quiz.get('metadata', {}).get('passing_score', 70)
     return 0 if session.score_percentage >= passing else 1
 
