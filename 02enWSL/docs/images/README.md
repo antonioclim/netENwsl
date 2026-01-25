@@ -1,181 +1,132 @@
-# 📊 Visual Learning Resources — Week 2
+# 📊 Diagrams — Week 2: Architectural Models and Socket Programming
 
 > NETWORKING class — ASE, CSIE Bucharest  
 > Computer Networks Laboratory | by ing. dr. Antonio Clim
 
----
-
-## Overview
-
-This directory contains SVG diagrams designed to support visual learning for Week 2 concepts. All diagrams are vector-based (SVG) for crisp rendering at any scale.
+This folder contains SVG diagrams for Week 2 laboratory materials.
 
 ---
 
 ## Available Diagrams
 
-| File | Description | Related LOs |
-|------|-------------|-------------|
-| `tcp_handshake.svg` | TCP three-way handshake sequence | U2, U5 |
-| `tcp_vs_udp.svg` | Comparison of TCP and UDP features | U1, U4, E1 |
-| `osi_tcpip_model.svg` | OSI 7-layer vs TCP/IP 4-layer models | R1, R2 |
+| Diagram | Description | Usage |
+|---------|-------------|-------|
+| `osi_tcpip_model.svg` | OSI 7-layer vs TCP/IP 4-layer model comparison | Theory introduction |
+| `tcp_handshake.svg` | TCP three-way handshake sequence diagram | Before Exercise 1 |
+| `tcp_vs_udp.svg` | TCP and UDP characteristics comparison | Protocol selection |
+| `socket_api_flow.svg` | Socket API call sequence for TCP and UDP | Coding reference |
 
 ---
 
-## Diagram Details
+## Diagram Previews
 
-### 1. TCP Three-Way Handshake (`tcp_handshake.svg`)
+### 1. OSI vs TCP/IP Model (`osi_tcpip_model.svg`)
 
-**Purpose:** Visualise the TCP connection establishment process.
-
-**Key Elements:**
-- Client and server timelines
-- SYN, SYN-ACK and ACK packets
-- Sequence number progression
-- State transitions (SYN_SENT, SYN_RECEIVED, ESTABLISHED)
-
-**When to Use:**
-- Explaining TCP connection setup
-- Before Wireshark capture exercises
-- Peer instruction Q4
-
-**Correlation with Lab:**
-- Exercise 1: Observe in Wireshark after running TCP server/client
-- PCAP: `pcap/week02_tcp_handshake_echo.pcap`
-
----
-
-### 2. TCP vs UDP Comparison (`tcp_vs_udp.svg`)
-
-**Purpose:** Side-by-side comparison of the two transport protocols.
-
-**Key Elements:**
-- Connection characteristics
-- Reliability features
-- Ordering guarantees
-- Use case examples
-- Header size comparison
-
-**When to Use:**
-- Introducing transport layer concepts
-- Protocol selection discussions
-- Peer instruction Q5
-
-**Correlation with Lab:**
-- Exercise 1 (TCP) vs Exercise 2 (UDP)
-- Quiz questions q06, q08, q15
-
----
-
-### 3. OSI vs TCP/IP Model (`osi_tcpip_model.svg`)
-
-**Purpose:** Compare the two networking reference models.
-
-**Key Elements:**
-- All 7 OSI layers with examples
-- 4 TCP/IP layers with mapping
-- Layer-to-layer correspondence
+Shows the mapping between the 7-layer OSI reference model and the 4-layer TCP/IP practical model:
+- Layer mapping (which OSI layers combine in TCP/IP)
+- Protocol examples at each layer
 - PDU (Protocol Data Unit) names
-- Week 2 focus indicator (Transport Layer)
 
-**When to Use:**
-- Course introduction
-- Layer identification exercises
-- Quiz questions q01, q03, q05
-
-**Correlation with Lab:**
-- Theory summary in `docs/theory_summary.md`
-- Wireshark layer inspection
+**Use in class:** When introducing architectural models in theory section.
 
 ---
 
-## Usage Guidelines
+### 2. TCP Three-Way Handshake (`tcp_handshake.svg`)
 
-### In Presentations
+Illustrates the connection establishment sequence:
+- SYN → SYN-ACK → ACK packet exchange
+- Client and server state transitions
+- Socket API correlation (connect/accept)
 
-```html
-<!-- Embed in HTML slides -->
-<img src="docs/images/tcp_handshake.svg" alt="TCP Handshake" width="600">
-```
+**Use in class:** Before running Exercise 1, to predict Wireshark output.
+
+---
+
+### 3. TCP vs UDP Comparison (`tcp_vs_udp.svg`)
+
+Side-by-side comparison of transport protocols:
+- Characteristics (reliable, ordered, overhead)
+- Use cases for each protocol
+- Packet count comparison
+
+**Use in class:** When discussing protocol selection for applications.
+
+---
+
+### 4. Socket API Flow (`socket_api_flow.svg`)
+
+Shows the sequence of socket API calls:
+- TCP server/client call sequence
+- UDP server/client call sequence
+- Blocking points highlighted
+- Key differences noted
+
+**Use in class:** As coding reference during exercises.
+
+---
+
+## How to Use
 
 ### In Markdown Documents
 
 ```markdown
-![TCP vs UDP Comparison](docs/images/tcp_vs_udp.svg)
+![OSI vs TCP/IP Model](docs/images/osi_tcpip_model.svg)
 ```
 
-### Printing
+### In HTML
 
-SVG files can be converted to PDF for high-quality printing:
-
-```bash
-# Using Inkscape (if installed)
-inkscape tcp_handshake.svg --export-pdf=tcp_handshake.pdf
-
-# Using rsvg-convert (if installed)
-rsvg-convert -f pdf -o tcp_handshake.pdf tcp_handshake.svg
+```html
+<img src="docs/images/osi_tcpip_model.svg" alt="OSI vs TCP/IP Model" width="700">
 ```
+
+### In Presentations
+
+SVG files can be:
+- Embedded directly in HTML-based presentations
+- Converted to PNG for PowerPoint (use browser screenshot or Inkscape)
+- Opened and edited in Inkscape or Adobe Illustrator
 
 ---
 
-## Diagram Conventions
+## Colour Scheme
 
-### Colour Coding
-
-| Colour | Meaning |
-|--------|---------|
-| Blue (#1976d2, #4a90d9) | TCP-related, Client |
-| Green (#4caf50, #5cb85c) | Server, Success, Established |
-| Orange (#f57c00, #f39c12) | UDP-related, Warning |
-| Red (#e74c3c) | SYN packets, Errors |
-
-### Typography
-
-- **Titles:** Arial/sans-serif, 16-20px, bold
-- **Labels:** Arial/sans-serif, 12-14px
-- **Notes:** Arial/sans-serif, 10-11px, grey
+| Colour | Hex | Usage |
+|--------|-----|-------|
+| Blue | `#3498db` | TCP, Application layer |
+| Orange | `#e67e22` | UDP |
+| Green | `#2ecc71` | Success, data transfer, Transport layer |
+| Purple | `#9b59b6` | Blocking operations, Session/Presentation |
+| Red | `#e74c3c` | Errors, SYN flag, Application layer |
+| Yellow | `#f39c12` | Network layer |
+| Teal | `#1abc9c` | Data Link layer |
+| Grey | `#95a5a6` | Physical layer, neutral |
 
 ---
 
-## Contributing New Diagrams
+## Editing Diagrams
 
-When adding new diagrams:
+These SVG files can be edited with:
+- **Inkscape** (free, open source) — recommended
+- **Adobe Illustrator**
+- Any text editor (SVG is XML-based)
 
-1. **Format:** Use SVG for scalability
-2. **Size:** Viewbox ~500-600px width for consistency
-3. **Colours:** Follow the colour coding above
-4. **Footer:** Include "Week X — Topic | NETWORKING class"
-5. **Naming:** Use `lowercase_with_underscores.svg`
-
-### Template Structure
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Diagram Title -->
-<!-- NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
-  <!-- Background -->
-  <rect width="500" height="400" fill="#fafafa"/>
-  
-  <!-- Title -->
-  <text x="250" y="30" text-anchor="middle" ...>Title</text>
-  
-  <!-- Content here -->
-  
-  <!-- Footer -->
-  <text x="250" y="385" text-anchor="middle" ...>Week X — Topic | NETWORKING class</text>
-</svg>
-```
+When editing:
+1. Maintain the colour scheme for consistency
+2. Keep font family as Arial for cross-platform compatibility
+3. Update the version number in the footer if making significant changes
 
 ---
 
-## Related Resources
+## File Sizes
 
-| Resource | Location |
-|----------|----------|
-| Theory Summary | `docs/theory_summary.md` |
-| PCAP Guide | `pcap/PCAP_ANALYSIS_GUIDE.md` |
-| Peer Instruction | `docs/peer_instruction.md` |
-| Quiz | `formative/quiz.yaml` |
+| File | Size | Complexity |
+|------|------|------------|
+| `osi_tcpip_model.svg` | ~5 KB | Medium |
+| `tcp_handshake.svg` | ~4 KB | Simple |
+| `tcp_vs_udp.svg` | ~5 KB | Medium |
+| `socket_api_flow.svg` | ~6 KB | Complex |
+
+All files are optimised for web display and print.
 
 ---
 

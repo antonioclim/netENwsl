@@ -1,333 +1,188 @@
-# 👥 Pair Programming Guide — Week 2: Sockets and Transport Protocols
+# 👥 Pair Programming Guide — Week 2: Socket Programming
 
 > NETWORKING class — ASE, CSIE Bucharest  
 > Computer Networks Laboratory | by ing. dr. Antonio Clim
 
 ---
 
-## Roles
+## Why Pair Programming?
 
-| Role | Responsibilities | Duration |
-|------|------------------|----------|
-| **Driver** | Types code, controls keyboard and mouse, executes commands | 10-15 min |
-| **Navigator** | Reviews code, suggests improvements, checks documentation, spots errors | 10-15 min |
+Research shows pair programming improves code quality and learning outcomes, particularly for networking concepts where debugging requires understanding both code AND protocol behaviour.
 
-**🔄 SWAP roles every 10-15 minutes!** Set a timer.
-
----
-
-## Session Structure
-
-### Phase 1: Setup (5 min)
-
-- [ ] Both partners can access the lab environment
-- [ ] Verify Docker is running: `docker ps`
-- [ ] Navigate to exercise directory
-- [ ] Decide who drives first (e.g., alphabetically by name)
-- [ ] Review the exercise objectives together
-
-### Phase 2: Implementation (45-50 min)
-
-**Driver responsibilities:**
-- Type code at a pace the Navigator can follow
-- Explain your thinking out loud ("I'm going to...")
-- Ask Navigator before making major decisions
-- Don't rush — quality over speed
-
-**Navigator responsibilities:**
-- Watch for typos and syntax errors
-- Think ahead: "What's our next step?"
-- Keep documentation open for reference
-- Note questions to discuss later
-- Track time and call for role swaps
-
-### Phase 3: Review (10 min)
-
-- [ ] Both partners can explain every line of code
-- [ ] Test edge cases together
-- [ ] Discuss: "What would we do differently next time?"
-- [ ] Document any issues encountered
+**Benefits for socket programming:**
+- One person codes while the other monitors Wireshark
+- Driver focuses on syntax; Navigator catches logical errors
+- Discussion clarifies TCP vs UDP mental models
+- Two pairs of eyes catch off-by-one and boundary errors
 
 ---
 
-## This Week's Pair Exercises
+## Roles and Responsibilities
 
-### Exercise P1: TCP Echo Server with Transformation
+| Role | Responsibilities | Focus |
+|------|-----------------|-------|
+| **Driver** | Types code, controls keyboard/mouse, executes commands | Syntax, implementation |
+| **Navigator** | Reviews code, checks documentation, monitors output | Logic, strategy, Wireshark |
 
-**Objective:** Implement a concurrent TCP server that transforms messages.
+### Driver Guidelines
 
-**Estimated time:** 25 min
+- Think aloud as you type
+- Ask Navigator before major decisions
+- Don't race ahead — explain your plan
+- Accept Navigator suggestions gracefully
 
-**Setup:**
+### Navigator Guidelines
+
+- Watch for typos and bugs
+- Keep documentation open
+- Monitor Wireshark/logs for unexpected behaviour
+- Suggest improvements without grabbing keyboard
+- Track time for swaps
+
+---
+
+## Swap Schedule
+
+**CRITICAL: Swap roles every 10-15 minutes!**
+
+| Time | Activity | Swap Point |
+|------|----------|------------|
+| 0:00-0:10 | Setup and TCP server start | ⟳ SWAP |
+| 0:10-0:20 | TCP client and first test | ⟳ SWAP |
+| 0:20-0:30 | Threaded vs iterative comparison | ⟳ SWAP |
+| 0:30-0:40 | UDP server implementation | ⟳ SWAP |
+| 0:40-0:50 | UDP client and testing | ⟳ SWAP |
+| 0:50-1:00 | Wireshark analysis | ⟳ SWAP |
+
+**Timer recommendation:** Use phone timer set to 10 minutes.
+
+---
+
+## Week 2 Specific Sessions
+
+### Session 1: TCP Server (25 min)
+
+#### Phase 1: Server Setup (Driver A, Navigator B)
+
+**Driver task:** Type the server startup code
 ```bash
 cd /mnt/d/NETWORKING/WEEK2/2enWSL
-# Open src/exercises/ex_2_01_tcp.py for reference
+python3 src/exercises/ex_2_01_tcp.py server --port 9090 --mode threaded
 ```
 
-**Driver tasks (first 12 min):**
-1. Create a new file `pair_tcp_server.py`
-2. Implement basic socket setup (create, bind, listen)
-3. Write the main accept loop
+**Navigator task:** 
+- Open Wireshark on vEthernet (WSL)
+- Set filter: `tcp.port == 9090`
+- Start capture
+- **WATCH FOR:** Server should NOT generate packets yet
 
-**Navigator tasks:**
-- Verify correct socket type (SOCK_STREAM)
-- Check port number doesn't conflict (use 9095)
-- Reference documentation for `setsockopt` usage
+**⟳ SWAP after:** Server shows "Waiting for connections..."
 
-**🔄 SWAP at accept loop completion**
+---
 
-**Driver tasks (next 12 min):**
-1. Implement `handle_client()` function
-2. Add threading for concurrent handling
-3. Implement message transformation (reverse + uppercase)
+#### Phase 2: Client Testing (Driver B, Navigator A)
 
-**Navigator tasks:**
-- Ensure proper thread creation syntax
-- Verify socket is passed correctly to thread
-- Check for proper cleanup (close)
-
-**Verification:**
+**Driver task:** Run client and send test message
 ```bash
-# Terminal 1: Start your server
-python pair_tcp_server.py
-
-# Terminal 2: Test with netcat
-echo "hello" | nc localhost 9095
-# Expected: OLLEH
+python3 src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 -m "Hello"
 ```
 
-**💭 Prediction checkpoint:** Before running, predict: What will Wireshark show for a single client connection?
+**Navigator task:**
+- Watch terminal for response
+- Check Wireshark for handshake (SYN → SYN-ACK → ACK)
+- Count packets: should see ~7-10 (handshake + data + FIN)
 
-#### P1 Reflection Questions
+**💭 PREDICTION prompt:** How many packets total? Discuss before checking.
 
-After completing this exercise, discuss with your partner:
-
-1. **TCP understanding:** Why did you need to call `accept()` but not for UDP in P2?
-2. **Threading decision:** What would happen if you removed threading? Try it!
-3. **Error handling:** What happens if a client disconnects unexpectedly?
-4. **Code ownership:** Which part of the code do you understand best? Which part does your partner understand better?
+**⟳ SWAP after:** Successful response received
 
 ---
 
-### Exercise P2: UDP Protocol with Multiple Commands
+#### Phase 3: Mode Comparison (Driver A, Navigator B)
 
-**Objective:** Implement a UDP server supporting multiple command types.
-
-**Estimated time:** 25 min
-
-**Required commands:**
-- `ping` → `PONG`
-- `time` → Current time (HH:MM:SS)
-- `rand` → Random number 1-100
-- `echo:text` → Returns text unchanged
-
-**Driver tasks (first 12 min):**
-1. Create `pair_udp_server.py`
-2. Set up UDP socket (SOCK_DGRAM)
-3. Implement receive loop with `recvfrom()`
-
-**Navigator tasks:**
-- Confirm no `listen()` or `accept()` calls (UDP!)
-- Verify bind address is `0.0.0.0` not `127.0.0.1`
-- Plan the command parsing strategy
-
-**🔄 SWAP after receive loop works**
-
-**Driver tasks (next 12 min):**
-1. Implement command parsing (split on `:`)
-2. Add all four command handlers
-3. Send responses with `sendto()`
-
-**Navigator tasks:**
-- Test each command mentally before running
-- Ensure `addr` from `recvfrom` is used in `sendto`
-- Watch for encoding issues (bytes vs strings)
-
-**Verification:**
+**Driver task:** Restart server in iterative mode and run load test
 ```bash
-# Terminal 1: Start server
-python pair_udp_server.py
+# Terminal 1: Restart server
+python3 src/exercises/ex_2_01_tcp.py server --port 9090 --mode iterative
 
-# Terminal 2: Test commands
-echo "ping" | nc -u localhost 9096
-echo "time" | nc -u localhost 9096
-echo "echo:hello world" | nc -u localhost 9096
+# Terminal 2: Load test
+python3 src/exercises/ex_2_01_tcp.py load --host 127.0.0.1 --port 9090 --clients 5
 ```
 
-**💭 Prediction checkpoint:** What's different in Wireshark between this and the TCP exercise?
+**Navigator task:**
+- Note the total time reported
+- Predict: ~500ms for iterative (5 × 100ms)
+- Compare with threaded mode (~100ms)
 
-#### P2 Reflection Questions
-
-After completing this exercise, discuss with your partner:
-
-1. **Protocol comparison:** How does the code structure differ from TCP? Which feels simpler?
-2. **Address handling:** Why do you need `addr` from `recvfrom()` to send a reply?
-3. **Error scenarios:** What happens if you send an unknown command? Should you handle it?
-4. **Collaboration quality:** Did the Navigator catch any bugs before running? Which ones?
+**Discussion:** Why is threaded faster? Navigator explains to Driver.
 
 ---
 
-### Exercise P3: Concurrent Server Stress Test
+### Session 2: UDP Server (20 min)
 
-**Objective:** Compare iterative vs threaded server under load.
+#### Phase 1: UDP Server (Driver B, Navigator A)
 
-**Estimated time:** 20 min
+**Driver task:**
+```bash
+python3 src/exercises/ex_2_02_udp.py server --port 9091
+```
 
-**Driver tasks (first 10 min):**
-1. Modify TCP server to have configurable mode (iterative/threaded)
-2. Add artificial delay: `time.sleep(0.5)` in handler
-3. Create timing wrapper for measurements
+**Navigator task:**
+- Clear Wireshark
+- Set filter: `udp.port == 9091`
+- **WATCH FOR:** No packets on server start (same as TCP)
 
-**Navigator tasks:**
-- Plan how to switch modes (command-line argument?)
-- Prepare test client that measures total time
-- Note the expected difference in timings
-
-**🔄 SWAP after mode switching works**
-
-**Driver tasks (next 10 min):**
-1. Write load test client (10 concurrent connections)
-2. Run against iterative server, record time
-3. Run against threaded server, record time
-
-**Navigator tasks:**
-- Calculate expected times:
-  - Iterative: 10 clients × 0.5s = 5 seconds
-  - Threaded: ~0.5 seconds (parallel)
-- Document actual results
-- Explain any discrepancies
-
-**Results table:**
-
-| Mode | Expected time | Actual time | Difference |
-|------|---------------|-------------|------------|
-| Iterative | 5.0s | ___s | ___ |
-| Threaded | 0.5s | ___s | ___ |
-
-**💭 Prediction checkpoint:** What happens if we use 100 clients instead of 10?
-
-#### P3 Reflection Questions
-
-After completing this exercise, discuss with your partner:
-
-1. **Performance insight:** Was the actual timing close to your prediction? What might cause differences?
-2. **Scalability thinking:** At what point would threading stop being the answer? (Hint: think about 10,000 clients)
-3. **Code evolution:** How would you refactor your code to support a thread pool?
-4. **Learning transfer:** Where else might you apply this iterative vs concurrent pattern?
+**⟳ SWAP after:** Server shows "Listening..."
 
 ---
 
-## Common Pair Pitfalls
+#### Phase 2: Interactive Testing (Driver A, Navigator B)
 
-Avoid these common mistakes that harm pair programming effectiveness:
+**Driver task:**
+```bash
+python3 src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 -i
+```
 
-### ⚠️ Pitfall 1: Navigator Disengagement
+Then type commands:
+```
+> ping
+> upper:hello world
+> time
+> exit
+```
 
-**Symptoms:**
-- Navigator checks phone or browses unrelated tabs
-- Navigator only speaks when asked directly
-- Navigator doesn't notice obvious typos
+**Navigator task:**
+- Count packets per command (should be 2: request + response)
+- Compare with TCP packet count
+- Note: NO handshake packets!
 
-**Why it happens:**
-- Driver is "in the zone" and moving fast
-- Navigator feels their role is less important
-- Fatigue from watching without typing
-
-**Remedy:**
-- Navigator: Keep a notepad for questions and observations
-- Driver: Pause frequently and ask "What do you think?"
-- Both: Shorter swap intervals (8-10 min) keep both engaged
-
----
-
-### ⚠️ Pitfall 2: Backseat Driving
-
-**Symptoms:**
-- Navigator dictates every keystroke ("Type def, now space, now...")
-- Driver feels like a typist, not a programmer
-- Frustration builds on both sides
-
-**Why it happens:**
-- Navigator is impatient or thinks they know the "right" way
-- Power imbalance (experience difference)
-
-**Remedy:**
-- Navigator: Give direction at the strategy level, not keystroke level
-- Say "We need a function to handle the client" NOT "Type d-e-f space handle..."
-- Driver: Ask Navigator to step back if feeling micromanaged
+**Discussion:** Why fewer packets than TCP?
 
 ---
 
-### ⚠️ Pitfall 3: Silent Driving
+### Session 3: Wireshark Analysis (25 min)
 
-**Symptoms:**
-- Driver types without explaining
-- Navigator has to ask "What are you doing?" repeatedly
-- Misunderstandings emerge later
+#### Phase 1: TCP Capture (Driver B, Navigator A)
 
-**Why it happens:**
-- Driver is focused and forgets to verbalise
-- Assumed knowledge ("You know what I mean")
+**Driver task:** Generate complete TCP session while Navigator captures
 
-**Remedy:**
-- Driver: Practise thinking aloud — it feels awkward at first but helps
-- Navigator: Ask "Can you walk me through that?" when lost
-- Rule: No code gets written without verbal explanation first
+**Navigator task:**
+1. Start fresh capture
+2. After session completes, stop capture
+3. Right-click a packet → Follow → TCP Stream
+4. Save as: `pcap/tcp_session.pcap`
+
+**⟳ SWAP after:** Capture saved
 
 ---
 
-### ⚠️ Pitfall 4: Unequal Swap Time
+#### Phase 2: Analysis Discussion (Both)
 
-**Symptoms:**
-- One person drives most of the session
-- "I'll just finish this part..." lasts 20 minutes
-- One partner understands the code much better than the other
-
-**Why it happens:**
-- Natural stopping points don't align with time
-- One partner is more confident/experienced
-
-**Remedy:**
-- Use a timer (phone alarm) — no exceptions
-- Swap even mid-function; this forces explanation
-- Experience difference? Swap more often, not less
-
----
-
-### ⚠️ Pitfall 5: Solving Different Problems
-
-**Symptoms:**
-- Driver and Navigator have different understanding of the task
-- Arguments about approach before code is written
-- Wasted time redoing work
-
-**Why it happens:**
-- Skipped the "Review objectives together" step
-- Different interpretations of requirements
-
-**Remedy:**
-- Before ANY coding: both partners state their understanding
-- Navigator reads the objective aloud
-- Driver summarises what they plan to build
-- If descriptions differ, resolve before typing
-
----
-
-### ⚠️ Pitfall 6: Fear of Looking Stupid
-
-**Symptoms:**
-- Partner doesn't admit confusion
-- Questions go unasked
-- Mistakes are hidden rather than discussed
-
-**Why it happens:**
-- Ego, especially with peers
-- Cultural pressure to appear competent
-
-**Remedy:**
-- Explicitly normalise "I don't know" — instructors should model this
-- Frame pairing as learning, not performance
-- Celebrate questions: "Good question — let's figure it out together"
+Work together to answer:
+1. How many SYN packets? (Should be 1)
+2. How many data packets?
+3. What is the TCP header overhead per segment?
+4. Identify the FIN sequence
 
 ---
 
@@ -335,78 +190,79 @@ Avoid these common mistakes that harm pair programming effectiveness:
 
 ### Navigator to Driver
 
-| Situation | What to say |
-|-----------|-------------|
-| Spotted a typo | "I think there's a typo on line X" |
-| Suggesting approach | "What if we tried...?" |
-| Need clarification | "Can you explain why you're doing that?" |
-| Reference needed | "Let me look up the syntax for that" |
-| Time to swap | "Good stopping point — let's switch roles" |
+| Situation | Say this |
+|-----------|----------|
+| Spot a typo | "I think there's a typo in line X" |
+| Suggest approach | "What if we tried..." |
+| Need clarification | "Can you explain your plan for this part?" |
+| Time check | "We should swap in 2 minutes" |
+| Wireshark finding | "I see something interesting — pause a moment" |
 
 ### Driver to Navigator
 
-| Situation | What to say |
-|-----------|-------------|
-| Thinking out loud | "I'm going to create the socket first..." |
-| Asking for input | "What do you think — should we...?" |
-| Stuck | "I'm not sure what to do next" |
-| Verifying | "Does this look right to you?" |
-| Before running | "What do you think will happen?" |
+| Situation | Say this |
+|-----------|----------|
+| Stuck | "I'm not sure how to... what do you think?" |
+| Explaining | "I'm going to try X because..." |
+| Finished step | "Does this look right before I continue?" |
+| Need doc | "Can you look up the syntax for...?" |
 
 ---
 
-## Troubleshooting Together
+## Conflict Resolution
 
-When stuck, follow this protocol:
+### When you disagree on approach
 
-1. **Driver:** Explain your current understanding of the problem
-2. **Navigator:** Ask clarifying questions (don't jump to solutions)
-3. **Both:** Re-read the error message carefully, word by word
-4. **Navigator:** Search documentation while Driver tries small tests
-5. **If stuck > 5 minutes:** Call the instructor — that's what they're for!
+1. **State positions:** Each person explains their reasoning (30 sec each)
+2. **Quick experiment:** If fast to test, try both and compare
+3. **Time-box:** If neither is obviously better, pick one and move on
+4. **Document:** Note the alternative for later consideration
 
-### Common Issues This Week
+### When stuck together
 
-| Symptom | Driver checks | Navigator checks |
-|---------|---------------|------------------|
-| "Address already in use" | Previous server still running? | SO_REUSEADDR set? |
-| "Connection refused" | Server started? Right port? | Firewall? |
-| No output from UDP | Server bound to 0.0.0.0? | Client using right port? |
-| Thread not starting | `t.start()` called? | Target function correct? |
+1. **Re-read the error message** — slowly, word by word
+2. **Check troubleshooting guide:** [docs/troubleshooting.md](troubleshooting.md)
+3. **Review misconceptions:** [docs/misconceptions.md](misconceptions.md)
+4. **5-minute rule:** If still stuck after 5 min, ask instructor
 
----
+### When pace differs
 
-## End-of-Session Reflection
-
-At the end of the session, discuss:
-
-1. What was the hardest part of this exercise?
-2. Did swapping roles feel natural? Why or why not?
-3. What's one thing your partner did that helped you?
-4. What would you do differently next time?
-5. **Rate your collaboration:** 1 (frustrating) to 5 (excellent) — discuss why
+- Faster partner: Practice patience, focus on teaching
+- Slower partner: Ask questions freely, don't apologise
+- Both: Adjust swap frequency if needed
 
 ---
 
-## Tips for Effective Pairing
+## Post-Session Reflection
 
-**For Drivers:**
-- Verbalise your thought process
-- Pause at decision points to consult Navigator
-- Don't take control back if Navigator makes a suggestion
-- Celebrate small wins together
+At the end of your pair session, discuss:
 
-**For Navigators:**
-- Stay engaged — don't check your phone!
-- Phrase feedback constructively ("What if..." vs "That's wrong")
-- Trust the Driver to find their own path sometimes
-- Keep the big picture in mind
+1. What worked well in our collaboration?
+2. What would we do differently next time?
+3. What concept became clearer through discussion?
+4. Did we swap roles frequently enough?
 
-**For both:**
-- Take breaks if frustrated
-- Different approaches are okay — discuss trade-offs
-- Learning matters more than finishing
-- Thank your partner at the end
+---
+
+## Assessment Rubric (for graded pair work)
+
+| Criterion | Excellent | Good | Needs Work |
+|-----------|-----------|------|------------|
+| **Role switching** | Swapped every 10-15 min | Swapped 2-3 times | Rarely swapped |
+| **Communication** | Constant dialogue | Regular discussion | Mostly silent |
+| **Code quality** | Both understand all code | Minor gaps | One person dominated |
+| **Problem solving** | Collaborative debugging | Some joint effort | Individual work |
+| **Time management** | Completed all tasks | Most tasks done | Behind schedule |
+
+---
+
+## Tips from Past Students
+
+> "Having one person watch Wireshark while the other codes is a game-changer. You catch timing issues immediately."
+
+> "We found that swapping after each successful test worked better than fixed time intervals."
+
+> "The Navigator should actually navigate — keep the documentation open!"
 
 ---
 

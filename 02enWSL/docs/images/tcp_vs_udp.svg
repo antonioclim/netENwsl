@@ -1,40 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
-  <rect width="600" height="400" fill="#fafafa"/>
-  <text x="300" y="30" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#333">TCP vs UDP Comparison</text>
-  <rect x="30" y="50" width="260" height="320" rx="10" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <rect x="30" y="50" width="260" height="35" rx="10" fill="#1976d2"/>
-  <text x="160" y="74" text-anchor="middle" font-family="Arial" font-size="14" fill="white" font-weight="bold">TCP (SOCK_STREAM)</text>
-  <rect x="310" y="50" width="260" height="320" rx="10" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
-  <rect x="310" y="50" width="260" height="35" rx="10" fill="#f57c00"/>
-  <text x="440" y="74" text-anchor="middle" font-family="Arial" font-size="14" fill="white" font-weight="bold">UDP (SOCK_DGRAM)</text>
-  <g font-family="Arial" font-size="11" fill="#333">
-    <text x="50" y="110" font-weight="bold" fill="#1976d2">Connection:</text>
-    <text x="50" y="128">✓ Connection-oriented</text>
-    <text x="50" y="144">✓ Three-way handshake</text>
-    <text x="50" y="172" font-weight="bold" fill="#1976d2">Reliability:</text>
-    <text x="50" y="190">✓ Guaranteed delivery</text>
-    <text x="50" y="206">✓ Retransmission</text>
-    <text x="50" y="234" font-weight="bold" fill="#1976d2">Ordering:</text>
-    <text x="50" y="252">✓ In-order delivery</text>
-    <text x="50" y="280" font-weight="bold" fill="#1976d2">Use Cases:</text>
-    <text x="50" y="298">• Web (HTTP/HTTPS)</text>
-    <text x="50" y="314">• Email (SMTP)</text>
-    <text x="50" y="330">• File transfer (FTP)</text>
-    <text x="50" y="358">Header: 20-60 bytes</text>
-    <text x="330" y="110" font-weight="bold" fill="#f57c00">Connection:</text>
-    <text x="330" y="128">✗ Connectionless</text>
-    <text x="330" y="144">✗ No handshake</text>
-    <text x="330" y="172" font-weight="bold" fill="#f57c00">Reliability:</text>
-    <text x="330" y="190">✗ Best-effort delivery</text>
-    <text x="330" y="206">✗ No retransmission</text>
-    <text x="330" y="234" font-weight="bold" fill="#f57c00">Ordering:</text>
-    <text x="330" y="252">✗ No ordering guarantee</text>
-    <text x="330" y="280" font-weight="bold" fill="#f57c00">Use Cases:</text>
-    <text x="330" y="298">• DNS queries</text>
-    <text x="330" y="314">• Video streaming</text>
-    <text x="330" y="330">• Online gaming</text>
-    <text x="330" y="358">Header: 8 bytes</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 520" font-family="Arial, sans-serif">
+  <title>TCP vs UDP Comparison</title>
+  <desc>Week 2 — Transport layer protocol comparison</desc>
+  
+  <!-- Background -->
+  <rect width="700" height="520" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="350" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">TCP vs UDP: Transport Layer Protocols</text>
+  
+  <!-- TCP Section -->
+  <g transform="translate(30, 60)">
+    <!-- Header -->
+    <rect x="0" y="0" width="300" height="50" rx="8" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+    <text x="150" y="32" text-anchor="middle" fill="white" font-weight="bold" font-size="18">TCP</text>
+    
+    <!-- Subtitle -->
+    <text x="150" y="70" text-anchor="middle" font-size="11" fill="#7f8c8d">Transmission Control Protocol</text>
+    <text x="150" y="85" text-anchor="middle" font-size="10" fill="#3498db">SOCK_STREAM</text>
+    
+    <!-- Characteristics box -->
+    <rect x="0" y="95" width="300" height="200" rx="6" fill="white" stroke="#3498db" stroke-width="1"/>
+    
+    <!-- Characteristics -->
+    <text x="15" y="120" font-size="12" font-weight="bold" fill="#2c3e50">Characteristics:</text>
+    <text x="15" y="145" font-size="11" fill="#34495e">✓ Connection-oriented</text>
+    <text x="15" y="165" font-size="11" fill="#34495e">✓ Reliable delivery (ACK)</text>
+    <text x="15" y="185" font-size="11" fill="#34495e">✓ Ordered delivery</text>
+    <text x="15" y="205" font-size="11" fill="#34495e">✓ Flow control</text>
+    <text x="15" y="225" font-size="11" fill="#34495e">✓ Congestion control</text>
+    <text x="15" y="245" font-size="11" fill="#e74c3c">✗ Higher overhead (20-60B header)</text>
+    <text x="15" y="265" font-size="11" fill="#e74c3c">✗ Higher latency (handshake)</text>
+    <text x="15" y="285" font-size="11" fill="#e74c3c">✗ No message boundaries</text>
+    
+    <!-- Use cases box -->
+    <rect x="0" y="305" width="300" height="100" rx="6" fill="#3498db" fill-opacity="0.1" stroke="#3498db" stroke-width="1"/>
+    <text x="15" y="330" font-size="12" font-weight="bold" fill="#2c3e50">Use Cases:</text>
+    <text x="15" y="355" font-size="11" fill="#34495e">• Web browsing (HTTP/HTTPS)</text>
+    <text x="15" y="375" font-size="11" fill="#34495e">• Email (SMTP, IMAP)</text>
+    <text x="15" y="395" font-size="11" fill="#34495e">• File transfer (FTP, SFTP)</text>
   </g>
-  <text x="300" y="390" text-anchor="middle" font-family="Arial" font-size="9" fill="#999">Week 2 — Socket Programming | NETWORKING class</text>
+  
+  <!-- UDP Section -->
+  <g transform="translate(370, 60)">
+    <!-- Header -->
+    <rect x="0" y="0" width="300" height="50" rx="8" fill="#e67e22" stroke="#d35400" stroke-width="2"/>
+    <text x="150" y="32" text-anchor="middle" fill="white" font-weight="bold" font-size="18">UDP</text>
+    
+    <!-- Subtitle -->
+    <text x="150" y="70" text-anchor="middle" font-size="11" fill="#7f8c8d">User Datagram Protocol</text>
+    <text x="150" y="85" text-anchor="middle" font-size="10" fill="#e67e22">SOCK_DGRAM</text>
+    
+    <!-- Characteristics box -->
+    <rect x="0" y="95" width="300" height="200" rx="6" fill="white" stroke="#e67e22" stroke-width="1"/>
+    
+    <!-- Characteristics -->
+    <text x="15" y="120" font-size="12" font-weight="bold" fill="#2c3e50">Characteristics:</text>
+    <text x="15" y="145" font-size="11" fill="#34495e">✓ Connectionless</text>
+    <text x="15" y="165" font-size="11" fill="#34495e">✓ Low overhead (8B header)</text>
+    <text x="15" y="185" font-size="11" fill="#34495e">✓ Low latency (no handshake)</text>
+    <text x="15" y="205" font-size="11" fill="#34495e">✓ Message boundaries preserved</text>
+    <text x="15" y="225" font-size="11" fill="#34495e">✓ Supports broadcast/multicast</text>
+    <text x="15" y="245" font-size="11" fill="#e74c3c">✗ No delivery guarantee</text>
+    <text x="15" y="265" font-size="11" fill="#e74c3c">✗ No ordering guarantee</text>
+    <text x="15" y="285" font-size="11" fill="#e74c3c">✗ No congestion control</text>
+    
+    <!-- Use cases box -->
+    <rect x="0" y="305" width="300" height="100" rx="6" fill="#e67e22" fill-opacity="0.1" stroke="#e67e22" stroke-width="1"/>
+    <text x="15" y="330" font-size="12" font-weight="bold" fill="#2c3e50">Use Cases:</text>
+    <text x="15" y="355" font-size="11" fill="#34495e">• DNS queries</text>
+    <text x="15" y="375" font-size="11" fill="#34495e">• Video/audio streaming</text>
+    <text x="15" y="395" font-size="11" fill="#34495e">• Online gaming, VoIP</text>
+  </g>
+  
+  <!-- VS Divider -->
+  <circle cx="350" cy="135" r="25" fill="#2c3e50"/>
+  <text x="350" y="142" text-anchor="middle" fill="white" font-weight="bold" font-size="14">VS</text>
+  
+  <!-- Packet Count Comparison -->
+  <g transform="translate(50, 430)">
+    <rect x="0" y="0" width="600" height="70" rx="6" fill="white" stroke="#bdc3c8" stroke-width="1"/>
+    <text x="300" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Packet Count Comparison (Single Request-Response)</text>
+    
+    <!-- TCP packets -->
+    <rect x="30" y="35" width="250" height="25" rx="4" fill="#3498db" fill-opacity="0.2"/>
+    <text x="40" y="52" font-size="11" fill="#2c3e50">TCP: ~10 packets (3 handshake + data + 4 teardown)</text>
+    
+    <!-- UDP packets -->
+    <rect x="320" y="35" width="250" height="25" rx="4" fill="#e67e22" fill-opacity="0.2"/>
+    <text x="330" y="52" font-size="11" fill="#2c3e50">UDP: 2 packets (request + response)</text>
+  </g>
+  
+  <!-- Footer -->
+  <text x="350" y="515" text-anchor="middle" font-size="10" fill="#7f8c8d">NETWORKING — ASE, CSIE Bucharest | Week 2: Transport Protocols</text>
 </svg>

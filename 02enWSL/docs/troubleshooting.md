@@ -1,535 +1,513 @@
-# Troubleshooting Guide — Week 2
+# 🔧 Troubleshooting Guide — Week 2: Socket Programming
 
-> NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim
+> NETWORKING class — ASE, CSIE Bucharest  
+> Computer Networks Laboratory | by ing. dr. Antonio Clim
 
----
+This guide helps you diagnose and fix common issues in socket programming labs.
 
-## 🌳 Quick Diagnostic Decision Tree
-
-Start here when something goes wrong:
-
-```
-                         ┌─────────────────────────────┐
-                         │   What's the symptom?       │
-                         └─────────────┬───────────────┘
-                                       │
-        ┌──────────────────────────────┼──────────────────────────────┐
-        │                              │                              │
-        ▼                              ▼                              ▼
-┌───────────────────┐    ┌───────────────────┐    ┌───────────────────┐
-│ "Connection       │    │ "Address already  │    │ No packets in     │
-│  refused"         │    │  in use"          │    │ Wireshark         │
-└─────────┬─────────┘    └─────────┬─────────┘    └─────────┬─────────┘
-          │                        │                        │
-          ▼                        ▼                        ▼
-   Is server running?       Kill old process       Correct interface?
-   ┌────┴────┐              ss -tlnp | grep       vEthernet (WSL)?
-   NO       YES              [port]                      │
-   │         │                   │                       │
-   ▼         ▼                   ▼                       ▼
-Start     Wrong port?      kill <PID> or          Generate traffic
-server    Check both       wait 60 seconds        DURING capture
-          sides
-
-
-        ┌──────────────────────────────┼──────────────────────────────┐
-        │                              │                              │
-        ▼                              ▼                              ▼
-┌───────────────────┐    ┌───────────────────┐    ┌───────────────────┐
-│ "Cannot connect   │    │ ModuleNotFound    │    │ Docker daemon     │
-│  to Docker"       │    │ Error             │    │ not running       │
-└─────────┬─────────┘    └─────────┬─────────┘    └─────────┬─────────┘
-          │                        │                        │
-          ▼                        ▼                        ▼
-   sudo service           pip install -r           sudo service
-   docker start           requirements.txt         docker start
-```
+**Rule of thumb:** 80% of issues are one of: server not running, wrong port, or wrong bind address. Check these first.
 
 ---
 
-## 🚦 Issue Severity Guide
-
-| Severity | Meaning | Action |
-|----------|---------|--------|
-| 🔴 **Blocker** | Cannot continue lab | Fix immediately |
-| 🟡 **Major** | Significant functionality broken | Fix before next exercise |
-| 🟢 **Minor** | Inconvenience, workaround exists | Fix when convenient |
-
----
-
-## ⏱️ When to Ask for Help
-
-**Try these steps first (5 minutes max):**
-
-1. Read the error message completely
-2. Check the relevant section in this guide
-3. Run `python setup/verify_environment.py`
-4. Search the error message online
-
-**Ask for help when:**
-
-- [ ] You've spent more than 10 minutes on the same issue
-- [ ] The error message doesn't appear in this guide
-- [ ] Your environment verification shows failures you can't fix
-- [ ] You suspect a bug in the lab materials
-
-**How to ask effectively:**
+## 🚦 Quick Diagnostic Flowchart
 
 ```
-1. What were you trying to do?
-2. What command did you run? (exact command)
-3. What was the error? (copy full error message)
-4. What have you already tried?
+START: "My code doesn't work"
+           │
+           ▼
+┌─────────────────────────────┐
+│ Is the server running?      │
+│ Check: ps aux | grep python │
+└─────────────────────────────┘
+           │
+     NO ◄──┴──► YES
+     │           │
+     ▼           ▼
+┌─────────┐  ┌─────────────────────────┐
+│ Start   │  │ Is server listening?    │
+│ server  │  │ Check: ss -tlnp | grep  │
+└─────────┘  │        <port>           │
+             └─────────────────────────┘
+                       │
+                 NO ◄──┴──► YES
+                 │           │
+                 ▼           ▼
+          ┌──────────┐  ┌─────────────────────────┐
+          │ Check    │  │ Is bind address correct?│
+          │ for      │  │ 0.0.0.0 = all interfaces│
+          │ errors   │  │ 127.0.0.1 = local only  │
+          └──────────┘  └─────────────────────────┘
+                              │
+                        NO ◄──┴──► YES
+                        │           │
+                        ▼           ▼
+                 ┌──────────┐  ┌─────────────────┐
+                 │ Fix bind │  │ Check firewall  │
+                 │ address  │  │ and port number │
+                 └──────────┘  └─────────────────┘
 ```
 
 ---
 
-## 💭 Prediction-Based Debugging
+## Issue Categories
 
-Before examining specific issues, use this systematic approach:
-
-### The "Expected vs Actual" Framework
-
-When something goes wrong, ask yourself:
-
-| Question | Example |
-|----------|---------|
-| **What did I expect?** | "Server should print 'Connection from...'" |
-| **What actually happened?** | "Nothing printed, client got 'Connection refused'" |
-| **What's the gap?** | "Server isn't listening on the port" |
-
-### Common Expectation Mismatches
-
-| Expected | Actual | Root cause |
-|----------|--------|------------|
-| TCP handshake in Wireshark | No packets at all | Wrong capture interface |
-| Server accepts connection | "Connection refused" | Server not running or wrong port |
-| UDP response received | Timeout | Server down, firewall, or wrong address |
-| Multiple clients handled | Only one at a time | Using iterative instead of threaded mode |
-
-### Quick Self-Check Questions
-
-Before asking for help, verify:
-
-1. **Is the server actually running?** Check with `ss -tlnp | grep 9090`
-2. **Am I using the right port?** Double-check both server and client
-3. **Is Docker running?** Verify with `docker ps`
-4. **Am I in the right directory?** Check with `pwd`
+| Category | Symptoms | Likely Cause |
+|----------|----------|--------------|
+| **Connection** | Refused, timeout | Server not running, wrong address |
+| **Binding** | Address in use | Previous instance, TIME_WAIT |
+| **Data** | Wrong/missing data | Protocol mismatch, boundaries |
+| **Docker** | Container unreachable | Network, bind address |
+| **Wireshark** | No packets | Wrong interface, filter |
 
 ---
 
-## Quick Diagnostics
+## Connection Issues
 
-Before examining specific issues, run the environment verification:
-
-```bash
-python setup/verify_environment.py
-```
-
-This will identify most common configuration problems.
-
----
-
-## Docker Issues
-
-### Issue: Docker daemon not running
-
-| Severity | 🔴 **Blocker** |
-|----------|----------------|
-
-**Symptoms:**
-```
-Cannot connect to the Docker daemon at unix:///var/run/docker.sock
-```
-
-**Solution:**
-
-**For WSL2 (our environment):**
-```bash
-sudo service docker start
-docker ps  # Verify it's running
-```
-
-**For Docker Desktop:**
-1. Open Docker Desktop application
-2. Wait for the Docker icon in the system tray to show "running"
-3. Verify with `docker info`
-
-**WSL2 Note:** If using Docker Desktop with WSL2 backend, ensure WSL Integration is enabled:
-Settings → Resources → WSL Integration → Enable for your distribution
-
----
-
-### Issue: Container fails to start
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
-
-**Symptoms:**
-```
-Error response from daemon: Conflict. The container name is already in use
-```
-
-**Solution:**
-```bash
-# Remove the conflicting container
-docker rm -f week2_lab
-
-# Restart
-python scripts/start_lab.py
-```
-
----
-
-### Issue: Port already in use (Docker)
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
-
-**Symptoms:**
-```
-bind: address already in use
-Error starting userland proxy: listen tcp4 0.0.0.0:9090: bind: address already in use
-```
-
-**Solution:**
-
-**Windows (PowerShell):**
-```powershell
-# Find process using port
-netstat -ano | findstr :9090
-
-# Kill process (replace PID with actual process ID)
-taskkill /PID <PID> /F
-```
-
-**Linux/WSL:**
-```bash
-# Find process using port
-sudo lsof -i :9090
-
-# Kill process
-sudo kill -9 <PID>
-```
-
----
-
-### Issue: Cannot access container from Windows
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
-
-**Symptoms:** Services running inside container but not accessible from localhost.
-
-**Solution:**
-1. Ensure port mapping in docker-compose.yml:
-   ```yaml
-   ports:
-     - "9090:9090"
-   ```
-
-2. Check Windows Firewall isn't blocking the port
-
-3. Verify container is on correct network:
-   ```bash
-   docker network inspect week2_network
-   ```
-
----
-
-## Python Issues
-
-### Issue: ModuleNotFoundError
-
-| Severity | 🟢 **Minor** |
-|----------|--------------|
-
-**Symptoms:**
-```
-ModuleNotFoundError: No module named 'docker'
-```
-
-**Solution:**
-```bash
-pip install -r setup/requirements.txt
-```
-
-Or for specific packages:
-```bash
-pip install docker pyyaml requests
-```
-
----
-
-### Issue: Python version too old
-
-| Severity | 🔴 **Blocker** |
-|----------|----------------|
-
-**Symptoms:**
-```
-SyntaxError: invalid syntax (on type hints or f-strings)
-```
-
-**Solution:**
-Install Python 3.11 or later from python.org. Verify:
-```bash
-python --version
-```
-
----
-
-### Issue: Socket bind error in exercise scripts
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
-
-**Symptoms:**
-```
-OSError: [Errno 98] Address already in use
-```
-
-**Solution:**
-1. A previous server is still running. Kill it:
-   ```bash
-   # Find Python processes
-   ps aux | grep python
-   
-   # Kill the process
-   kill <PID>
-   ```
-
-2. Wait for socket timeout (typically 60 seconds) or use SO_REUSEADDR:
-   ```python
-   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-   ```
-
----
-
-## Network Issues
-
-### Issue: Cannot capture traffic with Wireshark
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
-
-**Symptoms:** No packets visible in Wireshark when running exercises.
-
-**Solution:**
-
-**For WSL traffic (our environment):**
-- Select **vEthernet (WSL)** interface in Wireshark
-- Start capture BEFORE generating traffic
-- Use filter: `tcp.port == 9090` or `udp.port == 9091`
-
-**For localhost traffic:**
-- Windows: Capture on "Adapter for loopback traffic capture" or "Npcap Loopback Adapter"
-- Linux: Capture on `lo` interface
-
-**For Docker traffic:**
-- Capture on `docker0` bridge interface
-- Or use `\\.\pipe\docker_engine` on Windows
-
-**Alternative:** Use tcpdump inside container:
-```bash
-docker exec -it week2_lab tcpdump -i eth0 -w /app/pcap/capture.pcap
-```
-
----
-
-### Issue: TCP connection refused
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
+### ❌ "Connection refused"
 
 **Symptoms:**
 ```
 ConnectionRefusedError: [Errno 111] Connection refused
 ```
 
-**Causes and Solutions:**
+**Diagnostic steps:**
 
-1. **Server not running:**
-   - Start the server first: `python src/exercises/ex_2_01_tcp.py server`
+1. **Is the server running?**
+   ```bash
+   ps aux | grep python
+   # Should show your server process
+   ```
 
-2. **Wrong port:**
-   - Verify port number matches between server and client
+2. **Is server listening on the port?**
+   ```bash
+   ss -tlnp | grep 9090
+   # Should show: LISTEN ... *:9090
+   ```
 
-3. **Firewall blocking:**
-   - Temporarily disable firewall for testing
-   - Add exception for Python executable
+3. **Are you connecting to the right address?**
+   ```bash
+   # If server binds to 127.0.0.1, client must connect to 127.0.0.1
+   # If server binds to 0.0.0.0, client can connect to any interface
+   ```
 
-4. **Server bound to wrong address:**
-   - If server bound to 127.0.0.1, only localhost can connect
-   - Use 0.0.0.0 to accept from all interfaces
+**Solutions:**
 
----
+| Cause | Fix |
+|-------|-----|
+| Server not running | Start the server first |
+| Wrong port | Check port numbers match |
+| Server on different interface | Use correct IP or 0.0.0.0 |
 
-### Issue: UDP packets not received
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
-
-**Symptoms:** Client sends messages but server shows nothing.
-
-**Causes and Solutions:**
-
-1. **Firewall dropping UDP:**
-   - UDP is often blocked by default; add firewall exception
-
-2. **Wrong port or address:**
-   - Verify both sides use same port
-   - Check server is bound to 0.0.0.0, not 127.0.0.1
-
-3. **No error on client side:**
-   - UDP sendto() succeeds even if nobody is listening
-   - This is expected behaviour — UDP has no delivery confirmation
+**From experience:** 90% of "Connection refused" errors are because the server isn't running or the client is connecting to the wrong port. Double-check both before looking elsewhere.
 
 ---
 
-### Issue: Wireshark shows no TCP handshake
+### ❌ "Connection timed out"
 
-| Severity | 🟢 **Minor** |
-|----------|--------------|
-
-**Symptoms:** Data packets visible but no SYN/SYN-ACK/ACK.
-
-**Causes:**
-1. **Capture started too late:**
-   - Start Wireshark BEFORE running client
-   
-2. **Filter too restrictive:**
-   - Remove filters temporarily to see all traffic
-   
-3. **Connection reused:**
-   - If using persistent connections, handshake happened earlier
-
-**Verification:**
+**Symptoms:**
 ```
-# Filter for SYN packets specifically
-tcp.flags.syn == 1 && tcp.flags.ack == 0
+socket.timeout: timed out
+# or: Connection timed out after 30 seconds
 ```
+
+**Diagnostic steps:**
+
+1. **Is the destination reachable?**
+   ```bash
+   ping <target_ip>
+   ```
+
+2. **Is a firewall blocking?**
+   ```bash
+   # Windows Firewall may block WSL traffic
+   # Try disabling temporarily for testing
+   ```
+
+3. **Is the server responding?**
+   ```bash
+   # Check server logs for incoming connection attempts
+   ```
+
+**Solutions:**
+
+| Cause | Fix |
+|-------|-----|
+| Network unreachable | Check network configuration |
+| Firewall blocking | Add firewall exception |
+| Server overloaded | Restart server, check logs |
+
+---
+
+## Binding Issues
+
+### ❌ "Address already in use"
+
+**Symptoms:**
+```
+OSError: [Errno 98] Address already in use
+```
+
+**Diagnostic steps:**
+
+1. **What's using the port?**
+   ```bash
+   lsof -i :9090
+   # or
+   ss -tlnp | grep 9090
+   ```
+
+2. **Is it a previous instance?**
+   ```bash
+   ps aux | grep python
+   # Kill any orphaned processes
+   ```
+
+3. **Is socket in TIME_WAIT?**
+   ```bash
+   ss -tn | grep 9090
+   # Check for TIME_WAIT state
+   ```
+
+**Solutions:**
+
+```python
+# ALWAYS use SO_REUSEADDR in server code
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("0.0.0.0", 9090))
+```
+
+| Cause | Fix |
+|-------|-----|
+| Previous process | `kill <pid>` |
+| TIME_WAIT state | Use SO_REUSEADDR |
+| System service | Choose different port |
+
+**Instructor note:** Students often forget to stop the server before restarting. Teach them to use Ctrl+C properly and check with `ps aux`.
+
+---
+
+### ❌ Cannot bind to specific IP
+
+**Symptoms:**
+```
+OSError: [Errno 99] Cannot assign requested address
+```
+
+**Cause:** Trying to bind to an IP address not assigned to this machine.
+
+**Solution:**
+```python
+# Bind to all interfaces
+sock.bind(("0.0.0.0", 9090))
+
+# OR bind to specific existing interface
+# First check: ip addr show
+sock.bind(("192.168.1.100", 9090))  # Must be YOUR IP
+```
+
+---
+
+## Data Issues
+
+### ❌ Receiving merged messages (TCP)
+
+**Symptoms:**
+```python
+# Sent: "Hello" then "World"
+# Received: "HelloWorld" (merged!)
+```
+
+**Cause:** TCP is a byte stream; it does not preserve message boundaries.
+
+**Solutions:**
+
+1. **Length-prefix framing:**
+   ```python
+   import struct
+   
+   # Send
+   msg = b"Hello"
+   sock.send(struct.pack(">I", len(msg)) + msg)
+   
+   # Receive
+   length_data = sock.recv(4)
+   length = struct.unpack(">I", length_data)[0]
+   msg = sock.recv(length)
+   ```
+
+2. **Delimiter-based:**
+   ```python
+   # Send with newline delimiter
+   sock.send(b"Hello\n")
+   
+   # Receive until delimiter
+   buffer = b""
+   while b"\n" not in buffer:
+       buffer += sock.recv(1024)
+   msg, buffer = buffer.split(b"\n", 1)
+   ```
+
+---
+
+### ❌ Receiving partial data
+
+**Symptoms:**
+```python
+# Expected 1000 bytes, received only 536
+```
+
+**Cause:** `recv()` returns as soon as ANY data is available, not when all expected data arrives.
+
+**Solution:**
+```python
+def recv_exactly(sock, n):
+    """Receive exactly n bytes."""
+    data = b""
+    while len(data) < n:
+        chunk = sock.recv(n - len(data))
+        if not chunk:
+            raise ConnectionError("Connection closed")
+        data += chunk
+    return data
+```
+
+---
+
+## Docker Issues
+
+### ❌ Cannot connect from container to host
+
+**Symptoms:**
+```bash
+# From inside container:
+curl http://localhost:9090
+# Connection refused
+```
+
+**Cause:** `localhost` inside container refers to the container, not the host.
+
+**Solutions:**
+
+1. **Use host.docker.internal (Docker Desktop):**
+   ```bash
+   curl http://host.docker.internal:9090
+   ```
+
+2. **Use host network mode:**
+   ```yaml
+   # docker-compose.yml
+   services:
+     myservice:
+       network_mode: "host"
+   ```
+
+3. **Bind server to 0.0.0.0:**
+   ```python
+   # Server must bind to 0.0.0.0, not 127.0.0.1
+   sock.bind(("0.0.0.0", 9090))
+   ```
+
+---
+
+### ❌ Container cannot reach external services
+
+**Symptoms:**
+```bash
+# Inside container:
+ping google.com
+# Network unreachable
+```
+
+**Diagnostic:**
+```bash
+# Check Docker network
+docker network ls
+docker network inspect week2_network
+```
+
+**Solutions:**
+```bash
+# Restart Docker
+sudo service docker restart
+
+# Or restart WSL entirely
+wsl --shutdown  # From PowerShell
+```
+
+---
+
+## Wireshark Issues
+
+### ❌ No packets captured
+
+**Symptoms:** Wireshark shows empty capture while traffic should be occurring.
+
+**Diagnostic checklist:**
+
+1. **Correct interface selected?**
+   - For WSL/Docker: **vEthernet (WSL)**
+   - For localhost only: **Loopback Adapter**
+   - For physical network: **Ethernet/Wi-Fi**
+
+2. **Capture started before traffic?**
+   - Start capture FIRST
+   - Then run client/server
+
+3. **Display filter too restrictive?**
+   - Clear filter to see ALL traffic
+   - Then refine
+
+**Common filters:**
+```
+tcp.port == 9090         # TCP on port 9090
+udp.port == 9091         # UDP on port 9091
+ip.addr == 10.0.2.10     # Traffic to/from container
+tcp.flags.syn == 1       # TCP SYN packets only
+```
+
+---
+
+### ❌ Cannot see Docker traffic
+
+**Cause:** Docker traffic on bridge networks may not appear on host interfaces.
+
+**Solutions:**
+
+1. **Use tcpdump inside container:**
+   ```bash
+   docker exec -it week2_lab tcpdump -i eth0 port 9090
+   ```
+
+2. **Use host network mode for debugging:**
+   ```yaml
+   network_mode: "host"
+   ```
+
+3. **Capture on docker0 interface (if available):**
+   ```bash
+   sudo tcpdump -i docker0 port 9090
+   ```
 
 ---
 
 ## WSL-Specific Issues
 
-### Issue: "Cannot find service docker"
-
-| Severity | 🔴 **Blocker** |
-|----------|----------------|
+### ❌ Docker not starting
 
 **Symptoms:**
-```
-docker: command not found
-```
-or
-```
-Job for docker.service failed
-```
-
-**Solution:**
-1. Check if Docker is installed:
-   ```bash
-   which docker
-   ```
-
-2. Start Docker manually:
-   ```bash
-   sudo service docker start
-   ```
-
-3. Common fix — ensure iptables is available:
-   ```bash
-   sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
-   sudo service docker start
-   ```
-
----
-
-### Issue: WSL2 networking unreachable
-
-| Severity | 🟡 **Major** |
-|----------|--------------|
-
-**Symptoms:** Cannot reach localhost from Windows, or vice versa.
-
-**Solution:**
-1. Restart WSL:
-   ```powershell
-   wsl --shutdown
-   wsl
-   ```
-
-2. Check WSL IP address:
-   ```bash
-   ip addr show eth0
-   ```
-
-3. From Windows, use that IP instead of localhost
-
----
-
-### Issue: Performance issues with /mnt/c/ paths
-
-| Severity | 🟢 **Minor** |
-|----------|--------------|
-
-**Symptoms:** Scripts run slowly when accessing Windows files.
-
-**Solution:**
-- Work in `/home/stud/` instead of `/mnt/c/` or `/mnt/d/`
-- Copy files to WSL filesystem for better performance:
-  ```bash
-  cp -r /mnt/d/NETWORKING/WEEK2 ~/WEEK2
-  cd ~/WEEK2/2enWSL
-  ```
-
----
-
-## Getting Further Help
-
-### Self-Help Checklist
-
-Before asking for help, confirm:
-
-- [ ] Docker is running (`docker ps` shows containers)
-- [ ] You're in the correct directory (`pwd`)
-- [ ] The server is running before the client
-- [ ] Port numbers match between server and client
-- [ ] Wireshark is capturing on the correct interface
-
-### Diagnostic Commands Reference
-
 ```bash
-# Check Docker status
-docker ps
-docker logs week2_lab
-
-# Check network
-ss -tlnp | grep 9090    # TCP listeners
-ss -ulnp | grep 9091    # UDP listeners
-ip addr                  # Network interfaces
-
-# Check processes
-ps aux | grep python
-lsof -i :9090           # What's using port 9090
-
-# Environment verification
-python setup/verify_environment.py
-
-# Run smoke tests
-python tests/smoke_test.py
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock
 ```
 
-### External Resources
+**Solution:**
+```bash
+sudo service docker start
+# Enter password: stud
 
-| Resource | URL |
-|----------|-----|
-| Docker documentation | https://docs.docker.com |
-| Python socket module | https://docs.python.org/3/library/socket.html |
-| Wireshark user guide | https://www.wireshark.org/docs/ |
-| WSL documentation | https://docs.microsoft.com/en-us/windows/wsl/ |
+# Verify
+docker ps
+```
+
+**Autostart tip:** This command must be run after EVERY Windows restart.
+
+---
+
+### ❌ Files not visible between Windows and WSL
+
+**Windows → WSL:**
+```
+Windows path: D:\NETWORKING\WEEK2
+WSL path:     /mnt/d/NETWORKING/WEEK2
+```
+
+**WSL → Windows:**
+```
+WSL path:     /home/stud/project
+Windows path: \\wsl$\Ubuntu\home\stud\project
+```
+
+---
+
+### ❌ "Permission denied" errors
+
+**Symptoms:**
+```bash
+bash: ./script.py: Permission denied
+```
+
+**Solutions:**
+```bash
+# Add execute permission
+chmod +x script.py
+
+# Or run with Python explicitly
+python3 script.py
+```
+
+---
+
+## Nuclear Options
+
+When nothing else works:
+
+### Restart WSL
+```powershell
+# From PowerShell (Windows)
+wsl --shutdown
+# Then reopen Ubuntu
+```
+
+### Full Docker reset
+```bash
+# Stop all containers
+docker stop $(docker ps -q)
+
+# Remove all containers (except Portainer)
+docker rm $(docker ps -aq --filter "name!=portainer")
+
+# Restart Docker
+sudo service docker restart
+```
+
+### Portainer recovery
+```bash
+# If Portainer is broken
+docker stop portainer
+docker rm portainer
+docker volume rm portainer_data
+
+# Recreate (will need initial setup again)
+docker run -d -p 9000:9000 --name portainer \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce
+```
+
+---
+
+## Quick Reference Card
+
+| Problem | First Check | Quick Fix |
+|---------|-------------|-----------|
+| Connection refused | Is server running? | Start server |
+| Address in use | What's on port? | Kill process or SO_REUSEADDR |
+| Timeout | Is target reachable? | Check IP and firewall |
+| Merged messages | Using TCP? | Add message framing |
+| Container unreachable | Bind address? | Use 0.0.0.0 |
+| No Wireshark packets | Right interface? | Use vEthernet (WSL) |
+| Docker not working | Service running? | `sudo service docker start` |
+
+---
+
+## When to Escalate
+
+If you've spent more than 15 minutes on an issue:
+
+1. Document what you've tried
+2. Note exact error messages
+3. Check [docs/misconceptions.md](misconceptions.md)
+4. Ask a classmate (pair debugging works!)
+5. Issues: Open an issue in GitHub
 
 ---
 

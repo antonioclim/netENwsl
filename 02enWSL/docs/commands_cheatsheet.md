@@ -1,289 +1,292 @@
-# Commands Cheatsheet — Week 2
+# 📋 Commands Cheatsheet — Week 2: Socket Programming
 
-> NETWORKING class - ASE, CSIE Bucharest | by ing. dr. Antonio Clim
+> NETWORKING class — ASE, CSIE Bucharest  
+> Computer Networks Laboratory | by ing. dr. Antonio Clim
 
-## Laboratory Management
+Quick reference for commands used in Week 2 exercises.
 
-### Starting the Environment
+---
 
-```powershell
-# Start all containers
-python scripts/start_lab.py
+## Lab Environment
 
-# Check service status
-python scripts/start_lab.py --status
+### Docker
 
-# Rebuild images (after Dockerfile changes)
-python scripts/start_lab.py --rebuild
-```
+| Command | Purpose | Example Output |
+|---------|---------|----------------|
+| `sudo service docker start` | Start Docker daemon | `* Starting Docker: docker` |
+| `docker ps` | List running containers | Shows container table |
+| `docker ps -a` | List all containers | Includes stopped |
+| `docker compose up -d` | Start compose services | `Creating week2_lab...` |
+| `docker compose down` | Stop and remove services | `Removing week2_lab...` |
+| `docker logs <name>` | View container logs | Log output |
+| `docker exec -it <name> bash` | Shell into container | Container prompt |
 
-### Stopping the Environment
+### WSL Navigation
 
-```powershell
-# Graceful stop (preserves data)
-python scripts/stop_lab.py
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `cd /mnt/d/NETWORKING` | Access Windows D: drive | — |
+| `explorer.exe .` | Open current dir in Windows | Opens Explorer |
+| `code .` | Open in VS Code | Opens VS Code |
+| `wsl --shutdown` | Restart WSL (from PowerShell) | — |
 
-# Full cleanup (removes volumes)
-python scripts/cleanup.py --full
+---
 
-# Dry run (shows what would be removed)
-python scripts/cleanup.py --dry-run
-```
+## Socket Programming
 
-## Docker Commands
+### Exercise Commands
 
-### Container Management
+| Command | Purpose |
+|---------|---------|
+| `python3 src/exercises/ex_2_01_tcp.py server --port 9090` | Start TCP server |
+| `python3 src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 -m "Hello"` | TCP client |
+| `python3 src/exercises/ex_2_01_tcp.py load --clients 10` | TCP load test |
+| `python3 src/exercises/ex_2_02_udp.py server --port 9091` | Start UDP server |
+| `python3 src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 -i` | Interactive UDP client |
 
-```bash
-# List running containers
-docker ps
+### Server Mode Options
 
-# List all containers (including stopped)
-docker ps -a
+| Option | Meaning |
+|--------|---------|
+| `--mode threaded` | Handle clients concurrently (default) |
+| `--mode iterative` | Handle clients sequentially |
+| `--bind 0.0.0.0` | Accept from all interfaces |
+| `--bind 127.0.0.1` | Accept from localhost only |
+| `--interactive` | Enable prediction prompts |
 
-# View container logs
-docker logs week2_lab
-
-# Follow logs in real time
-docker logs -f week2_lab
-
-# Execute command inside container
-docker exec -it week2_lab bash
-
-# Check container resource usage
-docker stats week2_lab
-```
-
-### Network Inspection
-
-```bash
-# List networks
-docker network ls
-
-# Inspect network details
-docker network inspect week2_network
-
-# View container IP addresses
-docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' week2_lab
-```
-
-### Cleanup Commands
-
-```bash
-# Remove stopped containers
-docker container prune
-
-# Remove unused networks
-docker network prune
-
-# Remove unused volumes
-docker volume prune
-
-# Remove all unused resources
-docker system prune -a
-```
-
-## Socket Programming Commands
-
-### TCP Server (Exercise 1)
-
-```bash
-# Start threaded server (default)
-python src/exercises/ex_2_01_tcp.py server
-
-# Start iterative server
-python src/exercises/ex_2_01_tcp.py server --mode iterative
-
-# Start on custom port
-python src/exercises/ex_2_01_tcp.py server --port 8080
-
-# Start client
-python src/exercises/ex_2_01_tcp.py client
-
-# Run load test (10 concurrent clients)
-python src/exercises/ex_2_01_tcp.py load --clients 10
-```
-
-### UDP Server (Exercise 2)
-
-```bash
-# Start UDP server
-python src/exercises/ex_2_02_udp.py server
-
-# Interactive client
-python src/exercises/ex_2_02_udp.py client
-
-# Single command client
-python src/exercises/ex_2_02_udp.py client --command "upper:hello"
-
-# Test protocol commands
-ping
-upper:hello world
-lower:HELLO WORLD
-reverse:networking
-echo:test message
-time
-help
-```
+---
 
 ## Network Debugging
 
-### Using netcat
+### Port and Connection Status
 
-```bash
-# TCP connection test
-nc -v localhost 9090
+| Command | Purpose | Example Output |
+|---------|---------|----------------|
+| `ss -tlnp` | List TCP listening sockets | `LISTEN 0 128 0.0.0.0:9090` |
+| `ss -ulnp` | List UDP listening sockets | `UNCONN 0 0 0.0.0.0:9091` |
+| `ss -tnp` | List established TCP connections | `ESTAB ... 127.0.0.1:9090` |
+| `ss -tn state time-wait` | List TIME_WAIT sockets | Sockets in TIME_WAIT |
+| `lsof -i :9090` | What's using port 9090? | Process info |
+| `netstat -tlnp` | Alternative to ss | Similar output |
 
-# UDP connection test
-nc -vu localhost 9091
+### Process Management
 
-# Listen on TCP port
-nc -l 9090
+| Command | Purpose |
+|---------|---------|
+| `ps aux \| grep python` | Find Python processes |
+| `kill <pid>` | Terminate process gracefully |
+| `kill -9 <pid>` | Force terminate process |
+| `pkill -f "ex_2_01"` | Kill by command name |
+| `jobs` | List background jobs |
+| `fg` | Bring job to foreground |
+| `Ctrl+C` | Interrupt running process |
+| `Ctrl+Z` | Suspend process (use `bg` to resume) |
 
-# Listen on UDP port
-nc -lu 9091
-```
+### Network Testing
 
-### Using tcpdump
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `ping 127.0.0.1` | Test loopback | Shows RTT |
+| `ping 10.0.2.10` | Test container IP | Shows RTT |
+| `nc -zv 127.0.0.1 9090` | Test TCP port | `Connection succeeded` |
+| `nc -u 127.0.0.1 9091` | UDP client (netcat) | Interactive |
+| `curl http://localhost:8080` | HTTP request | Response body |
+| `telnet 127.0.0.1 9090` | Interactive TCP client | Manual protocol testing |
 
-```bash
-# Capture all traffic on interface
-tcpdump -i eth0
-
-# Capture TCP traffic on port 9090
-tcpdump -i eth0 tcp port 9090
-
-# Capture UDP traffic on port 9091
-tcpdump -i eth0 udp port 9091
-
-# Save to file
-tcpdump -i eth0 -w capture.pcap
-
-# Read from file
-tcpdump -r capture.pcap
-
-# Verbose output with hex dump
-tcpdump -i eth0 -X port 9090
-```
-
-### Using tshark
-
-```bash
-# Capture with display filter
-tshark -i eth0 -Y "tcp.port == 9090"
-
-# Show packet summary
-tshark -i eth0 -c 10
-
-# Extract fields
-tshark -i eth0 -T fields -e ip.src -e ip.dst -e tcp.port
-```
+---
 
 ## Wireshark Filters
 
 ### Display Filters
 
-```
-# TCP traffic on specific port
-tcp.port == 9090
+| Filter | Purpose |
+|--------|---------|
+| `tcp.port == 9090` | TCP traffic on port 9090 |
+| `udp.port == 9091` | UDP traffic on port 9091 |
+| `tcp.port == 9090 or udp.port == 9091` | Either protocol |
+| `ip.addr == 10.0.2.10` | Traffic to/from container |
+| `ip.src == 127.0.0.1` | Traffic from localhost |
+| `ip.dst == 10.0.2.10` | Traffic to container |
 
-# UDP traffic on specific port
-udp.port == 9091
+### TCP-Specific Filters
 
-# TCP handshake packets
-tcp.flags.syn == 1
+| Filter | Purpose |
+|--------|---------|
+| `tcp.flags.syn == 1` | SYN packets (connection start) |
+| `tcp.flags.fin == 1` | FIN packets (connection end) |
+| `tcp.flags.rst == 1` | RST packets (connection reset) |
+| `tcp.flags.syn == 1 and tcp.flags.ack == 0` | Initial SYN only |
+| `tcp.analysis.retransmission` | Retransmitted packets |
+| `tcp.stream eq 0` | First TCP conversation |
 
-# TCP data packets
-tcp.len > 0
+### Following Streams
 
-# Localhost traffic
-ip.addr == 127.0.0.1
+1. Find any packet in the conversation
+2. Right-click → **Follow → TCP Stream** (or UDP Stream)
+3. View complete conversation
 
-# Container network traffic
-ip.addr == 10.0.2.0/24
+---
 
-# TCP retransmissions
-tcp.analysis.retransmission
+## Makefile Targets
 
-# Packets with specific content
-frame contains "hello"
-```
+| Target | Command | Purpose |
+|--------|---------|---------|
+| `make help` | — | Show all targets |
+| `make install` | `pip install -r requirements.txt` | Install dependencies |
+| `make verify` | `python setup/verify_environment.py` | Check setup |
+| `make lint` | `ruff check ...` | Code quality |
+| `make test` | `pytest tests/` | Run tests |
+| `make smoke` | `python tests/smoke_test.py` | Quick sanity check |
+| `make quiz` | `python formative/run_quiz.py` | Interactive quiz |
+| `make quiz-quick` | `... --limit 5 --random` | 5 random questions |
+| `make quiz-export` | `... export_quiz_to_lms.py` | LMS export |
+| `make docker-up` | `docker compose up -d` | Start containers |
+| `make docker-down` | `docker compose down` | Stop containers |
+| `make clean` | Remove `__pycache__`, etc. | Cleanup |
+| `make ci` | lint + test | CI pipeline |
 
-### Capture Filters
+---
 
-```
-# Specific port
-port 9090
+## Python Socket Quick Reference
 
-# TCP only
-tcp
-
-# UDP only
-udp
-
-# Host filter
-host 10.0.2.2
-
-# Exclude SSH
-not port 22
-```
-
-## Python Network Utilities
-
-### Socket Creation
+### TCP Server Pattern
 
 ```python
 import socket
 
-# TCP socket
-tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# UDP socket
-udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# Enable address reuse
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("0.0.0.0", 9090))
+sock.listen(5)
+
+while True:
+    conn, addr = sock.accept()
+    data = conn.recv(1024)
+    conn.send(b"Response")
+    conn.close()
 ```
 
-### Quick Port Check
+### TCP Client Pattern
 
 ```python
 import socket
 
-def is_port_available(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) != 0
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    sock.connect(("127.0.0.1", 9090))
+    sock.send(b"Request")
+    response = sock.recv(1024)
 ```
 
-## Testing Commands
+### UDP Server Pattern
 
-```powershell
-# Run smoke test
-python tests/smoke_test.py
+```python
+import socket
 
-# Run all tests
-python tests/test_exercises.py
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind(("0.0.0.0", 9091))
 
-# Run specific test
-python tests/test_exercises.py --exercise 1
-
-# Run with verbose output
-python tests/test_exercises.py -v
+while True:
+    data, addr = sock.recvfrom(1024)
+    sock.sendto(b"Response", addr)
 ```
 
-## Demonstrations
+### UDP Client Pattern
 
-```powershell
-# Demo 1: TCP vs UDP comparison
-python scripts/run_demo.py --demo 1
+```python
+import socket
 
-# Demo 2: Concurrent server handling
-python scripts/run_demo.py --demo 2
-
-# List available demos
-python scripts/run_demo.py --list
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.sendto(b"Request", ("127.0.0.1", 9091))
+response, server = sock.recvfrom(1024)
 ```
 
 ---
 
-*NETWORKING class - ASE, CSIE Bucharest | by ing. dr. Antonio Clim*
+## Common Error Messages
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Address already in use` | Port occupied | `lsof -i :PORT` then `kill` |
+| `Connection refused` | Server not running | Start server first |
+| `Connection timed out` | Server unreachable | Check IP and firewall |
+| `Name or service not known` | DNS failure | Use IP address instead |
+| `Permission denied` | Port < 1024 without root | Use port > 1024 |
+| `Network is unreachable` | No route to host | Check network config |
+
+---
+
+## Debugging Workflow
+
+### Step 1: Check Server Status
+
+```bash
+# Is server process running?
+ps aux | grep python
+
+# Is server listening?
+ss -tlnp | grep 9090
+```
+
+### Step 2: Check Port Availability
+
+```bash
+# What's using the port?
+lsof -i :9090
+
+# Kill if needed
+kill <pid>
+```
+
+### Step 3: Test Connectivity
+
+```bash
+# Can we reach the port?
+nc -zv 127.0.0.1 9090
+
+# Or use telnet
+telnet 127.0.0.1 9090
+```
+
+### Step 4: Check Wireshark
+
+1. Select correct interface (vEthernet WSL)
+2. Apply filter: `tcp.port == 9090`
+3. Generate traffic
+4. Look for: SYN → SYN-ACK → ACK (success) or RST (failure)
+
+### Step 5: Check Logs
+
+```bash
+# Server output
+# Check terminal where server is running
+
+# Docker logs
+docker logs week2_lab
+```
+
+---
+
+## Environment Variables
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `PYTHONUNBUFFERED=1` | Immediate print output | `export PYTHONUNBUFFERED=1` |
+| `DOCKER_HOST` | Docker daemon location | Usually unset for local |
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+C` | Interrupt/stop process |
+| `Ctrl+D` | End input (EOF) |
+| `Ctrl+Z` | Suspend process |
+| `Ctrl+L` | Clear terminal |
+| `Tab` | Autocomplete |
+| `↑` | Previous command |
+| `Ctrl+R` | Search command history |
+
+---
+
+*NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim*

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 550" font-family="Arial, sans-serif">
+  <title>Socket API Flow</title>
+  <desc>Week 2 — TCP and UDP socket programming patterns</desc>
+  
+  <!-- Background -->
+  <rect width="750" height="550" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="375" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Socket API Call Sequence</text>
+  
+  <!-- TCP Section -->
+  <g transform="translate(20, 50)">
+    <text x="170" y="15" text-anchor="middle" font-size="14" font-weight="bold" fill="#3498db">TCP (SOCK_STREAM)</text>
+    
+    <!-- Server Column -->
+    <text x="85" y="45" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Server</text>
+    <rect x="35" y="55" width="100" height="30" rx="4" fill="#3498db"/>
+    <text x="85" y="75" text-anchor="middle" fill="white" font-size="11">socket()</text>
+    
+    <line x1="85" y1="85" x2="85" y2="100" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="35" y="100" width="100" height="30" rx="4" fill="#3498db"/>
+    <text x="85" y="120" text-anchor="middle" fill="white" font-size="11">bind()</text>
+    
+    <line x1="85" y1="130" x2="85" y2="145" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="35" y="145" width="100" height="30" rx="4" fill="#3498db"/>
+    <text x="85" y="165" text-anchor="middle" fill="white" font-size="11">listen()</text>
+    
+    <line x1="85" y1="175" x2="85" y2="190" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="35" y="190" width="100" height="30" rx="4" fill="#9b59b6"/>
+    <text x="85" y="210" text-anchor="middle" fill="white" font-size="11">accept()</text>
+    <text x="145" y="210" font-size="9" fill="#9b59b6">← blocks</text>
+    
+    <line x1="85" y1="220" x2="85" y2="270" stroke="#3498db" stroke-width="2" stroke-dasharray="5,3"/>
+    
+    <rect x="35" y="270" width="100" height="30" rx="4" fill="#2ecc71"/>
+    <text x="85" y="290" text-anchor="middle" fill="white" font-size="11">recv()</text>
+    
+    <line x1="85" y1="300" x2="85" y2="315" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="35" y="315" width="100" height="30" rx="4" fill="#2ecc71"/>
+    <text x="85" y="335" text-anchor="middle" fill="white" font-size="11">send()</text>
+    
+    <line x1="85" y1="345" x2="85" y2="360" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="35" y="360" width="100" height="30" rx="4" fill="#e74c3c"/>
+    <text x="85" y="380" text-anchor="middle" fill="white" font-size="11">close()</text>
+    
+    <!-- Client Column -->
+    <text x="255" y="45" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Client</text>
+    <rect x="205" y="55" width="100" height="30" rx="4" fill="#3498db"/>
+    <text x="255" y="75" text-anchor="middle" fill="white" font-size="11">socket()</text>
+    
+    <line x1="255" y1="85" x2="255" y2="190" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="205" y="190" width="100" height="30" rx="4" fill="#9b59b6"/>
+    <text x="255" y="210" text-anchor="middle" fill="white" font-size="11">connect()</text>
+    <text x="315" y="210" font-size="9" fill="#9b59b6">← handshake</text>
+    
+    <!-- Handshake arrows -->
+    <line x1="135" y1="205" x2="205" y2="205" stroke="#9b59b6" stroke-width="1.5" marker-end="url(#arrowPurple2)"/>
+    
+    <line x1="255" y1="220" x2="255" y2="270" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="205" y="270" width="100" height="30" rx="4" fill="#2ecc71"/>
+    <text x="255" y="290" text-anchor="middle" fill="white" font-size="11">send()</text>
+    
+    <!-- Data arrows -->
+    <line x1="205" y1="285" x2="135" y2="285" stroke="#2ecc71" stroke-width="1.5" marker-end="url(#arrowGreen2)"/>
+    
+    <line x1="255" y1="300" x2="255" y2="315" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="205" y="315" width="100" height="30" rx="4" fill="#2ecc71"/>
+    <text x="255" y="335" text-anchor="middle" fill="white" font-size="11">recv()</text>
+    
+    <!-- Response arrow -->
+    <line x1="135" y1="330" x2="205" y2="330" stroke="#2ecc71" stroke-width="1.5" marker-end="url(#arrowGreen2)"/>
+    
+    <line x1="255" y1="345" x2="255" y2="360" stroke="#3498db" stroke-width="2"/>
+    
+    <rect x="205" y="360" width="100" height="30" rx="4" fill="#e74c3c"/>
+    <text x="255" y="380" text-anchor="middle" fill="white" font-size="11">close()</text>
+  </g>
+  
+  <!-- Divider -->
+  <line x1="375" y1="60" x2="375" y2="470" stroke="#bdc3c8" stroke-width="2" stroke-dasharray="10,5"/>
+  
+  <!-- UDP Section -->
+  <g transform="translate(400, 50)">
+    <text x="170" y="15" text-anchor="middle" font-size="14" font-weight="bold" fill="#e67e22">UDP (SOCK_DGRAM)</text>
+    
+    <!-- Server Column -->
+    <text x="85" y="45" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Server</text>
+    <rect x="35" y="55" width="100" height="30" rx="4" fill="#e67e22"/>
+    <text x="85" y="75" text-anchor="middle" fill="white" font-size="11">socket()</text>
+    
+    <line x1="85" y1="85" x2="85" y2="100" stroke="#e67e22" stroke-width="2"/>
+    
+    <rect x="35" y="100" width="100" height="30" rx="4" fill="#e67e22"/>
+    <text x="85" y="120" text-anchor="middle" fill="white" font-size="11">bind()</text>
+    
+    <line x1="85" y1="130" x2="85" y2="190" stroke="#e67e22" stroke-width="2"/>
+    <text x="95" y="165" font-size="9" fill="#7f8c8d" font-style="italic">No listen()!</text>
+    
+    <rect x="35" y="190" width="100" height="30" rx="4" fill="#9b59b6"/>
+    <text x="85" y="210" text-anchor="middle" fill="white" font-size="11">recvfrom()</text>
+    <text x="145" y="210" font-size="9" fill="#9b59b6">← blocks</text>
+    
+    <line x1="85" y1="220" x2="85" y2="270" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,3"/>
+    
+    <rect x="35" y="270" width="100" height="30" rx="4" fill="#2ecc71"/>
+    <text x="85" y="290" text-anchor="middle" fill="white" font-size="11">sendto()</text>
+    
+    <line x1="85" y1="300" x2="85" y2="360" stroke="#e67e22" stroke-width="2"/>
+    
+    <rect x="35" y="360" width="100" height="30" rx="4" fill="#e74c3c"/>
+    <text x="85" y="380" text-anchor="middle" fill="white" font-size="11">close()</text>
+    
+    <!-- Client Column -->
+    <text x="255" y="45" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Client</text>
+    <rect x="205" y="55" width="100" height="30" rx="4" fill="#e67e22"/>
+    <text x="255" y="75" text-anchor="middle" fill="white" font-size="11">socket()</text>
+    
+    <line x1="255" y1="85" x2="255" y2="190" stroke="#e67e22" stroke-width="2"/>
+    <text x="265" y="140" font-size="9" fill="#7f8c8d" font-style="italic">No connect()!</text>
+    
+    <rect x="205" y="190" width="100" height="30" rx="4" fill="#2ecc71"/>
+    <text x="255" y="210" text-anchor="middle" fill="white" font-size="11">sendto()</text>
+    
+    <!-- Data arrow -->
+    <line x1="205" y1="205" x2="135" y2="205" stroke="#2ecc71" stroke-width="1.5" marker-end="url(#arrowGreen2)"/>
+    
+    <line x1="255" y1="220" x2="255" y2="270" stroke="#e67e22" stroke-width="2"/>
+    
+    <rect x="205" y="270" width="100" height="30" rx="4" fill="#9b59b6"/>
+    <text x="255" y="290" text-anchor="middle" fill="white" font-size="11">recvfrom()</text>
+    
+    <!-- Response arrow -->
+    <line x1="135" y1="285" x2="205" y2="285" stroke="#2ecc71" stroke-width="1.5" marker-end="url(#arrowGreen2)"/>
+    
+    <line x1="255" y1="300" x2="255" y2="360" stroke="#e67e22" stroke-width="2"/>
+    
+    <rect x="205" y="360" width="100" height="30" rx="4" fill="#e74c3c"/>
+    <text x="255" y="380" text-anchor="middle" fill="white" font-size="11">close()</text>
+  </g>
+  
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowPurple2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#9b59b6"/>
+    </marker>
+    <marker id="arrowGreen2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2ecc71"/>
+    </marker>
+  </defs>
+  
+  <!-- Legend -->
+  <g transform="translate(50, 480)">
+    <text x="0" y="0" font-size="12" font-weight="bold" fill="#2c3e50">Key Differences:</text>
+    <rect x="0" y="10" width="15" height="15" fill="#9b59b6"/>
+    <text x="25" y="22" font-size="11" fill="#34495e">Blocking calls (wait for event)</text>
+    <rect x="200" y="10" width="15" height="15" fill="#2ecc71"/>
+    <text x="225" y="22" font-size="11" fill="#34495e">Data transfer</text>
+    <rect x="400" y="10" width="15" height="15" fill="#e74c3c"/>
+    <text x="425" y="22" font-size="11" fill="#34495e">Cleanup</text>
+    
+    <text x="0" y="50" font-size="10" fill="#7f8c8d">TCP: Requires connect() handshake, uses send()/recv() — connection-oriented</text>
+    <text x="0" y="65" font-size="10" fill="#7f8c8d">UDP: No handshake needed, uses sendto()/recvfrom() with address — connectionless</text>
+  </g>
+  
+  <!-- Footer -->
+  <text x="375" y="545" text-anchor="middle" font-size="10" fill="#7f8c8d">NETWORKING — ASE, CSIE Bucharest | Week 2: Socket Programming</text>
+</svg>

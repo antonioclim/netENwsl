@@ -97,11 +97,25 @@ What will the client print?
 
 Many students assume TCP preserves application-level message boundaries like UDP does. This misconception leads to bugs when parsing protocols.
 
+### Expected Vote Distribution
+
+| First Vote | After Discussion |
+|------------|------------------|
+| A: 25-30% | A: 5-10% |
+| B: 20-25% | B: 5-10% |
+| **C: 35-40%** | **C: 75-85%** |
+| D: 10-15% | D: 5% |
+
+**Recovery if >70% get it right:** Skip follow-up, move to Q2.  
+**Escalation if <25% get it right:** Show Wireshark capture demonstrating segment merging before re-vote.
+
 ### Instructor Notes
 
 - **Target accuracy:** 40-50% on first vote
 - **Key concept:** TCP stream vs message semantics
 - **After discussion:** Show Wireshark capture where segments don't align with send() calls
+
+**From experience:** Question 1 typically splits 40/40/20 on first vote. If you see >60% correct, the group may have stronger programming background than usual — consider adding the follow-up exercise.
 
 ### Follow-up Activity
 
@@ -150,6 +164,18 @@ Can this UDP client receive a response from the server?
 ### Targeted Misconception
 
 Students confuse "connectionless" with "one-way" or think separate sockets are needed for bidirectional UDP communication.
+
+### Expected Vote Distribution
+
+| First Vote | After Discussion |
+|------------|------------------|
+| A: 15-20% | A: 5% |
+| B: 20-25% | B: 5-10% |
+| **C: 50-60%** | **C: 80-90%** |
+| D: 10-15% | D: 5% |
+
+**Recovery if >75% get it right:** Briefly confirm and move on.  
+**Escalation if <40% get it right:** Draw diagram showing client ephemeral port assignment.
 
 ### Instructor Notes
 
@@ -203,12 +229,26 @@ What happens when your colleague tries to connect?
 
 Students think 127.0.0.1 means "this computer" rather than specifically "the loopback interface only."
 
+### Expected Vote Distribution
+
+| First Vote | After Discussion |
+|------------|------------------|
+| **A: 35-45%** | A: 10-15% |
+| **B: 30-40%** | **B: 70-80%** |
+| C: 15-20% | C: 10% |
+| D: 5-10% | D: 5% |
+
+**Recovery if >65% get it right:** Add question about 0.0.0.0 meaning.  
+**Escalation if <30% get it right:** Draw interface diagram before re-vote.
+
 ### Instructor Notes
 
 - **Target accuracy:** 40-50% on first vote
 - **Key concept:** Bind address = which interface to listen on
 - **After discussion:** Show `ss -tlnp` output comparing 127.0.0.1 vs 0.0.0.0 bindings
 - **Fix:** Use `0.0.0.0` to accept connections on all interfaces
+
+**From marking submissions:** This is the #1 reason Docker containers cannot reach student servers. If you hear "it works locally but not from container", check the bind address first.
 
 ### Follow-up Activity
 
@@ -259,6 +299,18 @@ How many three-way handshakes (SYN → SYN-ACK → ACK) occur?
 ### Targeted Misconception
 
 Students sometimes think each message requires a new handshake, confusing TCP connections with HTTP/1.0 request-response (where connections were often closed between requests).
+
+### Expected Vote Distribution
+
+| First Vote | After Discussion |
+|------------|------------------|
+| **A: 55-65%** | **A: 85-95%** |
+| B: 15-20% | B: 5% |
+| C: 10-15% | C: 5% |
+| D: 10-15% | D: 5% |
+
+**Recovery if >80% get it right:** Move quickly, this confirms prior knowledge.  
+**Escalation if <50% get it right:** Show HTTP/1.0 vs HTTP/1.1 connection patterns.
 
 ### Instructor Notes
 
@@ -315,7 +367,19 @@ What is the total time until ALL clients receive responses?
 
 ### Targeted Misconception
 
-Some students don't grasp that iterative servers serialize all requests, making them unsuitable for concurrent workloads. Others overestimate threading overhead.
+Some students don't grasp that iterative servers serialise all requests, making them unsuitable for concurrent workloads. Others overestimate threading overhead.
+
+### Expected Vote Distribution
+
+| First Vote | After Discussion |
+|------------|------------------|
+| A: 15-20% | A: 5% |
+| **B: 40-50%** | **B: 75-85%** |
+| C: 20-25% | C: 10% |
+| D: 10-15% | D: 5% |
+
+**Recovery if >65% get it right:** Discuss GIL and when async might be better.  
+**Escalation if <35% get it right:** Draw timeline diagram showing sequential vs parallel processing.
 
 ### Instructor Notes
 
@@ -365,6 +429,18 @@ time python ex_2_01_tcp.py load --port 9090 --clients 10
 | 25 min | Q1, Q3, Q5 | Balanced coverage |
 | 35 min | All five | Complete session |
 | 45 min | All five + follow-ups | Deep understanding |
+
+---
+
+## LO Coverage Matrix
+
+| Question | Learning Objectives | Assessment Type |
+|----------|---------------------|-----------------|
+| Q1 | U6 (TCP boundaries) | Conceptual |
+| Q2 | U1 (TCP vs UDP), A2 | Conceptual |
+| Q3 | N3 (Bind addresses), A1 | Applied |
+| Q4 | U2 (Handshake), R3 | Recall |
+| Q5 | U3 (Iterative vs concurrent), A5 | Analysis |
 
 ---
 

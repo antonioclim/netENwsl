@@ -1,343 +1,284 @@
-# 🔍 Code Tracing Exercises — Week 2: Sockets and Transport Protocols
+# 🔍 Code Tracing Exercises — Week 2: Socket Programming
 
 > NETWORKING class — ASE, CSIE Bucharest  
 > Computer Networks Laboratory | by ing. dr. Antonio Clim
 
-Trace through the code mentally before running it. This builds your mental model of how sockets work.
+Code tracing builds deep understanding by forcing you to simulate program execution mentally. Complete these exercises without running the code.
 
 ---
 
-## Exercise T1: TCP Client Connection Sequence
+## Instructions
 
-### Code
+For each exercise:
+1. Read the code carefully
+2. Trace execution step by step
+3. Write your predicted output
+4. **Only then** run the code to check
+
+---
+
+## Trace T1: TCP Server Socket Creation
 
 ```python
 import socket
 
-def tcp_client():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print(f"1. Socket created, fd={sock.fileno()}")
-    
-    sock.settimeout(5.0)
-    print("2. Timeout set")
-    
-    sock.connect(("127.0.0.1", 9090))
-    print("3. Connected")
-    
-    sock.send(b"Hello")
-    print("4. Data sent")
-    
-    data = sock.recv(1024)
-    print(f"5. Received: {data}")
-    
-    sock.close()
-    print("6. Closed")
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print(f"Type: {sock.type}")
+print(f"Family: {sock.family}")
 
-tcp_client()
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("127.0.0.1", 9090))
+sock.listen(5)
+
+print(f"Listening: {sock.getsockname()}")
 ```
 
-### Questions
-
-1. **Line by line:** After line 4, what is the state of the TCP connection?
-2. **Output prediction:** If the server responds with `b"OK: HELLO"`, what prints at step 5?
-3. **Network trace:** What TCP packets are exchanged between steps 2 and 3?
-4. **Error scenario:** What happens at line 7 if no server is running?
-
-### State Tracking Table
-
-Complete this table (assuming server is running and responds with `b"OK: HELLO"`):
-
-| After line | `sock` state | TCP connection state | Network activity |
-|------------|--------------|----------------------|------------------|
-| 4 | ? | ? | ? |
-| 7 | ? | ? | ? |
-| 10 | ? | ? | ? |
-| 13 | ? | ? | ? |
-| 16 | ? | ? | ? |
-
-### Solution
+### Your prediction:
+```
+Type: _______________
+Family: _______________
+Listening: _______________
+```
 
 <details>
-<summary>Click to reveal</summary>
+<summary>Click to reveal answer</summary>
 
-| After line | `sock` state | TCP connection state | Network activity |
-|------------|--------------|----------------------|------------------|
-| 4 | Created, unconnected | CLOSED | None |
-| 7 | Timeout configured | CLOSED | None |
-| 10 | Connected | ESTABLISHED | SYN → SYN-ACK → ACK |
-| 13 | Data sent | ESTABLISHED | DATA → ACK |
-| 16 | Data received | ESTABLISHED | (already received) |
-| 19 | Closed | TIME_WAIT | FIN → ACK → FIN → ACK |
-
-**Output:**
 ```
-1. Socket created, fd=3
-2. Timeout set
-3. Connected
-4. Data sent
-5. Received: b'OK: HELLO'
-6. Closed
+Type: SocketKind.SOCK_STREAM
+Family: AddressFamily.AF_INET
+Listening: ('127.0.0.1', 9090)
 ```
 
-**Error scenario:** If no server is running, line 7 raises `ConnectionRefusedError` because the SYN packet receives RST in response.
-
+**Key insight:** `sock.type` returns the socket type constant, `getsockname()` returns the bound address.
 </details>
 
 ---
 
-## Exercise T2: UDP Server Receive Loop
+## Trace T2: TCP vs UDP Packet Count
 
-### Code
+Consider these two scenarios running simultaneously (with Wireshark capturing):
+
+**Scenario A: TCP**
+```python
+# Server
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.bind(("0.0.0.0", 9090))
+sock.listen(1)
+conn, addr = sock.accept()
+data = conn.recv(1024)
+conn.send(b"OK")
+conn.close()
+sock.close()
+
+# Client
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(("127.0.0.1", 9090))
+sock.send(b"Hello")
+sock.recv(1024)
+sock.close()
+```
+
+**Scenario B: UDP**
+```python
+# Server
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind(("0.0.0.0", 9091))
+data, addr = sock.recvfrom(1024)
+sock.sendto(b"OK", addr)
+sock.close()
+
+# Client
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.sendto(b"Hello", ("127.0.0.1", 9091))
+sock.recvfrom(1024)
+sock.close()
+```
+
+### Your prediction:
+
+| Scenario | Minimum packets in Wireshark |
+|----------|------------------------------|
+| A (TCP)  | ___ packets                  |
+| B (UDP)  | ___ packets                  |
+
+<details>
+<summary>Click to reveal answer</summary>
+
+| Scenario | Minimum packets |
+|----------|-----------------|
+| A (TCP)  | **10 packets** (SYN, SYN-ACK, ACK, DATA, ACK, DATA, ACK, FIN, ACK, FIN-ACK) |
+| B (UDP)  | **2 packets** (DATA, DATA) |
+
+**Key insight:** TCP's reliability comes at the cost of overhead. UDP has zero connection setup.
+</details>
+
+---
+
+## Trace T3: TCP Three-Way Handshake Sequence
+
+Trace what happens at each step when a client connects:
 
 ```python
-import socket
+# Server is already running on 127.0.0.1:9090
 
-def udp_server():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(("0.0.0.0", 9091))
-    print("Server ready")
-    
-    count = 0
-    while count < 3:
-        data, addr = sock.recvfrom(1024)
-        count += 1
-        print(f"#{count}: {data} from {addr[0]}:{addr[1]}")
-        sock.sendto(b"ACK", addr)
-    
-    sock.close()
-    print(f"Done after {count} messages")
-
-udp_server()
+# Client code:
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Step 1
+sock.settimeout(5.0)                                       # Step 2
+sock.connect(("127.0.0.1", 9090))                         # Step 3
 ```
 
-### Questions
+### Your prediction:
 
-1. **Blocking behaviour:** What happens at line 10 if no client sends data?
-2. **Address tracking:** If client A (port 50001) and client B (port 50002) both send "Hi", what do we know about `addr` each time?
-3. **Loop termination:** How many datagrams does this server process before exiting?
-4. **No connect needed:** Why is there no `accept()` or `connect()` call?
-
-### State Tracking Table
-
-Assume these events occur:
-- t=0: Server starts
-- t=1: Client 192.168.1.10:50001 sends `b"First"`
-- t=2: Client 192.168.1.20:50002 sends `b"Second"`
-- t=3: Client 192.168.1.10:50001 sends `b"Third"`
-
-| After event | `count` | `data` | `addr` | Output |
-|-------------|---------|--------|--------|--------|
-| Server starts | ? | ? | ? | ? |
-| First message | ? | ? | ? | ? |
-| Second message | ? | ? | ? | ? |
-| Third message | ? | ? | ? | ? |
-
-### Solution
+| Step | Client State | Server State | Packets Sent |
+|------|--------------|--------------|--------------|
+| 1    | ___          | LISTEN       | ___          |
+| 2    | ___          | LISTEN       | ___          |
+| 3a   | ___          | ___          | ___          |
+| 3b   | ___          | ___          | ___          |
+| 3c   | ___          | ___          | ___          |
 
 <details>
-<summary>Click to reveal</summary>
+<summary>Click to reveal answer</summary>
 
-| After event | `count` | `data` | `addr` | Output |
-|-------------|---------|--------|--------|--------|
-| Server starts | 0 | N/A | N/A | "Server ready" |
-| First message | 1 | b"First" | ("192.168.1.10", 50001) | "#1: b'First' from 192.168.1.10:50001" |
-| Second message | 2 | b"Second" | ("192.168.1.20", 50002) | "#2: b'Second' from 192.168.1.20:50002" |
-| Third message | 3 | b"Third" | ("192.168.1.10", 50001) | "#3: b'Third' from 192.168.1.10:50001" |
+| Step | Client State | Server State | Packets Sent |
+|------|--------------|--------------|--------------|
+| 1    | CLOSED       | LISTEN       | None         |
+| 2    | CLOSED       | LISTEN       | None         |
+| 3a   | SYN_SENT     | LISTEN       | Client→Server: SYN |
+| 3b   | SYN_SENT     | SYN_RCVD     | Server→Client: SYN-ACK |
+| 3c   | ESTABLISHED  | ESTABLISHED  | Client→Server: ACK |
 
-**Final output:**
-```
-Server ready
-#1: b'First' from 192.168.1.10:50001
-#2: b'Second' from 192.168.1.20:50002
-#3: b'Third' from 192.168.1.10:50001
-Done after 3 messages
-```
-
-**Answers:**
-1. The server blocks indefinitely at `recvfrom()` waiting for data
-2. `addr` contains the sender's IP and ephemeral port — different for each client
-3. Exactly 3 datagrams (while count < 3)
-4. UDP is connectionless — no connection to establish or accept
-
+**Key insight:** `connect()` blocks until the three-way handshake completes.
 </details>
 
 ---
 
-## Exercise T3: Threaded Server Accept Pattern
-
-### Code
-
-```python
-import socket
-import threading
-
-def handle_client(conn, addr, client_id):
-    print(f"[{client_id}] Handler started for {addr}")
-    data = conn.recv(1024)
-    print(f"[{client_id}] Received: {data}")
-    conn.send(b"OK")
-    conn.close()
-    print(f"[{client_id}] Handler finished")
-
-def server():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(("0.0.0.0", 9090))
-    sock.listen(5)
-    print("Server listening")
-    
-    client_id = 0
-    while client_id < 2:
-        conn, addr = sock.accept()
-        client_id += 1
-        print(f"[Main] Accepted #{client_id}")
-        t = threading.Thread(target=handle_client, args=(conn, addr, client_id))
-        t.start()
-        print(f"[Main] Thread started for #{client_id}")
-    
-    print("[Main] Done accepting")
-    sock.close()
-
-server()
-```
-
-### Questions
-
-1. **Concurrency:** If two clients connect at t=0, can their handlers run simultaneously?
-2. **Socket ownership:** After `accept()`, who owns the `conn` socket — main thread or handler thread?
-3. **Output ordering:** Is the output order deterministic or could it vary between runs?
-4. **Race condition:** What happens if main thread closes `sock` while a handler is still running?
-
-### Execution Trace
-
-Assume:
-- t=0: Client A connects, sends `b"AAA"` immediately
-- t=0: Client B connects, sends `b"BBB"` immediately
-- Handlers take 100ms to process
-
-Mark the **possible** output orderings:
-
-| Output sequence | Possible? | Why? |
-|-----------------|-----------|------|
-| All [Main] first, then all handlers | ? | ? |
-| [Main] and handlers interleaved | ? | ? |
-| [1] finished before [2] started | ? | ? |
-| [2] finished before [1] finished | ? | ? |
-
-### Solution
-
-<details>
-<summary>Click to reveal</summary>
-
-| Output sequence | Possible? | Why? |
-|-----------------|-----------|------|
-| All [Main] first, then all handlers | Yes | Main loop could complete before handlers run |
-| [Main] and handlers interleaved | Yes | Threads run concurrently; OS schedules |
-| [1] finished before [2] started | Yes | If thread 1 runs to completion first |
-| [2] finished before [1] finished | Yes | Threads are independent; scheduling varies |
-
-**One possible output:**
-```
-Server listening
-[Main] Accepted #1
-[Main] Thread started for #1
-[Main] Accepted #2
-[1] Handler started for ('127.0.0.1', 50001)
-[Main] Thread started for #2
-[2] Handler started for ('127.0.0.1', 50002)
-[Main] Done accepting
-[1] Received: b'AAA'
-[2] Received: b'BBB'
-[1] Handler finished
-[2] Handler finished
-```
-
-**Answers:**
-1. Yes — that's the point of threading; handlers run in parallel
-2. The handler thread; main passes `conn` as argument and doesn't use it again
-3. Non-deterministic — thread scheduling is up to the OS
-4. No problem — `sock` is the listening socket; `conn` sockets are independent
-
-</details>
-
----
-
-## Exercise T4: Socket Options Effect
-
-### Code
+## Trace T4: Message Boundary Problem
 
 ```python
 import socket
 import time
 
-def test_reuse():
-    # First server
-    s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s1.bind(("0.0.0.0", 9999))
-    s1.listen(1)
-    print("Server 1 listening")
-    s1.close()
-    print("Server 1 closed")
+# Server
+def server():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(("127.0.0.1", 9090))
+    sock.listen(1)
+    conn, _ = sock.accept()
     
-    # Immediate rebind attempt
-    s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        s2.bind(("0.0.0.0", 9999))
-        print("Server 2 bound successfully")
-    except OSError as e:
-        print(f"Server 2 bind failed: {e}")
-    
-    # With SO_REUSEADDR
-    s3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s3.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    try:
-        s3.bind(("0.0.0.0", 9999))
-        print("Server 3 bound successfully")
-    except OSError as e:
-        print(f"Server 3 bind failed: {e}")
+    conn.send(b"Hello")
+    conn.send(b"World")
+    time.sleep(0.1)
+    conn.close()
 
-test_reuse()
+# Client
+def client():
+    time.sleep(0.05)  # Wait for server
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(("127.0.0.1", 9090))
+    
+    data = sock.recv(1024)
+    print(f"Received: {data!r}")
+    sock.close()
 ```
 
-### Questions
+### Your prediction:
 
-1. **Without SO_REUSEADDR:** Why might s2.bind() fail?
-2. **TIME_WAIT state:** How long does a socket typically stay in TIME_WAIT?
-3. **With SO_REUSEADDR:** Why does s3.bind() succeed?
-4. **Production impact:** Why is SO_REUSEADDR important for server development?
+What will the client print?
 
-### Solution
+- [ ] A: `Received: b'Hello'`
+- [ ] B: `Received: b'World'`
+- [ ] C: `Received: b'HelloWorld'`
+- [ ] D: Could be A, B or C depending on timing
 
 <details>
-<summary>Click to reveal</summary>
+<summary>Click to reveal answer</summary>
 
-**Likely output:**
-```
-Server 1 listening
-Server 1 closed
-Server 2 bind failed: [Errno 98] Address already in use
-Server 3 bound successfully
-```
+**D: Could be A, B or C depending on timing**
 
-**Answers:**
-1. After close(), the socket enters TIME_WAIT state (typically 60 seconds) to handle delayed packets. The OS prevents rebinding during this period.
-2. 2×MSL (Maximum Segment Lifetime), typically 60 seconds on Linux.
-3. SO_REUSEADDR tells the OS "I know there's a TIME_WAIT socket; let me bind anyway."
-4. During development, you frequently restart servers. Without SO_REUSEADDR, you'd wait 60 seconds between restarts or change ports.
+Most likely **C** (`HelloWorld`) because both sends happen quickly before the recv().
 
+**Key insight:** TCP is a byte stream. Two consecutive `send()` calls may be received as one chunk, or split differently. Never assume message boundaries!
 </details>
 
 ---
 
-## Self-Assessment Checklist
+## Trace T5: Threaded Server Execution Order
 
-After completing these exercises, verify you can:
+```python
+import socket
+import threading
+import time
 
-- [ ] Trace TCP connection establishment (SYN-SYN/ACK-ACK)
-- [ ] Identify when blocking calls will wait
-- [ ] Predict thread interleaving possibilities
-- [ ] Explain why SO_REUSEADDR is necessary
-- [ ] Distinguish socket states (CLOSED, ESTABLISHED, TIME_WAIT)
+results = []
+
+def handle(conn, client_id):
+    time.sleep(0.1)  # Simulate work
+    results.append(client_id)
+    conn.close()
+
+# Server accepts 3 connections, spawns threads
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.bind(("127.0.0.1", 9090))
+sock.listen(5)
+
+for i in range(3):
+    conn, _ = sock.accept()
+    t = threading.Thread(target=handle, args=(conn, i))
+    t.start()
+
+time.sleep(0.5)
+print(f"Results: {results}")
+```
+
+If 3 clients connect simultaneously at t=0, what is printed?
+
+### Your prediction:
+```
+Results: _______________
+```
+
+<details>
+<summary>Click to reveal answer</summary>
+
+```
+Results: [0, 1, 2]
+```
+
+Or possibly `[1, 0, 2]`, `[2, 1, 0]`, etc. — **any permutation of [0, 1, 2]**
+
+**Key insight:** Thread execution order is non-deterministic. All three threads run in parallel, each taking ~100ms. They complete at roughly the same time, so the order depends on scheduling.
+</details>
+
+---
+
+## Common Tracing Errors
+
+| Error | Why It Happens |
+|-------|----------------|
+| Assuming TCP message boundaries | TCP is a stream, not messages |
+| Forgetting `accept()` creates new socket | `conn` is different from `sock` |
+| Thinking `bind()` sends packets | `bind()` is local only |
+| Assuming thread order | Threads are non-deterministic |
+| Forgetting timeout affects `recv()` | `recv()` blocks by default |
+
+---
+
+## Self-Assessment
+
+After completing all traces:
+
+| Trace | Correct? | Concept Verified |
+|-------|----------|------------------|
+| T1    | ☐ Yes ☐ No | Socket creation |
+| T2    | ☐ Yes ☐ No | TCP vs UDP overhead |
+| T3    | ☐ Yes ☐ No | Three-way handshake |
+| T4    | ☐ Yes ☐ No | Stream boundaries |
+| T5    | ☐ Yes ☐ No | Thread concurrency |
+
+**Goal:** 4/5 or better before proceeding to exercises.
 
 ---
 

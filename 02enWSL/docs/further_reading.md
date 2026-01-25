@@ -1,246 +1,208 @@
-# Further Reading — Week 2
+# 📚 Further Reading — Week 2: Architectural Models and Socket Programming
 
-> NETWORKING class - ASE, CSIE Bucharest | by ing. dr. Antonio Clim
+> NETWORKING class — ASE, CSIE Bucharest  
+> Computer Networks Laboratory | by ing. dr. Antonio Clim
 
-## Core Textbooks
-
-### Computer Networking: A Top-Down Approach
-**Authors:** James F. Kurose and Keith W. Ross  
-**Edition:** 8th Edition (2021)  
-**Publisher:** Pearson
-
-The definitive textbook for understanding computer networks from the application layer downward. Chapters 2 and 3 are particularly relevant for this week's topics.
-
-**Key Chapters:**
-- Chapter 1: Computer Networks and the Internet
-- Chapter 2: Application Layer
-- Chapter 3: Transport Layer (TCP and UDP)
+Curated resources for deeper understanding of socket programming and network architecture.
 
 ---
 
-### UNIX Network Programming, Volume 1
-**Authors:** W. Richard Stevens, Bill Fenner, Andrew M. Rudoff  
-**Edition:** 3rd Edition (2004)  
-**Publisher:** Addison-Wesley
+## Difficulty Legend
 
-The authoritative reference for socket programming. Though focused on UNIX/C, the concepts translate directly to Python.
-
-**Key Chapters:**
-- Chapter 2: The Transport Layer: TCP, UDP and SCTP
-- Chapter 4: Elementary TCP Sockets
-- Chapter 8: Elementary UDP Sockets
+| Rating | Meaning | Suitable For |
+|--------|---------|--------------|
+| ★☆☆ | Introductory | First-time learners |
+| ★★☆ | Intermediate | After completing lab exercises |
+| ★★★ | Advanced | Deep dive, reference |
 
 ---
 
-### Foundations of Python Network Programming
-**Authors:** Brandon Rhodes and John Goerzen  
-**Edition:** 3rd Edition (2014)  
-**Publisher:** Apress
+## Essential Reading
 
-Practical Python networking with modern practices.
+These resources directly support the lab exercises.
 
-**Key Chapters:**
-- Chapter 2: UDP
-- Chapter 3: TCP
-- Chapter 7: Server Architecture
+### Official Documentation
 
----
+| Resource | Difficulty | Time | Notes |
+|----------|------------|------|-------|
+| [Python socket module](https://docs.python.org/3/library/socket.html) | ★★☆ | 30 min | Official reference — keep open during coding |
+| [Python threading module](https://docs.python.org/3/library/threading.html) | ★★☆ | 20 min | For concurrent server implementation |
+| [Wireshark User's Guide](https://www.wireshark.org/docs/wsug_html/) | ★★☆ | 1 hr | Chapters 3-6 most relevant |
 
-## RFCs (Request for Comments)
+### Textbook Chapters
 
-The authoritative specifications for Internet protocols.
-
-### RFC 793 — Transmission Control Protocol
-https://tools.ietf.org/html/rfc793
-
-The original TCP specification defining connection establishment, data transfer and connection termination.
-
-**Key Sections:**
-- Section 3.2: Terminology
-- Section 3.4: Sequence Numbers
-- Section 3.5: Connection Establishment
+| Resource | Difficulty | Time | Notes |
+|----------|------------|------|-------|
+| Kurose & Ross, Ch. 1.5: Protocol layers | ★☆☆ | 45 min | OSI and TCP/IP models |
+| Kurose & Ross, Ch. 3.1-3.3: Transport layer | ★★☆ | 1 hr | TCP and UDP fundamentals |
+| Stevens, Ch. 4: Elementary TCP Sockets | ★★★ | 2 hr | Definitive socket programming reference |
 
 ---
 
-### RFC 768 — User Datagram Protocol
-https://tools.ietf.org/html/rfc768
+## Deep Dive Resources
 
-The UDP specification — notably concise at just three pages.
+For students who want to go beyond lab requirements.
 
----
+### TCP/IP Internals
 
-### RFC 1122 — Requirements for Internet Hosts
-https://tools.ietf.org/html/rfc1122
+| Resource | Difficulty | Time | Topic |
+|----------|------------|------|-------|
+| [RFC 793](https://www.rfc-editor.org/rfc/rfc793.html) | ★★★ | 2 hr | Original TCP specification |
+| [RFC 768](https://www.rfc-editor.org/rfc/rfc768.html) | ★★☆ | 15 min | UDP specification (very short!) |
+| [TCP/IP Illustrated](https://www.amazon.com/TCP-Illustrated-Vol-Addison-Wesley-Professional/dp/0201633469) by Stevens | ★★★ | N/A | The classic reference |
+| [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/) | ★★☆ | 3 hr | Excellent C tutorial (concepts apply to Python) |
 
-Clarifications and requirements for TCP/IP implementations.
+### Socket Programming Tutorials
 
----
+| Resource | Difficulty | Time | Language |
+|----------|------------|------|----------|
+| [Real Python: Socket Programming](https://realpython.com/python-sockets/) | ★★☆ | 1 hr | Python |
+| [GeeksforGeeks: Socket Programming](https://www.geeksforgeeks.org/socket-programming-python/) | ★☆☆ | 30 min | Python |
+| [IBM: Sockets programming](https://developer.ibm.com/tutorials/l-sock/) | ★★★ | 1 hr | C/Linux |
 
-## Online Resources
+### Concurrent Programming
 
-### Python Documentation
-
-**socket — Low-level networking interface**  
-https://docs.python.org/3/library/socket.html
-
-**socketserver — A framework for network servers**  
-https://docs.python.org/3/library/socketserver.html
-
-**selectors — High-level I/O multiplexing**  
-https://docs.python.org/3/library/selectors.html
-
----
-
-### Docker Networking
-
-**Docker Network Documentation**  
-https://docs.docker.com/network/
-
-**Container Networking Model**  
-https://docs.docker.com/engine/extend/plugins_network/
+| Resource | Difficulty | Time | Topic |
+|----------|------------|------|-------|
+| [Python Concurrency](https://realpython.com/python-concurrency/) | ★★☆ | 1 hr | Threading vs async |
+| [C10K Problem](http://www.kegel.com/c10k.html) | ★★★ | 45 min | Historical context for scalability |
+| [GIL Explained](https://realpython.com/python-gil/) | ★★★ | 30 min | Python threading limitations |
 
 ---
 
-### Wireshark Resources
+## Video Resources
 
-**Wireshark User's Guide**  
-https://www.wireshark.org/docs/wsug_html_chunked/
+For visual learners.
 
-**Display Filter Reference**  
-https://www.wireshark.org/docs/dfref/
-
-**Sample Captures**  
-https://wiki.wireshark.org/SampleCaptures
-
----
-
-## Video Tutorials
-
-### Computerphile
-https://www.youtube.com/user/Computerphile
-
-Excellent short-form explanations of networking concepts:
-- "TCP Meltdown" — Understanding TCP behaviour
-- "UDP and TCP" — Protocol comparison
-- "How ARP Works" — Address resolution
+| Resource | Difficulty | Duration | Topic |
+|----------|------------|----------|-------|
+| [Computerphile: TCP/IP](https://www.youtube.com/watch?v=PpsEaqJV_A0) | ★☆☆ | 12 min | TCP/IP basics |
+| [Computerphile: UDP](https://www.youtube.com/watch?v=Vdc8TCESIg8) | ★☆☆ | 8 min | UDP explained |
+| [Ben Eater: Networking Tutorial](https://www.youtube.com/playlist?list=PLowKtXNTBypH19whXTVoG3oKSuOcw_XeW) | ★★☆ | 2 hr | Building network from scratch |
+| [MIT 6.829: Computer Networks](https://ocw.mit.edu/courses/6-829-computer-networks-fall-2002/) | ★★★ | Course | Full MIT course |
 
 ---
 
-### Ben Eater
-https://www.youtube.com/c/BenEater
+## Wireshark Resources
 
-Deep technical explanations:
-- "Networking tutorial" series — Building networks from first principles
-
----
-
-## Interactive Learning
-
-### Beej's Guide to Network Programming
-https://beej.us/guide/bgnet/
-
-A classic, freely available guide to socket programming in C. The concepts apply directly to Python.
+| Resource | Difficulty | Time | Notes |
+|----------|------------|------|-------|
+| [Wireshark Tutorial](https://www.youtube.com/watch?v=TkCSr30UojM) | ★☆☆ | 20 min | Beginner introduction |
+| [Display Filter Reference](https://www.wireshark.org/docs/dfref/) | ★★☆ | Ref | Filter syntax reference |
+| [Sample Captures](https://wiki.wireshark.org/SampleCaptures) | ★★☆ | N/A | Practice with pre-recorded traffic |
+| [Practical Packet Analysis](https://nostarch.com/packetanalysis3) | ★★★ | Book | Thorough Wireshark book |
 
 ---
 
-### Computer Networking: Principles, Protocols and Practice
-https://www.computer-networking.info/
+## Docker and Container Networking
 
-Open-source networking textbook with interactive exercises.
-
----
-
-## Research Papers
-
-### The Design Philosophy of the DARPA Internet Protocols
-**Author:** David D. Clark  
-**Publication:** SIGCOMM '88
-
-Essential reading for understanding why TCP/IP was designed the way it was.
+| Resource | Difficulty | Time | Topic |
+|----------|------------|------|-------|
+| [Docker Networking Overview](https://docs.docker.com/network/) | ★★☆ | 30 min | Official documentation |
+| [Container Networking Deep Dive](https://www.youtube.com/watch?v=6v_BDHIgOY8) | ★★★ | 45 min | Linux namespaces |
+| [Docker Compose Networking](https://docs.docker.com/compose/networking/) | ★★☆ | 20 min | Multi-container networking |
 
 ---
 
-### Congestion Avoidance and Control
-**Author:** Van Jacobson  
-**Publication:** SIGCOMM '88
+## WSL2 Resources
 
-The paper that saved the Internet from congestion collapse.
-
----
-
-## Tools Documentation
-
-### tcpdump
-https://www.tcpdump.org/manpages/tcpdump.1.html
-
-The canonical packet capture tool for command-line analysis.
+| Resource | Difficulty | Time | Topic |
+|----------|------------|------|-------|
+| [WSL2 Networking](https://docs.microsoft.com/en-us/windows/wsl/networking) | ★★☆ | 20 min | Official networking guide |
+| [WSL2 Networking Limitations](https://github.com/microsoft/WSL/issues/4150) | ★★★ | N/A | Known issues and workarounds |
+| [Accessing Windows from WSL](https://docs.microsoft.com/en-us/windows/wsl/filesystems) | ★☆☆ | 10 min | File system access |
 
 ---
 
-### netcat (nc)
-https://nc110.sourceforge.io/
+## Academic Papers
 
-The "Swiss Army knife" of networking — useful for quick TCP/UDP testing.
+For research-oriented students.
 
----
-
-### tshark
-https://www.wireshark.org/docs/man-pages/tshark.html
-
-Command-line version of Wireshark for scriptable analysis.
+| Paper | Difficulty | Topic |
+|-------|------------|-------|
+| [End-to-End Arguments in System Design](https://web.mit.edu/Saltzer/www/publications/endtoend/endtoend.pdf) | ★★★ | Why TCP is end-to-end |
+| [A Protocol for Packet Network Intercommunication](https://www.cs.princeton.edu/courses/archive/fall06/cos561/papers/cerf74.pdf) | ★★★ | Original TCP/IP paper |
+| [Congestion Avoidance and Control](https://ee.lbl.gov/papers/congavoid.pdf) | ★★★ | TCP congestion control |
 
 ---
 
-## Suggested Learning Path
+## Books (Full References)
 
-### Beginner
-1. Kurose & Ross, Chapters 1–3
-2. Python socket module documentation
-3. Beej's Guide (skim for concepts)
+### Highly Recommended
 
-### Intermediate
-1. UNIX Network Programming, Chapters 2, 4, 8
-2. RFC 793 (TCP specification)
-3. Wireshark User's Guide
+1. **Computer Networking: A Top-Down Approach** (8th ed.)
+   - Authors: Kurose, J. & Ross, K.
+   - Publisher: Pearson, 2021
+   - Rating: ★★☆
+   - Notes: Course textbook, excellent diagrams
 
-### Advanced
-1. Stevens, TCP/IP Illustrated, Volume 1
-2. Research papers on TCP congestion control
-3. RFC 1122 and related clarifications
+2. **UNIX Network Programming, Vol. 1** (3rd ed.)
+   - Authors: Stevens, W. R., Fenner, B., & Rudoff, A.
+   - Publisher: Addison-Wesley, 2004
+   - Rating: ★★★
+   - Notes: The definitive socket programming reference (C-focused)
 
----
+### Additional Resources
 
-## Practice Platforms
+3. **TCP/IP Illustrated, Vol. 1** (2nd ed.)
+   - Author: Fall, K. & Stevens, W. R.
+   - Publisher: Addison-Wesley, 2011
+   - Rating: ★★★
+   - Notes: Protocol internals with Wireshark examples
 
-### Hack The Box
-https://www.hackthebox.com/
-
-Network security challenges that require understanding protocols.
-
----
-
-### TryHackMe
-https://tryhackme.com/
-
-Guided rooms for network analysis and packet capture.
+4. **Effective Python** (2nd ed.)
+   - Author: Slatkin, B.
+   - Publisher: Addison-Wesley, 2019
+   - Rating: ★★☆
+   - Notes: Items 52-56 cover concurrency
 
 ---
 
-### PicoCTF
-https://picoctf.org/
+## Quick Reference Cards
 
-CTF challenges including networking fundamentals.
-
----
-
-## Academic Journals
-
-For those pursuing research:
-
-- **IEEE/ACM Transactions on Networking**
-- **ACM SIGCOMM Conference Proceedings**
-- **IEEE INFOCOM Conference Proceedings**
+| Resource | Format | Notes |
+|----------|--------|-------|
+| [TCP/IP Cheat Sheet](https://packetlife.net/library/cheat-sheets/) | PDF | Port numbers, header formats |
+| [Wireshark Cheat Sheet](https://packetlife.net/media/library/13/Wireshark_Display_Filters.pdf) | PDF | Display filter syntax |
+| [Python socket Cheat Sheet](https://www.pythonsheets.com/notes/python-socket.html) | Web | Quick function reference |
 
 ---
 
-*NETWORKING class - ASE, CSIE Bucharest | by ing. dr. Antonio Clim*
+## Reading Path Recommendations
+
+### Path 1: "I want to understand the theory" (3-4 hours)
+
+1. Kurose & Ross, Ch. 1.5 (45 min) — Models
+2. Computerphile TCP video (12 min) — Visual explanation
+3. RFC 768 (15 min) — See how simple UDP is
+4. Beej's Guide, Ch. 1-3 (1 hr) — Socket concepts
+
+### Path 2: "I want to code better" (2-3 hours)
+
+1. Python socket docs (30 min) — Official reference
+2. Real Python sockets tutorial (1 hr) — Practical examples
+3. Python threading docs (20 min) — Concurrency basics
+4. Python GIL article (30 min) — Why threading has limits
+
+### Path 3: "I want to debug better" (2 hours)
+
+1. Wireshark tutorial video (20 min) — Basic capture
+2. Sample captures practice (30 min) — Real traffic
+3. Display filter reference (30 min) — Finding needles
+4. Practical Packet Analysis, Ch. 1-3 (40 min) — Methodology
+
+---
+
+## Week 3 Preparation
+
+If you have extra time, preview these for next week (UDP Broadcast/Multicast):
+
+| Resource | Difficulty | Time |
+|----------|------------|------|
+| [Multicast Overview](https://en.wikipedia.org/wiki/Multicast) | ★☆☆ | 15 min |
+| [Python Multicast](https://pymotw.com/3/socket/multicast.html) | ★★☆ | 30 min |
+| RFC 1112: Host Extensions for IP Multicasting | ★★★ | 1 hr |
+
+---
+
+*NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim*
