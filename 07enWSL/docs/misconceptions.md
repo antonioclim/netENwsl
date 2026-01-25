@@ -21,6 +21,8 @@
 | Debugging | Harder (looks like packet loss) | Easier (explicit refusal) |
 | Security | Stealthier (hides firewall) | Reveals firewall presence |
 
+When debugging connection problems, I recommend using REJECT during development. The immediate feedback saves considerable time compared to waiting for timeouts. Switch to DROP only when you need stealth in production.
+
 **Practical verification:**
 
 ```bash
@@ -54,7 +56,7 @@ python3 src/apps/tcp_client.py --host localhost --port 9090 --timeout 5
 | **Closed** | No service listening, but host reachable | TCP: RST packet; UDP: ICMP port unreachable |
 | **Filtered** | Cannot determine state (firewall blocking) | No response at all (DROP) or ICMP admin prohibited |
 
-**Why this matters:** A closed port confirms the host is alive. A filtered port reveals nothing — it could be a firewall, packet loss, or non-existent host.
+**Why this matters:** A closed port confirms the host is alive. A filtered port reveals nothing — it could be a firewall, packet loss or non-existent host.
 
 **Practical verification:**
 
@@ -113,6 +115,8 @@ docker exec week7_tcp_server tcpdump -i eth0
 | Wi-Fi / Ethernet | Physical network traffic (external) |
 | Loopback Adapter | Windows localhost only (127.0.0.1) |
 | **vEthernet (WSL)** | WSL2 virtual network (Docker traffic) ✓ |
+
+This trips up students every semester. The moment you select Wi-Fi instead of vEthernet (WSL), your capture will show nothing useful.
 
 **Why this matters:** Selecting the wrong interface shows zero packets, leading students to think the lab is broken.
 
@@ -178,7 +182,7 @@ sudo timeout 60 tcpdump -i eth0 -w timed.pcap
 | TCP | Yes (ACK packets) | Timeout or RST/ICMP |
 | UDP | No (fire-and-forget) | Cannot detect without application-layer ACK |
 
-**Why this matters:** A UDP sender always "succeeds" at the socket level, even if every packet is dropped.
+**Why this matters:** A UDP sender always "succeeds" at the socket level, even if every packet is dropped. In practice, if you need reliable delivery, you must implement acknowledgements at the application layer or use TCP.
 
 **Practical verification:**
 
@@ -272,7 +276,7 @@ sudo iptables-restore < /etc/iptables.rules
 | 4 | Wireshark sees Docker | Must use vEthernet (WSL) interface |
 | 5 | Capture is free | Capture has CPU/memory/disk cost |
 | 6 | UDP block is visible | UDP sender cannot detect drops |
-| 7 | RST = firewall | RST can come from server, app, or middlebox |
+| 7 | RST = firewall | RST can come from server, app or middlebox |
 | 8 | iptables persists | Rules lost on reboot unless saved |
 
 ---

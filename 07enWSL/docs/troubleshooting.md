@@ -1,12 +1,16 @@
 # Troubleshooting Guide: Week 7
 
-> NETWORKING class - ASE, Informatics | by Revolvix
+> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+
+---
 
 ## Docker Issues
 
 ### Docker Desktop Not Running
 
 **Symptom:** Commands fail with "Cannot connect to the Docker daemon"
+
+This is the single most common issue I see in lab sessions. After a Windows update, Docker often needs a manual restart even if WSL appears to be running normally.
 
 **Solution:**
 1. Open Docker Desktop application
@@ -53,11 +57,15 @@ docker network rm week7net
 python scripts/start_lab.py
 ```
 
+---
+
 ## Capture Issues
 
 ### Wireshark Cannot See Traffic
 
 **Symptom:** Wireshark shows no packets when containers are active
+
+In previous lab sessions, roughly half the students initially captured on the wrong interface. If you see zero packets, that's almost certainly the problem — switch to vEthernet (WSL) on Windows or the Docker bridge interface on Linux.
 
 **Cause:** Docker uses internal bridge networks not visible to host interfaces
 
@@ -104,6 +112,8 @@ sudo tcpdump -i eth0
 - Check interface name is correct
 - Confirm filter syntax is valid
 
+Nine times out of ten, the interface selection is wrong. Always check that first.
+
 **Common mistakes:**
 ```bash
 # Wrong: filter might be too restrictive
@@ -112,6 +122,8 @@ tcpdump -i eth0 'tcp port 9090 and host 10.0.7.100'
 # Right: start broad, then narrow
 tcpdump -i eth0 port 9090
 ```
+
+---
 
 ## TCP Connection Issues
 
@@ -135,6 +147,8 @@ docker exec week7_tcp_server netstat -tuln
 **Symptom:** TCP client hangs, eventually times out
 
 **Meaning:** DROP rule matched or network unreachable
+
+When debugging connection problems, I recommend using REJECT during development. The immediate feedback saves considerable time compared to waiting for timeouts.
 
 **Diagnosis:**
 ```bash
@@ -163,11 +177,15 @@ ping -c 1 10.0.7.100
 tcpdump -i eth0 'tcp[tcpflags] & tcp-rst != 0'
 ```
 
+---
+
 ## UDP Issues
 
 ### UDP Messages Not Received
 
 **Symptom:** Sender shows success but receiver shows nothing
+
+This trips up students every semester. Remember: UDP success at the sender only means "handed to the network stack", not "delivered to receiver".
 
 **Diagnosis steps:**
 
@@ -194,7 +212,7 @@ tcpdump -i eth0 'tcp[tcpflags] & tcp-rst != 0'
    tcpdump -i docker0 udp port 9091
    ```
 
-**Common mistake:** UDP has no delivery confirmation. A "successful" send only means the datagram was handed to the network stack, not that it arrived.
+---
 
 ## Firewall Rule Issues
 
@@ -237,6 +255,8 @@ tcpdump -i eth0 -w all.pcap
 # Display filter: icmp.type == 3
 ```
 
+---
+
 ## Port Probe Issues
 
 ### All Ports Show Filtered
@@ -275,11 +295,15 @@ python src/apps/port_probe.py --timeout 1
 python src/apps/port_probe.py --ports 9090,9091
 ```
 
+---
+
 ## WSL-Specific Issues
 
 ### Cannot Access Docker from WSL
 
 **Symptom:** docker commands fail in WSL
+
+This usually breaks when Docker Desktop has been updated but WSL integration wasn't re-enabled automatically.
 
 **Solution:**
 1. Ensure Docker Desktop has "Use WSL 2 based engine" enabled
@@ -298,7 +322,11 @@ sudo tcpdump -i eth0 -w /mnt/c/Users/YourName/capture.pcap
 # Then open in Windows Wireshark
 ```
 
+---
+
 ## General Debugging Strategy
+
+If you're stuck, work through this sequence systematically:
 
 1. **Isolate the problem:** Is it network, firewall, application or configuration?
 
@@ -312,6 +340,8 @@ sudo tcpdump -i eth0 -w /mnt/c/Users/YourName/capture.pcap
 
 6. **Read error messages:** They usually tell you exactly what's wrong
 
+If this feels overwhelming at first, focus on steps 2 and 3. Most problems become obvious once you have a packet capture to examine.
+
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class — ASE, Informatics | by ing. dr. Antonio Clim*

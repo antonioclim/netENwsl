@@ -195,6 +195,8 @@ From Windows Start Menu: Search "Wireshark" → Click to open
 
 This laboratory session explores the practical foundations of network traffic observation and policy enforcement at the packet level. The week builds upon your understanding of TCP/IP fundamentals and socket programming, introducing the critical skill of capturing and analysing real network traffic as forensic evidence. You will learn to distinguish between application-layer behaviour and network-layer phenomena, a distinction that proves essential when debugging distributed systems in production environments.
 
+If this is your first time working with packet captures, expect some initial confusion about interface selection and filter syntax. That's normal — by the end of the session, these tools become second nature.
+
 The seminar component focuses on packet filtering and defensive port probing techniques. Filtering rules transform abstract security policies into concrete, enforceable decisions at the network boundary. Rather than treating firewalls as opaque infrastructure, you will construct and verify filtering rules programmatically, understanding exactly why a connection succeeds or fails. This approach prepares you for container networking, reverse proxies and incident response scenarios covered in subsequent weeks.
 
 All exercises operate within an isolated laboratory network created by Docker containers or Mininet topologies. The kit emphasises reproducibility: every observation you make should be backed by packet captures and logs that another engineer could verify independently.

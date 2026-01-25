@@ -121,7 +121,7 @@ class LabLogger:
         use_colours: bool = True
     ) -> None:
         """
-        Initialize the logger.
+        Initialise the logger.
         
         Args:
             name: Logger identifier

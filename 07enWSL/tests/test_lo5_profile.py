@@ -4,7 +4,7 @@ Test Suite for LO5: Design Custom Firewall Profiles
 ====================================================
 NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 
-This module provides comprehensive tests for Learning Objective 5:
+This module provides thorough tests for Learning Objective 5:
 "Design custom firewall profiles that enforce specific traffic policies"
 
 Tests validate:

@@ -4,6 +4,8 @@
 > This document provides the conceptual foundations for packet capture and filtering.
 > Read this before starting the laboratory exercises.
 
+The concepts in this section build directly on Weeks 2-4. If the socket programming exercises felt challenging, review those materials before proceeding — the packet-level view will clarify what happens beneath the API.
+
 ---
 
 ## Table of Contents
@@ -20,7 +22,7 @@
 
 ## Packet Capture as Evidence
 
-Traffic capture provides the **ground truth** for network behaviour. Unlike log files or application-level traces, packet captures record precisely what traverses the wire. This evidentiary quality makes captures indispensable for debugging, security analysis, and compliance auditing.
+Traffic capture provides the **ground truth** for network behaviour. Unlike log files or application-level traces, packet captures record precisely what traverses the wire. This evidentiary quality makes captures indispensable for debugging, security analysis and compliance auditing.
 
 ### Capture Semantics
 

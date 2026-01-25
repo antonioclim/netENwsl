@@ -140,7 +140,7 @@ python3 tests/test_exercises.py --exercise 5
 
 ---
 
-## Comprehensive Self-Assessment Quiz
+## Complete Self-Assessment Quiz
 
 Run the interactive quiz to test all learning objectives:
 
