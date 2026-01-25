@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `README.md`: Practical heuristic for struct module learning
 - **Controlled Imperfection:** Varied documentation depth and style for authenticity
 
+### Added (Visual Aids)
+- **Diagrams:** New `docs/images/` folder with 5 SVG diagrams
+  - `osi_layers_5_6.svg`: OSI model highlighting Session and Presentation layers
+  - `ftp_dual_channel.svg`: FTP control and data channel architecture
+  - `endianness_comparison.svg`: Big-endian vs little-endian byte order
+  - `session_state_machine.svg`: FTP authentication state transitions
+  - `protocol_header_structure.svg`: Binary protocol header format with code
+
 ### Added (Code Quality)
 - **New Tests:** `tests/test_binary_protocol.py` — focused unit tests for protocol functions
   - `test_header_pack_unpack()`: Validates struct operations

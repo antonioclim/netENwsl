@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 350" width="700" height="350">
+  <title>FTP Dual-Channel Architecture</title>
+  <desc>FTP uses separate control and data connections</desc>
+  
+  <!-- Background -->
+  <rect width="700" height="350" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="350" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#333">FTP Dual-Channel Architecture</text>
+  
+  <!-- Client Box -->
+  <rect x="50" y="80" width="180" height="200" fill="#fff" stroke="#007bff" stroke-width="2" rx="8"/>
+  <text x="140" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#007bff">FTP Client</text>
+  
+  <!-- Client internals -->
+  <rect x="70" y="120" width="140" height="35" fill="#e7f1ff" stroke="#007bff" stroke-width="1" rx="4"/>
+  <text x="140" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#004085">Control Protocol</text>
+  
+  <rect x="70" y="165" width="140" height="35" fill="#e7f1ff" stroke="#007bff" stroke-width="1" rx="4"/>
+  <text x="140" y="187" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#004085">Data Transfer</text>
+  
+  <rect x="70" y="210" width="140" height="55" fill="#f8f9fa" stroke="#6c757d" stroke-width="1" rx="4"/>
+  <text x="140" y="232" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#495057">User Interface</text>
+  <text x="140" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#6c757d">Commands: get, put, ls</text>
+  
+  <!-- Server Box -->
+  <rect x="470" y="80" width="180" height="200" fill="#fff" stroke="#28a745" stroke-width="2" rx="8"/>
+  <text x="560" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#28a745">FTP Server</text>
+  
+  <!-- Server internals -->
+  <rect x="490" y="120" width="140" height="35" fill="#d4edda" stroke="#28a745" stroke-width="1" rx="4"/>
+  <text x="560" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#155724">Control Handler</text>
+  
+  <rect x="490" y="165" width="140" height="35" fill="#d4edda" stroke="#28a745" stroke-width="1" rx="4"/>
+  <text x="560" y="187" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#155724">Data Handler</text>
+  
+  <rect x="490" y="210" width="140" height="55" fill="#f8f9fa" stroke="#6c757d" stroke-width="1" rx="4"/>
+  <text x="560" y="232" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#495057">File System</text>
+  <text x="560" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#6c757d">/home/test/files</text>
+  
+  <!-- Control Channel (persistent) -->
+  <line x1="210" y1="137" x2="490" y2="137" stroke="#dc3545" stroke-width="3"/>
+  <polygon points="485,132 495,137 485,142" fill="#dc3545"/>
+  <polygon points="215,132 205,137 215,142" fill="#dc3545"/>
+  
+  <rect x="280" y="115" width="140" height="45" fill="#fff3cd" stroke="#ffc107" stroke-width="1" rx="4"/>
+  <text x="350" y="133" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#856404">Control Channel</text>
+  <text x="350" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#856404">Port 21 (2121)</text>
+  <text x="350" y="158" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#856404">Persistent • Text</text>
+  
+  <!-- Data Channel (temporary) -->
+  <line x1="210" y1="182" x2="490" y2="182" stroke="#17a2b8" stroke-width="3" stroke-dasharray="8,4"/>
+  <polygon points="485,177 495,182 485,187" fill="#17a2b8"/>
+  
+  <rect x="280" y="190" width="140" height="45" fill="#d1ecf1" stroke="#17a2b8" stroke-width="1" rx="4"/>
+  <text x="350" y="208" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#0c5460">Data Channel</text>
+  <text x="350" y="223" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#0c5460">Ports 60000-60010</text>
+  <text x="350" y="233" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#0c5460">Temporary • Binary</text>
+  
+  <!-- Legend -->
+  <rect x="250" y="270" width="200" height="60" fill="#fff" stroke="#dee2e6" stroke-width="1" rx="4"/>
+  <line x1="265" y1="290" x2="305" y2="290" stroke="#dc3545" stroke-width="3"/>
+  <text x="315" y="294" font-family="Arial, sans-serif" font-size="10" fill="#333">Control (USER, PASS, LIST)</text>
+  
+  <line x1="265" y1="310" x2="305" y2="310" stroke="#17a2b8" stroke-width="3" stroke-dasharray="8,4"/>
+  <text x="315" y="314" font-family="Arial, sans-serif" font-size="10" fill="#333">Data (file contents)</text>
+  
+  <!-- Footer -->
+  <text x="350" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">Week 9: Session Layer — FTP uses TWO separate TCP connections</text>
+</svg>

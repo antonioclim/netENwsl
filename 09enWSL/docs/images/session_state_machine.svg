@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 380" width="700" height="380">
+  <title>FTP Session State Machine</title>
+  <desc>Session layer state transitions for FTP authentication</desc>
+  
+  <!-- Background -->
+  <rect width="700" height="380" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="350" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#333">FTP Session State Machine</text>
+  
+  <!-- Defs for arrowheads -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#28a745"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc3545"/>
+    </marker>
+  </defs>
+  
+  <!-- State: Disconnected -->
+  <circle cx="100" cy="180" r="40" fill="#f8d7da" stroke="#dc3545" stroke-width="2"/>
+  <text x="100" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#721c24">DIS-</text>
+  <text x="100" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#721c24">CONNECTED</text>
+  
+  <!-- State: Connected -->
+  <circle cx="250" cy="180" r="40" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+  <text x="250" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#856404">CON-</text>
+  <text x="250" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#856404">NECTED</text>
+  
+  <!-- State: Authenticated -->
+  <circle cx="420" cy="180" r="45" fill="#d4edda" stroke="#28a745" stroke-width="3"/>
+  <text x="420" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#155724">AUTHEN-</text>
+  <text x="420" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#155724">TICATED</text>
+  
+  <!-- State: Transferring -->
+  <circle cx="600" cy="180" r="40" fill="#cce5ff" stroke="#007bff" stroke-width="2"/>
+  <text x="600" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#004085">TRANS-</text>
+  <text x="600" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#004085">FERRING</text>
+  
+  <!-- Transitions -->
+  <!-- Disconnected -> Connected -->
+  <line x1="140" y1="180" x2="200" y2="180" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="170" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#495057">TCP connect</text>
+  <text x="170" y="200" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">220 Ready</text>
+  
+  <!-- Connected -> Authenticated -->
+  <line x1="290" y1="180" x2="365" y2="180" stroke="#28a745" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+  <text x="328" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#28a745">USER + PASS</text>
+  <text x="328" y="200" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">230 Login OK</text>
+  
+  <!-- Authenticated -> Transferring -->
+  <line x1="465" y1="180" x2="550" y2="180" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="508" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#495057">RETR/STOR</text>
+  <text x="508" y="200" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">150 Opening</text>
+  
+  <!-- Transferring -> Authenticated (success) -->
+  <path d="M 600 140 Q 600 90 420 90 Q 420 90 420 135" fill="none" stroke="#28a745" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+  <text x="510" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#28a745">Transfer complete</text>
+  <text x="510" y="100" text-anchor="middle" font-family="monospace" font-size="8" fill="#666">226 Transfer OK</text>
+  
+  <!-- Any -> Disconnected (TCP drop) -->
+  <path d="M 250 220 Q 250 280 100 280 Q 100 280 100 220" fill="none" stroke="#dc3545" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-red)"/>
+  <path d="M 420 225 Q 420 300 100 300 Q 100 300 100 220" fill="none" stroke="#dc3545" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-red)"/>
+  <path d="M 600 220 Q 600 320 100 320 Q 100 320 100 220" fill="none" stroke="#dc3545" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-red)"/>
+  
+  <rect x="200" y="290" width="180" height="30" fill="#f8d7da" stroke="#dc3545" stroke-width="1" rx="4"/>
+  <text x="290" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#721c24">TCP drop → Session LOST</text>
+  
+  <!-- Legend -->
+  <rect x="30" y="330" width="640" height="40" fill="#fff" stroke="#dee2e6" stroke-width="1" rx="4"/>
+  <circle cx="60" cy="350" r="8" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+  <text x="85" y="354" font-family="Arial, sans-serif" font-size="10" fill="#333">Session active</text>
+  
+  <line x1="180" y1="350" x2="220" y2="350" stroke="#dc3545" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="245" y="354" font-family="Arial, sans-serif" font-size="10" fill="#333">Connection lost</text>
+  
+  <text x="400" y="354" font-family="Arial, sans-serif" font-size="10" font-style="italic" fill="#666">Key insight: Session state is NOT preserved across TCP reconnection</text>
+  
+  <!-- Footer -->
+  <text x="350" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">Week 9: Session Layer — Authentication and State Management</text>
+</svg>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 400" width="650" height="400">
+  <title>Endianness - Big-Endian vs Little-Endian</title>
+  <desc>Byte order comparison for 0x12345678</desc>
+  
+  <!-- Background -->
+  <rect width="650" height="400" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="325" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#333">Endianness: Byte Order</text>
+  <text x="325" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#666">Value: 0x12345678 (305,419,896 decimal)</text>
+  
+  <!-- Big-Endian Section -->
+  <rect x="30" y="75" width="280" height="140" fill="#d4edda" stroke="#28a745" stroke-width="2" rx="8"/>
+  <text x="170" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#155724">Big-Endian (Network Order)</text>
+  <text x="170" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#155724">MSB First — struct.pack("&gt;I", value)</text>
+  
+  <!-- Big-Endian bytes -->
+  <rect x="50" y="130" width="55" height="50" fill="#fff" stroke="#28a745" stroke-width="2"/>
+  <text x="77" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#155724">12</text>
+  <text x="77" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 0</text>
+  
+  <rect x="105" y="130" width="55" height="50" fill="#fff" stroke="#28a745" stroke-width="2"/>
+  <text x="132" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#155724">34</text>
+  <text x="132" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 1</text>
+  
+  <rect x="160" y="130" width="55" height="50" fill="#fff" stroke="#28a745" stroke-width="2"/>
+  <text x="187" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#155724">56</text>
+  <text x="187" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 2</text>
+  
+  <rect x="215" y="130" width="55" height="50" fill="#fff" stroke="#28a745" stroke-width="2"/>
+  <text x="242" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#155724">78</text>
+  <text x="242" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 3</text>
+  
+  <text x="170" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#155724">↑ Most Significant Byte first</text>
+  
+  <!-- Little-Endian Section -->
+  <rect x="340" y="75" width="280" height="140" fill="#cce5ff" stroke="#007bff" stroke-width="2" rx="8"/>
+  <text x="480" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#004085">Little-Endian (Intel x86)</text>
+  <text x="480" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#004085">LSB First — struct.pack("&lt;I", value)</text>
+  
+  <!-- Little-Endian bytes -->
+  <rect x="360" y="130" width="55" height="50" fill="#fff" stroke="#007bff" stroke-width="2"/>
+  <text x="387" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#004085">78</text>
+  <text x="387" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 0</text>
+  
+  <rect x="415" y="130" width="55" height="50" fill="#fff" stroke="#007bff" stroke-width="2"/>
+  <text x="442" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#004085">56</text>
+  <text x="442" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 1</text>
+  
+  <rect x="470" y="130" width="55" height="50" fill="#fff" stroke="#007bff" stroke-width="2"/>
+  <text x="497" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#004085">34</text>
+  <text x="497" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 2</text>
+  
+  <rect x="525" y="130" width="55" height="50" fill="#fff" stroke="#007bff" stroke-width="2"/>
+  <text x="552" y="162" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#004085">12</text>
+  <text x="552" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666">addr 3</text>
+  
+  <text x="480" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#004085">↑ Least Significant Byte first</text>
+  
+  <!-- Warning Box -->
+  <rect x="100" y="235" width="450" height="80" fill="#fff3cd" stroke="#ffc107" stroke-width="2" rx="8"/>
+  <text x="325" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#856404">⚠️ Critical: Network protocols use Big-Endian!</text>
+  <text x="325" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">Always use struct.pack("!I", value) or struct.pack("&gt;I", value)</text>
+  <text x="325" y="302" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#856404">for network transmission on x86 machines.</text>
+  
+  <!-- Format codes reference -->
+  <rect x="100" y="330" width="450" height="50" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1" rx="4"/>
+  <text x="170" y="352" text-anchor="middle" font-family="monospace" font-size="11" fill="#333">&gt; = Big-endian</text>
+  <text x="325" y="352" text-anchor="middle" font-family="monospace" font-size="11" fill="#333">&lt; = Little-endian</text>
+  <text x="480" y="352" text-anchor="middle" font-family="monospace" font-size="11" fill="#333">! = Network (Big)</text>
+  <text x="325" y="372" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">Python struct format codes</text>
+  
+  <!-- Footer -->
+  <text x="325" y="395" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#6c757d">Week 9: Presentation Layer — Data Representation</text>
+</svg>
