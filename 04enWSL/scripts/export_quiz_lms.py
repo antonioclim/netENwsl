@@ -310,6 +310,54 @@ def save_json(data: Dict[str, Any], path: Path) -> None:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+
+
+def validate_export(data: Dict[str, Any], format_type: str) -> tuple:
+    """
+    Validate exported quiz data for LMS compatibility.
+    
+    Args:
+        data: Exported quiz data
+        format_type: 'moodle' or 'canvas'
+    
+    Returns:
+        Tuple of (is_valid: bool, errors: list)
+    """
+    errors = []
+    
+    # Check top-level structure
+    if "quiz" not in data:
+        errors.append("Missing 'quiz' key in export")
+        return (False, errors)
+    
+    if "metadata" not in data:
+        errors.append("Missing 'metadata' key in export")
+    
+    quiz = data["quiz"]
+    
+    # Check required quiz fields
+    if format_type == "moodle":
+        required = ["name", "questions"]
+    else:
+        required = ["title", "questions"]
+    
+    for field in required:
+        if field not in quiz:
+            errors.append(f"Missing required field: {field}")
+    
+    # Validate questions
+    questions = quiz.get("questions", [])
+    for i, q in enumerate(questions):
+        if "type" not in q and "question_type" not in q:
+            errors.append(f"Question {i}: missing type field")
+        
+        # Check for question text
+        text_field = "questiontext" if format_type == "moodle" else "question_text"
+        if text_field not in q:
+            errors.append(f"Question {i}: missing {text_field}")
+    
+    return (len(errors) == 0, errors)
+
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 

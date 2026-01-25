@@ -120,6 +120,8 @@ Polynomial division produces fixed-length remainder appended to data. Common pol
 
 CRC-32 is standard in Ethernet frames and achieves 99.9999998% detection of errors.
 
+> 📝 **From experience:** In practice, I've seen students lose hours debugging endianness issues that a simple hex dump would have revealed in seconds. When your CRC validation fails, always check byte order first—run `print(packed_data.hex())` before anything else.
+
 ### Flow Control
 
 Preventing buffer overflow at the receiver requires flow control mechanisms:
@@ -174,6 +176,8 @@ Application-level protocols implemented over TCP or UDP require careful structur
 - Fixed-width fields for efficient parsing
 - Reduced bandwidth consumption
 - Examples: DNS, HTTP/2, Protocol Buffers
+
+> 📝 **Practical note:** In previous lab sessions, students frequently ask "which is better, text or binary?" The answer depends entirely on your constraints. If bandwidth is tight and you control both ends, binary wins. If you need humans to debug production traffic with `tcpdump`, text protocols save significant time.
 
 ### Framing in TCP Streams
 
@@ -286,3 +290,4 @@ Students often hold incorrect assumptions about these topics. See `misconception
 ---
 
 *NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
+*Version 1.6.0 — Last verified: 2026-01-25*

@@ -166,7 +166,7 @@ def print_banner() -> None:
     print()
     print("=" * 60)
     print("  Week 4: Physical Layer, Data Link Layer & Custom Protocols")
-    print("  TEXT, BINARY, and UDP Sensor Protocols")
+    print("  TEXT, BINARY and UDP Sensor Protocols")
     print("  NETWORKING class - ASE, Informatics")
     print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
     print("=" * 60)

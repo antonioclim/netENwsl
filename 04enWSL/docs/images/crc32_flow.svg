@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 350">
+  <defs>
+    <style>
+      .box { fill: #ecf0f1; stroke: #bdc3c7; stroke-width: 2; }
+      .process { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+      .decision { fill: #f39c12; stroke: #d68910; stroke-width: 2; }
+      .result-ok { fill: #2ecc71; stroke: #27ae60; stroke-width: 2; }
+      .result-err { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
+      .arrow { stroke: #2c3e50; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .label { font-family: sans-serif; font-size: 11px; fill: white; font-weight: bold; }
+      .label-dark { font-family: sans-serif; font-size: 11px; fill: #2c3e50; }
+      .code { font-family: monospace; font-size: 9px; fill: #7f8c8d; }
+      .title { font-family: sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; }
+      .section { font-family: sans-serif; font-size: 12px; fill: #2c3e50; font-weight: bold; }
+      .yes { font-family: sans-serif; font-size: 10px; fill: #27ae60; }
+      .no { font-family: sans-serif; font-size: 10px; fill: #e74c3c; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="300" y="25" class="title" text-anchor="middle">CRC32 Integrity Verification Flow</text>
+  
+  <!-- SENDER SIDE -->
+  <text x="150" y="55" class="section" text-anchor="middle">SENDER</text>
+  
+  <!-- Step 1: Original data -->
+  <rect x="50" y="70" width="200" height="35" class="box" rx="5"/>
+  <text x="150" y="92" class="label-dark" text-anchor="middle">Original Data (payload)</text>
+  
+  <!-- Arrow down -->
+  <line x1="150" y1="105" x2="150" y2="125" class="arrow"/>
+  
+  <!-- Step 2: Calculate CRC -->
+  <rect x="50" y="130" width="200" height="35" class="process" rx="5"/>
+  <text x="150" y="152" class="label" text-anchor="middle">Calculate CRC32</text>
+  
+  <!-- Code annotation -->
+  <text x="150" y="180" class="code" text-anchor="middle">crc = zlib.crc32(data) &amp; 0xFFFFFFFF</text>
+  
+  <!-- Arrow down -->
+  <line x1="150" y1="190" x2="150" y2="210" class="arrow"/>
+  
+  <!-- Step 3: Append CRC -->
+  <rect x="50" y="215" width="200" height="35" class="process" rx="5"/>
+  <text x="150" y="237" class="label" text-anchor="middle">Append CRC to Message</text>
+  
+  <!-- Arrow to receiver -->
+  <line x1="250" y1="232" x2="350" y2="232" class="arrow"/>
+  <text x="300" y="225" class="code" text-anchor="middle">transmit</text>
+  
+  <!-- RECEIVER SIDE -->
+  <text x="450" y="55" class="section" text-anchor="middle">RECEIVER</text>
+  
+  <!-- Step 4: Receive message -->
+  <rect x="350" y="70" width="200" height="35" class="box" rx="5"/>
+  <text x="450" y="92" class="label-dark" text-anchor="middle">Received Message</text>
+  
+  <!-- Arrow down -->
+  <line x1="450" y1="105" x2="450" y2="125" class="arrow"/>
+  
+  <!-- Step 5: Extract and calculate -->
+  <rect x="350" y="130" width="200" height="35" class="process" rx="5"/>
+  <text x="450" y="145" class="label" text-anchor="middle">Extract CRC, Recalculate</text>
+  <text x="450" y="158" class="label" text-anchor="middle">on payload</text>
+  
+  <!-- Arrow down -->
+  <line x1="450" y1="165" x2="450" y2="195" class="arrow"/>
+  
+  <!-- Decision diamond -->
+  <polygon points="450,200 520,240 450,280 380,240" class="decision"/>
+  <text x="450" y="237" class="label-dark" text-anchor="middle">CRC</text>
+  <text x="450" y="250" class="label-dark" text-anchor="middle">Match?</text>
+  
+  <!-- Yes branch -->
+  <line x1="520" y1="240" x2="560" y2="240" class="arrow"/>
+  <text x="535" y="232" class="yes">Yes</text>
+  
+  <rect x="350" y="295" width="90" height="35" class="result-ok" rx="5"/>
+  <text x="395" y="317" class="label" text-anchor="middle">Accept</text>
+  <line x1="450" y1="280" x2="450" y2="295" class="arrow"/>
+  
+  <!-- No branch -->
+  <rect x="500" y="295" width="90" height="35" class="result-err" rx="5"/>
+  <text x="545" y="317" class="label" text-anchor="middle">Reject</text>
+  <line x1="545" y1="250" x2="545" y2="295" class="arrow"/>
+  <text x="555" y="270" class="no">No</text>
+  
+  <!-- Key insight -->
+  <text x="300" y="345" class="code" text-anchor="middle">Key: CRC detects errors but cannot correct them. Request retransmission on mismatch.</text>
+</svg>

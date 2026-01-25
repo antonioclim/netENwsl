@@ -4,6 +4,9 @@
 # by ing. dr. Antonio Clim
 # ═══════════════════════════════════════════════════════════════════════════════
 #
+# Version: 1.6.0
+# Last Updated: 2026-01-25
+#
 # Install with: pip install -r requirements.txt --break-system-packages
 #
 # Note: Most Week 4 functionality uses Python standard library only.
@@ -38,9 +41,22 @@ jsonschema>=4.0
 # Testing framework
 pytest>=7.0
 
+# Code coverage
+pytest-cov>=4.0
+
 # Linting and formatting
 ruff>=0.1.0
 
 # Type checking
 mypy>=1.0
 types-PyYAML>=6.0
+types-requests>=2.28
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LMS Export (For quiz export functionality)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# XML processing for Moodle export (standard library, but lxml is faster)
+# lxml>=4.9  # Optional: faster XML processing
+
+# Note: Canvas export uses JSON (standard library)

@@ -314,7 +314,7 @@ class DockerManager:
 # ═══════════════════════════════════════════════════════════════════════════════
     def remove_by_prefix(self, prefix: str, dry_run: bool = False) -> None:
         """
-        Remove containers, networks, and volumes with given prefix.
+        Remove containers, networks and volumes with given prefix.
         
         Args:
             prefix: Prefix to match (e.g., "week4")

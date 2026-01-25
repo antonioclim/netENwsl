@@ -510,6 +510,361 @@ def handle_message(sock: socket.socket) -> None:
 
 ---
 
+
+## Problem P6: UDP Sensor Datagram Builder
+
+### Task
+
+Create a function to build a 23-byte UDP sensor datagram with the structure:
+
+```
+┌─────────┬───────────┬─────────────┬──────────┬───────┐
+│ Version │ Sensor ID │ Temperature │ Location │ CRC32 │
+│ 1B      │ 4B        │ 4B (float)  │ 10B      │ 4B    │
+└─────────┴───────────┴─────────────┴──────────┴───────┘
+```
+
+### Scrambled Blocks
+
+```python
+# Block A
+def build_sensor_datagram(sensor_id: int, temp: float, location: str) -> bytes:
+
+# Block B
+    location_bytes = location.encode('utf-8').ljust(10)[:10]
+
+# Block C
+    payload = struct.pack('>BIf10s', VERSION, sensor_id, temp, location_bytes)
+
+# Block D
+    crc = zlib.crc32(payload) & 0xFFFFFFFF
+
+# Block E
+    return payload + struct.pack('>I', crc)
+
+# Block F (DISTRACTOR - wrong byte order)
+    payload = struct.pack('<BIf10s', VERSION, sensor_id, temp, location_bytes)
+
+# Block G (DISTRACTOR - CRC before payload)
+    return struct.pack('>I', crc) + payload
+
+# Block H (DISTRACTOR - location not padded)
+    location_bytes = location.encode('utf-8')
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal</summary>
+
+```python
+# Block A
+def build_sensor_datagram(sensor_id: int, temp: float, location: str) -> bytes:
+
+# Block B
+    location_bytes = location.encode('utf-8').ljust(10)[:10]
+
+# Block C
+    payload = struct.pack('>BIf10s', VERSION, sensor_id, temp, location_bytes)
+
+# Block D
+    crc = zlib.crc32(payload) & 0xFFFFFFFF
+
+# Block E
+    return payload + struct.pack('>I', crc)
+```
+
+**Distractor explanations:**
+- **Block F** uses little-endian (`<`) instead of network byte order (`>`)
+- **Block G** places CRC at the start instead of end
+- **Block H** doesn't pad/truncate location to exactly 10 bytes
+
+**Key insight:** Network protocols use big-endian (network byte order). Fixed-size fields must be padded/truncated.
+
+</details>
+
+---
+
+## Problem P7: TCP Connection State Machine
+
+### Task
+
+Reorder the blocks to implement a basic TCP-like connection establishment (simplified 3-way handshake simulation).
+
+### Scrambled Blocks
+
+```python
+# Block A
+def establish_connection(sock: socket.socket, server_addr: tuple) -> bool:
+
+# Block B
+    sock.settimeout(5.0)
+
+# Block C
+    syn_packet = build_packet(SYN, seq=1000, ack=0)
+    sock.sendto(syn_packet, server_addr)
+
+# Block D
+    response, addr = sock.recvfrom(1024)
+    if not is_syn_ack(response):
+        return False
+
+# Block E
+    server_seq = get_sequence(response)
+    ack_packet = build_packet(ACK, seq=1001, ack=server_seq + 1)
+    sock.sendto(ack_packet, server_addr)
+
+# Block F
+    return True
+
+# Block G (DISTRACTOR - wrong order)
+    ack_packet = build_packet(ACK, seq=1001, ack=server_seq)
+
+# Block H (DISTRACTOR - missing timeout)
+    response = sock.recv(1024)
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal</summary>
+
+```python
+# Block A
+def establish_connection(sock: socket.socket, server_addr: tuple) -> bool:
+
+# Block B
+    sock.settimeout(5.0)
+
+# Block C
+    syn_packet = build_packet(SYN, seq=1000, ack=0)
+    sock.sendto(syn_packet, server_addr)
+
+# Block D
+    response, addr = sock.recvfrom(1024)
+    if not is_syn_ack(response):
+        return False
+
+# Block E
+    server_seq = get_sequence(response)
+    ack_packet = build_packet(ACK, seq=1001, ack=server_seq + 1)
+    sock.sendto(ack_packet, server_addr)
+
+# Block F
+    return True
+```
+
+**Distractor explanations:**
+- **Block G** doesn't add 1 to server sequence for ACK (ACK must be seq+1)
+- **Block H** uses `recv()` without capturing sender address (needed for UDP)
+
+**Key insight:** In TCP handshake, the ACK number is always the received sequence number + 1.
+
+</details>
+
+---
+
+## Problem P8: Sliding Window Sender
+
+### Task
+
+Implement a simplified sliding window protocol sender that manages outstanding frames.
+
+### Scrambled Blocks
+
+```python
+# Block A
+class SlidingWindowSender:
+    def __init__(self, window_size: int = 4):
+        self.window_size = window_size
+        self.base = 0
+        self.next_seq = 0
+        self.buffer = {}
+
+# Block B
+    def can_send(self) -> bool:
+        return self.next_seq < self.base + self.window_size
+
+# Block C
+    def send_frame(self, data: bytes, sock: socket.socket, addr: tuple):
+        if not self.can_send():
+            return False
+
+# Block D
+        frame = build_frame(self.next_seq, data)
+        self.buffer[self.next_seq] = (frame, time.time())
+        sock.sendto(frame, addr)
+
+# Block E
+        self.next_seq += 1
+        return True
+
+# Block F
+    def acknowledge(self, ack_num: int):
+        while self.base <= ack_num:
+            self.buffer.pop(self.base, None)
+            self.base += 1
+
+# Block G (DISTRACTOR - no window check)
+    def send_frame(self, data: bytes, sock: socket.socket, addr: tuple):
+        frame = build_frame(self.next_seq, data)
+
+# Block H (DISTRACTOR - wrong ACK handling)
+    def acknowledge(self, ack_num: int):
+        self.buffer.pop(ack_num, None)
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal</summary>
+
+```python
+# Block A - Class definition with state
+# Block B - Window availability check
+# Block C - Send with window check
+# Block D - Build and buffer frame
+# Block E - Increment sequence
+# Block F - Cumulative ACK handling
+```
+
+**Distractor explanations:**
+- **Block G** sends without checking window—will overflow receiver
+- **Block H** only removes single frame—cumulative ACKs acknowledge all frames up to ack_num
+
+**Key insight:** Cumulative acknowledgements mean "I've received everything up to this sequence number."
+
+</details>
+
+---
+
+## Problem P9: Protocol Multiplexer
+
+### Task
+
+Create a server that handles multiple protocol types on the same port by examining the first bytes.
+
+### Scrambled Blocks
+
+```python
+# Block A
+def handle_connection(sock: socket.socket):
+    data = recv_exact(sock, 2)  # Peek at magic bytes
+
+# Block B
+    if data == b'NP':
+        return handle_binary_protocol(sock, data)
+
+# Block C
+    elif data[0:1].isdigit():
+        return handle_text_protocol(sock, data)
+
+# Block D
+    elif data == b'{"':
+        return handle_json_protocol(sock, data)
+
+# Block E
+    else:
+        sock.send(b'ERROR: Unknown protocol\n')
+        return False
+
+# Block F (DISTRACTOR - wrong comparison)
+    if data == 'NP':  # Missing b prefix
+
+# Block G (DISTRACTOR - doesn't pass initial bytes)
+    elif data[0:1].isdigit():
+        return handle_text_protocol(sock)
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal</summary>
+
+```python
+# Block A - Receive magic bytes
+# Block B - Check binary protocol
+# Block C - Check text protocol (starts with digit for length)
+# Block D - Check JSON protocol
+# Block E - Handle unknown
+```
+
+**Distractor explanations:**
+- **Block F** compares bytes to string (type mismatch in Python 3)
+- **Block G** doesn't pass the already-read bytes to handler (they'd be lost)
+
+**Key insight:** Protocol multiplexing requires passing already-read bytes to handlers.
+
+</details>
+
+---
+
+## Problem P10: Checksum vs CRC Comparison
+
+### Task
+
+Implement functions to compare simple checksum with CRC32 for error detection demonstration.
+
+### Scrambled Blocks
+
+```python
+# Block A
+def simple_checksum(data: bytes) -> int:
+    return sum(data) & 0xFF
+
+# Block B
+def crc32_check(data: bytes) -> int:
+    return zlib.crc32(data) & 0xFFFFFFFF
+
+# Block C
+def demonstrate_weakness():
+    original = b'AB'
+    swapped = b'BA'
+
+# Block D
+    checksum_orig = simple_checksum(original)
+    checksum_swap = simple_checksum(swapped)
+    print(f"Checksum detects swap: {checksum_orig != checksum_swap}")
+
+# Block E
+    crc_orig = crc32_check(original)
+    crc_swap = crc32_check(swapped)
+    print(f"CRC32 detects swap: {crc_orig != crc_swap}")
+
+# Block F (DISTRACTOR - wrong mask)
+def crc32_check(data: bytes) -> int:
+    return zlib.crc32(data) & 0xFF
+
+# Block G (DISTRACTOR - wrong return type)
+def simple_checksum(data: bytes) -> bytes:
+    return bytes([sum(data) & 0xFF])
+```
+
+### Correct Order
+
+<details>
+<summary>Click to reveal</summary>
+
+```python
+# Block A - Simple checksum (8-bit)
+# Block B - CRC32 check (32-bit)  
+# Block C - Test setup
+# Block D - Compare checksums
+# Block E - Compare CRCs
+
+# Output:
+# Checksum detects swap: False  (A+B = B+A)
+# CRC32 detects swap: True      (polynomial division is position-sensitive)
+```
+
+**Distractor explanations:**
+- **Block F** masks to 8 bits, losing most of CRC32's error detection
+- **Block G** returns bytes instead of int, breaking comparison
+
+**Key insight:** Simple checksums use commutative addition (A+B=B+A), so byte swaps go undetected. CRC uses polynomial division which IS position-sensitive.
+
+</details>
+
 ## Self-Assessment Checklist
 
 After completing these problems, verify you understand:

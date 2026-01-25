@@ -11,7 +11,7 @@ Date: <Submission Date>
 
 Description:
     Extend the BINARY protocol to support batch operations,
-    subscriptions, and additional header flags.
+    subscriptions and additional header flags.
 
 Requirements:
     - Implement MSG_BATCH, MSG_SUBSCRIBE, MSG_NOTIFY message types

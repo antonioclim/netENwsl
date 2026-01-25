@@ -262,6 +262,54 @@ Which statement about protocol overhead is CORRECT?
 
 ---
 
+
+## Question 6: CRC32 Error Detection Limits
+
+> 💭 **PREDICTION:** If two bytes in a message are swapped, will CRC32 detect the error?
+
+### Scenario
+
+A sensor sends a UDP datagram with CRC32 integrity check. During transmission, a network device accidentally swaps two adjacent bytes:
+
+```python
+# Original message
+original = b'\x01\x00\x00\x2A\x41\x98\x00\x00'  # sensor_id=42, temp=19.0
+
+# Corrupted (bytes at positions 3 and 4 swapped)
+corrupted = b'\x01\x00\x00\x41\x2A\x98\x00\x00'  # sensor_id=??, temp=??
+
+original_crc = zlib.crc32(original) & 0xFFFFFFFF
+corrupted_crc = zlib.crc32(corrupted) & 0xFFFFFFFF
+```
+
+### Question
+
+What will happen when the receiver validates the corrupted message?
+
+### Options
+
+- **A)** CRC will match because byte swaps preserve the sum — *Misconception: CRC uses polynomial division, not simple sums*
+- **B)** CRC will detect the error because any change affects the polynomial remainder — **CORRECT**
+- **C)** CRC might or might not detect it, depending on which bytes were swapped — *Misconception: CRC32 detects all 2-byte changes*
+- **D)** CRC only detects single-bit errors, not byte-level corruption — *Misconception: CRC detects burst errors up to its length*
+
+### Correct Answer
+
+**B** — CRC32 uses polynomial division, not simple addition. Unlike a checksum where swapping bytes might preserve the sum, CRC detects byte transpositions because the position of each byte affects the polynomial remainder differently. CRC32 detects all single-bit errors, all double-bit errors, all odd-number-of-bit errors and all burst errors up to 32 bits.
+
+### Targeted Misconception
+
+**"CRC is just a fancy checksum"** — Students often confuse CRC with simple checksums. A basic checksum (sum of bytes mod 256) would NOT detect byte swaps because addition is commutative. CRC's polynomial division makes it position-sensitive, catching transposition errors that checksums miss.
+
+### Instructor Notes
+
+- **Target accuracy:** 40-60% on first vote (many confuse CRC with checksum)
+- **Key concept:** CRC uses polynomial division, not addition
+- **Live demo:** Run the Python code above to show different CRC values
+- **Follow-up:** Compare `zlib.crc32(b'AB')` vs `zlib.crc32(b'BA')` — different values prove position matters
+
+---
+
 ## Summary: Key Misconceptions Targeted
 
 | Question | Primary Misconception |
@@ -271,6 +319,7 @@ Which statement about protocol overhead is CORRECT?
 | Q3 | CRC guarantees integrity / corrects errors |
 | Q4 | Length fields should be human-readable |
 | Q5 | Binary protocols are always superior |
+| Q6 | CRC is just a checksum / detects only bit flips |
 
 ---
 

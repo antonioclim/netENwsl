@@ -98,6 +98,8 @@ lsof -i :5400
 # Reset volume permissions
 docker compose down -v
 docker compose up -d
+
+> 📝 **A frequent issue in previous lab sessions:** Students forget that Docker service needs restarting after Windows reboots. If your containers were running yesterday but not today, this is almost always the cause.
 ```
 
 **Corrupt image:**

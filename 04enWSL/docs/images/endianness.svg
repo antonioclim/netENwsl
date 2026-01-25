@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 240">
+  <defs>
+    <style>
+      .byte { stroke: #2c3e50; stroke-width: 2; }
+      .big { fill: #3498db; }
+      .little { fill: #e74c3c; }
+      .addr { fill: #ecf0f1; stroke: #bdc3c7; }
+      .label { font-family: monospace; font-size: 12px; fill: #2c3e50; }
+      .hex { font-family: monospace; font-size: 14px; fill: white; font-weight: bold; }
+      .title { font-family: sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; }
+      .subtitle { font-family: sans-serif; font-size: 11px; fill: #7f8c8d; }
+      .note { font-family: monospace; font-size: 10px; fill: #7f8c8d; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="325" y="25" class="title" text-anchor="middle">Endianness: Big-Endian vs Little-Endian</text>
+  <text x="325" y="42" class="subtitle" text-anchor="middle">Value: 0x12345678 (305,419,896 decimal)</text>
+  
+  <!-- Memory addresses -->
+  <text x="50" y="75" class="subtitle">Memory Address:</text>
+  <rect x="150" y="60" width="50" height="25" class="addr" rx="3"/>
+  <text x="175" y="78" class="label" text-anchor="middle">0x00</text>
+  <rect x="200" y="60" width="50" height="25" class="addr" rx="3"/>
+  <text x="225" y="78" class="label" text-anchor="middle">0x01</text>
+  <rect x="250" y="60" width="50" height="25" class="addr" rx="3"/>
+  <text x="275" y="78" class="label" text-anchor="middle">0x02</text>
+  <rect x="300" y="60" width="50" height="25" class="addr" rx="3"/>
+  <text x="325" y="78" class="label" text-anchor="middle">0x03</text>
+  
+  <!-- Big Endian -->
+  <text x="50" y="115" class="subtitle">Big-Endian (Network):</text>
+  <text x="50" y="130" class="note">struct.pack('&gt;I', ...)</text>
+  <rect x="150" y="100" width="50" height="40" class="byte big" rx="3"/>
+  <text x="175" y="125" class="hex" text-anchor="middle">12</text>
+  <rect x="200" y="100" width="50" height="40" class="byte big" rx="3"/>
+  <text x="225" y="125" class="hex" text-anchor="middle">34</text>
+  <rect x="250" y="100" width="50" height="40" class="byte big" rx="3"/>
+  <text x="275" y="125" class="hex" text-anchor="middle">56</text>
+  <rect x="300" y="100" width="50" height="40" class="byte big" rx="3"/>
+  <text x="325" y="125" class="hex" text-anchor="middle">78</text>
+  <text x="380" y="125" class="label">← MSB first (most significant)</text>
+  
+  <!-- Little Endian -->
+  <text x="50" y="175" class="subtitle">Little-Endian (Intel):</text>
+  <text x="50" y="190" class="note">struct.pack('&lt;I', ...)</text>
+  <rect x="150" y="160" width="50" height="40" class="byte little" rx="3"/>
+  <text x="175" y="185" class="hex" text-anchor="middle">78</text>
+  <rect x="200" y="160" width="50" height="40" class="byte little" rx="3"/>
+  <text x="225" y="185" class="hex" text-anchor="middle">56</text>
+  <rect x="250" y="160" width="50" height="40" class="byte little" rx="3"/>
+  <text x="275" y="185" class="hex" text-anchor="middle">34</text>
+  <rect x="300" y="160" width="50" height="40" class="byte little" rx="3"/>
+  <text x="325" y="185" class="hex" text-anchor="middle">12</text>
+  <text x="380" y="185" class="label">← LSB first (least significant)</text>
+  
+  <!-- Key point -->
+  <rect x="420" y="95" width="210" height="65" fill="#fff3cd" stroke="#ffc107" stroke-width="2" rx="5"/>
+  <text x="525" y="115" class="label" text-anchor="middle">⚠️ Network protocols use</text>
+  <text x="525" y="132" class="label" text-anchor="middle">BIG-ENDIAN by convention</text>
+  <text x="525" y="149" class="note" text-anchor="middle">Always use '&gt;' or '!' in struct</text>
+  
+  <!-- Legend -->
+  <rect x="150" y="215" width="15" height="15" class="byte big" rx="2"/>
+  <text x="170" y="227" class="note">Big-Endian (network byte order)</text>
+  <rect x="350" y="215" width="15" height="15" class="byte little" rx="2"/>
+  <text x="370" y="227" class="note">Little-Endian (host byte order on x86)</text>
+</svg>

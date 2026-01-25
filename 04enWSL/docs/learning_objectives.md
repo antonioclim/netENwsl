@@ -8,8 +8,8 @@
 
 This document maps each Learning Objective to its supporting artefacts, ensuring complete pedagogical coverage and facilitating targeted study.
 
-**Kit Version:** 1.1.0  
-**Last Verified:** 2026-01-24  
+**Kit Version:** 1.6.0  
+**Last Verified:** 2026-01-25  
 **Integrity Check:** `make verify-integrity`
 
 ---
@@ -54,6 +54,7 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 | Theory | `README.md` § Protocol Specification | TEXT and BINARY protocol specs | ✅ |
 | Misconception | `docs/misconceptions.md` #7 | "Binary protocols are always faster" | ✅ |
 | Peer Instruction | `docs/peer_instruction.md` Q5 | Overhead comparison question | ✅ |
+| Peer Instruction | `docs/peer_instruction.md` Q6 | CRC32 error detection | ✅ |
 | Code Tracing | `docs/code_tracing.md` T3 | Length-prefix framing trace | ✅ |
 | Quiz | `formative/quiz.yaml` q04-q07 | 4 understand-level questions | ✅ |
 
@@ -101,7 +102,7 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 | Misconception | `docs/misconceptions.md` #4 | "Endianness interchangeable" | ✅ |
 | Misconception | `docs/misconceptions.md` #5 | "CRC guarantees integrity" | ✅ |
 | Misconception | `docs/misconceptions.md` #6 | "CRC32 = checksum" | ✅ |
-| Parsons | `docs/parsons_problems.md` P1, P4, P5 | Header build, CRC verify, UDP packet | ✅ |
+| Parsons | `docs/parsons_problems.md` P1, P4-P10 | Header build, CRC verify, UDP, advanced | ✅ |
 | PCAP Sample | `pcap/week04_lo4_binary_header.pcap` | BINARY protocol with CRC verification | ✅ |
 | Quiz | `formative/quiz.yaml` q09, q10, q11 | 3 apply-level questions | ✅ |
 
@@ -156,7 +157,7 @@ This document maps each Learning Objective to its supporting artefacts, ensuring
 | LO4 | Apply | 16 | 16/16 (100%) | ✅ Complete |
 | LO5 | Analyse | 9 | 9/9 (100%) | ✅ Complete |
 | LO6 | Evaluate | 6 | 6/6 (100%) | ✅ Complete |
-| **Total** | — | **52** | **52/52 (100%)** | ✅ |
+| **Total** | — | **58** | **58/58 (100%)** | ✅ |
 
 ---
 
@@ -259,4 +260,4 @@ $ make verify-integrity
 
 *NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
 *Week 4: Physical Layer, Data Link Layer & Custom Protocols*
-*Version 1.1.0 — Last updated: 2026-01-24*
+*Version 1.6.0 — Last updated: 2026-01-25*

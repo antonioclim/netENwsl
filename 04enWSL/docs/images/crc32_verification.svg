@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 250">
+  <defs>
+    <style>
+      .sender { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+      .receiver { fill: #2ecc71; stroke: #27ae60; stroke-width: 2; }
+      .crc { fill: #e67e22; stroke: #d35400; stroke-width: 2; }
+      .error { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
+      .ok { fill: #27ae60; stroke: #1e8449; stroke-width: 2; }
+      .wire { fill: #ecf0f1; stroke: #bdc3c7; stroke-width: 2; }
+      .label { font-family: sans-serif; font-size: 11px; fill: white; font-weight: bold; }
+      .labelDark { font-family: sans-serif; font-size: 11px; fill: #2c3e50; }
+      .code { font-family: monospace; font-size: 10px; fill: #2c3e50; }
+      .title { font-family: sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; }
+      .arrow { stroke: #2c3e50; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="350" y="25" class="title" text-anchor="middle">CRC32 Integrity Verification Flow</text>
+  
+  <!-- SENDER SIDE -->
+  <text x="100" y="55" class="labelDark" text-anchor="middle" font-weight="bold">SENDER</text>
+  
+  <!-- Step 1: Data -->
+  <rect x="30" y="65" width="140" height="40" class="sender" rx="4"/>
+  <text x="100" y="85" class="label" text-anchor="middle">1. Prepare Data</text>
+  <text x="100" y="98" class="label" text-anchor="middle" font-size="9">(header + payload)</text>
+  
+  <!-- Step 2: Calculate CRC -->
+  <rect x="30" y="115" width="140" height="40" class="crc" rx="4"/>
+  <text x="100" y="135" class="label" text-anchor="middle">2. Calculate CRC32</text>
+  <text x="100" y="148" class="code" fill="white">zlib.crc32(data)</text>
+  
+  <!-- Step 3: Append -->
+  <rect x="30" y="165" width="140" height="40" class="sender" rx="4"/>
+  <text x="100" y="185" class="label" text-anchor="middle">3. Append CRC</text>
+  <text x="100" y="198" class="label" text-anchor="middle" font-size="9">[data][CRC32]</text>
+  
+  <!-- Arrows sender -->
+  <line x1="100" y1="105" x2="100" y2="115" class="arrow"/>
+  <line x1="100" y1="155" x2="100" y2="165" class="arrow"/>
+  
+  <!-- WIRE -->
+  <rect x="200" y="130" width="150" height="50" class="wire" rx="5"/>
+  <text x="275" y="155" class="labelDark" text-anchor="middle">Network</text>
+  <text x="275" y="170" class="code" text-anchor="middle">(may corrupt data)</text>
+  
+  <line x1="170" y1="155" x2="200" y2="155" class="arrow"/>
+  <line x1="350" y1="155" x2="380" y2="155" class="arrow"/>
+  
+  <!-- RECEIVER SIDE -->
+  <text x="550" y="55" class="labelDark" text-anchor="middle" font-weight="bold">RECEIVER</text>
+  
+  <!-- Step 4: Extract -->
+  <rect x="480" y="65" width="140" height="40" class="receiver" rx="4"/>
+  <text x="550" y="85" class="label" text-anchor="middle">4. Extract CRC</text>
+  <text x="550" y="98" class="label" text-anchor="middle" font-size="9">received_crc = data[-4:]</text>
+  
+  <!-- Step 5: Recalculate -->
+  <rect x="480" y="115" width="140" height="40" class="crc" rx="4"/>
+  <text x="550" y="135" class="label" text-anchor="middle">5. Recalculate CRC</text>
+  <text x="550" y="148" class="code" fill="white">computed = crc32()</text>
+  
+  <!-- Decision diamond -->
+  <polygon points="550,165 590,185 550,205 510,185" fill="#f39c12" stroke="#d68910" stroke-width="2"/>
+  <text x="550" y="188" class="labelDark" text-anchor="middle" font-size="10">Match?</text>
+  
+  <!-- Arrows receiver -->
+  <line x1="550" y1="105" x2="550" y2="115" class="arrow"/>
+  <line x1="550" y1="155" x2="550" y2="165" class="arrow"/>
+  
+  <!-- Outcomes -->
+  <rect x="400" y="210" width="80" height="30" class="ok" rx="4"/>
+  <text x="440" y="230" class="label" text-anchor="middle">✓ Accept</text>
+  
+  <rect x="520" y="210" width="80" height="30" class="error" rx="4"/>
+  <text x="560" y="230" class="label" text-anchor="middle">✗ Reject</text>
+  
+  <line x1="520" y1="185" x2="440" y2="210" stroke="#27ae60" stroke-width="2"/>
+  <line x1="580" y1="185" x2="560" y2="210" stroke="#e74c3c" stroke-width="2"/>
+  
+  <text x="480" y="195" class="code">Yes</text>
+  <text x="595" y="195" class="code">No</text>
+</svg>

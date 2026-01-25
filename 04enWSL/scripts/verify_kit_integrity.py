@@ -139,7 +139,7 @@ def print_header(title: str) -> None:
 
 
 def print_status(name: str, passed: bool, message: str = "") -> None:
-    """Print test status with color."""
+    """Print test status with colour."""
     status = "\033[92m✓\033[0m" if passed else "\033[91m✗\033[0m"
     print(f"  {status} {name}", end="")
     if message:

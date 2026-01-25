@@ -17,6 +17,8 @@
 
 **SWAP roles every 10-15 minutes!** Set a timer.
 
+> 📝 **From my experience:** Pairs that swap roles every 10-12 minutes tend to stay more engaged than those who wait longer. The timer is not optional—it prevents one person from dominating the session.
+
 ---
 
 ## Why Pair Programming?

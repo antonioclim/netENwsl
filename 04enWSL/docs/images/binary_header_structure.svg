@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 180">
+  <defs>
+    <style>
+      .header { fill: #2ecc71; stroke: #27ae60; stroke-width: 2; }
+      .data { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+      .crc { fill: #e67e22; stroke: #d35400; stroke-width: 2; }
+      .label { font-family: monospace; font-size: 12px; fill: #2c3e50; }
+      .size { font-family: sans-serif; font-size: 10px; fill: #7f8c8d; }
+      .title { font-family: sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; }
+      .offset { font-family: monospace; font-size: 9px; fill: #95a5a6; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="350" y="25" class="title" text-anchor="middle">Binary Protocol Header (14 bytes)</text>
+  
+  <!-- Offset markers -->
+  <text x="50" y="55" class="offset">0</text>
+  <text x="130" y="55" class="offset">2</text>
+  <text x="180" y="55" class="offset">3</text>
+  <text x="230" y="55" class="offset">4</text>
+  <text x="330" y="55" class="offset">6</text>
+  <text x="480" y="55" class="offset">10</text>
+  <text x="630" y="55" class="offset">14</text>
+  
+  <!-- Header fields -->
+  <rect x="50" y="60" width="80" height="50" class="header" rx="3"/>
+  <text x="90" y="90" class="label" text-anchor="middle">Magic</text>
+  <text x="90" y="105" class="size" text-anchor="middle">'NP' (2B)</text>
+  
+  <rect x="130" y="60" width="50" height="50" class="header" rx="3"/>
+  <text x="155" y="90" class="label" text-anchor="middle">Ver</text>
+  <text x="155" y="105" class="size" text-anchor="middle">(1B)</text>
+  
+  <rect x="180" y="60" width="50" height="50" class="header" rx="3"/>
+  <text x="205" y="90" class="label" text-anchor="middle">Type</text>
+  <text x="205" y="105" class="size" text-anchor="middle">(1B)</text>
+  
+  <rect x="230" y="60" width="100" height="50" class="data" rx="3"/>
+  <text x="280" y="90" class="label" text-anchor="middle">PayloadLen</text>
+  <text x="280" y="105" class="size" text-anchor="middle">(2B, big-endian)</text>
+  
+  <rect x="330" y="60" width="150" height="50" class="data" rx="3"/>
+  <text x="405" y="90" class="label" text-anchor="middle">Sequence</text>
+  <text x="405" y="105" class="size" text-anchor="middle">(4B, big-endian)</text>
+  
+  <rect x="480" y="60" width="150" height="50" class="crc" rx="3"/>
+  <text x="555" y="90" class="label" text-anchor="middle">CRC32</text>
+  <text x="555" y="105" class="size" text-anchor="middle">(4B, big-endian)</text>
+  
+  <!-- Legend -->
+  <rect x="50" y="140" width="15" height="15" class="header" rx="2"/>
+  <text x="70" y="152" class="size">Control fields</text>
+  
+  <rect x="170" y="140" width="15" height="15" class="data" rx="2"/>
+  <text x="190" y="152" class="size">Data fields</text>
+  
+  <rect x="290" y="140" width="15" height="15" class="crc" rx="2"/>
+  <text x="310" y="152" class="size">Integrity (CRC)</text>
+  
+  <text x="450" y="152" class="size">struct format: '>2sBBHII'</text>
+</svg>
