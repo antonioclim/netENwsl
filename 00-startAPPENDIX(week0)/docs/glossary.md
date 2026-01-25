@@ -1,7 +1,7 @@
 # 📖 Glossary of Terms — Computer Networks
 > **Quick reference** for terminology used in the lab  
 > **Convention:** Technical terms are kept in English per industry standards  
-> **Version:** 2.2 — January 2025 (extended with WSL and Linux terms)
+> **Version:** 2.3 — January 2026 (extended with WSL and Linux terms)
 
 ---
 
@@ -9,6 +9,8 @@
 **ACK (Acknowledgment)** — Packet or flag confirming successful data receipt. In TCP, each segment sent must be confirmed with ACK.
 
 **apt / apt-get** — Package manager for Debian/Ubuntu distributions. `apt` is the modern version with a friendlier interface. Usage: `sudo apt install <package>`.
+
+**Backlog** — The queue of pending connections waiting to be accepted by a server socket. Set via `listen(backlog)`.
 
 **Bash** — Default shell in most Linux distributions. Configuration files: `~/.bashrc`, `~/.profile`.
 
@@ -42,6 +44,8 @@
 
 **Exit Code** — Numeric value returned by a programme on termination. 0 = success, != 0 = error. Checked with `echo $?` in Bash.
 
+**Handshake** — Initial exchange establishing a connection. TCP uses a three-way handshake: SYN → SYN-ACK → ACK.
+
 **host.docker.internal** — Special DNS name in Docker that resolves to the host's IP address. Used to access host services from a container.
 
 **HTTP (Hypertext Transfer Protocol)** — Application layer protocol for transferring web resources. Standard ports: 80 (HTTP), 443 (HTTPS).
@@ -55,7 +59,9 @@
 
 **Localhost** — Loopback address referring to the local machine: 127.0.0.1 (IPv4) or ::1 (IPv6).
 
-**Logging** — Recording events for debugging and monitoring. Python modulee: `logging`.
+**Logging** — Recording events for debugging and monitoring. Python module: `logging`.
+
+**Loopback** — Network interface that routes traffic back to the same host. Address: 127.0.0.1 (IPv4) or ::1 (IPv6).
 
 ---
 
@@ -79,9 +85,9 @@
 
 **stdin / stdout / stderr** — Standard input, output and error streams. stdin = keyboard, stdout/stderr = terminal.
 
-**struct** — Python modulee for conversion between bytes and native types. Essential for parsing binary protocols.
+**struct** — Python module for conversion between bytes and native types. Essential for parsing binary protocols.
 
-**sudo** — Command for executing with adminilayeror (root) privileges. "Superuser do".
+**sudo** — Command for executing with administrator (root) privileges. "Superuser do".
 
 **systemd** — Modern init system for Linux. Manages services with `systemctl`. WSL2 by default does not use systemd.
 
@@ -96,7 +102,7 @@
 ## U-W
 **UDP (User Datagram Protocol)** — Connectionless transport protocol with no delivery guarantees. Used for DNS, streaming and gaming.
 
-**UTF-8** — Standard encoding for Aicode text, compatible with ASCII. Recommendation: always use UTF-8.
+**UTF-8** — Standard encoding for Unicode text, compatible with ASCII. Recommendation: always use UTF-8.
 
 **vEthernet (WSL)** — Virtual network interface in Windows connecting WSL2 to the host system. Visible in Wireshark.
 
@@ -132,7 +138,7 @@
 | **send()** | **sendall()** | send() may send partially, sendall() sends everything |
 | **localhost** | **0.0.0.0** | localhost = local only, 0.0.0.0 = all interfaces |
 | **TCP** | **UDP** | TCP = guaranteed delivery, UDP = best-effort |
-| **str** | **bytes** | str = Aicode text, bytes = binary data |
+| **str** | **bytes** | str = Unicode text, bytes = binary data |
 | **apt** | **apt-get** | apt = modern interface, apt-get = classic |
 | **docker stop** | **docker rm** | stop preserves container, rm deletes it |
 | **-p 8080:80** | **EXPOSE 80** | -p publishes port, EXPOSE only documents |
@@ -142,12 +148,12 @@
 
 ## See Also
 
-- [docs/misconceptions.md](docs/misconceptions.md) — Detailed common errors
-- [docs/concept_analogies.md](docs/concept_analogies.md) — Concept analogies
-- [LIVE_CODING_INSTRUCTOR_GUIDE.md](LIVE_CODING_INSTRUCTOR_GUIDE.md) — Instructor guide
+- [docs/misconceptions.md](misconceptions.md) — Detailed common errors
+- [docs/concept_analogies.md](concept_analogies.md) — Concept analogies
+- [LIVE_CODING_INSTRUCTOR_GUIDE.md](../LIVE_CODING_INSTRUCTOR_GUIDE.md) — Instructor guide
 
 ---
 
 *Glossary for Computer Networks course*  
 *ASE Bucharest — CSIE*  
-*Version: 2.2 | January 2025*
+*Version: 2.3 | January 2026*

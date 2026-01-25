@@ -61,7 +61,7 @@ We use **WSL2 + Docker in Ubuntu** instead of Docker Desktop for several compell
 
 ### 1.4 Time Estimate
 
-- **Total installation time:** 30-45 minutess
+- **Total installation time:** 30-45 minutes
 - **Requires restart:** Yes (after WSL2 installation)
 - **Internet connection:** Required for downloads
 
@@ -206,8 +206,8 @@ wsl --status
 Default Distribution: Ubuntu
 Default Version: 2
 
-Windows Subsystem for Linux was last updatad on [data]
-WSL automatic updatas are on.
+Windows Subsystem for Linux was last updated on [data]
+WSL automatic updates are on.
 
 Kernel version: 5.15.x.x-smallrosoft-standard-WSL2
 ```
@@ -226,7 +226,7 @@ Kernel version: 5.15.x.x-smallrosoft-standard-WSL2
 
 **Ubuntu 22.04 LTS (Jammy Jellyfish)** is our chosen distribution because:
 
-- **Long Term Support (LTS):** Security updatas until April 2027
+- **Long Term Support (LTS):** Security updates until April 2027
 - **Stability:** Thoroughly tested, production-ready packages
 - **Compatibility:** Excelslow Docker support and documentation
 - **Community:** Largest Linux community for troubleshooting
@@ -251,7 +251,7 @@ wsl --install -d Ubuntu-22.04 --web-download
 After the download completes, Ubuntu will start automatically. You will see:
 
 ```
-Installing, this may take a few minutess...
+Installing, this may take a few minutes...
 Please create a default UNIX user account. The username does not need to match your Windows username.
 For more information visit: https://aka.ms/wslusers
 Enter new UNIX username:
@@ -333,15 +333,15 @@ Either:
 #### Step 2: Updata System Packages
 
 ```bash
-sudo apt updata && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ```
 
 **What this does:**
-- `sudo`: Execute as superuser (adminilayeror)
-- `apt updata`: Refresh package list
-- `apt upgrade -y`: Install all available updatas (`-y` = yes to all)
+- `sudo`: Execute as superuser (administrator)
+- `apt update`: Refresh package list
+- `apt upgrade -y`: Install all available updates (`-y` = yes to all)
 
-**Expected duration:** 2-5 minutess depending on internet speed.
+**Expected duration:** 2-5 minutes depending on internet speed.
 
 #### Step 3: Install Docker and Docker Compose
 
@@ -517,7 +517,7 @@ CONTAINER ID   IMAGE                           COMMAND        CREATED          S
 
 ### 7.4 Initial Portainer Setup
 
-> ⏱️ **Important:** You must complete initial setup within 5 minutess of deployment!
+> ⏱️ **Important:** You must complete initial setup within 5 minutes of deployment!
 
 #### Step 1: Access Portainer
 
@@ -933,7 +933,7 @@ echo "✅ All checks complete!"
 | 1 | `Cannot connect to Docker daemon` | Docker service not running | `sudo service docker start` |
 | 2 | `Permission denied` on docker commands | User not in docker group | `sudo usermod -aG docker $USER` + logout/login |
 | 3 | `Address already in use` | Port already occupied | `ss -tlnp \| grep :PORT` then stop the process |
-| 4 | `wsl --install` does nothing | WSL already partially installed | `wsl --updata` then restart |
+| 4 | `wsl --install` does nothing | WSL already partially installed | `wsl --update` then restart |
 | 5 | Portainer won't open | Container stopped or port blocked | `docker start portainer` |
 
 ### Docker Debugging Flowchart
@@ -983,10 +983,10 @@ echo "3. Ports:" && ss -tlnp 2>/dev/null | grep -E ":(9000|8080)" | awk '{print 
 
 ### 12.1 WSL Issues
 
-#### "WSL 2 requires an updata to its kernel component"
+#### "WSL 2 requires an update to its kernel component"
 
 ```powershell
-wsl --updata
+wsl --update
 ```
 
 #### "Please enable the Virtual Machine Platform feature"

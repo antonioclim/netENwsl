@@ -1,6 +1,6 @@
 # formative/quiz.yaml — Week 0 Formative Assessment
 # Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
-# Version: 1.5.0 | Date: 2026-01-24
+# Version: 1.6.0 | Date: 2026-01-25
 #
 # This quiz is also exported to quiz.json for LMS compatibility (Moodle/Canvas)
 # Run with: python run_quiz.py
@@ -9,7 +9,7 @@
 metadata:
   week: 0
   topic: "Environment Setup and Python Networking Basics"
-  version: "1.5.0"
+  version: "1.6.0"
   estimated_time: "15 minutes"
   passing_score: 70
   total_questions: 10

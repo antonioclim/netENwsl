@@ -1,10 +1,10 @@
 # 🐍 Python Self-Study Guide for Computer Networks
-## Version 5.0 — Tailored for Multi-Language Backgrounds
+## Version 5.1 — Tailored for Multi-Language Backgrounds
 
 > **Status:** Optional, Not Assessed  
 > **Course:** Computer Networks — ASE Bucharest, CSIE  
 > **Environment:** WSL2 + Ubuntu 22.04 + Docker + Python 3.10+  
-> **Version:** 5.0 — January 2026
+> **Version:** 5.1 — January 2026
 
 ---
 
@@ -51,7 +51,7 @@ This guide helps students who know **C, C++, JavaScript, Java or Kotlin** quickl
 | `cheatsheets/` | Quick reference for networking | During lab work |
 | `examples/` | Annotated code examples with tests | To study patterns |
 | `PRESENTATIONS_EN/` | 10 HTML slide presentations | For visual learners |
-| `PYTHON_NETWORKING_GUIDE.md` | Comprehensive guide (2200+ lines) | Deep study |
+| `PYTHON_NETWORKING_GUIDE.md` | Complete guide (2200+ lines) | Deep study |
 
 ---
 
@@ -220,4 +220,4 @@ A: See [PYTHON_NETWORKING_GUIDE.md Step 2](PYTHON_NETWORKING_GUIDE.md#step-2-dat
 
 *Python Self-Study Guide — Computer Networks Course*  
 *ASE Bucharest, CSIE — ing. dr. Antonio Clim*  
-*Version 5.0 — January 2026*
+*Version 5.1 — January 2026*

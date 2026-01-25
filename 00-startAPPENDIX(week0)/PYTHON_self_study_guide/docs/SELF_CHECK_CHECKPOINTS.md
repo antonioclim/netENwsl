@@ -20,7 +20,7 @@
 
 1. `def my_func(text: str) -> int:`
 
-2. Function `ping` takes a string `host`, an optional integer `count` (default 3), and returns a float.
+2. Function `ping` takes a string `host`, an optional integer `count` (default 3) and returns a float.
 
 3. 
 ```python
@@ -138,7 +138,7 @@ if x > 0:
 
 2. `from module_name import function_name`
 
-3. A dataclass is a class that primarily stores data. Use `@dataclass` decorator. Good for protocol headers, configuration, structured data.
+3. A dataclass is a class that primarily stores data. Use `@dataclass` decorator. Good for protocol headers, configuration and structured data.
 
 </details>
 
@@ -246,7 +246,7 @@ if x > 0:
 <details>
 <summary>Answers</summary>
 
-1. Logging has levels (DEBUG, INFO, WARNING, ERROR), can be redirected to files, and can be disabled in production without removing code.
+1. Logging has levels (DEBUG, INFO, WARNING, ERROR), can be redirected to files and can be disabled in production without removing code.
 
 2. Use logging at DEBUG level, or print the hex representation: `print(data.hex())`
 
@@ -276,4 +276,5 @@ make quiz
 ---
 
 *Self-Check Checkpoints — Python Networking Guide*  
-*Computer Networks Course — ASE Bucharest, CSIE*
+*Computer Networks Course — ASE Bucharest, CSIE*  
+*Version: 1.6.0 | January 2026*

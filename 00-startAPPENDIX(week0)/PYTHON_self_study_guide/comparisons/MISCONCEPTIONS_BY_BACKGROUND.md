@@ -1,8 +1,8 @@
 # 🚧 Common Misconceptions by Programming Background
-## Python Pitfalls for Students from C/C++, JavaScript, Java, and Kotlin
+## Python Pitfalls for Students from C/C++, JavaScript, Java and Kotlin
 
 > **Purpose:** Anticipate and prevent errors based on your prior language experience  
-> **Version:** 4.0 — January 2026
+> **Version:** 4.1 — January 2026
 
 ---
 
@@ -226,4 +226,4 @@ server.bind(('0.0.0.0', 8080))    # All interfaces
 ---
 
 *Common Misconceptions — Computer Networks Course*  
-*ASE Bucharest, CSIE — Version 4.0*
+*ASE Bucharest, CSIE — Version 4.1 | January 2026*

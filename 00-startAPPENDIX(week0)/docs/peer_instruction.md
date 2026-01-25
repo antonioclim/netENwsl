@@ -49,8 +49,8 @@ Many students confuse WSL1 (which translated system calls) with WSL2 (which runs
 
 ### Instructor Notes
 - **Target accuracy:** ~50% on first vote
-- **After discussion:** Show `uname -r` in WSL2 and explain "-smallrosoft-standard-WSL2"
-- **Timing:** 7-8 minutess total
+- **After discussion:** Demonstrate with `uname -r` in WSL2 and explain "-microsoft-standard-WSL2"
+- **Timing:** 7-8 minutes total
 
 ---
 
@@ -83,7 +83,7 @@ Students frequently confuse images with containers. They believe each container 
 ### Instructor Notes
 - **Target accuracy:** ~40% on first vote
 - **Key concept:** Image = read-only blueprint, Container = runnable instance
-- **After discussion:** Demonlayere with `docker images` and `docker ps`
+- **After discussion:** Demonstrate with `docker images` and `docker ps`
 - **Analogy:** Image = plastic mould, Container = cast object
 
 ---
@@ -156,7 +156,7 @@ This is one of the most common confusions: assuming `localhost` is global. In re
 ### Instructor Notes
 - **Target accuracy:** ~35% on first vote (difficult)
 - **Key concept:** Network namespaces — each container has its own network stack
-- **After discussion:** Demonlayere with `docker exec` and show `ip addr` in the container
+- **After discussion:** Demonstrate with `docker exec` and show `ip addr` in the container
 
 ---
 
@@ -191,6 +191,7 @@ Students who have used Docker Desktop expect Docker to start automatically. In n
 - **Target accuracy:** ~45% on first vote
 - **Key concept:** WSL doesn't have a traditional init system (systemd) by default
 - **After discussion:** Show the auto-start configuration from Prerequisites (section 10)
+- **In previous years, students often missed this step and thought their Docker installation was broken**
 
 ---
 
@@ -216,4 +217,4 @@ Students who have used Docker Desktop expect Docker to start automatically. In n
 
 *Peer Instruction Questions — Week 0: Lab Environment Setup*  
 *Computer Networks — ASE Bucharest, CSIE*  
-*Version: January 2025*
+*Version: 1.6.0 | January 2026*

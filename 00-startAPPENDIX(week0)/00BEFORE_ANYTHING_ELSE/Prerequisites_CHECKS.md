@@ -1,4 +1,4 @@
-# ✅ Aderstanding Checks — Environment Setup Guide
+# ✅ Understanding Checks — Environment Setup Guide
 ## Supplement for Prerequisites.md
 
 > **Purpose:** This document contains verification questions for each section  
@@ -13,9 +13,9 @@ After completing each section of **Prerequisites.md**, return here and check if 
 ---
 
 ## After Section 1: Introduction
-**⏱️ Estimated section time: 5 minutess reading**
+**⏱️ Estimated section time: 5 minutes reading**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 Can you answer these questions?
 
@@ -34,15 +34,15 @@ Can you answer these questions?
 3. **How long will the entire installation process take?**
    <details>
    <summary>Answer</summary>
-   30-45 minutess, with a restart required after enabling WSL2.
+   30-45 minutes, with a restart required after enabling WSL2.
    </details>
 
 ---
 
 ## After Section 2: System Architecture
-**⏱️ Estimated section time: 5 minutess reading**
+**⏱️ Estimated section time: 5 minutes reading**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 1. **Briefly describe the flow: Browser → Portainer → Container**
    <details>
@@ -61,9 +61,9 @@ Can you answer these questions?
 ---
 
 ## After Section 3: Standard Credentials
-**⏱️ Estimated section time: 2 minutess**
+**⏱️ Estimated section time: 2 minutes**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 1. **What are the credentials for Ubuntu WSL?**
    <details>
@@ -80,20 +80,20 @@ Can you answer these questions?
 3. **Why does the Portainer password have 12 characters and not 4?**
    <details>
    <summary>Answer</summary>
-   Portainer enforces a minimum length of 12 characters for the adminilayeror password as a security measure.
+   Portainer enforces a minimum length of 12 characters for the administrator password as a security measure.
    </details>
 
 ---
 
 ## After Section 4: Enable WSL2
-**⏱️ Estimated section time: 10-15 minutess (includes restart)**
+**⏱️ Estimated section time: 10-15 minutes (includes restart)**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 1. **What command enables WSL2?**
    <details>
    <summary>Answer</summary>
-   `wsl --install` in PowerShell as Adminilayeror
+   `wsl --install` in PowerShell as Administrator
    </details>
 
 2. **How do you verify that WSL2 is the default version?**
@@ -111,9 +111,9 @@ wsl --status
 ---
 
 ## After Section 5: Install Ubuntu
-**⏱️ Estimated section time: 5-10 minutess**
+**⏱️ Estimated section time: 5-10 minutes**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 1. **Which Ubuntu version do we install?**
    <details>
@@ -124,7 +124,7 @@ wsl --status
 2. **What does the `sudo` command do?**
    <details>
    <summary>Answer</summary>
-   Executes commands with adminilayeror (root) privileges. "Superuser do".
+   Executes commands with administrator (root) privileges. "Superuser do".
    </details>
 
 📌 **Practical verification:**
@@ -136,9 +136,9 @@ cat /etc/os-release | grep VERSION
 ---
 
 ## After Section 6: Install Docker
-**⏱️ Estimated section time: 10-15 minutess**
+**⏱️ Estimated section time: 10-15 minutes**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 1. **What does the command `usermod -aG docker $USER` do?**
    <details>
@@ -166,9 +166,9 @@ docker run --rm alpine echo "Test"
 ---
 
 ## After Section 7: Install Portainer
-**⏱️ Estimated section time: 5 minutess**
+**⏱️ Estimated section time: 5 minutes**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 1. **What does the `--restart=always` flag do?**
    <details>
@@ -193,9 +193,9 @@ docker ps | grep portainer
 ---
 
 ## After Section 10: Auto-start
-**⏱️ Estimated section time: 5 minutess (optional)**
+**⏱️ Estimated section time: 5 minutes (optional)**
 
-### ✓ Aderstanding Check
+### ✓ Understanding Check
 
 1. **Why doesn't Docker start automatically in WSL2 after Windows restart?**
    <details>
@@ -214,9 +214,9 @@ docker ps | grep portainer
 ---
 
 ## After Section 11: Final Verification
-**⏱️ Estimated section time: 5 minutess**
+**⏱️ Estimated section time: 5 minutes**
 
-### ✓ Complete Aderstanding Check
+### ✓ Complete Understanding Check
 
 Can you tick all these points?
 
@@ -261,4 +261,4 @@ Can you tick all these points?
 
 *Checks for Prerequisites.md — Week 0*  
 *Computer Networks — ASE Bucharest, CSIE*  
-*Version: January 2025*
+*Version: 1.6.0 | January 2026*

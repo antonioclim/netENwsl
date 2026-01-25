@@ -167,7 +167,7 @@ This exercise demonlayeres measuring network latency...
 """
 ```
 - The first line tells the shell which interpreter to use
-- The docstring (between `"""`) documents the modulee
+- The docstring (between `"""`) documents the module
 
 **2. Dataclasses — Data Structures**
 ```python
@@ -590,7 +590,7 @@ from src.utils import calculate_crc
 
 **Explanation:** Without it, Python doesn't recognise the folder as a package and you cannot `import` from it. In Python 3.3+ you can use "namespace packages" without `__init__.py`, but explicit is clearer.
 
-**Practical consequence:** When creating a new folder for modulees, always add an `__init__.py` (it can be empty).
+**Practical consequence:** When creating a new folder for modules, always add an `__init__.py` (it can be empty).
 
 ---
 
@@ -616,7 +616,7 @@ from src.utils import calculate_crc
 
 #### Why It Matters
 
-All exercises accept command line parameters (`--host`, `--port`, etc.). The `argparse` modulee handles this.
+All exercises accept command line parameters (`--host`, `--port`, etc.). The `argparse` module handles this.
 
 #### ═══════════════════════════════════════════════════════════════
 #### 📖 KEY_CONCEPTS
@@ -820,7 +820,7 @@ def scan_ports(host: str, ports: list[int], workers: int = 100) -> list[int]:
 | **Request** | You fill in a request form |
 | **GET** | "I want to see my balance" (read only) |
 | **POST** | "I want to deposit money" (send data) |
-| **PUT** | "I want to updata my address" (replace completely) |
+| **PUT** | "I want to update my address" (replace completely) |
 | **DELETE** | "I want to close the account" |
 | **Headers** | Form header (name, data, signature) |
 | **Body** | Request content (amount, details) |
@@ -915,7 +915,7 @@ These exercises require you to **design** and **build** solutions from scratch, 
 ### 🛠️ CREATE #1: Design a Chat Protocol
 
 **Bloom Level:** CREATE  
-**Estimated time:** 45-60 minutess  
+**Estimated time:** 45-60 minutes  
 **Mode:** Individual or pairs
 
 #### Task
@@ -1014,7 +1014,7 @@ def test_max_payload():
 ### 🛠️ CREATE #2: Design a Port Scanner
 
 **Bloom Level:** CREATE  
-**Estimated time:** 30-45 minutess
+**Estimated time:** 30-45 minutes
 
 #### Task
 
@@ -1080,7 +1080,7 @@ if __name__ == "__main__":
 ### 🛠️ CREATE #3: Design a Simple Load Balancer
 
 **Bloom Level:** CREATE  
-**Estimated time:** 60-90 minutess
+**Estimated time:** 60-90 minutes
 
 #### Task
 
@@ -1981,7 +1981,7 @@ LEGEND: 8080 = HOST port (Windows sees this)
 |------|-----------------|----------------|
 | `ex_1_01_latency_ping.py` | `@dataclass`, `subprocess.run()` | Dataclasses, subprocesses |
 | `ex_1_02_tcp_server_client.py` | `socket`, `threading` | Basic sockets |
-| `ex_1_03_csv_parsing.py` | `csv` modulee, comprehensions | Data processing |
+| `ex_1_03_csv_parsing.py` | `csv` module, comprehensions | Data processing |
 
 ### Weeks 2-3: Sockets
 

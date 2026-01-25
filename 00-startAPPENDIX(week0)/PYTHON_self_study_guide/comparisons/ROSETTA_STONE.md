@@ -1,9 +1,9 @@
 # 🗿 Rosetta Stone: Python for Network Programming
-## Side-by-Side Comparison with C, JavaScript, Java, and Kotlin
+## Side-by-Side Comparison with C, JavaScript, Java and Kotlin
 
 > **Purpose:** If you know one of these languages, you already know Python's networking logic.  
 > **Format:** Same algorithm, five implementations.  
-> **Version:** 4.0 — January 2026
+> **Version:** 4.1 — January 2026
 
 ---
 
@@ -223,4 +223,4 @@ except socket.timeout:
 ---
 
 *Rosetta Stone for Python Networking — Computer Networks Course*  
-*ASE Bucharest, CSIE — Version 4.0, January 2026*
+*ASE Bucharest, CSIE — Version 4.1, January 2026*

@@ -1,5 +1,6 @@
 # Makefile — Week 0 Orchestration
 # Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
+# Version: 1.6.0 | Date: 2026-01-25
 #
 # Usage:
 #   make help      - Show available targets
@@ -45,6 +46,7 @@ help:
 	@echo "  $(YELLOW)quiz-random$(NC) - Run quiz with randomised questions"
 	@echo ""
 	@echo "  $(YELLOW)test$(NC)       - Run smoke tests for Python examples"
+	@echo "  $(YELLOW)test-exports$(NC) - Run export function unit tests"
 	@echo "  $(YELLOW)lint$(NC)       - Run code linter (ruff or flake8)"
 	@echo "  $(YELLOW)validate$(NC)   - Validate all YAML, JSON and Python files"
 	@echo ""
@@ -78,6 +80,10 @@ quiz-bloom-%:
 	@echo "$(CYAN)Running quiz filtered by Bloom level: $*$(NC)"
 	@$(PYTHON) $(QUIZ_DIR)/run_quiz.py --bloom $*
 
+quiz-validate:
+	@echo "$(CYAN)Validating quiz structure...$(NC)"
+	@$(PYTHON) $(QUIZ_DIR)/run_quiz.py --validate
+
 #═══════════════════════════════════════════════════════════════════════════════
 # TEST TARGETS
 #═══════════════════════════════════════════════════════════════════════════════
@@ -90,6 +96,18 @@ test:
 test-verbose:
 	@echo "$(CYAN)Running smoke tests (verbose)...$(NC)"
 	@$(PYTHON) -m pytest $(TESTS_DIR)/test_smoke.py -v 2>/dev/null || $(PYTHON) $(TESTS_DIR)/test_smoke.py
+
+test-exports:
+	@echo "$(CYAN)Running export function tests...$(NC)"
+	@if [ -f "$(QUIZ_DIR)/tests/test_quiz_exports.py" ]; then \
+		$(PYTHON) $(QUIZ_DIR)/tests/test_quiz_exports.py; \
+		echo "$(GREEN)✓ Export tests passed$(NC)"; \
+	else \
+		echo "$(YELLOW)⚠ Export tests not found$(NC)"; \
+	fi
+
+test-all: test test-exports
+	@echo "$(GREEN)✓ All tests passed$(NC)"
 
 #═══════════════════════════════════════════════════════════════════════════════
 # LINT TARGETS
@@ -199,7 +217,7 @@ all: lint test validate
 	@echo "$(GREEN)  ✓ All checks passed!$(NC)"
 	@echo "$(GREEN)═══════════════════════════════════════════════════════════$(NC)"
 
-ci: lint validate test
+ci: lint validate test test-exports
 	@echo "$(GREEN)✓ CI pipeline completed$(NC)"
 
 # Alias for common typos
