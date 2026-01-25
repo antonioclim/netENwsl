@@ -70,7 +70,7 @@ All projects follow this assessment structure:
 
 1. Read the project specification completely
 2. Check [Code Quality Standards](../docs/common/code_quality_standards.md)
-3. Initialize GitHub repository
+3. Initialise GitHub repository
 4. Use starter kit from [templates/](../templates/)
 5. Follow stage calendar
 

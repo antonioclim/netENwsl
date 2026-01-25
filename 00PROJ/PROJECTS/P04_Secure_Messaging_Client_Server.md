@@ -62,7 +62,7 @@ This project implements a secure messaging application with client-server archit
 ### TLS Handshake = Diplomatic Credentials Exchange
 
 🏠 **Real-World Analogy:**  
-When diplomats meet, they first verify each other's credentials (certificates), agree on a common language (cipher suite), and then exchange a secret code (session key) for private communications.
+When diplomats meet, they first verify each other's credentials (certificates), agree on a common language (cipher suite) and then exchange a secret code (session key) for private communications.
 
 💻 **Technical Mapping:**
 - Credentials = X.509 certificates

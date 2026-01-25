@@ -21,7 +21,7 @@
 
 ## Software-Defined Networking (P01, P06, P11)
 
-[5] D. Kreutz, F. M. V. Ramos, P. E. Veríssimo, C. E. Rothenberg, S. Azodolmolky and S. Uhlig, "Software-defined networking: A comprehensive survey," *Proc. IEEE*, vol. 103, no. 1, pp. 14–76, Jan. 2015. doi: 10.1109/JPROC.2014.2371999
+[5] D. Kreutz, F. M. V. Ramos, P. E. Veríssimo, C. E. Rothenberg, S. Azodolmolky and S. Uhlig, "Software-defined networking: A complete survey," *Proc. IEEE*, vol. 103, no. 1, pp. 14–76, Jan. 2015. doi: 10.1109/JPROC.2014.2371999
 
 [6] B. Lantz, B. Heller and N. McKeown, "A network in a laptop: Rapid prototyping for software-defined networks," in *Proc. 9th ACM Workshop Hot Topics Netw. (HotNets-IX)*, Monterey, CA, USA, Oct. 2010, pp. 1–6. doi: 10.1145/1868447.1868466
 
@@ -67,7 +67,7 @@
 
 [19] D. Merkel, "Docker: Lightweight Linux containers for consistent development and deployment," *Linux J.*, vol. 2014, no. 239, pp. 2:1–2:8, Mar. 2014.
 
-[20] B. Burns, B. Grant, D. Oppenheimer, E. Brewer and J. Wilkes, "Borg, Omega, and Kubernetes," *ACM Queue*, vol. 14, no. 1, pp. 70–93, Jan. 2016. doi: 10.1145/2898442.2898444
+[20] B. Burns, B. Grant, D. Oppenheimer, E. Brewer and J. Wilkes, "Borg, Omega and Kubernetes," *ACM Queue*, vol. 14, no. 1, pp. 70–93, Jan. 2016. doi: 10.1145/2898442.2898444
 
 [21] Docker, Inc., "Docker Documentation," [Online]. Available: https://docs.docker.com/
 

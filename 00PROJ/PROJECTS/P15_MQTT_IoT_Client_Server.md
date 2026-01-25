@@ -92,7 +92,7 @@
 
 ## 📚 Project Description
 
-Build an IoT application using MQTT (Message Queuing Telemetry Transport) protocol. Create simulated sensors that publish data (temperature, humidity, motion) and subscribers that receive and process this data. Demonstrate MQTT's publish-subscribe model, Quality of Service levels, and retained messages.
+Build an IoT application using MQTT (Message Queuing Telemetry Transport) protocol. Create simulated sensors that publish data (temperature, humidity, motion) and subscribers that receive and process this data. Demonstrate MQTT's publish-subscribe model, Quality of Service levels and retained messages.
 
 MQTT is the de-facto standard for IoT communication due to its lightweight nature and support for unreliable networks.
 
@@ -136,7 +136,7 @@ MQTT is the de-facto standard for IoT communication due to its lightweight natur
 ### MUST (Mandatory)
 - [ ] MUST use MQTT protocol (not HTTP/WebSocket alternatives)
 - [ ] MUST implement at least 3 different sensor types
-- [ ] MUST demonstrate QoS 0, 1, and 2
+- [ ] MUST demonstrate QoS 0, 1 and 2
 - [ ] MUST use hierarchical topic structure
 - [ ] MUST handle broker disconnection gracefully
 - [ ] MUST pass all smoke tests

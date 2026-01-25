@@ -92,7 +92,7 @@
 
 ## 📚 Project Description
 
-Build a containerised microservices architecture with a custom load balancer that distributes traffic across multiple backend instances. Using Docker and Docker Compose, you'll implement health checking, automatic failover, and demonstrate load distribution. This mirrors production deployment patterns used by major tech companies.
+Build a containerised microservices architecture with a custom load balancer that distributes traffic across multiple backend instances. Using Docker and Docker Compose, you'll implement health checking, automatic failover and demonstrate load distribution. This mirrors production deployment patterns used by major tech companies.
 
 ### 🎯 Learning Objectives
 
@@ -437,7 +437,7 @@ class LoadBalancer:
 # ═══════════════════════════════════════════════════════════════════════════════
 app = Flask(__name__)
 
-# Initialize load balancer
+# Initialise load balancer
 backends = [
     Backend("backend1", 5001),
     Backend("backend2", 5002),

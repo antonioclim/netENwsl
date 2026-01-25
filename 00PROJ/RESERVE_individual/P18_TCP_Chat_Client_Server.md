@@ -31,7 +31,7 @@ Build a chat application using TCP sockets supporting multiple concurrent client
 ## 🎯 Concept Analogies
 
 ### TCP = Phone Call
-🏠 **Analogy:** You dial (connect), wait for answer (handshake), talk (exchange data), and hang up (close). The connection stays open during conversation.
+🏠 **Analogy:** You dial (connect), wait for answer (handshake), talk (exchange data) and hang up (close). The connection stays open during conversation.
 
 💻 **Technical:** Connection-oriented, reliable, ordered delivery.
 
@@ -61,7 +61,7 @@ Build a chat application using TCP sockets supporting multiple concurrent client
 ## ❌ Common Misconceptions
 
 ### 🚫 "TCP send() = one message"
-**CORRECT:** TCP is a stream. Multiple sends may arrive as one recv(), or one send may arrive as multiple recv(). You must handle framing.
+**CORRECT:** TCP is a stream. Multiple sends may arrive as one recv() or one send may arrive as multiple recv(). You must handle framing.
 
 ### 🚫 "Threads share nothing"
 **CORRECT:** Threads share memory. Must use locks for shared data (like client list).

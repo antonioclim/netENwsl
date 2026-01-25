@@ -174,7 +174,7 @@ git push origin main --tags
 
 ## 📚 Project Description
 
-Build an SDN controller that manages network topology discovery, implements learning switch functionality, and provides basic traffic engineering capabilities using OpenFlow. The controller will run on a Mininet virtual network, communicating with Open vSwitch instances via the OpenFlow protocol.
+Build an SDN controller that manages network topology discovery, implements learning switch functionality and provides basic traffic engineering capabilities using OpenFlow. The controller will run on a Mininet virtual network, communicating with Open vSwitch instances via the OpenFlow protocol.
 
 Software-Defined Networking (SDN) separates the network's control plane (decision-making) from the data plane (packet forwarding). This project implements the control plane as a Python application that instructs switches how to handle traffic. You will learn how modern networks are programmed and gain hands-on experience with network virtualisation.
 
@@ -371,7 +371,7 @@ A packet arrives destined for 10.0.0.1.
 
 **Explanation:** In OpenFlow 1.3+, the default action for a table-miss (no matching flow) is to DROP the packet. You must explicitly install a table-miss flow rule (priority=0, match=*, action=send-to-controller) to get PacketIn messages. This is a security-by-default design.
 
-**Misconception targeted:** Students expect switches to flood by default like traditional L2 switches, or assume PacketIn is automatic.
+**Misconception targeted:** Students expect switches to flood by default like traditional L2 switches or assume PacketIn is automatic.
 
 ---
 
@@ -542,10 +542,10 @@ class LearningSwitch(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
     
     def __init__(self, *args, **kwargs):
-        """Initialize controller with empty MAC tables."""
+        """Initialise controller with empty MAC tables."""
         super().__init__(*args, **kwargs)
         self.mac_tables: Dict[DatapathId, MacTable] = {}
-        self.logger.info("Learning Switch Controller initialized")
+        self.logger.info("Learning Switch Controller initialised")
     
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev) -> None:
@@ -561,7 +561,7 @@ class LearningSwitch(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         
-        # Initialize MAC table for this switch
+        # Initialise MAC table for this switch
         self.mac_tables[datapath.id] = {}
         self.logger.info(f"Switch {datapath.id} connected")
         
@@ -676,7 +676,7 @@ class LearningSwitch(app_manager.RyuApp):
 1. Add topology discovery using LLDP
 2. Implement flow statistics collection
 3. Add proper logging and monitoring
-4. Create comprehensive tests
+4. Create thorough tests
 5. Document performance metrics
 
 **Deliverables:**
@@ -723,7 +723,7 @@ sudo mn --controller=remote --topo=tree,2,2
 
 **Expected controller output:**
 ```
-[INFO] Learning Switch Controller initialized
+[INFO] Learning Switch Controller initialised
 [INFO] Switch 1 connected
 [INFO] Installed table-miss rule on switch 1
 [INFO] Switch 2 connected
@@ -860,7 +860,7 @@ Consult these resources from **netENwsl** (https://github.com/antonioclim/netENw
    Verified: 2026-01-24 ✓
 
 ### Secondary Sources
-4. **[ACADEMIC]** Kreutz, D., et al. (2015). Software-Defined Networking: A Comprehensive Survey.  
+4. **[ACADEMIC]** Kreutz, D., et al. (2015). Software-Defined Networking: A Complete Survey.  
    DOI: 10.1109/COMST.2014.2330167
 
 ---

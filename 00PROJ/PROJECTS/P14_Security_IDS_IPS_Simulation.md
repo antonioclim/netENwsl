@@ -92,7 +92,7 @@
 
 ## 📚 Project Description
 
-Build a network Intrusion Detection and Prevention System (IDS/IPS) that monitors traffic, detects common attacks, and optionally blocks malicious activity. Implement both signature-based detection (matching known patterns) and threshold-based detection (identifying anomalies like too many connections).
+Build a network Intrusion Detection and Prevention System (IDS/IPS) that monitors traffic, detects common attacks and optionally blocks malicious activity. Implement both signature-based detection (matching known patterns) and threshold-based detection (identifying anomalies like too many connections).
 
 ### 🎯 Learning Objectives
 
@@ -252,7 +252,7 @@ Police use wanted posters with specific features (height, scar, tattoo). They ma
 
 **WRONG:** Having an IDS stops attacks.
 
-**CORRECT:** IDS only DETECTS — it alerts humans who must take action. For automatic prevention, you need IPS, and even then it only blocks known patterns.
+**CORRECT:** IDS only DETECTS — it alerts humans who must take action. For automatic prevention, you need IPS and even then it only blocks known patterns.
 
 ---
 

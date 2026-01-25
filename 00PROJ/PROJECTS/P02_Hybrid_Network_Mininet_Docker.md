@@ -88,7 +88,7 @@ retele-proiect-02/
 
 This project creates a hybrid network combining Mininet's virtual network emulation with Docker containers. The goal is to demonstrate how software-defined networks can interact with containerised applications, creating a flexible testing environment for network services.
 
-You will build a topology where Mininet hosts communicate with Docker containers through bridge networks, enabling scenarios like testing microservices, load balancing, or distributed applications in an emulated network environment.
+You will build a topology where Mininet hosts communicate with Docker containers through bridge networks, enabling scenarios like testing microservices, load balancing or distributed applications in an emulated network environment.
 
 ### 🎯 Learning Objectives
 
@@ -127,7 +127,7 @@ An airport has multiple terminals (Docker networks) connected by a central hub (
 - Security checkpoints = Network namespaces
 
 ⚠️ **Where the analogy breaks:**  
-Unlike airports, network bridges can filter or modify packets, and "passengers" (packets) can be duplicated or dropped.
+Unlike airports, network bridges can filter or modify packets and "passengers" (packets) can be duplicated or dropped.
 
 ### Container Network = Apartment Building
 
@@ -210,7 +210,7 @@ Each apartment (container) has its own address within the building (Docker netwo
 
 **WRONG:** "172.17.0.2 will always be my web container."
 
-**CORRECT:** Docker assigns IPs dynamically. Use container names for DNS resolution within Docker networks, or assign static IPs in compose files.
+**CORRECT:** Docker assigns IPs dynamically. Use container names for DNS resolution within Docker networks or assign static IPs in compose files.
 
 ---
 

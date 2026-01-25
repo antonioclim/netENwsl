@@ -139,7 +139,7 @@ project:
         incorrect: "By default, unmatched packets are sent to the controller for decision."
       explanation: |
         This is the reactive flow installation model. The controller receives 
-        the packet, decides what to do, and may install a flow rule for 
+        the packet, decides what to do and may install a flow rule for 
         future similar packets.
       misconception: "Assuming switches can make independent forwarding decisions"
       

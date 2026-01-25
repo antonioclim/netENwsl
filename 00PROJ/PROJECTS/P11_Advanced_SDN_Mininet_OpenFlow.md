@@ -94,7 +94,7 @@
 
 ## 📚 Project Description
 
-Implement Quality of Service (QoS) policies in an SDN network using OpenFlow meters and queues. The system will classify traffic (VoIP, video, best-effort), assign priorities, and enforce bandwidth guarantees. This demonstrates how modern networks ensure critical applications get the resources they need.
+Implement Quality of Service (QoS) policies in an SDN network using OpenFlow meters and queues. The system will classify traffic (VoIP, video, best-effort), assign priorities and enforce bandwidth guarantees. This demonstrates how modern networks ensure critical applications get the resources they need.
 
 QoS is essential in real networks where video calls compete with file downloads. Without QoS, a large download can starve a video call of bandwidth. Your controller will prevent this by intelligently managing traffic.
 
@@ -385,7 +385,7 @@ class QoSController(app_manager.RyuApp):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger.info("QoS Controller initialized")
+        self.logger.info("QoS Controller initialised")
     
     def _classify_packet(self, pkt) -> TrafficClass:
         """

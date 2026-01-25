@@ -136,7 +136,7 @@ retele-proiect-08/
 
 ## 📚 Project Description
 
-Build a custom HTTP web server and reverse proxy from scratch using Python sockets. The web server will handle HTTP requests, serve static files, and support basic routing. The reverse proxy will forward requests to backend servers, demonstrating how modern web infrastructure works.
+Build a custom HTTP web server and reverse proxy from scratch using Python sockets. The web server will handle HTTP requests, serve static files and support basic routing. The reverse proxy will forward requests to backend servers, demonstrating how modern web infrastructure works.
 
 This project provides deep understanding of HTTP protocol mechanics — essential knowledge for web development and DevOps roles. You'll see exactly what happens "under the hood" when a browser makes a request.
 
@@ -231,7 +231,7 @@ A receptionist handles one guest at a time. A proxy handles thousands of concurr
 ### HTTP Request/Response = Restaurant Order
 
 🏠 **Real-World Analogy:**  
-At a restaurant: you give an order (request) specifying what you want (method: GET food), from which menu (path: /appetizers/soup), with preferences (headers: no onions). The kitchen processes it and returns your meal (response) with a receipt (status: 200 served, or 404 not available).
+At a restaurant: you give an order (request) specifying what you want (method: GET food), from which menu (path: /appetizers/soup), with preferences (headers: no onions). The kitchen processes it and returns your meal (response) with a receipt (status: 200 served or 404 not available).
 
 💻 **Technical Mapping:**
 - Order = HTTP Request
@@ -291,7 +291,7 @@ At a restaurant: you give an order (request) specifying what you want (method: G
 
 **Correct answer:** C
 
-**Explanation:** 502 means the proxy (gateway) received an invalid response from the upstream server, or couldn't connect at all. The problem is between proxy and backend, not client and proxy.
+**Explanation:** 502 means the proxy (gateway) received an invalid response from the upstream server or couldn't connect at all. The problem is between proxy and backend, not client and proxy.
 
 ---
 
@@ -331,7 +331,7 @@ You can implement a basic server in <100 lines of Python.
 
 **WRONG:** Another hop means slower responses.
 
-**CORRECT:** Proxies often IMPROVE performance through caching, connection pooling, and compression. The small routing overhead is offset by these optimizations.
+**CORRECT:** Proxies often IMPROVE performance through caching, connection pooling and compression. The small routing overhead is offset by these optimizations.
 
 ---
 

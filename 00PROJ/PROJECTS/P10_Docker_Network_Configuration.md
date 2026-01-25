@@ -94,7 +94,7 @@
 
 ## 📚 Project Description
 
-Create a Docker network management system that demonstrates different network types (bridge, host, overlay, macvlan), implements custom network configurations, and provides tools for monitoring and troubleshooting container connectivity. This project teaches container networking fundamentals essential for modern DevOps and cloud deployments.
+Create a Docker network management system that demonstrates different network types (bridge, host, overlay, macvlan), implements custom network configurations and provides tools for monitoring and troubleshooting container connectivity. This project teaches container networking fundamentals essential for modern DevOps and cloud deployments.
 
 Docker networking is fundamental to microservices architecture. Understanding how containers communicate — both with each other and the outside world — is crucial for deploying scalable applications.
 
@@ -346,7 +346,7 @@ class NetworkManager:
     Manage Docker networks programmatically.
     
     # 💭 PREDICTION: Why use Docker SDK instead of subprocess?
-    # Answer: Type safety, error handling, and cleaner API
+    # Answer: Type safety, error handling and cleaner API
     """
     
     def __init__(self):

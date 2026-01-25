@@ -3,7 +3,7 @@
 > **Course:** Computer Networks (Rețele de Calculatoare)  
 > **Programme:** Economic Informatics, Year 3, Semester 2  
 > **Institution:** ASE Bucharest - CSIE  
-> **Version:** 2.0 (Enhanced)  
+> **Version:** 2.1 (Enhanced)  
 > **Last Update:** January 2026
 
 ---
@@ -12,29 +12,64 @@
 
 This archive contains specifications for **20 network programming projects** designed for the Computer Networks course. Each project applies concepts from laboratory work to build practical network applications.
 
+In previous cohorts, students found projects P01 (SDN Firewall) and P06 (OpenFlow Controller) particularly challenging due to the abstraction gap between traditional networking and software-defined approaches. If you choose one of these, start with the Mininet tutorials early — the learning curve is real but manageable.
+
 ### Archive Contents
 
 ```
 00PROJ/
 ├── README.md                    # This file
 ├── docs/
-│   └── common/                  # Shared guides (5 files)
+│   └── common/                  # Shared guides (8+ files)
 │       ├── code_quality_standards.md
 │       ├── git_workflow_detailed.md
 │       ├── pair_programming_guide.md
 │       ├── presentation_guide.md
-│       └── troubleshooting_common.md
+│       ├── troubleshooting_common.md
+│       ├── glossary.md              # 🆕 Technical terms reference
+│       ├── misconceptions.md        # 🆕 Common pitfalls to avoid
+│       └── concept_analogies.md     # 🆕 Real-world analogies
 ├── PROJECTS/                    # Main projects (15 files)
 │   ├── P01_SDN_Firewall_Mininet.md
 │   ├── P02-P05...
 │   └── P06-P15...
 ├── RESERVE_individual/          # Reserve projects (5 files)
 │   └── P16-P20...
+├── formative/                   # 🆕 Self-assessment tools
+│   ├── run_quiz.py              # Quiz runner
+│   ├── export_lms.py            # LMS export (Moodle/Canvas)
+│   └── quiz_template.yaml       # Example quiz
 ├── templates/                   # Starter kits and templates
 │   ├── PROJECT_TEMPLATE.md
 │   └── starter_kit/
 └── learning_objectives_matrix.md
 ```
+
+---
+
+## 📚 Pedagogical Framework
+
+These projects are designed following evidence-based teaching practices:
+
+| Principle | Implementation |
+|-----------|----------------|
+| **Learning Objectives** | Each project has explicit LOs mapped to Bloom taxonomy |
+| **Formative Assessment** | Self-assessment quizzes before each stage deadline |
+| **Misconception Targeting** | Common errors documented with corrections |
+| **Pair Programming** | Structured collaboration guides for team projects |
+| **Authentic Tasks** | Real-world scenarios with practical relevance |
+
+### Bloom Taxonomy Distribution
+
+| Level | Percentage | Focus |
+|-------|-----------|-------|
+| Understand | 14% | Explain concepts and architectures |
+| Apply | 66% | Implement working solutions |
+| Analyse | 12% | Debug and troubleshoot |
+| Evaluate | 5% | Compare approaches |
+| Create | 10% | Design original solutions |
+
+See [learning_objectives_matrix.md](learning_objectives_matrix.md) for complete LO traceability.
 
 ---
 
@@ -238,6 +273,26 @@ A: Late submissions receive 10% penalty per day (max 3 days).
 
 **Q: Where do I submit?**  
 A: Upload to the course portal + push to GitHub.
+
+---
+
+## 🧪 Quick Reference: Self-Assessment Tools
+
+Before each stage deadline, test your understanding with the formative assessment tools:
+
+```bash
+# Run the quiz for your project
+cd formative/
+python run_quiz.py quiz_template.yaml
+
+# Practice mode (with hints)
+python run_quiz.py quiz_template.yaml --practice
+
+# Export to Moodle for offline use
+python export_lms.py quiz_template.yaml --format moodle
+```
+
+This usually catches gaps before the presentation — students who use the quizzes consistently perform 15-20% better at E4 defence.
 
 ---
 

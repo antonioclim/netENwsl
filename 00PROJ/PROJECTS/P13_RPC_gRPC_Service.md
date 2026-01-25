@@ -90,7 +90,7 @@
 
 ## 📚 Project Description
 
-Implement a distributed service using gRPC (Google Remote Procedure Call) with Protocol Buffers for serialisation. Create a client-server application that demonstrates different RPC patterns: unary, server streaming, client streaming, and bidirectional streaming. Compare performance with equivalent REST API.
+Implement a distributed service using gRPC (Google Remote Procedure Call) with Protocol Buffers for serialisation. Create a client-server application that demonstrates different RPC patterns: unary, server streaming, client streaming and bidirectional streaming. Compare performance with equivalent REST API.
 
 gRPC is used by major companies (Google, Netflix, Square) for microservice communication due to its efficiency and strong typing.
 
@@ -211,7 +211,7 @@ Instead of writing freeform letters, you use standardised forms where everyone k
 
 **Correct answer:** B
 
-**Explanation:** Server streaming sends multiple responses for one request — ideal for large datasets, real-time updates, or progress notifications. Client streaming is for uploads; unary is for simple request-response.
+**Explanation:** Server streaming sends multiple responses for one request — ideal for large datasets, real-time updates or progress notifications. Client streaming is for uploads; unary is for simple request-response.
 
 ---
 
@@ -261,7 +261,7 @@ Instead of writing freeform letters, you use standardised forms where everyone k
 
 **WRONG:** Protobuf is binary JSON.
 
-**CORRECT:** Protobuf requires schema (proto file), is strongly typed, and supports evolution rules. It's not just a different encoding of JSON — it's a different paradigm.
+**CORRECT:** Protobuf requires schema (proto file), is strongly typed and supports evolution rules. It's not just a different encoding of JSON — it's a different model.
 
 ---
 

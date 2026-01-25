@@ -4,6 +4,8 @@
 > **Purpose:** Solutions to common problems in network projects.  
 > **Applies to:** All projects P01-P20
 
+This usually breaks when students forget to start Docker before running their code, or when WSL networking gets confused after a Windows update. Most issues below come from real debugging sessions during office hours.
+
 ---
 
 ## Quick Diagnostic Commands

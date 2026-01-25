@@ -487,7 +487,7 @@ def run_quiz(
         elif not is_correct and "incorrect" in feedback:
             print(f"  {feedback['incorrect']}")
         
-        # Show explanation (always in practice mode, or after incorrect)
+        # Show explanation (always in practice mode or after incorrect)
         if practice_mode or not is_correct:
             if "explanation" in q:
                 print(f"\n  📖 {q['explanation']}")

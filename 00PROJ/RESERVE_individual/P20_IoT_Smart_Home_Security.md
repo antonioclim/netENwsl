@@ -31,7 +31,7 @@ Design and simulate a smart home IoT network with security measures. Implement d
 ## 🎯 Concept Analogies
 
 ### IoT Network = Smart Building
-🏠 **Analogy:** A smart building has sensors (IoT devices), a control room (gateway/hub), and communication lines (network). Security means controlling who can enter and what they can do.
+🏠 **Analogy:** A smart building has sensors (IoT devices), a control room (gateway/hub) and communication lines (network). Security means controlling who can enter and what they can do.
 
 💻 **Technical:** Devices → Gateway → Cloud, with authentication at each step.
 

@@ -93,7 +93,7 @@ def setup_logging(
     return logger
 
 
-# Initialize logger
+# Initialise logger
 logger = setup_logging()
 
 
@@ -184,7 +184,7 @@ class NetworkApplication:
     
     def __init__(self, config: Dict[str, Any]) -> None:
         """
-        Initialize the network application.
+        Initialise the network application.
         
         Args:
             config: Configuration dictionary with application settings
@@ -193,7 +193,7 @@ class NetworkApplication:
         self.running = False
         self._resources: List[Any] = []
         
-        logger.info("Application initialized")
+        logger.info("Application initialised")
         logger.debug(f"Configuration: {config}")
     
     def start(self) -> None:
@@ -213,7 +213,7 @@ class NetworkApplication:
         
         # TODO: Implement your startup logic here
         # Example:
-        # - Initialize network connections
+        # - Initialise network connections
         # - Start background threads/tasks
         # - Set up event handlers
         

@@ -35,7 +35,7 @@
 
 ## 📚 Project Description
 
-Build a network traffic analyser that captures packets, extracts protocol information, calculates statistics (bandwidth, packet rates, protocol distribution), and visualises traffic patterns. This tool helps understand network behaviour and diagnose issues.
+Build a network traffic analyser that captures packets, extracts protocol information, calculates statistics (bandwidth, packet rates, protocol distribution) and visualises traffic patterns. This tool helps understand network behaviour and diagnose issues.
 
 ### 🎯 Learning Objectives
 
@@ -119,11 +119,11 @@ Highway sensors count vehicles, measure speed, classify by type (car, truck). Th
 
 ## ❌ Common Misconceptions
 
-### 🚫 "Can analyze all traffic on network"
+### 🚫 "Can analyse all traffic on network"
 
 **WRONG:** Connect to any network and see everything.
 
-**CORRECT:** On switched networks, you only see: your traffic, broadcast, and traffic to your MAC. Full capture requires mirror port or inline tap.
+**CORRECT:** On switched networks, you only see: your traffic, broadcast and traffic to your MAC. Full capture requires mirror port or inline tap.
 
 ---
 
@@ -151,7 +151,7 @@ from datetime import datetime
 import time
 
 class TrafficAnalyzer:
-    """Analyze network traffic statistics."""
+    """Analyse network traffic statistics."""
     
     def __init__(self):
         self.packet_count = 0

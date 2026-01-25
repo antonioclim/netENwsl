@@ -92,7 +92,7 @@
 
 ## 📚 Project Description
 
-Implement a simplified FTP server that supports multiple concurrent clients. The server will handle standard FTP commands for file listing, upload, download, and directory navigation. This project provides deep understanding of the FTP protocol with its unique dual-channel architecture (control + data).
+Implement a simplified FTP server that supports multiple concurrent clients. The server will handle standard FTP commands for file listing, upload, download and directory navigation. This project provides deep understanding of the FTP protocol with its unique dual-channel architecture (control + data).
 
 ### 🎯 Learning Objectives
 

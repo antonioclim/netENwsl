@@ -190,9 +190,11 @@ git push origin main
 
 ## 📚 Project Description
 
-This project implements a network firewall using the Software-Defined Networking (SDN) paradigm. Instead of a traditional firewall based on dedicated hardware devices, you will implement a firewall application at the SDN controller level that filters traffic between nodes in a virtual network.
+This project implements a network firewall using the Software-Defined Networking (SDN) model. Instead of a traditional firewall based on dedicated hardware devices, you will implement a firewall application at the SDN controller level that filters traffic between nodes in a virtual network.
 
-The Mininet emulation platform will be used to create a virtual network topology (computers and OpenFlow switches), controlled by an SDN controller (such as POX or Ryu) programmed in Python. The SDN firewall will inspect packets (based on IP addresses, TCP/UDP ports, or protocol type) and apply filtering rules (allow/block) dynamically by installing OpenFlow flows in the network switches.
+The Mininet emulation platform will be used to create a virtual network topology (computers and OpenFlow switches), controlled by an SDN controller (such as POX or Ryu) programmed in Python. The SDN firewall will inspect packets (based on IP addresses, TCP/UDP ports or protocol type) and apply filtering rules (allow/block) dynamically by installing OpenFlow flows in the network switches.
+
+If Mininet feels confusing at first, focus on the topology definition before touching the controller code. In previous years, students who tried to understand everything simultaneously got overwhelmed — the topology is just Python creating virtual links, which is much simpler than the OpenFlow logic.
 
 ### 🎯 Learning Objectives
 
@@ -249,7 +251,7 @@ An air traffic control tower coordinates all aircraft. Planes don't decide their
 - Radar = PacketIn messages informing controller
 
 ⚠️ **Where the analogy breaks:**  
-Unlike planes, packets can be duplicated, modified, or silently dropped. Also, flow rules persist in switches — the controller doesn't need to guide every single packet.
+Unlike planes, packets can be duplicated, modified or silently dropped. Also, flow rules persist in switches — the controller doesn't need to guide every single packet.
 
 ### Flow Table = Restaurant Order System
 
@@ -372,7 +374,7 @@ sudo ovs-ofctl dump-flows s1
 
 **WRONG:** "Every byte of large packets goes to the controller, causing performance issues."
 
-**CORRECT:** By default, only the first N bytes (buffer) are sent. The switch keeps the full packet and can be instructed to forward it via PacketOut, or the controller can just install a rule for future packets.
+**CORRECT:** By default, only the first N bytes (buffer) are sent. The switch keeps the full packet and can be instructed to forward it via PacketOut or the controller can just install a rule for future packets.
 
 **Why it matters:** This design prevents controller overload with large packets.
 
@@ -721,13 +723,13 @@ Consult these resources from the **netENwsl** archive (https://github.com/antoni
 
 ## 📚 Bibliography
 
-1. Kreutz, D., et al. (2015). Software-Defined Networking: A Comprehensive Survey. IEEE Communications Surveys & Tutorials, 17(1), 27-51.
+1. Kreutz, D., et al. (2015). Software-Defined Networking: A Thorough Survey. IEEE Communications Surveys & Tutorials, 17(1), 27-51.
 
 2. Lantz, B., Heller, B., & McKeown, N. (2010). A network in a laptop: Rapid prototyping for software-defined networks. HotNets-IX.
 
-3. Hu, H., et al. (2014). FlowGuard: Building robust firewalls for software-defined networks. HotSDN '14.
+3. Hu, H., et al. (2014). FlowGuard: Building solid firewalls for software-defined networks. HotSDN '14.
 
-4. Göransson, P., Black, C., & Culver, T. (2014). Software Defined Networks: A Comprehensive Approach. Morgan Kaufmann.
+4. Göransson, P., Black, C., & Culver, T. (2014). Software Defined Networks: A Complete Approach. Morgan Kaufmann.
 
 ---
 

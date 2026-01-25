@@ -140,7 +140,7 @@ retele-proiect-07/
 
 ## 📚 Project Description
 
-Implement a software firewall combined with an Intrusion Detection System (IDS) that monitors network traffic, applies filtering rules, and detects suspicious patterns. Using Python with Scapy or pyshark, you will build a system that can block unwanted traffic and alert on potential attacks like port scans, brute force attempts, and anomalous traffic patterns.
+Implement a software firewall combined with an Intrusion Detection System (IDS) that monitors network traffic, applies filtering rules and detects suspicious patterns. Using Python with Scapy or pyshark, you will build a system that can block unwanted traffic and alert on potential attacks like port scans, brute force attempts and anomalous traffic patterns.
 
 This project combines two essential security functions: preventive (firewall — blocking bad traffic) and detective (IDS — identifying attacks). Understanding both is crucial for network security roles.
 
@@ -148,7 +148,7 @@ This project combines two essential security functions: preventive (firewall —
 
 By completing this project, you will be able to:
 
-- **LO1:** Implement packet filtering rules based on IP, port, and protocol
+- **LO1:** Implement packet filtering rules based on IP, port and protocol
 - **LO2:** Capture and parse network packets using Python libraries
 - **LO3:** Design detection signatures for common attack patterns
 - **LO4:** Implement alert generation and logging systems
@@ -284,7 +284,7 @@ A packet arrives: src=10.0.0.5, dst_port=22
 
 **Explanation:** Most firewalls use first-match processing. Rule 1 matches (source is in 10.0.0.0/8), so the packet is allowed before rule 2 is checked. Rule order matters critically!
 
-**Misconception targeted:** Students think all matching rules are evaluated, or that "deny" rules have priority.
+**Misconception targeted:** Students think all matching rules are evaluated or that "deny" rules have priority.
 
 ---
 
@@ -374,7 +374,7 @@ A packet arrives: src=10.0.0.5, dst_port=22
 
 ### 🚫 "More rules = better security"
 
-**WRONG:** Adding many specific rules creates complexity, increases processing time, and makes it harder to audit.
+**WRONG:** Adding many specific rules creates complexity, increases processing time and makes it harder to audit.
 
 **CORRECT:** Follow "default deny" principle: deny everything, then allow only what's needed. Fewer, well-designed rules are better than many specific ones.
 
@@ -569,7 +569,7 @@ class FirewallEngine:
 **Tasks:**
 1. Complete IDS signatures implementation
 2. Add alert rate limiting
-3. Comprehensive testing
+3. Complete testing
 4. Performance analysis
 
 ---

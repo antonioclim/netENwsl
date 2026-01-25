@@ -36,7 +36,7 @@ Design and implement a local network with NAT for internet access and DHCP for a
 💻 **Technical:** NAT translates between private (192.168.x.x) and public IPs.
 
 ### DHCP = Hotel Check-in
-🏠 **Analogy:** When you arrive, the hotel assigns you a room (IP address), tells you where the restaurant is (gateway), and how long you can stay (lease time).
+🏠 **Analogy:** When you arrive, the hotel assigns you a room (IP address), tells you where the restaurant is (gateway) and how long you can stay (lease time).
 
 ---
 

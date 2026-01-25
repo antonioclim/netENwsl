@@ -81,7 +81,7 @@ By completing this project, you will be able to:
 ### IDS = Security Camera System
 
 🏠 **Real-World Analogy:**  
-A building's security camera system records all activity (packet capture), analyses footage for suspicious behaviour (pattern matching), and alerts security guards (alerting) when something unusual is detected. It doesn't stop intruders (that's IPS) but identifies them.
+A building's security camera system records all activity (packet capture), analyses footage for suspicious behaviour (pattern matching) and alerts security guards (alerting) when something unusual is detected. It doesn't stop intruders (that's IPS) but identifies them.
 
 💻 **Technical Mapping:**
 - Cameras = Network interface in promiscuous mode
