@@ -2,7 +2,7 @@
   "metadata": {
     "week": 14,
     "topic": "Integrated Recap and Project Evaluation",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "author": "ing. dr. Antonio Clim",
     "institution": "ASE Bucharest, CSIE",
     "course": "Computer Networks",
@@ -11,24 +11,27 @@
     "passing_score_percent": 70,
     "total_points": 42,
     "question_count": 15,
-    "bloom_coverage": {
-      "Remember": {"count": 3, "points": 3},
-      "Understand": {"count": 3, "points": 6},
-      "Apply": {"count": 2, "points": 4},
-      "Analyse": {"count": 2, "points": 6},
-      "Evaluate": {"count": 2, "points": 8},
-      "Create": {"count": 3, "points": 15}
+    "lms_export": {
+      "moodle_compatible": true,
+      "canvas_compatible": true,
+      "export_formats": ["xml", "json", "qti"]
     },
+    "bloom_coverage": [
+      {"level": "Remember", "count": 3, "points": 3},
+      {"level": "Understand", "count": 3, "points": 6},
+      {"level": "Apply", "count": 2, "points": 4},
+      {"level": "Analyse", "count": 2, "points": 6},
+      {"level": "Evaluate", "count": 2, "points": 8},
+      {"level": "Create", "count": 3, "points": 15}
+    ],
     "learning_objectives": {
-      "LO1": "Recall OSI and TCP/IP layered architectures",
-      "LO2": "Explain reverse proxies and load balancers",
-      "LO3": "Implement multi-container Docker environment",
-      "LO4": "Analyse packet captures to trace HTTP flows",
-      "LO5": "Design verification strategies for network services",
-      "LO6": "Evaluate system behaviour under various conditions"
-    },
-    "moodle_category": "Computer Networks / Week 14",
-    "canvas_quiz_type": "practice_quiz"
+      "LO1": {"description": "Recall OSI and TCP/IP layered architectures", "bloom_level": "Remember"},
+      "LO2": {"description": "Explain reverse proxies and load balancers", "bloom_level": "Understand"},
+      "LO3": {"description": "Implement multi-container Docker environment", "bloom_level": "Apply"},
+      "LO4": {"description": "Analyse packet captures to trace HTTP flows", "bloom_level": "Analyse"},
+      "LO5": {"description": "Design verification strategies for network services", "bloom_level": "Create"},
+      "LO6": {"description": "Evaluate system behaviour under various conditions", "bloom_level": "Evaluate"}
+    }
   },
   "questions": [
     {
@@ -46,8 +49,8 @@
         "d": "Application (Layer 7)"
       },
       "correct": "b",
-      "explanation": "The Network Layer (Layer 3) manages IP addressing and packet routing between different networks. Data Link (L2) uses MAC addresses, Transport (L4) uses ports, Application (L7) handles application data.",
-      "hint": "Consider what information a router uses to decide where to send a packet."
+      "explanation": "The Network Layer (Layer 3) manages IP addressing and packet routing between different networks.",
+      "misconception_ref": "docs/misconceptions.md#misconception-1"
     },
     {
       "id": "q02",
@@ -56,16 +59,16 @@
       "lo_ref": "LO1",
       "difficulty": "basic",
       "points": 1,
-      "stem": "What Protocol Data Unit (PDU) does TCP use at Layer 4?",
+      "stem": "How many packets are exchanged in a TCP three-way handshake?",
       "options": {
-        "a": "Frame",
-        "b": "Packet",
-        "c": "Segment",
-        "d": "Datagram"
+        "a": "2",
+        "b": "3",
+        "c": "4",
+        "d": "5"
       },
-      "correct": "c",
-      "explanation": "Each OSI layer has its own PDU: Layer 2 uses Frame, Layer 3 uses Packet, Layer 4 uses Segment (TCP) or Datagram (UDP), Layer 7 uses Data/Message.",
-      "hint": "TCP = Transport Control Protocol — which layer?"
+      "correct": "b",
+      "explanation": "The TCP three-way handshake involves exactly 3 packets: SYN, SYN-ACK, ACK.",
+      "misconception_ref": "docs/misconceptions.md#misconception-3"
     },
     {
       "id": "q03",
@@ -74,16 +77,16 @@
       "lo_ref": "LO1",
       "difficulty": "basic",
       "points": 1,
-      "stem": "What is the standard port for HTTP (not HTTPS)?",
+      "stem": "Which protocol provides reliable, ordered delivery of data?",
       "options": {
-        "a": "22",
-        "b": "53",
-        "c": "80",
-        "d": "443"
+        "a": "UDP",
+        "b": "IP",
+        "c": "TCP",
+        "d": "ICMP"
       },
       "correct": "c",
-      "explanation": "Common standard ports: 22 (SSH), 53 (DNS), 80 (HTTP), 443 (HTTPS).",
-      "hint": "HTTP = HyperText Transfer Protocol. Think of the number 8..."
+      "explanation": "TCP provides reliable delivery with acknowledgements, ordered delivery with sequence numbers and flow control.",
+      "misconception_ref": "docs/misconceptions.md#misconception-2"
     },
     {
       "id": "q04",
@@ -92,34 +95,34 @@
       "lo_ref": "LO2",
       "difficulty": "intermediate",
       "points": 2,
-      "stem": "A round-robin load balancer has 2 backends (app1, app2). If you send 4 consecutive requests, what is the expected distribution?",
+      "stem": "A load balancer is configured with round-robin algorithm and two backends. After sending 6 requests, what is the expected distribution?",
       "options": {
-        "a": "All 4 to app1 (sticky session)",
-        "b": "app1, app2, app1, app2 (deterministic alternation)",
-        "c": "Random distribution (could be anything)",
-        "d": "First 2 to app1, next 2 to app2 (batch)"
+        "a": "Random distribution depending on server load",
+        "b": "All 6 requests to the first backend",
+        "c": "3 requests to each backend",
+        "d": "Distribution based on response time"
       },
-      "correct": "b",
-      "explanation": "Round-robin is a DETERMINISTIC and SEQUENTIAL algorithm. Requests go in order: app1, app2, app1, app2. It is NOT random!",
-      "hint": "Round = circle, Robin = in turn. Not 'Random-robin'!"
+      "correct": "c",
+      "explanation": "Round-robin distributes requests in a deterministic alternating pattern, resulting in 3 requests to each backend.",
+      "misconception_ref": "docs/misconceptions.md#misconception-8"
     },
     {
       "id": "q05",
       "type": "multiple_choice",
       "bloom_level": "Understand",
-      "lo_ref": "LO3",
+      "lo_ref": "LO2",
       "difficulty": "intermediate",
       "points": 2,
-      "stem": "In docker-compose.yml you find: ports: \"8080:80\". What does this configuration mean?",
+      "stem": "In Docker Compose, if a service defines \"ports: ['8080:80']\", what does this mapping mean?",
       "options": {
-        "a": "Container listens on port 8080, host on 80",
-        "b": "Host exposes port 8080, which maps to port 80 in the container",
-        "c": "Both ports are identical (8080 = 80)",
-        "d": "Host listens on 80, container on 8080"
+        "a": "Container port 8080 maps to host port 80",
+        "b": "Host port 8080 maps to container port 80",
+        "c": "Both ports 8080 and 80 are exposed",
+        "d": "Port 8080 is used internally, 80 externally"
       },
       "correct": "b",
-      "explanation": "Docker port mapping syntax is HOST:CONTAINER. '8080:80' means access http://localhost:8080 from outside, service listens on :80 inside.",
-      "hint": "HOST:CONTAINER — what is on the left is for the outside."
+      "explanation": "Docker port mapping format is HOST:CONTAINER. '8080:80' means host port 8080 forwards to container port 80.",
+      "misconception_ref": "docs/misconceptions.md#misconception-5"
     },
     {
       "id": "q06",
@@ -128,42 +131,52 @@
       "lo_ref": "LO1",
       "difficulty": "intermediate",
       "points": 2,
-      "stem": "What is the correct sequence of flags in the TCP three-way handshake?",
+      "stem": "What is the primary purpose of the Transport layer in the TCP/IP model?",
       "options": {
-        "a": "SYN → ACK → SYN-ACK",
-        "b": "SYN → SYN-ACK → ACK",
-        "c": "ACK → SYN → SYN-ACK",
-        "d": "SYN → SYN → ACK"
+        "a": "Routing packets between networks",
+        "b": "End-to-end communication between applications",
+        "c": "Physical transmission of bits",
+        "d": "Domain name resolution"
       },
       "correct": "b",
-      "explanation": "TCP Three-Way Handshake: Client sends SYN, Server responds SYN-ACK, Client sends ACK. Connection established.",
-      "hint": "Both sides need to synchronise — hence SYN from both."
+      "explanation": "The Transport layer provides end-to-end communication between applications using port numbers.",
+      "misconception_ref": "docs/misconceptions.md#misconception-2"
     },
     {
       "id": "q07",
-      "type": "fill_blank",
+      "type": "multiple_choice",
       "bloom_level": "Apply",
       "lo_ref": "LO3",
       "difficulty": "intermediate",
       "points": 2,
-      "stem": "To see all Docker containers currently running, the complete command is: docker ___",
-      "correct": ["ps", "container ls", "container list"],
-      "case_sensitive": false,
-      "explanation": "Equivalent commands: docker ps (traditional), docker container ls (new, explicit), docker container list (alias).",
-      "hint": "ps = process status (traditional Unix abbreviation)"
+      "stem": "Which Docker command shows only running containers with names starting with \"week14\"?",
+      "options": {
+        "a": "docker ps | grep week14",
+        "b": "docker ps -a --filter name=week14",
+        "c": "docker ps --filter name=^week14",
+        "d": "docker container list week14*"
+      },
+      "correct": "c",
+      "explanation": "docker ps --filter name=^week14 uses regex anchor for 'starts with' on running containers only.",
+      "misconception_ref": "docs/misconceptions.md#misconception-6"
     },
     {
       "id": "q08",
-      "type": "fill_blank",
+      "type": "multiple_choice",
       "bloom_level": "Apply",
       "lo_ref": "LO4",
       "difficulty": "intermediate",
       "points": 2,
-      "stem": "In Wireshark, to filter only HTTP packets with GET method, the correct display filter is: http.request.method == \"___\"",
-      "correct": ["GET"],
-      "case_sensitive": true,
-      "explanation": "Wireshark display filters for HTTP: http.request.method == \"GET\" for GET requests. Values are case-sensitive!",
-      "hint": "HTTP methods are always UPPERCASE: GET, POST, PUT, DELETE..."
+      "stem": "In Wireshark, which display filter shows only HTTP traffic to or from port 8080?",
+      "options": {
+        "a": "http.port == 8080",
+        "b": "tcp.port == 8080 && http",
+        "c": "tcp.port == 8080",
+        "d": "port 8080"
+      },
+      "correct": "c",
+      "explanation": "tcp.port == 8080 captures all TCP traffic on that port. 'http' filter only works for port 80 by default.",
+      "misconception_ref": "docs/misconceptions.md#misconception-4"
     },
     {
       "id": "q09",
@@ -172,16 +185,16 @@
       "lo_ref": "LO4",
       "difficulty": "advanced",
       "points": 3,
-      "stem": "In Wireshark, you capture traffic and observe: Packet 1: [SYN] 192.168.1.10:54321 → 10.0.0.5:8080, Packet 2: [RST, ACK] 10.0.0.5:8080 → 192.168.1.10:54321. What does this sequence indicate?",
+      "stem": "A packet capture shows: SYN, SYN-ACK, ACK, HTTP GET, HTTP 200, FIN, ACK, FIN, ACK. How many TCP connections were established?",
       "options": {
-        "a": "Connection established successfully, data transfer follows",
-        "b": "Port 8080 on server 10.0.0.5 is closed or no service exists",
-        "c": "Network timeout — packets were lost",
-        "d": "Firewall blocked the connection silently (drop)"
+        "a": "1",
+        "b": "2",
+        "c": "3",
+        "d": "Cannot determine"
       },
-      "correct": "b",
-      "explanation": "RST (Reset) immediately after SYN indicates the destination port is CLOSED and no service is listening. Firewall DROP would result in timeout (no response).",
-      "hint": "RST = Reset = 'Nobody here!'"
+      "correct": "a",
+      "explanation": "This sequence represents a single complete TCP connection: establishment (3-way), data exchange, termination (4-way).",
+      "misconception_ref": "docs/misconceptions.md#misconception-3"
     },
     {
       "id": "q10",
@@ -190,16 +203,16 @@
       "lo_ref": "LO6",
       "difficulty": "advanced",
       "points": 3,
-      "stem": "You access http://localhost:8080/ and receive: HTTP/1.1 502 Bad Gateway, X-Error: upstream connection failed. What is the most likely cause and first diagnostic step?",
+      "stem": "After stopping one backend, the load balancer returns 502 errors for ~50% of requests. What is the most likely cause?",
       "options": {
-        "a": "Client sent a malformed request → check the request",
-        "b": "Backends are down or not responding → check docker ps and health",
-        "c": "Load balancer is overloaded → check CPU/memory",
-        "d": "SSL certificate has expired → check certificates"
+        "a": "Load balancer crash",
+        "b": "Round-robin still routing to dead backend",
+        "c": "Network congestion",
+        "d": "DNS resolution failure"
       },
       "correct": "b",
-      "explanation": "HTTP 502 Bad Gateway means the proxy could NOT obtain a valid response from upstream server. First step: check if backends are running with docker ps.",
-      "hint": "502 = 'I tried to ask the backend, but it did not respond'"
+      "explanation": "The 50% error rate matches round-robin behaviour when health check has not yet detected the backend failure.",
+      "misconception_ref": "docs/misconceptions.md#misconception-9"
     },
     {
       "id": "q11",
@@ -208,16 +221,16 @@
       "lo_ref": "LO6",
       "difficulty": "advanced",
       "points": 4,
-      "stem": "You implemented a round-robin load balancer with 3 backends. After 1 hour, you observe: app1: 45%, app2: 35%, app3: 20%. What is the most likely cause?",
+      "stem": "A system shows: Backend 1 receives 70% of requests, Backend 2 receives 30%. The load balancer is configured for round-robin. Which explanation is MOST likely?",
       "options": {
-        "a": "The round-robin algorithm is defective and needs replacement",
-        "b": "app3 was periodically unavailable and LB removed it from rotation",
-        "c": "Clients prefer app1 and app2 due to lower latency",
-        "d": "Round-robin does not guarantee equal distribution over time"
+        "a": "Bug in the load balancer algorithm",
+        "b": "Sticky sessions enabled for some clients",
+        "c": "Backend 2 has slower response times",
+        "d": "Network packet loss to Backend 2"
       },
       "correct": "b",
-      "explanation": "Round-robin GUARANTEES equal distribution if all backends are available. app3 at 20% suggests it was down ~40% of the time.",
-      "hint": "Round-robin is deterministic. If distribution is unequal, what changed?"
+      "explanation": "Sticky sessions override round-robin for returning clients, causing uneven distribution.",
+      "misconception_ref": "docs/misconceptions.md#misconception-9"
     },
     {
       "id": "q12",
@@ -226,102 +239,70 @@
       "lo_ref": "LO5",
       "difficulty": "advanced",
       "points": 4,
-      "stem": "Diagnosing a network problem: (1) curl timeout after 30s, (2) docker ps shows all healthy, (3) ping to LB succeeds, (4) LB logs show 'upstream connection refused'. What is the problem?",
+      "stem": "Which verification approach provides the HIGHEST confidence that a containerised service is functioning correctly?",
       "options": {
-        "a": "Load balancer is not starting — needs restart",
-        "b": "Problem is with backends: either not listening or wrong port",
-        "c": "Firewall is blocking HTTP traffic",
-        "d": "DNS resolution failure in Docker network"
+        "a": "Check container status with 'docker ps'",
+        "b": "Verify port is open with 'netstat'",
+        "c": "Send test request and validate response content",
+        "d": "Check container logs for errors"
       },
-      "correct": "b",
-      "explanation": "'Connection refused' means backend receives SYN but responds with RST — nobody is listening on that port. Ping works but application port is closed.",
-      "hint": "Connection refused = port closed, not firewall (which would timeout)"
+      "correct": "c",
+      "explanation": "End-to-end testing with response validation verifies the entire request/response path.",
+      "misconception_ref": "docs/misconceptions.md#misconception-7"
     },
     {
       "id": "q13",
-      "type": "design_task",
+      "type": "multiple_choice",
       "bloom_level": "Create",
       "lo_ref": "LO5",
-      "difficulty": "expert",
+      "difficulty": "advanced",
       "points": 5,
-      "stem": "Design an automated test that verifies the load balancer distributes traffic correctly. Requirements: (1) deterministic, (2) verifies distribution not just connectivity, (3) reports which backend handled each request.",
-      "format": "essay",
-      "rubric": {
-        "5": "Correct completion + design decisions explanation",
-        "4": "Correct completion without explanation",
-        "3": "2 of 3 requirements met",
-        "2": "1 of 3 requirements met",
-        "0": "Incorrect or empty"
+      "stem": "Design a health check strategy for a load-balanced web application. Which combination provides the BEST coverage?",
+      "options": {
+        "a": "TCP port check every 5 seconds",
+        "b": "HTTP GET to /health endpoint with 200 OK validation",
+        "c": "HTTP GET to /health with response body validation and timeout",
+        "d": "ICMP ping to backend IPs"
       },
-      "model_answer": "Create function that sends N requests (multiple of backend count), extracts backend name from response, builds list of results, compares against expected round-robin sequence."
+      "correct": "c",
+      "explanation": "Option C combines HTTP (application layer), dedicated endpoint, body validation and timeout handling.",
+      "misconception_ref": "docs/misconceptions.md#misconception-7"
     },
     {
       "id": "q14",
-      "type": "architecture_design",
+      "type": "multiple_choice",
       "bloom_level": "Create",
       "lo_ref": "LO3",
-      "difficulty": "expert",
+      "difficulty": "advanced",
       "points": 5,
-      "stem": "Design a docker-compose.yml extension adding: (1) third backend app3 on 172.20.0.4, (2) monitoring service on both networks, (3) network isolation where monitor sees all but apps cannot see each other.",
-      "format": "essay",
-      "rubric": {
-        "5": "All 3 requirements met with correct configuration",
-        "4": "2 of 3 requirements met",
-        "3": "1 of 3 requirements met",
-        "2": "Partial solution with errors",
-        "0": "Incorrect or empty"
+      "stem": "Design a Docker Compose network topology for: 2 backend servers, 1 load balancer (public) and 1 database (private). Which design is MOST secure?",
+      "options": {
+        "a": "All containers on default bridge network",
+        "b": "Single custom network for all containers",
+        "c": "Frontend network (LB + backends) and backend network (backends + DB)",
+        "d": "Each container on its own network"
       },
-      "model_answer": "app3 with ipv4_address 172.20.0.4, monitor on backend_net and frontend_net, isolation via separate networks for each app."
+      "correct": "c",
+      "explanation": "Network segmentation isolates DB from direct LB access while allowing necessary communication paths.",
+      "misconception_ref": "docs/misconceptions.md#misconception-6"
     },
     {
       "id": "q15",
-      "type": "troubleshooting_design",
+      "type": "multiple_choice",
       "bloom_level": "Create",
       "lo_ref": "LO5",
-      "difficulty": "expert",
+      "difficulty": "advanced",
       "points": 5,
-      "stem": "Create a troubleshooting checklist for 'HTTP requests intermittently return 502 Bad Gateway'. Requirements: minimum 5 steps, each with concrete command, logical order, include result interpretation.",
-      "format": "essay",
-      "correct_elements": [
-        "Check container status: docker ps",
-        "Check backend health: curl localhost:8001/health",
-        "Check LB logs: docker logs week14_lb",
-        "Check network: docker exec week14_lb ping app1",
-        "Check backend logs: docker logs week14_app1",
-        "Check resources: docker stats"
-      ],
-      "rubric": {
-        "5": "5+ correct steps, logically ordered, with interpretations",
-        "4": "5 correct steps but suboptimal order",
-        "3": "3-4 correct steps",
-        "2": "1-2 correct steps",
-        "0": "Incorrect or missing steps"
-      }
+      "stem": "Create a troubleshooting procedure for \"Connection refused\" errors when accessing http://localhost:8080. What is the CORRECT order?",
+      "options": {
+        "a": "Check firewall → Check DNS → Check container → Check port",
+        "b": "Check container running → Check port mapping → Check service logs → Check firewall",
+        "c": "Check DNS → Check container → Check firewall → Check logs",
+        "d": "Check logs → Check container → Check network → Check DNS"
+      },
+      "correct": "b",
+      "explanation": "Systematic troubleshooting follows OSI model from application down: container status, port mapping, logs, then firewall.",
+      "misconception_ref": "docs/misconceptions.md#misconception-10"
     }
-  ],
-  "scoring": {
-    "total_points": 42,
-    "passing_threshold": 29,
-    "grade_boundaries": {
-      "A_plus": {"min_points": 40, "min_percent": 95, "label": "Excellent"},
-      "A": {"min_points": 36, "min_percent": 85, "label": "Very Good"},
-      "B": {"min_points": 32, "min_percent": 75, "label": "Good"},
-      "C": {"min_points": 29, "min_percent": 70, "label": "Satisfactory"},
-      "D": {"min_points": 25, "min_percent": 60, "label": "Sufficient"},
-      "F": {"min_points": 0, "min_percent": 0, "label": "Insufficient"}
-    }
-  },
-  "export": {
-    "moodle": {
-      "category": "Computer Networks / Week 14",
-      "shuffle_answers": true,
-      "penalty_factor": 0.25
-    },
-    "canvas": {
-      "points_possible": 42,
-      "quiz_type": "practice_quiz",
-      "time_limit": 25,
-      "allowed_attempts": 3
-    }
-  }
+  ]
 }

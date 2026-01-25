@@ -4,7 +4,7 @@
 # NETWORKING class — ASE, CSIE | Computer Networks Laboratory
 # by ing. dr. Antonio Clim
 #
-# Version: 2.0.0 (Extended with anti-AI assessment and improved tooling)
+# Version: 2.1.0 (Extended with anti-AI assessment and improved tooling)
 # Usage: make <target>
 # Run `make help` to see all available targets
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -35,7 +35,7 @@ BOLD := \033[1m
 NC := \033[0m
 
 # Version info
-VERSION := 2.0.0
+VERSION := 2.1.0
 WEEK := 14
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -79,7 +79,7 @@ help:
 	@echo "$(CYAN)║$(NC)    make quiz-random    - Run quiz with randomised questions        $(CYAN)║$(NC)"
 	@echo "$(CYAN)║$(NC)    make quiz-quick     - Run quick quiz (5 questions)              $(CYAN)║$(NC)"
 	@echo "$(CYAN)║$(NC)    make quiz-verify    - Run quiz with environment verification    $(CYAN)║$(NC)"
-	@echo "$(CYAN)║$(NC)    make quiz-export    - Export quiz to JSON/Moodle                $(CYAN)║$(NC)"
+	@echo "$(CYAN)║$(NC)    make quiz-export    - Export quiz to JSON/Moodle/Canvas         $(CYAN)║$(NC)"
 	@echo "$(CYAN)║$(NC)    make exam           - Start practical examination               $(CYAN)║$(NC)"
 	@echo "$(CYAN)║$(NC)    make exam-practice  - Practice exam (no grading)                $(CYAN)║$(NC)"
 	@echo "$(CYAN)║$(NC)                                                                    $(CYAN)║$(NC)"
@@ -146,7 +146,7 @@ format:
 
 typecheck:
 	@echo "$(CYAN)Running type checker...$(NC)"
-	$(MYPY) src/ scripts/ formative/ --config-file mypy.ini || true
+	$(MYPY) src/ scripts/ formative/ --config-file pyproject.toml || true
 	@echo "$(GREEN)Type checking complete$(NC)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -172,22 +172,12 @@ smoke:
 
 validate:
 	@echo "$(CYAN)Validating kit integrity...$(NC)"
-	@$(PYTHON) -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))" && \
-		echo "  $(GREEN)YAML quiz valid$(NC)"
-	@$(PYTHON) -c "import json; json.load(open('formative/quiz.json'))" && \
-		echo "  $(GREEN)JSON quiz valid$(NC)"
-	@$(PYTHON) -m py_compile formative/run_quiz.py && \
-		echo "  $(GREEN)Quiz runner valid$(NC)"
-	@test -f README.md && echo "  $(GREEN)README.md exists$(NC)"
-	@test -f CHANGELOG.md && echo "  $(GREEN)CHANGELOG.md exists$(NC)"
-	@test -f docs/learning_objectives.md && echo "  $(GREEN)LO matrix exists$(NC)"
-	@test -f docs/grading_rubric.md && echo "  $(GREEN)Grading rubric exists$(NC)" || \
-		echo "  $(YELLOW)Grading rubric missing$(NC)"
-	@echo "$(GREEN)Kit validation complete$(NC)"
+	@$(PYTHON) scripts/validate_kit.py --quick || true
+	@echo "$(GREEN)Validation complete$(NC)"
 
-validate-full: validate lint typecheck
+validate-full:
 	@echo "$(CYAN)Running full validation...$(NC)"
-	@$(PYTHON) scripts/validate_kit.py || true
+	@$(PYTHON) scripts/validate_kit.py --full || true
 	@echo "$(GREEN)Full validation complete$(NC)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -196,12 +186,12 @@ validate-full: validate lint typecheck
 
 docker-up:
 	@echo "$(CYAN)Starting lab environment...$(NC)"
-	$(DOCKER_COMPOSE) up -d
-	@echo "$(YELLOW)Waiting for services to initialise...$(NC)"
-	@sleep 10
-	@$(DOCKER_COMPOSE) ps
 	@echo ""
-	@echo "$(GREEN)Lab environment ready$(NC)"
+	@echo "$(YELLOW)NOTE: Portainer runs globally on port 9000 (not managed here)$(NC)"
+	@echo ""
+	$(DOCKER_COMPOSE) up -d
+	@echo ""
+	@echo "$(GREEN)Lab environment started$(NC)"
 	@echo ""
 	@echo "$(CYAN)Access points:$(NC)"
 	@echo "  Load Balancer: http://localhost:8080"
@@ -262,10 +252,14 @@ quiz-verify:
 		echo "$(RED)Anti-AI verification not available. Run standard quiz.$(NC)"
 
 quiz-export:
-	@echo "$(CYAN)Exporting quiz...$(NC)"
-	@$(PYTHON) formative/run_quiz.py --export json --output quiz_export.json || true
-	@$(PYTHON) formative/export_moodle.py || true
-	@echo "$(GREEN)Quiz exported$(NC)"
+	@echo "$(CYAN)Exporting quiz to multiple formats...$(NC)"
+	@$(PYTHON) formative/run_quiz.py --export json --output formative/quiz_export.json || true
+	@$(PYTHON) formative/export_moodle.py --output formative/quiz_moodle.xml || true
+	@$(PYTHON) formative/export_moodle.py --format canvas --output formative/quiz_canvas.json || true
+	@echo "$(GREEN)Quiz exported to:$(NC)"
+	@echo "  - formative/quiz_export.json (generic JSON)"
+	@echo "  - formative/quiz_moodle.xml (Moodle XML)"
+	@echo "  - formative/quiz_canvas.json (Canvas QTI)"
 
 exam:
 	@echo "$(CYAN)Starting practical examination...$(NC)"
@@ -303,7 +297,7 @@ demo:
 
 clean:
 	@echo "$(CYAN)Cleaning artefacts...$(NC)"
-	@rm -rf artefacts/*.pcap artefacts/*.log 2>/dev/null || true
+	@rm -rf artifacts/*.pcap artifacts/*.log 2>/dev/null || true
 	@rm -rf __pycache__ */__pycache__ */*/__pycache__ 2>/dev/null || true
 	@rm -rf .pytest_cache .ruff_cache .mypy_cache 2>/dev/null || true
 	@rm -rf *.pyc */*.pyc */*/*.pyc 2>/dev/null || true
@@ -363,6 +357,9 @@ docs:
 	@echo "    - docs/peer_instruction.md       ConcepTests"
 	@echo "    - docs/parsons_problems.md       Code ordering"
 	@echo "    - docs/code_tracing.md           Trace exercises"
+	@echo ""
+	@echo "  CI/CD Documentation:"
+	@echo "    - docs/ci_setup.md               CI pipeline setup"
 	@echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════

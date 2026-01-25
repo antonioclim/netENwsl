@@ -49,98 +49,71 @@ Client                          Server
   |                                |
   |-------- SYN (seq=x) --------->|
   |                                |
-  |<---- SYN-ACK (seq=y, ack=x+1) -|
+  |<----- SYN-ACK (seq=y, ack=x+1)|
   |                                |
-  |-------- ACK (ack=y+1) -------->|
+  |-------- ACK (ack=y+1) ------->|
   |                                |
-  |===== Connection Established ===|
+  |     Connection Established     |
 ```
 
-### Connection Termination
+### Four-Way Termination
 
-Graceful termination uses the FIN sequence:
+Connection termination uses FIN and ACK:
 
 ```
 Client                          Server
   |                                |
-  |-------- FIN ----------------->|
-  |<------- ACK ------------------|
-  |<------- FIN ------------------|
-  |-------- ACK ----------------->|
+  |-------- FIN (seq=u) --------->|
   |                                |
-  |===== Connection Closed ========|
+  |<-------- ACK (ack=u+1) -------|
+  |                                |
+  |<-------- FIN (seq=v) ---------|
+  |                                |
+  |-------- ACK (ack=v+1) ------->|
+  |                                |
+  |     Connection Terminated      |
 ```
 
-### TCP Flags
+## 3. HTTP Protocol Fundamentals
 
-| Flag | Purpose |
-|------|---------|
-| SYN | Synchronise sequence numbers (connection initiation) |
-| ACK | Acknowledgement field is significant |
-| FIN | No more data from sender (connection termination) |
-| RST | Reset the connection (abort) |
-| PSH | Push buffered data to application |
-| URG | Urgent pointer field is significant |
-
-## 3. HTTP Protocol
-
-### Request-Response Model
-
-HTTP follows a simple request-response pattern:
+### Request Structure
 
 ```
-Client                                Server
-  |                                      |
-  |-- TCP connect to port 80/443 ------->|
-  |                                      |
-  |-- GET /index.html HTTP/1.1 --------->|
-  |-- Host: example.com                  |
-  |-- Accept: text/html                  |
-  |                                      |
-  |<-- HTTP/1.1 200 OK ------------------|
-  |<-- Content-Type: text/html           |
-  |<-- Content-Length: 1234              |
-  |<-- <html>...</html>                  |
-  |                                      |
+GET /path HTTP/1.1
+Host: example.com
+User-Agent: curl/7.68.0
+Accept: */*
+
+[optional body]
+```
+
+### Response Structure
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 1234
+
+[response body]
 ```
 
 ### Common Status Codes
 
-| Code | Meaning | Description |
-|------|---------|-------------|
-| 200 | OK | Request succeeded |
+| Code | Meaning | When Used |
+|------|---------|-----------|
+| 200 | OK | Successful request |
 | 301 | Moved Permanently | Resource relocated |
 | 400 | Bad Request | Malformed request |
-| 404 | Not Found | Resource doesn't exist |
-| 500 | Internal Server Error | Server-side error |
+| 404 | Not Found | Resource does not exist |
+| 500 | Internal Server Error | Server-side failure |
 | 502 | Bad Gateway | Upstream server error |
-| 503 | Service Unavailable | Server temporarily unavailable |
+| 503 | Service Unavailable | Server overloaded |
 
-## 4. Load Balancing and Reverse Proxies
+## 4. Load Balancing Concepts
 
-### Reverse Proxy Architecture
+### Round-Robin Algorithm
 
-A reverse proxy sits between clients and backend servers:
-
-```
-                        ┌─────────────┐
-                        │  Backend A  │
-Client ───► Proxy ──────┼─────────────┤
-                        │  Backend B  │
-                        └─────────────┘
-```
-
-### Benefits of Reverse Proxies
-
-1. **Load Distribution:** Spreads requests across multiple backends
-2. **High Availability:** Continues serving if one backend fails
-3. **SSL Termination:** Handles encryption at the proxy
-4. **Caching:** Stores frequently requested content
-5. **Security:** Hides internal infrastructure
-
-### Round-Robin Scheduling
-
-The simplest load balancing algorithm:
+Requests are distributed sequentially across backends:
 
 ```
 Request 1 → Backend A
@@ -150,131 +123,92 @@ Request 4 → Backend B
 ...
 ```
 
-Each backend receives requests in rotation, ensuring equal distribution.
+This is deterministic, not random. Given N backends, request K goes to backend (K mod N).
 
-### Forwarding Headers
+### Weighted Round-Robin
 
-Proxies add headers to preserve client information:
-
-| Header | Purpose |
-|--------|---------|
-| X-Forwarded-For | Original client IP address |
-| X-Real-IP | Client IP (alternative to XFF) |
-| X-Forwarded-Host | Original Host header |
-| X-Forwarded-Proto | Original protocol (http/https) |
-
-## 5. Network Address Translation (NAT)
-
-### NAT in Docker
-
-Docker uses NAT to enable container networking:
+Backends receive requests proportional to their weights:
 
 ```
-Host Network (192.168.x.x)
-        │
-        ▼
-┌───────────────────────────────────┐
-│      Docker Bridge (172.20.0.1)   │
-│                                    │
-│  ┌─────────┐      ┌─────────┐    │
-│  │Container│      │Container│    │
-│  │172.20.0.2│      │172.20.0.3│   │
-│  └─────────┘      └─────────┘    │
-└───────────────────────────────────┘
+Weights: A=3, B=1
+Sequence: A, A, A, B, A, A, A, B, ...
 ```
 
-Port mapping (`-p 8080:80`) translates:
-- External: `host_ip:8080` → Internal: `container_ip:80`
+### Health Checks
 
-## 6. Packet Analysis Concepts
+Load balancers periodically verify backend health:
 
-### Capture Points
+- **Active:** LB sends probe requests
+- **Passive:** LB monitors response codes
 
-Different capture locations reveal different traffic:
-
-1. **Client interface:** Sees all traffic from client perspective
-2. **Proxy interface:** Sees both client-proxy and proxy-backend traffic
-3. **Backend interface:** Sees only proxy-backend traffic
-
-### Key Analysis Filters (Wireshark)
-
-```
-# TCP connection analysis
-tcp.flags.syn == 1 && tcp.flags.ack == 0    # SYN packets (new connections)
-tcp.flags.fin == 1                           # FIN packets (closing)
-tcp.flags.rst == 1                           # RST packets (aborts)
-
-# HTTP analysis
-http.request                                 # HTTP requests only
-http.response                                # HTTP responses only
-http.response.code == 200                    # Successful responses
-http.request.method == "GET"                 # GET requests
-
-# IP address filtering
-ip.addr == 172.20.0.2                        # Traffic to/from IP
-ip.src == 172.21.0.2                         # Traffic from IP
-ip.dst == 172.20.0.10                        # Traffic to IP
-
-# Port filtering
-tcp.port == 8080                             # Traffic on port 8080
-tcp.srcport == 8080 || tcp.dstport == 8080   # Explicit source/destination
-```
-
-## 7. Socket Programming Fundamentals
-
-### TCP Server Pattern
-
-```python
-# 1. Create socket
-server = socket.socket(AF_INET, SOCK_STREAM)
-
-# 2. Bind to address
-server.bind(("0.0.0.0", 8080))
-
-# 3. Listen for connections
-server.listen(5)
-
-# 4. Accept connections
-while True:
-    client, address = server.accept()
-    # Handle client in new thread/process
-    handle_client(client)
-```
-
-### TCP Client Pattern
-
-```python
-# 1. Create socket
-client = socket.socket(AF_INET, SOCK_STREAM)
-
-# 2. Connect to server
-client.connect(("server_ip", 8080))
-
-# 3. Send/receive data
-client.send(b"Hello")
-response = client.recv(1024)
-
-# 4. Close connection
-client.close()
-```
-
-## 8. Docker Networking
+## 5. Docker Networking
 
 ### Network Types
 
 | Type | Description | Use Case |
 |------|-------------|----------|
-| bridge | Default isolated network | Container-to-container communication |
-| host | Shares host network namespace | Performance-critical applications |
-| none | No networking | Isolated processing |
-| overlay | Multi-host networking | Docker Swarm clusters |
+| bridge | Default isolated network | Container-to-container |
+| host | Share host network stack | Performance-critical |
+| none | No networking | Security isolation |
+| overlay | Multi-host networking | Docker Swarm |
 
-### Service Discovery
+### Port Mapping
 
-Within a Docker network, containers can reach each other by:
+```
+-p HOST_PORT:CONTAINER_PORT
+```
+
+Example: `-p 8080:80` maps host port 8080 to container port 80.
+
+### Container DNS
+
+Docker provides automatic DNS resolution within user-defined networks:
+
 1. **Container name:** `curl http://app1:8080/`
 2. **Service name:** `curl http://backend:8080/` (Compose)
 3. **IP address:** `curl http://172.20.0.2:8080/`
+
+## 6. Wireshark Filters
+
+### Capture Filters (BPF)
+
+Applied during capture to reduce file size:
+
+```
+port 8080
+host 192.168.1.1
+tcp port 80
+```
+
+### Display Filters
+
+Applied after capture for analysis:
+
+```
+http.request.method == "GET"
+tcp.flags.syn == 1
+ip.addr == 172.20.0.2
+tcp.stream eq 0
+```
+
+## 7. Troubleshooting Methodology
+
+### Systematic Approach
+
+1. **Identify symptoms:** What exactly is failing?
+2. **Isolate layer:** Network, transport or application?
+3. **Test components:** Verify each service independently
+4. **Check logs:** Container and application logs
+5. **Capture traffic:** Use Wireshark for deep analysis
+
+### Common Issues
+
+| Symptom | Likely Cause | Verification |
+|---------|--------------|--------------|
+| Connection refused | Service not running | `docker ps` |
+| Connection timeout | Firewall or routing | `ping`, `traceroute` |
+| 502 Bad Gateway | Backend down | Check backend logs |
+| 503 Service Unavailable | All backends down | Check all containers |
 
 ## References
 
@@ -285,4 +219,6 @@ Within a Docker network, containers can reach each other by:
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim*
+
+*Document version: 2.0 | Week 14: Integrated Recap | January 2025*

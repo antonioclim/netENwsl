@@ -1,202 +1,96 @@
 #!/usr/bin/env python3
-"""
-Week 14 Laboratory Shutdown
-NETWORKING class - ASE, Informatics | by Revolvix
+"""Week 14 Laboratory Shutdown.
 
-Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
+NETWORKING class — ASE, CSIE | Computer Networks Laboratory
+by ing. dr. Antonio Clim
 
-This script gracefully stops all laboratory containers while preserving data.
+Gracefully stops all laboratory containers while preserving data.
 
-IMPORTANT: Portainer runs as a GLOBAL service on port 9000.
-This script will NEVER stop Portainer - it must remain running for all weeks.
+IMPORTANT: Portainer will NEVER be stopped — it must remain running for all weeks.
 """
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SETUP_ENVIRONMENT
-# ═══════════════════════════════════════════════════════════════════════════════
+from __future__ import annotations
+
 import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple, Any
+from typing import Tuple
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.utils.docker_utils import DockerManager
-from scripts.utils.logger import setup_logger
 
-logger = setup_logger("stop_lab")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PORTAINER_STATUS
-# ═══════════════════════════════════════════════════════════════════════════════
-def check_portainer_status() -> tuple:
+def check_portainer_status() -> Tuple[bool, str]:
     """Check Portainer container status."""
     try:
         result = subprocess.run(
-            ["docker", "ps", "--filter", "name=portainer",
-             "--format", "{{.Names}}\t{{.Status}}"],
+            ["docker", "ps", "--filter", "name=portainer", "--format", "{{.Names}}\t{{.Status}}"],
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
         )
-        if result.returncode != 0:
-            return False, "Could not check status"
-        
         output = result.stdout.strip()
         if not output:
             return False, "Not found"
-        
         for line in output.split("\n"):
             if "portainer" in line.lower():
                 parts = line.split("\t")
-                if len(parts) >= 2:
-                    return True, parts[1]
-        
-        return False, "Unknown"
-    except Exception as e:
-        return False, f"Error: {e}"
+                return True, parts[1] if len(parts) >= 2 else "Running"
+        return False, "Not found"
+    except subprocess.TimeoutExpired:
+        return False, "Timeout"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# PARSE_ARGUMENTS
-# ═══════════════════════════════════════════════════════════════════════════════
-def parse_args() -> argparse.Namespace:
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Stop Week 14 Laboratory Environment (WSL2)",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python3 scripts/stop_lab.py           # Stop lab containers
-  python3 scripts/stop_lab.py --force   # Force stop immediately
-
-Notes:
-  - Portainer (port 9000) is NEVER stopped by this script
-  - Portainer is a global service that should remain running
-        """
-    )
-    parser.add_argument(
-        "--force", "-f",
-        action="store_true",
-        help="Force stop containers immediately"
-    )
-    parser.add_argument(
-        "--timeout", "-t",
-        type=int,
-        default=10,
-        help="Timeout for graceful stop (default: 10s)"
-    )
-    return parser.parse_args()
+def stop_compose(compose_file: Path, remove_volumes: bool = False) -> bool:
+    """Stop services defined in docker-compose.yml."""
+    cmd = ["docker", "compose", "-f", str(compose_file), "down"]
+    if remove_volumes:
+        cmd.append("--volumes")
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        return False
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SHUTDOWN_LOGIC
-# ═══════════════════════════════════════════════════════════════════════════════
-def stop_containers_direct(force: bool, timeout: int) -> None:
-    """Stop containers directly when compose file not found."""
-    containers = ["week14_app1", "week14_app2", "week14_lb", "week14_echo", "week14_client"]
-    for container in containers:
-        try:
-            if force:
-                subprocess.run(["docker", "kill", container], capture_output=True)
-            else:
-                subprocess.run(["docker", "stop", "-t", str(timeout), container],
-                             capture_output=True)
-            logger.info(f"  Stopped {container}")
-        except Exception:
-            pass
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
 def main() -> int:
     """Main entry point."""
-    args = parse_args()
-    
-    logger.info("=" * 60)
-    logger.info("Stopping Week 14 Laboratory Environment")
-    logger.info("(Portainer will NOT be stopped - it runs globally)")
-    logger.info("=" * 60)
-    
-    try:
-        docker = DockerManager(PROJECT_ROOT / "docker")
-    except FileNotFoundError:
-        logger.warning("docker-compose.yml not found, attempting direct stop...")
-        stop_containers_direct(args.force, args.timeout)
-        return 0
-    
-    try:
-        logger.info("Stopping lab containers...")
-        
-        if args.force:
-            result = subprocess.run(
-                ["docker", "compose", "-f", str(docker.compose_file), "kill"],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True
-            )
-        else:
-            result = subprocess.run(
-                ["docker", "compose", "-f", str(docker.compose_file),
-                 "stop", "-t", str(args.timeout)],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True
-            )
-        
-        if result.returncode == 0:
-            logger.info("\033[92mLab containers stopped.\033[0m")
-        else:
-            logger.warning(f"Stop command output: {result.stderr}")
-        
-        # Verify shutdown
-        logger.info("")
-        logger.info("Verifying shutdown...")
-        
-        check_result = subprocess.run(
-            ["docker", "ps", "--filter", "name=week14_",
-             "--format", "{{.Names}}: {{.Status}}"],
-            capture_output=True,
-            text=True
-        )
-        
-        running = check_result.stdout.strip()
-        if running:
-            logger.warning(f"Still running:\n{running}")
-        else:
-            logger.info("  All week14 containers stopped")
-        
-        # Confirm Portainer is still running
-        portainer_running, portainer_status = check_portainer_status()
-        if portainer_running:
-            logger.info(f"  \033[92mPortainer still running:\033[0m {portainer_status}")
-        else:
-            logger.warning(f"  \033[93mPortainer not running:\033[0m {portainer_status}")
-            logger.info("  To start: docker start portainer")
-        
-        logger.info("")
-        logger.info("=" * 60)
-        logger.info("Shutdown complete.")
-        logger.info("")
-        logger.info("Data preserved in:")
-        logger.info(f"  Artifacts: {PROJECT_ROOT / 'artifacts'}")
-        logger.info(f"  Captures:  {PROJECT_ROOT / 'pcap'}")
-        logger.info("")
-        logger.info("To restart: python3 scripts/start_lab.py")
-        if portainer_running:
-            logger.info("Portainer:  http://localhost:9000 (still available)")
-        logger.info("=" * 60)
-        
-        return 0
-    
-    except Exception as e:
-        logger.error(f"Failed to stop laboratory: {e}")
+    parser = argparse.ArgumentParser(
+        description="Stop Week 14 laboratory environment",
+        epilog="NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim",
+    )
+    parser.add_argument("--remove-volumes", "-v", action="store_true")
+    parser.add_argument("--force", "-f", action="store_true")
+    args = parser.parse_args()
+
+    print("\n" + "=" * 60)
+    print("  Week 14 Laboratory Shutdown")
+    print("  NETWORKING class — ASE, CSIE")
+    print("=" * 60)
+
+    portainer_ok, portainer_status = check_portainer_status()
+    print(f"\n  Portainer: {'✓' if portainer_ok else '✗'} {portainer_status} (will NOT be stopped)\n")
+
+    compose_file = PROJECT_ROOT / "docker" / "docker-compose.yml"
+
+    if args.remove_volumes and not args.force:
+        print("  ⚠️  Warning: --remove-volumes will delete all data!")
+        response = input("  Continue? [y/N]: ").strip().lower()
+        if response != "y":
+            print("  Cancelled.")
+            return 0
+
+    print("  Stopping containers...")
+    if stop_compose(compose_file, remove_volumes=args.remove_volumes):
+        print("\n  ✓ Lab environment stopped")
+    else:
+        print("\n  ✗ Failed to stop environment")
         return 1
+
+    print()
+    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

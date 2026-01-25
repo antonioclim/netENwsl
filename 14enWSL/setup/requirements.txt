@@ -5,7 +5,7 @@
 # by ing. dr. Antonio Clim
 #
 # Installation: pip install -r setup/requirements.txt
-# Version: 2.0.0
+# Version: 2.1.0
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -43,6 +43,10 @@ ruff>=0.2.0
 
 # Type checking
 mypy>=1.8.0
+
+# Type stubs for dependencies
+types-requests>=2.31.0
+types-PyYAML>=6.0.0
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECURITY SCANNING

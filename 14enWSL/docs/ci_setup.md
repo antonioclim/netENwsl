@@ -1,156 +1,167 @@
-# 🔄 CI/CD Setup Guide
+# CI/CD Setup Guide — Week 14
 
-> NETWORKING class — ASE, CSIE | Computer Networks Laboratory  
+> NETWORKING class — ASE, CSIE | Computer Networks Laboratory
+>
 > by ing. dr. Antonio Clim
+
+This document explains the Continuous Integration (CI) pipeline configuration for the Week 14 laboratory kit.
 
 ---
 
 ## Overview
 
-This document describes the Continuous Integration (CI) pipeline configuration for the Week 14 Lab Kit. The pipeline ensures code quality, validates quiz content and tests Docker configurations automatically.
+The CI pipeline automatically validates code quality, runs tests and ensures the lab kit maintains high standards. It runs on every push to `main` or `develop` branches and on pull requests.
 
 ---
 
-## Pipeline Architecture
+## Pipeline Jobs
 
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Push/PR   │───▶│   GitHub    │───▶│  CI Runner  │
-│  to main    │    │   Actions   │    │  (Ubuntu)   │
-└─────────────┘    └─────────────┘    └─────────────┘
-                                             │
-                   ┌─────────────────────────┼─────────────────────────┐
-                   │                         │                         │
-                   ▼                         ▼                         ▼
-            ┌─────────────┐          ┌─────────────┐          ┌─────────────┐
-            │    Lint     │          │    Test     │          │    Quiz     │
-            │   (Ruff)    │          │  (pytest)   │          │ Validation  │
-            └─────────────┘          └─────────────┘          └─────────────┘
-                   │                         │                         │
-                   └─────────────────────────┼─────────────────────────┘
-                                             │
-                                             ▼
-                                    ┌─────────────────┐
-                                    │  Docker Build   │
-                                    │  & Integration  │
-                                    └─────────────────┘
-                                             │
-                                             ▼
-                                    ┌─────────────────┐
-                                    │ Security Scan   │
-                                    │   (Bandit)      │
-                                    └─────────────────┘
-```
+### 1. Code Quality (lint)
 
----
-
-## Jobs Description
-
-### 1. Lint (Code Quality)
-
-**Purpose:** Ensure code follows Python best practices.
-
-**Tools:** Ruff (fast Python linter and formatter)
-
-**Local execution:**
-```bash
-make lint           # Run linter
-make lint-fix       # Auto-fix issues
-```
-
----
-
-### 2. Test (Unit Tests)
-
-**Purpose:** Validate code functionality.
-
-**Tools:** pytest, pytest-cov, pytest-timeout
-
-**Local execution:**
-```bash
-make test           # Run all tests
-make smoke          # Run smoke tests only
-```
-
----
-
-### 3. Quiz Validation
-
-**Purpose:** Ensure quiz files are valid and properly structured.
-
-**Checks:**
-- YAML syntax validation
-- JSON syntax validation
-- Required fields present
-- Minimum question count (5+)
-
-**Local execution:**
-```bash
-make validate       # Validate quiz files
-```
-
----
-
-### 4. Docker Build
-
-**Purpose:** Verify Docker configuration.
-
-**Local execution:**
-```bash
-make docker-up      # Start environment
-make docker-down    # Stop environment
-```
-
----
-
-### 5. Security Scan
-
-**Purpose:** Identify potential security vulnerabilities.
-
-**Tools:** Bandit, pip-audit
-
-**Local execution:**
-```bash
-pip install bandit
-bandit -r src/ scripts/ formative/ -ll -ii
-```
-
----
-
-## Running CI Locally
+Runs Ruff linter to check for:
+- PEP 8 style violations
+- Common programming errors
+- Import ordering
+- Code complexity
 
 ```bash
-# Full CI pipeline
+# Run locally
+make lint
+```
+
+### 2. Type Checking (typecheck)
+
+Runs mypy for static type analysis:
+- Verifies type hints are correct
+- Catches type-related bugs early
+- Ensures API consistency
+
+```bash
+# Run locally
+make typecheck
+```
+
+### 3. Unit Tests (test)
+
+Runs pytest with coverage:
+- Executes all tests in `tests/`
+- Generates coverage report
+- Uploads to Codecov
+
+```bash
+# Run locally
+make test-cov
+```
+
+### 4. Quiz Validation (quiz-validation)
+
+Validates quiz files:
+- Checks YAML structure
+- Validates JSON format
+- Verifies consistency between formats
+- Tests quiz runner imports
+
+```bash
+# Run locally
+python -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))"
+```
+
+### 5. Docker Build (docker-build)
+
+Tests Docker configuration:
+- Validates docker-compose.yml syntax
+- Builds all images
+- Tests container startup
+
+```bash
+# Run locally
+make docker-rebuild
+```
+
+### 6. Security Scan (security-scan)
+
+Runs security checks:
+- Bandit for Python security issues
+- Checks for hardcoded secrets
+- pip-audit for vulnerable dependencies
+
+```bash
+# Run locally
+make security
+```
+
+### 7. Documentation Check (docs-check)
+
+Verifies documentation:
+- Checks required files exist
+- Validates LO traceability
+- Counts Parsons problems
+
+---
+
+## Local CI
+
+Run the full CI pipeline locally before pushing:
+
+```bash
+# Quick CI (lint + test + validate)
 make ci
 
-# Individual steps
-make lint
-make test
-make validate
+# Full CI (all checks)
+make ci-full
 ```
 
 ---
 
-## Troubleshooting CI Failures
+## Configuration Files
 
-### Lint Failures
+| File | Purpose |
+|------|---------|
+| `.github/workflows/ci.yml` | GitHub Actions workflow |
+| `ruff.toml` | Linter configuration |
+| `pyproject.toml` | Project metadata and tool config |
+| `setup/requirements.txt` | Python dependencies |
+
+---
+
+## Adding New Jobs
+
+To add a new CI job:
+
+1. Edit `.github/workflows/ci.yml`
+2. Add job definition with:
+   - Clear name
+   - Appropriate dependencies (`needs:`)
+   - Required steps
+3. Test locally first
+4. Ensure job can `continue-on-error` for non-critical checks
+
+---
+
+## Troubleshooting
+
+### CI Fails on Lint
+
 ```bash
-ruff check src/ --output-format=full
-ruff check --fix src/
+# Auto-fix most issues
+make lint-fix
 ```
 
-### Test Failures
+### CI Fails on Type Check
+
 ```bash
-pytest tests/ -v --tb=long
+# Check specific file
+python -m mypy src/file.py
 ```
 
-### Quiz Validation Failures
+### CI Fails on Tests
+
 ```bash
-python -c "import yaml; yaml.safe_load(open('formative/quiz.yaml'))"
-python -c "import json; json.load(open('formative/quiz.json'))"
+# Run specific test
+python -m pytest tests/test_file.py -v
 ```
 
 ---
 
-*NETWORKING class — ASE, CSIE | Computer Networks Laboratory*  
-*CI Setup Guide v1.0.0 | January 2026*
+*Document version: 2.0 | Week 14: Integrated Recap | January 2025*
+*NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim*

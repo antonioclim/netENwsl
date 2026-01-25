@@ -1,23 +1,11 @@
-"""
-Homework Exercises Package
-NETWORKING class - ASE, Informatics | by Revolvix
+"""Homework exercises for Week 14.
 
-Week 14 - Computer Networks Laboratory
+NETWORKING class — ASE, CSIE | Computer Networks Laboratory
+by ing. dr. Antonio Clim
 
-This package contains starter code for the three homework assignments:
-
-1. hw_14_01_enhanced_echo.py - Enhanced Echo Protocol
-   Extend the TCP echo server with multiple commands
-
-2. hw_14_02_weighted_lb.py - Weighted Load Balancer
-   Implement weighted round-robin and other load balancing algorithms
-
-3. hw_14_03_pcap_analyser.py - Packet Capture Analysis
-   Automated PCAP file analysis and reporting tool
+This package contains homework assignment templates and starter code.
 """
 
-__all__ = [
-    'hw_14_01_enhanced_echo',
-    'hw_14_02_weighted_lb',
-    'hw_14_03_pcap_analyser',
-]
+__all__ = ["hw_14_01_enhanced_echo", "hw_14_02_weighted_lb", "hw_14_03_pcap_analyser"]
+__version__ = "2.0.0"
+__author__ = "ing. dr. Antonio Clim"

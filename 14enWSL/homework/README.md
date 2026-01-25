@@ -1,52 +1,73 @@
-# Homework Assignments - Week 14
+# Homework Assignments — Week 14
 
-> NETWORKING class - ASE, Informatics | by Revolvix
-
-## Assignment 1: Protocol Extension
-
-Extend the TCP echo server to support the binary protocol defined in `src/exercises/ex_14_03.py`.
-
-### Requirements
-- Implement ECHO, REVERSE, UPPER and INFO commands
-- Use the 8-byte header format specified
-- Handle multiple concurrent connections
-
-### Deliverables
-- Modified server script (`hw_14_01_server.py`)
-- Test client demonstrating all commands (`hw_14_01_client.py`)
+> NETWORKING class — ASE, CSIE | Computer Networks Laboratory
+>
+> by ing. dr. Antonio Clim
 
 ---
 
-## Assignment 2: Load Balancer Enhancement
+## Overview
 
-Modify the load balancer to implement weighted round-robin scheduling.
+This folder contains homework assignments for Week 14: Integrated Recap and Project Evaluation. These assignments reinforce concepts from the entire course and provide hands-on practice with containerised networking.
 
-### Requirements
-- Accept weights via command-line arguments
-- Verify unequal distribution based on weights
-- Document the configuration
-
-### Deliverables
-- Modified proxy script
-- Configuration documentation
-- Test results showing weighted distribution
+💭 **PREDICTION:** Before starting, estimate how long each assignment will take you. Write down your predictions and compare after completion.
 
 ---
 
-## Assignment 3: Packet Analysis Report
+## Assignments
 
-Capture and analyse traffic during a 5-minute mixed workload session.
+### HW 14.01: Enhanced Echo Server
 
-### Requirements
-- Generate HTTP and TCP echo traffic
-- Capture packets throughout the session
-- Produce analysis report
+**File:** `exercises/hw_14_01_enhanced_echo.py`
 
-### Deliverables
-- PCAP file (hw_14_03.pcap)
-- Analysis script
-- Written report (PDF or Markdown)
+**Objective:** Extend the basic TCP echo server with logging, connection counting and graceful shutdown.
+
+**Skills assessed:** Socket programming (LO1), concurrent server design (LO3), signal handling (LO5)
+
+**Estimated time:** 45-60 minutes
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+### HW 14.02: Weighted Load Balancer
+
+**File:** `exercises/hw_14_02_weighted_lb.py`
+
+**Objective:** Implement a weighted round-robin load balancer that distributes requests according to backend weights.
+
+**Skills assessed:** Load balancing algorithms (LO2), HTTP proxy implementation (LO3)
+
+**Estimated time:** 60-90 minutes
+
+---
+
+### HW 14.03: PCAP Analyser
+
+**File:** `exercises/hw_14_03_pcap_analyser.py`
+
+**Objective:** Build a tool that analyses packet captures and generates reports on TCP connections and HTTP transactions.
+
+**Skills assessed:** Packet analysis (LO4), report generation (LO5)
+
+**Estimated time:** 90-120 minutes
+
+---
+
+## Submission Guidelines
+
+1. **Code quality:** Follow PEP 8 style guidelines
+2. **Documentation:** Include docstrings for all functions
+3. **Testing:** Provide at least one test case per assignment
+4. **Format:** Submit as a ZIP file containing your solutions
+
+---
+
+## Getting Help
+
+If you encounter issues:
+1. Check `docs/troubleshooting.md` for common problems
+2. Review the relevant theory in `docs/theory_summary.md`
+3. Open an issue on GitHub if the problem persists
+
+---
+
+*Document version: 2.0 | Week 14: Integrated Recap | January 2025*

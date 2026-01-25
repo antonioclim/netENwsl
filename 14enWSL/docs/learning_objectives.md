@@ -60,8 +60,8 @@ docker exec week14_client ip neigh show
 | Artefact Type | Location | Coverage | Status |
 |---------------|----------|----------|--------|
 | **Theory** | `docs/theory_summary.md#4-load-balancing-and-reverse-proxy` | Algorithms, nginx config | ✅ Complete |
-| **Lab Exercise** | `src/exercises/ex_14_02_lb_experiments.py` | Distribution testing | ✅ Complete |
-| **Test** | `tests/test_load_balancer.py` | Round-robin verification | ✅ Complete |
+| **Lab Exercise** | `src/exercises/ex_14_02_verification_harness.py` | Distribution testing | ✅ Complete |
+| **Test** | `tests/test_exercises.py` | Round-robin verification | ✅ Complete |
 | **Quiz** | `formative/quiz.yaml` → q04, q05 | LB distribution, port mapping | ✅ Complete |
 | **Misconception** | `docs/misconceptions.md#misconception-8`, `#misconception-9` | Random vs round-robin, sticky sessions | ✅ Complete |
 | **Code Tracing** | `docs/code_tracing.md#exercise-t2` | LB algorithm tracing | ✅ Complete |
@@ -82,12 +82,12 @@ for i in $(seq 1 4); do curl -s http://localhost:8080/ | grep -o 'app[12]'; done
 
 | Artefact Type | Location | Coverage | Status |
 |---------------|----------|----------|--------|
-| **Theory** | `docs/theory_summary.md#8-docker-networking` | Networks, compose, volumes | ✅ Complete |
-| **Lab Exercise** | `src/exercises/ex_14_03_docker_networking.py` | Network creation, container linking | ✅ Complete |
+| **Theory** | `docs/theory_summary.md#5-docker-networking` | Networks, compose, volumes | ✅ Complete |
+| **Lab Exercise** | `src/exercises/ex_14_03_advanced_challenges.py` | Network creation, container linking | ✅ Complete |
 | **Test** | `tests/smoke_test.py::test_all_containers_running` | Container health verification | ✅ Complete |
 | **Quiz** | `formative/quiz.yaml` → q07, q14 | Docker commands, compose design | ✅ Complete |
 | **Misconception** | `docs/misconceptions.md#misconception-5`, `#misconception-6` | Port mapping, network isolation | ✅ Complete |
-| **Homework** | `homework/hw_14_01_enhanced_echo/` | Full implementation task | ✅ Complete |
+| **Homework** | `homework/exercises/hw_14_01_enhanced_echo.py` | Full implementation task | ✅ Complete |
 | **Parsons Problem** | `docs/parsons_problems.md#problem-p3` | Docker container management | ✅ Complete |
 
 **Verification Command:**
@@ -105,14 +105,14 @@ docker network ls | grep week14
 
 | Artefact Type | Location | Coverage | Status |
 |---------------|----------|----------|--------|
-| **Theory** | `docs/theory_summary.md#2-packet-analysis-review` | Wireshark filters, TCP streams | ✅ Complete |
-| **Lab Exercise** | `src/exercises/ex_14_04_pcap_analysis.py` | PCAP parsing tasks | ✅ Complete |
-| **Test** | `tests/test_pcap.py` | PCAP validation | ✅ Complete |
+| **Theory** | `docs/theory_summary.md#6-packet-analysis-with-wireshark` | Wireshark filters, TCP streams | ✅ Complete |
+| **Lab Exercise** | `scripts/capture_traffic.py` | PCAP capture automation | ✅ Complete |
+| **Test** | `tests/test_environment.py` | PCAP validation | ✅ Complete |
 | **Quiz** | `formative/quiz.yaml` → q08, q09, q10 | Wireshark filters, TCP analysis | ✅ Complete |
 | **Misconception** | `docs/misconceptions.md#misconception-4` | HTTP vs HTTPS capture | ✅ Complete |
 | **Code Tracing** | `docs/code_tracing.md#exercise-t1` | TCP state machine tracing | ✅ Complete |
 | **PCAP Samples** | `pcap/` | Sample captures for analysis | ✅ Complete |
-| **Parsons Problem** | `docs/parsons_problems.md#problem-p4` | PCAP filter construction | ✅ Complete |
+| **Parsons Problem** | `docs/parsons_problems.md#problem-p4` | Round-robin selector | ✅ Complete |
 
 **Verification Command:**
 ```bash
@@ -128,17 +128,17 @@ python scripts/capture_traffic.py --duration 30 --output pcap/demo.pcap
 
 | Artefact Type | Location | Coverage | Status |
 |---------------|----------|----------|--------|
-| **Theory** | `docs/theory_summary.md#9-testing-and-verification` | Test patterns, health checks | ✅ Complete |
-| **Lab Exercise** | `src/exercises/ex_14_05_verification.py` | Test design tasks | ✅ Complete |
-| **Test** | `tests/test_verification.py` | Verification utilities | ✅ Complete |
+| **Theory** | `docs/theory_summary.md#7-troubleshooting-methodology` | Test patterns, health checks | ✅ Complete |
+| **Lab Exercise** | `src/exercises/ex_14_02_verification_harness.py` | Test design tasks | ✅ Complete |
+| **Test** | `tests/test_validators.py` | Verification utilities | ✅ Complete |
 | **Quiz** | `formative/quiz.yaml` → q12, q13, q15 | Diagnosis, test design, troubleshooting | ✅ Complete |
 | **Troubleshooting** | `docs/troubleshooting.md` | Systematic problem-solving | ✅ Complete |
-| **Homework** | `homework/hw_14_03_pcap_analyser/` | Analysis tool design | ✅ Complete |
-| **Parsons Problem** | `docs/parsons_problems.md#problem-p5` | Health check implementation | ✅ Complete |
+| **Homework** | `homework/exercises/hw_14_03_pcap_analyser.py` | Analysis tool design | ✅ Complete |
+| **Parsons Problem** | `docs/parsons_problems.md#problem-p5` | Docker network parser | ✅ Complete |
 
 **Verification Command:**
 ```bash
-# Run comprehensive validation
+# Run validation suite
 make validate-full
 python tests/smoke_test.py
 ```
@@ -151,11 +151,11 @@ python tests/smoke_test.py
 
 | Artefact Type | Location | Coverage | Status |
 |---------------|----------|----------|--------|
-| **Theory** | `docs/theory_summary.md#10-failure-modes-and-resilience` | Failure patterns, recovery | ✅ Complete |
-| **Lab Exercise** | `src/exercises/ex_14_06_failure_analysis.py` | Fault injection experiments | ✅ Complete |
-| **Test** | `tests/test_resilience.py` | Failure scenario tests | ✅ Complete |
+| **Theory** | `docs/theory_summary.md#7-troubleshooting-methodology` | Failure patterns, recovery | ✅ Complete |
+| **Lab Exercise** | `scripts/run_demo.py --demo failover` | Fault injection experiments | ✅ Complete |
+| **Test** | `tests/test_environment.py` | Failure scenario tests | ✅ Complete |
 | **Quiz** | `formative/quiz.yaml` → q10, q11 | 502 diagnosis, distribution anomaly | ✅ Complete |
-| **Misconception** | `docs/misconceptions.md#misconception-7` | Correlation vs causation | ✅ Complete |
+| **Misconception** | `docs/misconceptions.md#misconception-7` | Container running ≠ service working | ✅ Complete |
 | **Peer Instruction** | `docs/peer_instruction.md#question-4`, `#question-5` | Failure analysis scenarios | ✅ Complete |
 | **Practical Exam** | `formative/practical_exam.py` | Live troubleshooting tasks | ✅ Complete |
 
@@ -190,9 +190,9 @@ docker start week14_app1
 |---------|--------------|-------------|------------|
 | P1: TCP Port Checker | LO1 | 1 (bind) | Intermediate |
 | P2: HTTP GET Request | LO2 | 1 (single recv) | Intermediate |
-| P3: Docker Container Lifecycle | LO3 | 1 (docker create) | Basic |
-| P4: PCAP Filter Builder | LO4 | 1 (wrong filter) | Advanced |
-| P5: Health Check Implementation | LO5 | 1 (no timeout) | Advanced |
+| P3: Container Status Checker | LO3 | 1 (returncode check) | Basic |
+| P4: Round-Robin Backend Selector | LO4 | 1 (no modulo) | Intermediate |
+| P5: Parse Docker Network Output | LO5 | 1 (wrong indexing) | Advanced |
 
 ---
 
@@ -222,25 +222,25 @@ LO2 (Understand) ───┬── theory_summary.md §4
                     ├── peer_instruction.md #3
                     └── parsons_problems.md P2
 
-LO3 (Apply) ────────┬── theory_summary.md §8
+LO3 (Apply) ────────┬── theory_summary.md §5
                     ├── quiz.yaml q07, q14
                     ├── misconceptions.md #5-6
                     ├── homework hw_14_01
                     └── parsons_problems.md P3
 
-LO4 (Analyse) ──────┬── theory_summary.md §2
+LO4 (Analyse) ──────┬── theory_summary.md §6
                     ├── quiz.yaml q08-10
                     ├── misconceptions.md #4
                     ├── code_tracing.md T1
                     └── parsons_problems.md P4
 
-LO5 (Create) ───────┬── theory_summary.md §9
+LO5 (Create) ───────┬── theory_summary.md §7
                     ├── quiz.yaml q12-13, q15
                     ├── troubleshooting.md
                     ├── homework hw_14_03
                     └── parsons_problems.md P5
 
-LO6 (Evaluate) ─────┬── theory_summary.md §10
+LO6 (Evaluate) ─────┬── theory_summary.md §7
                     ├── quiz.yaml q10-11
                     ├── misconceptions.md #7
                     ├── peer_instruction.md #4-5
@@ -253,14 +253,15 @@ LO6 (Evaluate) ─────┬── theory_summary.md §10
 
 Before considering Week 14 complete, verify:
 
-- [ ] All quiz questions link to at least one LO
-- [ ] Each LO has at least 2 quiz questions
-- [ ] All Bloom levels (L1-L6) are covered
-- [ ] Each Parsons problem has at least 1 distractor
-- [ ] Misconceptions are referenced from quiz explanations
-- [ ] Practical exam tasks are environment-dependent
+- [x] All quiz questions link to at least one LO
+- [x] Each LO has at least 2 quiz questions
+- [x] All Bloom levels (L1-L6) are covered
+- [x] Each Parsons problem has at least 1 distractor
+- [x] Misconceptions are referenced from quiz explanations
+- [x] Practical exam tasks are environment-dependent
 
 ---
 
 *NETWORKING class — ASE, CSIE | Computer Networks Laboratory*
-*LO Traceability Matrix v2.0.0 | Week 14*
+*LO Traceability Matrix v2.1.0 | Week 14*
+*by ing. dr. Antonio Clim*

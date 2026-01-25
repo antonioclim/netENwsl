@@ -1,327 +1,245 @@
-# ❌ Common Misconceptions — Week 14
+# Common Misconceptions — Week 14
 
 > NETWORKING class — ASE, CSIE | Computer Networks Laboratory
 >
 > by ing. dr. Antonio Clim
 
-This document lists common misunderstandings students have about networking concepts covered in this course. Each misconception includes the wrong belief, the correct understanding and a practical way to verify.
+This document addresses common student misconceptions about networking concepts. Each entry includes the misconception, why it is incorrect and the correct understanding.
+
+I've noticed many students initially treat containers like VMs because that's how virtualisation is typically introduced. The misconceptions below are collected from my experience teaching this course over several years.
 
 ---
 
-## TCP/IP and OSI Layers
+## Misconception 1: IP Addresses and MAC Addresses Serve the Same Purpose
 
-### 🚫 Misconception 1: "IP and MAC addresses do the same thing"
+### The Misconception
 
-**WRONG:** "Both IP and MAC are just addresses, so they work the same way."
+"IP addresses and MAC addresses both identify devices on a network, so they are interchangeable."
 
-**CORRECT:** IP addresses and MAC addresses serve fundamentally different purposes at different layers.
+### Why It Is Wrong
 
-| Aspect | IP Address (Layer 3) | MAC Address (Layer 2) |
-|--------|---------------------|----------------------|
-| Scope | Global, routable across networks | Local, within a single network segment |
-| Assignment | Configured (static or DHCP) | Burned into hardware (or virtualised) |
-| Format | 32 bits (IPv4) or 128 bits (IPv6) | 48 bits |
-| Example | 192.168.1.100 | 02:42:ac:14:00:02 |
-| Changes | Can change when moving networks | Stays with the device |
+IP addresses and MAC addresses operate at different layers and serve different purposes:
 
-**Why this matters:** Routers use IP addresses to forward packets between networks. Switches use MAC addresses to forward frames within a network.
+- **MAC addresses (Layer 2):** Fixed hardware identifiers for local network communication
+- **IP addresses (Layer 3):** Logical addresses for routing between networks
 
-**Practical verification:**
+### Correct Understanding
 
-```bash
-# See both addresses for a container
-docker exec client ip addr show eth0
-
-# See the ARP cache (IP → MAC mappings)
-docker exec client ip neigh show
-```
+MAC addresses identify the physical network interface and work within a single network segment. IP addresses provide logical addressing that enables routing across multiple networks. A packet needs both: MAC for the next hop, IP for the final destination.
 
 ---
 
-### 🚫 Misconception 2: "TCP guarantees instant delivery"
+## Misconception 2: TCP and UDP Are Just Different Speeds
 
-**WRONG:** "Since TCP is reliable, my data arrives immediately."
+### The Misconception
 
-**CORRECT:** TCP guarantees *eventual, ordered* delivery, not instant delivery. TCP provides:
+"UDP is faster than TCP, so use UDP when you need speed and TCP when you need reliability."
 
-- **Reliability:** Lost packets are retransmitted
-- **Order:** Packets are reassembled in sequence
-- **Flow control:** Sender adjusts speed to receiver capacity
-- **Congestion control:** Sender adjusts speed to network capacity
+### Why It Is Wrong
 
-TCP does NOT guarantee:
+The difference is not primarily about speed but about guarantees:
 
-- Instant delivery
-- Consistent latency
-- Maximum delivery time
+- **TCP:** Connection-oriented, reliable, ordered delivery
+- **UDP:** Connectionless, best-effort delivery
 
-**Practical verification:**
+### Correct Understanding
 
-```bash
-# Observe TCP retransmissions under packet loss
-# In Wireshark, filter: tcp.analysis.retransmission
-```
+TCP provides reliability through acknowledgements, retransmissions and ordering. This adds overhead but guarantees delivery. UDP sends packets without confirmation, making it suitable for real-time applications where occasional packet loss is acceptable (video streaming, DNS queries).
 
 ---
 
-### 🚫 Misconception 3: "The TCP handshake uses only two packets"
+## Misconception 3: The Three-Way Handshake Happens Every Request
 
-**WRONG:** "Client sends SYN, server sends ACK, done."
+### The Misconception
 
-**CORRECT:** TCP connection establishment requires exactly three packets (three-way handshake):
+"Every HTTP request requires a new TCP three-way handshake."
 
-```
-Client                 Server
-  |                      |
-  |-- SYN (seq=x) ------>|     Packet 1
-  |                      |
-  |<-- SYN-ACK ---------|     Packet 2
-  |    (seq=y, ack=x+1)  |
-  |                      |
-  |-- ACK (ack=y+1) ---->|     Packet 3
-  |                      |
-  [Connection established]
-```
+### Why It Is Wrong
 
-**Why three packets?** Both sides need to propose their initial sequence number and acknowledge the other side's sequence number.
+HTTP/1.1 introduced persistent connections (keep-alive), and HTTP/2 uses multiplexing. A single TCP connection can carry multiple HTTP requests.
 
-**Practical verification:**
+### Correct Understanding
 
-```bash
-# Capture a TCP connection in Wireshark
-# Filter: tcp.flags.syn == 1
-# You'll see: SYN, SYN-ACK, then data
-```
+The three-way handshake establishes a TCP connection once. Multiple HTTP requests can then use that connection. Connection reuse reduces latency significantly. Only when the connection is closed (or times out) is a new handshake needed.
 
 ---
 
-## Docker and Containers
+## Misconception 4: Wireshark Shows All Network Traffic
 
-### 🚫 Misconception 4: "Containers are virtual machines"
+### The Misconception
 
-**WRONG:** "Docker containers are like lightweight VMs."
+"Wireshark captures everything happening on the network."
 
-**CORRECT:** Containers and VMs are fundamentally different:
+### Why It Is Wrong
 
-| Aspect | Container | Virtual Machine |
-|--------|-----------|-----------------|
-| Kernel | Shares host kernel | Has own kernel |
-| Boot time | Milliseconds | Minutes |
-| Size | Megabytes | Gigabytes |
-| Isolation | Process-level (namespaces) | Hardware-level (hypervisor) |
-| Overhead | Minimal | Significant |
+Wireshark only captures traffic visible to the network interface:
 
-**Practical verification:**
+- On switched networks, you see only your traffic (unless mirroring is configured)
+- Encrypted traffic (HTTPS) shows as TLS, not readable content
+- Some protocols may not be fully dissected
 
-```bash
-# Show that containers share the host kernel
-docker exec client uname -r
-# Compare with WSL kernel
-uname -r
-# They're the same!
-```
+### Correct Understanding
+
+Wireshark captures what the network interface sees. On modern switched networks, this means traffic to/from your machine or broadcast/multicast traffic. To see other traffic, you need port mirroring, a hub or ARP spoofing (which has security implications).
 
 ---
 
-### 🚫 Misconception 5: "Port 80 inside equals port 80 outside"
+## Misconception 5: Docker Port Mapping Direction
 
-**WRONG:** "If my container runs on port 80, I access it at port 80."
+### The Misconception
 
-**CORRECT:** Port mapping explicitly translates between host and container ports. The syntax `-p HOST:CONTAINER` or `ports: "8080:80"` means:
+"In `8080:80`, the first number is the container port and the second is the host port."
 
-- **Host port 8080** (what you type in browser)
-- **Container port 80** (what the service listens on)
+### Why It Is Wrong
 
-**Memory aid:** "Left is outside (host), right is inside (container)"
+Docker port mapping format is `HOST:CONTAINER`, not `CONTAINER:HOST`.
 
-**Practical verification:**
+### Correct Understanding
 
-```bash
-# Show what port the container THINKS it's listening on
-docker exec lb netstat -tlnp | grep nginx
-# Shows: 0.0.0.0:80 (container port)
+The format `-p HOST:CONTAINER` means:
+- `8080:80` → Host port 8080 forwards to container port 80
+- Access via `localhost:8080`, which reaches the container's port 80
 
-# But we access it from:
-curl http://localhost:8080
-# Host port 8080 is mapped to container port 80
-```
+Think of it as "from:to" from the perspective of incoming traffic.
 
 ---
 
-### 🚫 Misconception 6: "All containers can talk to each other"
+## Misconception 6: All Docker Containers Share the Same Network
 
-**WRONG:** "If two containers are running, they can communicate."
+### The Misconception
 
-**CORRECT:** Docker networks provide isolation. Containers can only communicate if:
+"All Docker containers can communicate with each other by default."
 
-1. They are on the same Docker network, OR
-2. A container is connected to multiple networks and routes between them, OR
-3. Ports are published to the host
+### Why It Is Wrong
 
-**Practical verification:**
+Containers on different networks cannot communicate directly. Docker provides network isolation.
 
-```bash
-# Client cannot ping backend directly
-docker exec client ping -c 1 172.20.0.2
-# Result: Network unreachable
+### Correct Understanding
 
-# Client can reach LB (same network)
-docker exec client ping -c 1 172.21.0.10
-# Result: Success
-```
+Containers can only communicate if they are on the same Docker network. The default bridge network provides limited connectivity. Custom networks offer DNS-based service discovery. Network segmentation is a key security feature of Docker.
 
 ---
 
-### 🚫 Misconception 7: "Stopping a container deletes everything"
+## Misconception 7: Container Running = Service Working
 
-**WRONG:** "When I stop a container, all data inside is lost."
+### The Misconception
 
-**CORRECT:** Stopping ≠ removing. Container states:
+"If `docker ps` shows the container running, the service must be working correctly."
 
-| Action | Container | Data in container filesystem | Data in volumes |
-|--------|-----------|------------------------------|-----------------|
-| Stop | Preserved | Preserved | Preserved |
-| Start | Resumes | Still there | Still there |
-| Remove | Deleted | Deleted | **Preserved** |
+### Why It Is Wrong
 
-**Practical verification:**
+A container can be running while the application inside has crashed, is unresponsive or is misconfigured.
 
-```bash
-# Create a file in container
-docker exec client touch /tmp/testfile
+### Correct Understanding
 
-# Stop container
-docker stop client
-
-# Start container
-docker start client
-
-# File is still there!
-docker exec client ls /tmp/testfile
-```
+`docker ps` only confirms the container process is running. Verify service health by:
+1. Checking logs: `docker logs container_name`
+2. Testing the endpoint: `curl http://localhost:port/health`
+3. Using Docker health checks in your compose file
 
 ---
 
-## Load Balancing
+## Misconception 8: Round-Robin Means Random
 
-### 🚫 Misconception 8: "Round-robin is random"
+### The Misconception
 
-**WRONG:** "Round-robin randomly picks a backend for each request."
+"Round-robin load balancing distributes requests randomly across backends."
 
-**CORRECT:** Round-robin is deterministic and sequential. With N backends, requests go to backends in order: 1, 2, 3, ..., N, 1, 2, 3, ..., N, repeatedly.
+### Why It Is Wrong
 
-**Practical verification:**
+Round-robin is deterministic and sequential, not random.
 
-```bash
-# Send 6 requests, observe alternating pattern
-for i in 1 2 3 4 5 6; do
-    curl -s http://localhost:8080/ | grep -o "app[12]"
-done
-# Output: app1 app2 app1 app2 app1 app2
-```
+### Correct Understanding
 
----
+Round-robin follows a strict rotation:
+- Request 1 → Backend A
+- Request 2 → Backend B
+- Request 3 → Backend A
+- Request 4 → Backend B
+- ...
 
-### 🚫 Misconception 9: "Load balancer makes everything faster"
-
-**WRONG:** "Adding a load balancer automatically improves performance."
-
-**CORRECT:** A load balancer adds a network hop and processing overhead. It improves performance only when:
-
-1. Backend servers are the bottleneck
-2. Requests can be distributed (stateless or with session handling)
-3. The load balancer itself is not the bottleneck
-
-**Practical verification:**
-
-```bash
-# Measure latency with and without load balancer
-# Direct to backend:
-time curl -s http://localhost:8001/ > /dev/null
-
-# Through load balancer:
-time curl -s http://localhost:8080/ > /dev/null
-# LB adds a few milliseconds
-```
+This pattern is predictable and repeatable, unlike random distribution which would show statistical variation.
 
 ---
 
-## HTTP and Web
+## Misconception 9: Load Balancers Instantly Detect Failures
 
-### 🚫 Misconception 10: "HTTPS means the server is trustworthy"
+### The Misconception
 
-**WRONG:** "If a website has HTTPS (🔒), it's safe and legitimate."
+"When a backend server fails, the load balancer immediately stops sending traffic to it."
 
-**CORRECT:** HTTPS provides:
+### Why It Is Wrong
 
-- ✅ **Encryption** — traffic cannot be read in transit
-- ✅ **Integrity** — traffic cannot be modified in transit
-- ✅ **Authentication** — server has a valid certificate
+Health checks run at intervals (typically 5-30 seconds). There is a detection delay.
 
-HTTPS does NOT provide:
+### Correct Understanding
 
-- ❌ Server content is truthful
-- ❌ Server is not malicious
-- ❌ Server won't steal your data
+Load balancers detect failures through periodic health checks. During the interval between checks, requests may still be routed to the failed backend. This is why you might see 502 errors temporarily after a backend fails. Shorter health check intervals improve detection speed but increase overhead.
 
 ---
 
-### 🚫 Misconception 11: "HTTP status 200 means everything worked"
+## Misconception 10: "Connection Refused" Always Means Firewall
 
-**WRONG:** "If I get a 200 OK, the request was successful and correct."
+### The Misconception
 
-**CORRECT:** HTTP 200 means the server processed the request and returned a response. It does NOT mean:
+"If I get 'Connection refused', the firewall must be blocking traffic."
 
-- The response contains what you expected
-- The application logic succeeded
-- No errors occurred in the backend
+### Why It Is Wrong
 
-Many APIs return 200 with an error in the body:
+"Connection refused" specifically means the target host received the connection request but no service is listening on that port.
 
-```json
-{
-    "status": "error",
-    "message": "User not found"
-}
-```
+### Correct Understanding
 
----
+Different error types indicate different problems:
+- **Connection refused:** Port is not listening (service not running)
+- **Connection timed out:** Traffic not reaching destination (firewall, routing)
+- **No route to host:** Network path does not exist
 
-## Wireshark and Packet Analysis
-
-### 🚫 Misconception 12: "Wireshark captures all network traffic"
-
-**WRONG:** "When I run Wireshark, I see everything on the network."
-
-**CORRECT:** Wireshark only captures traffic on interfaces it can access:
-
-| Interface | What you see |
-|-----------|-------------|
-| Your Ethernet/Wi-Fi | Only traffic to/from your machine |
-| vEthernet (WSL) | WSL2/Docker traffic |
-| Loopback | localhost traffic only |
-
-**For Docker traffic:** You must select the correct interface (usually `vEthernet (WSL)`) or run tcpdump inside the container.
+"Connection refused" means the TCP RST packet came back, so the network path works fine.
 
 ---
 
-## Summary Table
+## Misconception 11: HTTPS Traffic Cannot Be Analysed
 
-| # | Misconception | Reality |
-|---|---------------|---------|
-| 1 | IP = MAC | Different layers, different purposes |
-| 2 | TCP = instant | TCP = eventual, ordered delivery |
-| 3 | Handshake = 2 packets | Handshake = 3 packets |
-| 4 | Container = VM | Containers share kernel |
-| 5 | Port 80 = port 80 | Port mapping translates |
-| 6 | All containers talk | Networks isolate |
-| 7 | Stop = delete | Stop preserves, remove deletes |
-| 8 | Round-robin = random | Round-robin = sequential |
-| 9 | LB = faster | LB adds overhead, helps with scaling |
-| 10 | HTTPS = safe | HTTPS = encrypted, not trustworthy |
-| 11 | 200 = success | 200 = server responded |
-| 12 | Wireshark sees all | Only selected interface |
+### The Misconception
+
+"HTTPS encrypts everything, so Wireshark is useless for debugging HTTPS traffic."
+
+### Why It Is Wrong
+
+While payload is encrypted, metadata is still visible, and there are techniques for decryption.
+
+### Correct Understanding
+
+Even with HTTPS, you can see:
+- TCP handshake (connection establishment)
+- TLS handshake (certificate exchange, cipher negotiation)
+- Packet sizes and timing
+- Server Name Indication (SNI) in TLS 1.2
+
+With the server's private key or pre-master secret, full decryption is possible for debugging.
+
+---
+
+## Misconception 12: localhost and 127.0.0.1 Are Always Identical
+
+### The Misconception
+
+"localhost and 127.0.0.1 are exactly the same thing."
+
+### Why It Is Wrong
+
+`localhost` is a hostname that must be resolved. It may resolve to IPv6 `::1` or IPv4 `127.0.0.1`.
+
+### Correct Understanding
+
+- `127.0.0.1` is explicitly IPv4 loopback
+- `::1` is explicitly IPv6 loopback
+- `localhost` depends on `/etc/hosts` and system configuration
+
+If a service listens only on IPv4 (`127.0.0.1`) but `localhost` resolves to IPv6, connections may fail. Be explicit when debugging.
 
 ---
 
 *Document version: 2.0 | Week 14: Integrated Recap | January 2025*
+*NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim*

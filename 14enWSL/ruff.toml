@@ -1,105 +1,87 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# ruff.toml — Standalone Linting Configuration
+# Ruff Configuration — Week 14 Laboratory
 # ═══════════════════════════════════════════════════════════════════════════════
 # NETWORKING class — ASE, CSIE | Computer Networks Laboratory
 # by ing. dr. Antonio Clim
 #
-# This file provides standalone configuration for Ruff linter.
-# Can be used independently of pyproject.toml.
-#
-# Usage: ruff check src/ scripts/ tests/ formative/
-#        ruff format src/ scripts/ tests/ formative/
+# Ruff is a fast Python linter that replaces flake8, isort and pyupgrade.
+# Documentation: https://docs.astral.sh/ruff/
+# Version: 2.1.0
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Target Python version
 target-version = "py310"
 
-# Line length limit
+# Line length (matches Black default)
 line-length = 100
 
-# Indentation
-indent-width = 4
+# Directories to include
+include = ["*.py"]
 
-# Files and directories to exclude
+# Directories to exclude
 exclude = [
     ".git",
-    ".github",
     ".mypy_cache",
     ".pytest_cache",
     ".ruff_cache",
-    ".venv",
-    "venv",
     "__pycache__",
-    "*.pyc",
-    "artifacts",
-    "pcap",
-    "docker/volumes",
-    "node_modules",
+    "*.egg-info",
     "build",
     "dist",
-    "*.egg-info",
+    "venv",
+    ".venv",
+    "node_modules",
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LINT RULES
+# LINTING RULES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 [lint]
-# Enable these rule categories
+# Enable rule categories
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
-    "F",      # Pyflakes (unused imports, undefined names)
-    "I",      # isort (import sorting)
-    "N",      # pep8-naming
-    "D",      # pydocstyle (docstring conventions)
-    "UP",     # pyupgrade (modern Python syntax)
-    "B",      # flake8-bugbear (common bugs)
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
     "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
     "SIM",    # flake8-simplify
-    "ARG",    # flake8-unused-arguments
-    "PTH",    # flake8-use-pathlib
-    "ERA",    # eradicate (commented-out code)
-    "PL",     # Pylint rules
+    "TCH",    # flake8-type-checking
     "RUF",    # Ruff-specific rules
-    "S",      # flake8-bandit (security)
-    "T20",    # flake8-print (no print statements)
 ]
 
-# Ignore these specific rules
+# Ignore specific rules
 ignore = [
-    # Line length handled by formatter
-    "E501",
-    
-    # Docstring rules that conflict with Google style
-    "D100",   # Missing docstring in public module
-    "D104",   # Missing docstring in public package
-    "D203",   # 1 blank line required before class docstring (conflicts with D211)
-    "D213",   # Multi-line docstring summary should start at second line (conflicts with D212)
-    
-    # Pylint rules that are too strict for educational code
-    "PLR0913", # Too many arguments
-    "PLR2004", # Magic value used in comparison
-    "PLR0911", # Too many return statements
-    "PLR0912", # Too many branches
-    "PLR0915", # Too many statements
-    
-    # Print statements OK for educational scripts
-    "T201",   # print found
-    
-    # Security rules that are too strict for lab environment
-    "S101",   # assert used (OK in tests)
-    "S104",   # Binding to all interfaces (OK for lab)
-    "S311",   # pseudo-random generators (OK for lab)
+    "E501",   # Line too long (handled by formatter)
+    "B008",   # Function call in default argument (common pattern)
+    "B905",   # zip without strict (Python 3.10+ only)
+    "SIM108", # Ternary operator (readability preference)
 ]
 
 # Allow autofix for all enabled rules
 fixable = ["ALL"]
+unfixable = []
 
-# Never autofix these (require manual review)
-unfixable = [
-    "ERA001",  # commented-out code - manual review needed
-    "F841",    # unused variable - might be intentional
+# ═══════════════════════════════════════════════════════════════════════════════
+# ISORT CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[lint.isort]
+# Force single line imports
+force-single-line = false
+
+# Known first-party modules
+known-first-party = ["src", "scripts", "formative", "tests"]
+
+# Section order
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
 ]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -107,84 +89,25 @@ unfixable = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 [lint.per-file-ignores]
-# Test files
-"tests/**/*.py" = [
-    "S101",   # assert is expected in tests
-    "D103",   # test functions don't need docstrings
-    "ARG001", # unused arguments OK for fixtures
-    "PLR2004", # magic values OK in tests
-]
+# Tests can use assert and have longer lines
+"tests/*.py" = ["S101", "E501"]
 
-# Scripts are standalone utilities
-"scripts/**/*.py" = [
-    "D103",   # functions don't always need docstrings
-    "T201",   # print is OK in scripts
-]
-
-# Exercise files are for learning
-"src/exercises/**/*.py" = [
-    "D103",   # exercise functions don't need full docstrings
-    "ERA001", # commented code may be instructional
-    "T201",   # print is OK for exercises
-]
-
-# Homework templates have TODOs
-"homework/**/*.py" = [
-    "D103",   # students will add docstrings
-    "ERA001", # placeholder comments expected
-    "ARG001", # placeholder arguments expected
-    "F401",   # unused imports may be for students
-]
-
-# Quiz runner needs print
-"formative/**/*.py" = [
-    "T201",   # print is essential for CLI quiz
-]
+# Init files can have unused imports
+"__init__.py" = ["F401"]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# IMPORT SORTING (isort)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[lint.isort]
-# Known first-party modules
-known-first-party = ["src", "scripts", "formative", "tests"]
-
-# Force imports to be on separate lines
-force-single-line = false
-
-# Lines between import sections
-lines-after-imports = 2
-
-# Sort by module name, not import type
-force-sort-within-sections = true
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# DOCSTRING STYLE (pydocstyle)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-[lint.pydocstyle]
-# Use Google-style docstrings
-convention = "google"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# FORMATTER
+# FORMATTING
 # ═══════════════════════════════════════════════════════════════════════════════
 
 [format]
-# Use double quotes for strings
+# Use double quotes
 quote-style = "double"
 
-# Use spaces for indentation
+# Indent with spaces
 indent-style = "space"
 
-# Respect magic trailing commas
-skip-magic-trailing-comma = false
-
-# Auto-detect line endings
-line-ending = "auto"
+# Unix line endings
+line-ending = "lf"
 
 # Format docstrings
 docstring-code-format = true
-
-# Line length for docstring code examples
-docstring-code-line-length = 80

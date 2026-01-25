@@ -6,14 +6,14 @@
 #
 # Format: Standardised YAML for self-assessment
 # Compatible with: run_quiz.py, JSON export, Moodle/Canvas LMS
-# Version: 2.0.0
+# Version: 2.1.0
 # Language: British English
 # ═══════════════════════════════════════════════════════════════════════════════
 
 metadata:
   week: 14
   topic: "Integrated Recap and Project Evaluation"
-  version: "2.0.0"
+  version: "2.1.0"
   author: "ing. dr. Antonio Clim"
   institution: "ASE Bucharest, CSIE"
   course: "Computer Networks"
@@ -22,6 +22,12 @@ metadata:
   passing_score_percent: 70
   total_points: 42
   question_count: 15
+  
+  # LMS Export Configuration
+  lms_export:
+    moodle_compatible: true
+    canvas_compatible: true
+    export_formats: ["xml", "json", "qti"]
   
   bloom_coverage:
     - level: "Remember"
@@ -98,12 +104,6 @@ questions:
       - Application (L7) handles application data
       
     misconception_ref: "docs/misconceptions.md#misconception-1"
-    
-    verification:
-      command: "docker exec week14_client ip addr show eth0"
-      expected: "inet 172.21.0.2/24"
-      
-    hint: "Consider what information a router uses to decide where to send a packet."
 
   - id: q02
     type: multiple_choice
@@ -112,26 +112,23 @@ questions:
     difficulty: "basic"
     points: 1
     
-    stem: "What Protocol Data Unit (PDU) does TCP use at Layer 4?"
+    stem: "How many packets are exchanged in a TCP three-way handshake?"
     
     options:
-      a: "Frame"
-      b: "Packet"
-      c: "Segment"
-      d: "Datagram"
+      a: "2"
+      b: "3"
+      c: "4"
+      d: "5"
       
-    correct: "c"
+    correct: "b"
     
     explanation: |
-      Each OSI layer has its own PDU:
-      - Layer 2 (Data Link): Frame
-      - Layer 3 (Network): Packet
-      - Layer 4 (Transport): Segment (TCP) or Datagram (UDP)
-      - Layer 7 (Application): Data/Message
+      The TCP three-way handshake involves exactly 3 packets:
+      1. SYN (client → server)
+      2. SYN-ACK (server → client)
+      3. ACK (client → server)
       
-    misconception_ref: "docs/misconceptions.md#misconception-2"
-    
-    hint: "TCP = Transport Control Protocol — which layer?"
+    misconception_ref: "docs/misconceptions.md#misconception-3"
 
   - id: q03
     type: multiple_choice
@@ -140,33 +137,30 @@ questions:
     difficulty: "basic"
     points: 1
     
-    stem: "What is the standard port for HTTP (not HTTPS)?"
+    stem: "Which protocol provides reliable, ordered delivery of data?"
     
     options:
-      a: "22"
-      b: "53"
-      c: "80"
-      d: "443"
+      a: "UDP"
+      b: "IP"
+      c: "TCP"
+      d: "ICMP"
       
     correct: "c"
     
     explanation: |
-      Common standard ports:
-      - 22: SSH (Secure Shell)
-      - 53: DNS (Domain Name System)
-      - 80: HTTP (HyperText Transfer Protocol)
-      - 443: HTTPS (HTTP Secure)
+      TCP (Transmission Control Protocol) provides:
+      - Reliable delivery (acknowledgements and retransmissions)
+      - Ordered delivery (sequence numbers)
+      - Flow control and congestion control
       
-    verification:
-      command: "curl -I http://localhost:8080/ 2>/dev/null | head -1"
-      expected: "HTTP/1.1 200"
+      UDP is connectionless and does not guarantee delivery or order.
       
-    hint: "HTTP = HyperText Transfer Protocol. Think of the number 8..."
+    misconception_ref: "docs/misconceptions.md#misconception-2"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # BLOOM LEVEL 2: UNDERSTAND (3 questions, 2 points each)
   # ═══════════════════════════════════════════════════════════════════════════
-
+  
   - id: q04
     type: multiple_choice
     bloom_level: "Understand"
@@ -175,71 +169,53 @@ questions:
     points: 2
     
     stem: |
-      A round-robin load balancer has 2 backends (app1, app2).
-      If you send 4 consecutive requests, what is the expected distribution?
-      
+      A load balancer is configured with round-robin algorithm and two backends.
+      After sending 6 requests, what is the expected distribution?
+    
     options:
-      a: "All 4 to app1 (sticky session)"
-      b: "app1, app2, app1, app2 (deterministic alternation)"
-      c: "Random distribution (could be anything)"
-      d: "First 2 to app1, next 2 to app2 (batch)"
+      a: "Random distribution depending on server load"
+      b: "All 6 requests to the first backend"
+      c: "3 requests to each backend"
+      d: "Distribution based on response time"
       
-    correct: "b"
+    correct: "c"
     
     explanation: |
-      Round-robin is a DETERMINISTIC and SEQUENTIAL algorithm:
-      - Request 1 → app1
-      - Request 2 → app2
-      - Request 3 → app1
-      - Request 4 → app2
+      Round-robin distributes requests in a deterministic alternating pattern:
+      Request 1 → Backend 1
+      Request 2 → Backend 2
+      Request 3 → Backend 1
+      ...and so on.
       
-      It is NOT random! With N backends, requests go in order
-      1, 2, 3, ..., N, 1, 2, 3, ..., N (wrap-around with modulo).
+      After 6 requests: 3 to each backend (50/50 split).
       
     misconception_ref: "docs/misconceptions.md#misconception-8"
-    
-    verification:
-      command: "for i in 1 2 3 4; do curl -s http://localhost:8080/ | grep -o 'app[12]'; done"
-      expected: "app1\napp2\napp1\napp2"
-      
-    hint: "Round = circle, Robin = in turn. Not 'Random-robin'!"
 
   - id: q05
     type: multiple_choice
     bloom_level: "Understand"
-    lo_ref: "LO3"
+    lo_ref: "LO2"
     difficulty: "intermediate"
     points: 2
     
     stem: |
-      In docker-compose.yml you find: ports: "8080:80"
-      What does this configuration mean?
-      
+      In Docker Compose, if a service defines "ports: ['8080:80']", 
+      what does this mapping mean?
+    
     options:
-      a: "Container listens on port 8080, host on 80"
-      b: "Host exposes port 8080, which maps to port 80 in the container"
-      c: "Both ports are identical (8080 = 80)"
-      d: "Host listens on 80, container on 8080"
+      a: "Container port 8080 maps to host port 80"
+      b: "Host port 8080 maps to container port 80"
+      c: "Both ports 8080 and 80 are exposed"
+      d: "Port 8080 is used internally, 80 externally"
       
     correct: "b"
     
     explanation: |
-      Docker port mapping syntax is HOST:CONTAINER
-      
-      "8080:80" means:
-      - From outside (browser): access http://localhost:8080
-      - Inside (container): service listens on :80
-      
-      Memory aid: "Left is outside, Right is inside" 
-      (read left to right, like traffic entering)
+      Docker port mapping format is HOST:CONTAINER
+      - '8080:80' means: host port 8080 → container port 80
+      - Access via localhost:8080, which forwards to container's port 80
       
     misconception_ref: "docs/misconceptions.md#misconception-5"
-    
-    verification:
-      command: "docker port week14_lb"
-      expected: "8080/tcp -> 0.0.0.0:8080"
-      
-    hint: "HOST:CONTAINER — what is on the left is for the outside."
 
   - id: q06
     type: multiple_choice
@@ -248,105 +224,92 @@ questions:
     difficulty: "intermediate"
     points: 2
     
-    stem: "What is the correct sequence of flags in the TCP three-way handshake?"
+    stem: "What is the primary purpose of the Transport layer in the TCP/IP model?"
     
     options:
-      a: "SYN → ACK → SYN-ACK"
-      b: "SYN → SYN-ACK → ACK"
-      c: "ACK → SYN → SYN-ACK"
-      d: "SYN → SYN → ACK"
+      a: "Routing packets between networks"
+      b: "End-to-end communication between applications"
+      c: "Physical transmission of bits"
+      d: "Domain name resolution"
       
     correct: "b"
     
     explanation: |
-      TCP Three-Way Handshake:
+      The Transport layer provides end-to-end communication between applications:
+      - Uses port numbers to identify applications
+      - TCP provides reliable streams
+      - UDP provides datagrams
       
-      Client                    Server
-        |                         |
-        |--- SYN (seq=x) -------->|  Step 1: "I want to connect"
-        |                         |
-        |<-- SYN-ACK (ack=x+1) ---|  Step 2: "OK, I also want to"
-        |      (seq=y)            |
-        |                         |
-        |--- ACK (ack=y+1) ------>|  Step 3: "Confirmed!"
-        |                         |
-        [Connection established]
+      Routing is handled by the Network layer (IP).
       
-    misconception_ref: "docs/misconceptions.md#misconception-3"
-    
-    hint: "Both sides need to synchronise — hence SYN from both."
+    misconception_ref: "docs/misconceptions.md#misconception-2"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # BLOOM LEVEL 3: APPLY (2 questions, 2 points each)
   # ═══════════════════════════════════════════════════════════════════════════
-
+  
   - id: q07
-    type: fill_blank
+    type: multiple_choice
     bloom_level: "Apply"
     lo_ref: "LO3"
     difficulty: "intermediate"
     points: 2
     
     stem: |
-      To see all Docker containers currently running,
-      the complete command is: docker ___
+      Which Docker command shows only running containers with names 
+      starting with "week14"?
+    
+    options:
+      a: "docker ps | grep week14"
+      b: "docker ps -a --filter name=week14"
+      c: "docker ps --filter name=^week14"
+      d: "docker container list week14*"
       
-    correct:
-      - "ps"
-      - "container ls"
-      - "container list"
-      
-    case_sensitive: false
+    correct: "c"
     
     explanation: |
-      Equivalent commands for listing active containers:
-      - docker ps                    (short, traditional)
-      - docker container ls          (new, explicit)
-      - docker container list        (alias for ls)
+      The correct command uses:
+      - docker ps (shows running containers only)
+      - --filter name=^week14 (regex anchor for "starts with")
       
-      To see ALL containers (including stopped): docker ps -a
+      Option A works but is less efficient (pipes through grep).
+      Option B includes stopped containers (-a flag).
       
-    verification:
-      command: "docker ps --format '{{.Names}}' | grep week14"
-      expected: "week14_app1, week14_app2, week14_lb, etc."
-      
-    hint: "ps = process status (traditional Unix abbreviation)"
+    misconception_ref: "docs/misconceptions.md#misconception-6"
 
   - id: q08
-    type: fill_blank
+    type: multiple_choice
     bloom_level: "Apply"
     lo_ref: "LO4"
     difficulty: "intermediate"
     points: 2
     
     stem: |
-      In Wireshark, to filter only HTTP packets with GET method,
-      the correct display filter is: http.request.method == "___"
+      In Wireshark, which display filter shows only HTTP traffic 
+      to or from port 8080?
+    
+    options:
+      a: "http.port == 8080"
+      b: "tcp.port == 8080 && http"
+      c: "tcp.port == 8080"
+      d: "port 8080"
       
-    correct:
-      - "GET"
-      
-    case_sensitive: true
+    correct: "c"
     
     explanation: |
-      Wireshark display filters for HTTP:
-      - http.request.method == "GET"     (GET requests)
-      - http.request.method == "POST"    (POST requests)
-      - http.response.code == 200        (successful responses)
-      - http.host contains "example"     (specific host)
+      For HTTP on non-standard ports:
+      - tcp.port == 8080 captures all TCP traffic on that port
+      - http filter only works for port 80 by default
+      - "port 8080" is capture filter syntax (BPF), not display filter
       
-      NOTE: Values are case-sensitive! "GET" not "get".
+      In Wireshark display filters, tcp.port matches both src and dst.
       
-    verification:
-      command: "# In Wireshark: Apply filter, then verify in packet list"
-      expected: "Only packets with Info: GET /..."
-      
-    hint: "HTTP methods are always UPPERCASE: GET, POST, PUT, DELETE..."
+    misconception_ref: "docs/misconceptions.md#misconception-4"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # BLOOM LEVEL 4: ANALYSE (2 questions, 3 points each)
   # ═══════════════════════════════════════════════════════════════════════════
-
+  
   - id: q09
     type: multiple_choice
     bloom_level: "Analyse"
@@ -355,44 +318,26 @@ questions:
     points: 3
     
     stem: |
-      In Wireshark, you capture traffic and observe the following TCP sequence:
-      
-      Packet 1: [SYN] 192.168.1.10:54321 → 10.0.0.5:8080
-      Packet 2: [RST, ACK] 10.0.0.5:8080 → 192.168.1.10:54321
-      
-      What does this sequence indicate?
-      
+      A packet capture shows: SYN, SYN-ACK, ACK, HTTP GET, HTTP 200, FIN, ACK, FIN, ACK.
+      How many TCP connections were established?
+    
     options:
-      a: "Connection established successfully, data transfer follows"
-      b: "Port 8080 on server 10.0.0.5 is closed or no service exists"
-      c: "Network timeout — packets were lost"
-      d: "Firewall blocked the connection silently (drop)"
+      a: "1"
+      b: "2"
+      c: "3"
+      d: "Cannot determine"
       
-    correct: "b"
+    correct: "a"
     
     explanation: |
-      Sequence analysis:
+      Analysing the sequence:
+      - SYN, SYN-ACK, ACK = 1 connection established (3-way handshake)
+      - HTTP GET, HTTP 200 = data exchange
+      - FIN, ACK, FIN, ACK = connection termination (4-way)
       
-      [SYN] → Client attempts to initiate connection
-      [RST, ACK] ← Server responds IMMEDIATELY with Reset
+      This represents a single complete TCP connection lifecycle.
       
-      RST (Reset) immediately after SYN indicates:
-      - Destination port is CLOSED
-      - No service is listening on that port
-      - Server kernel responds automatically with RST
-      
-      Differences from other scenarios:
-      - Firewall DROP: You would receive NOTHING back (timeout)
-      - Firewall REJECT: You would receive ICMP "port unreachable"
-      - Service busy: You would receive SYN-ACK (connection in progress)
-      
-    misconception_ref: "docs/code_tracing.md#exercise-t1"
-    
-    verification:
-      command: "# Test: nc -zv localhost 9999 (closed port)"
-      expected: "Connection refused"
-      
-    hint: "RST = Reset = 'Nobody here!'"
+    misconception_ref: "docs/misconceptions.md#misconception-3"
 
   - id: q10
     type: multiple_choice
@@ -402,53 +347,31 @@ questions:
     points: 3
     
     stem: |
-      You access http://localhost:8080/ and receive the response:
-      
-      HTTP/1.1 502 Bad Gateway
-      X-Error: upstream connection failed
-      
-      What is the most likely cause and first diagnostic step?
-      
+      After stopping one backend, the load balancer returns 502 errors 
+      for ~50% of requests. What is the most likely cause?
+    
     options:
-      a: "Client sent a malformed request → check the request"
-      b: "Backends are down or not responding → check docker ps and health"
-      c: "Load balancer is overloaded → check CPU/memory"
-      d: "SSL certificate has expired → check certificates"
+      a: "Load balancer crash"
+      b: "Round-robin still routing to dead backend"
+      c: "Network congestion"
+      d: "DNS resolution failure"
       
     correct: "b"
     
     explanation: |
-      HTTP 502 Bad Gateway means:
+      The 50% error rate matches round-robin behaviour:
+      - Requests to healthy backend succeed
+      - Requests to dead backend fail (502 Bad Gateway)
       
-      "The proxy (load balancer) could NOT obtain a valid response 
-       from upstream server (backends)"
+      The LB has not yet detected the backend failure 
+      (health check interval not elapsed).
       
-      Common causes:
-      1. Backends are stopped (docker ps does not show them running)
-      2. Backends are not responding (health check fails)
-      3. Network connectivity between LB and backends is broken
-      4. Backends return errors (500, timeout)
-      
-      First diagnostic step:
-      ```bash
-      docker ps | grep week14_app      # Check if running
-      curl http://localhost:8001/health # Test app1 directly
-      curl http://localhost:8002/health # Test app2 directly
-      docker logs week14_lb            # Check LB logs
-      ```
-      
-    misconception_ref: "docs/troubleshooting.md#load-balancer-issues"
-    
-    verification:
-      command: "curl -s http://localhost:8080/lb-status"
-      expected: "healthy backends listed"
-      
-    hint: "502 = 'I tried to ask the backend, but it did not respond'"
+    misconception_ref: "docs/misconceptions.md#misconception-9"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # BLOOM LEVEL 5: EVALUATE (2 questions, 4 points each)
   # ═══════════════════════════════════════════════════════════════════════════
-
+  
   - id: q11
     type: multiple_choice
     bloom_level: "Evaluate"
@@ -457,476 +380,167 @@ questions:
     points: 4
     
     stem: |
-      You implemented a round-robin load balancer with 3 backends.
-      After 1 hour of operation, you observe the following distribution:
-      
-      - app1: 45% of requests
-      - app2: 35% of requests  
-      - app3: 20% of requests
-      
-      What is the most likely cause of this uneven distribution?
-      
+      A system shows: Backend 1 receives 70% of requests, Backend 2 receives 30%.
+      The load balancer is configured for round-robin. Which explanation is MOST likely?
+    
     options:
-      a: "The round-robin algorithm is defective and needs replacement"
-      b: "app3 was periodically unavailable and LB removed it from rotation"
-      c: "Clients prefer app1 and app2 due to lower latency"
-      d: "Round-robin does not guarantee equal distribution over time"
+      a: "Bug in the load balancer algorithm"
+      b: "Sticky sessions enabled for some clients"
+      c: "Backend 2 has slower response times"
+      d: "Network packet loss to Backend 2"
       
     correct: "b"
     
     explanation: |
-      Distribution analysis:
+      Evaluating each possibility:
+      - A: Unlikely - round-robin is simple and well-tested
+      - B: MOST LIKELY - sticky sessions override round-robin for returning clients
+      - C: Response time does not affect round-robin selection
+      - D: Would cause errors, not skewed distribution
       
-      Round-robin GUARANTEES equal distribution if all backends are available.
-      Distribution 45/35/20 suggests app3 was unavailable ~40% of the time.
+      Sticky sessions (session affinity) are common for stateful applications.
       
-      Mathematical calculation:
-      - If all 3 were up: 33.3% each
-      - app3 at 20% means it was down ~40% of the time
-      - During that time, app1 and app2 received 50/50
-      - Result: ~45% / ~35% / ~20%
-      
-      Verification:
-      ```bash
-      # Check backend uptime
-      docker logs week14_app3 | grep -c "started"
-      docker logs week14_app3 | grep -c "error"
-      ```
-      
-    misconception_ref: "docs/misconceptions.md#misconception-8"
-    
-    evaluation_criteria: |
-      - Identifies that round-robin is deterministic
-      - Deduces that the problem is availability, not algorithm
-      - Can calculate approximate downtime from distribution
-      
-    hint: "Round-robin is deterministic. If distribution is unequal, what changed?"
+    misconception_ref: "docs/misconceptions.md#misconception-9"
 
   - id: q12
-    type: scenario_analysis
+    type: multiple_choice
     bloom_level: "Evaluate"
     lo_ref: "LO5"
     difficulty: "advanced"
     points: 4
     
     stem: |
-      You are responsible for diagnosing a network problem.
-      You have the following data:
-      
-      1. `curl http://localhost:8080/` returns timeout after 30s
-      2. `docker ps` shows all containers as "Up" and "healthy"
-      3. `docker exec week14_client ping -c 1 172.21.0.10` returns success
-      4. `docker logs week14_lb` shows "upstream connection refused"
-      
-      Evaluate this information and identify the problem.
-      
+      Which verification approach provides the HIGHEST confidence that 
+      a containerised service is functioning correctly?
+    
     options:
-      a: "Load balancer is not starting — needs restart"
-      b: "Problem is with backends: either not listening or wrong port"
-      c: "Firewall is blocking HTTP traffic"
-      d: "DNS resolution failure in Docker network"
+      a: "Check container status with 'docker ps'"
+      b: "Verify port is open with 'netstat'"
+      c: "Send test request and validate response content"
+      d: "Check container logs for errors"
       
-    correct: "b"
+    correct: "c"
     
     explanation: |
-      Systematic analysis of clues:
+      Evaluating verification depth:
+      - A: Only confirms container is running (not that service works)
+      - B: Only confirms port is listening (not that service responds correctly)
+      - C: BEST - validates entire request/response path with expected behaviour
+      - D: Absence of errors does not prove correct function
       
-      ✅ Clue 1: Timeout = request reaches LB but does not receive response
-      ✅ Clue 2: Containers healthy = health checks pass (but may be superficial)
-      ✅ Clue 3: Ping works = network connectivity OK
-      🔴 Clue 4: "upstream connection refused" = LB cannot connect to backends
+      End-to-end testing with response validation is the gold standard.
       
-      "Connection refused" means:
-      - Backend receives SYN
-      - Backend responds with RST
-      - = Nobody is listening on that port
-      
-      Verification:
-      ```bash
-      # Check what backends are listening on
-      docker exec week14_app1 ss -tlnp
-      docker exec week14_app2 ss -tlnp
-      # Compare with LB upstream config
-      docker exec week14_lb cat /etc/nginx/nginx.conf | grep upstream -A 5
-      ```
-      
-    evaluation_criteria: |
-      - Analyses all clues systematically
-      - Identifies the decisive clue (LB log)
-      - Proposes correct diagnosis
+    misconception_ref: "docs/misconceptions.md#misconception-7"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # BLOOM LEVEL 6: CREATE (3 questions, 5 points each)
   # ═══════════════════════════════════════════════════════════════════════════
-
+  
   - id: q13
-    type: design_task
+    type: multiple_choice
     bloom_level: "Create"
     lo_ref: "LO5"
-    difficulty: "expert"
+    difficulty: "advanced"
     points: 5
     
     stem: |
-      Design an automated test that verifies the load balancer 
-      distributes traffic correctly between backends.
-      
-      Requirements:
-      1. Test must be deterministic (same result every run)
-      2. Must verify distribution, not just connectivity
-      3. Must report which backend handled each request
-      
-      Complete the function below:
-      
-    code_template: |
-      def test_load_balancer_distribution():
-          """
-          Verify round-robin distribution of the load balancer.
-          
-          Returns:
-              bool: True if distribution is correct
-          """
-          import urllib.request
-          
-          results = []
-          num_requests = ___  # Q1: How many requests for a valid test?
-          
-          for i in range(num_requests):
-              response = urllib.request.urlopen('http://localhost:8080/')
-              body = response.read().decode()
-              backend = ___  # Q2: How do you extract the backend name?
-              results.append(backend)
-          
-          # Q3: How do you verify round-robin distribution?
-          expected = ___
-          
-          return results == expected
+      Design a health check strategy for a load-balanced web application.
+      Which combination provides the BEST coverage?
     
-    correct:
-      q1: ["4", "6", "8"]
-      q2: ["'app1' if 'app1' in body else 'app2'", "body.split()[0]"]
-      q3: ["['app1', 'app2', 'app1', 'app2']", "['app1', 'app2'] * (num_requests // 2)"]
+    options:
+      a: "TCP port check every 5 seconds"
+      b: "HTTP GET to /health endpoint with 200 OK validation"
+      c: "HTTP GET to /health with response body validation and timeout"
+      d: "ICMP ping to backend IPs"
+      
+    correct: "c"
     
     explanation: |
-      Design decisions:
+      Creating effective health checks requires:
+      - HTTP (not just TCP) to verify application layer
+      - Dedicated /health endpoint (not /)
+      - Response body validation (not just status code)
+      - Timeout handling (detect hung processes)
       
-      1. **Number of requests**: Multiple of 2 (number of backends) for exact verification
-         - 4 requests = verify 2 complete cycles
-         - More = more robust but slower
+      Option C combines all these elements for robust detection.
       
-      2. **Extract backend**: Parse response body for identifier
-         - Backends return their name in response
-         - Alternative: X-Backend header
-      
-      3. **Verify distribution**: 
-         - Round-robin = deterministic sequence
-         - ['app1', 'app2', 'app1', 'app2'] for 4 requests
-         
-      Complete implementation:
-      ```python
-      def test_load_balancer_distribution():
-          import urllib.request
-          
-          results = []
-          num_requests = 4
-          
-          for i in range(num_requests):
-              response = urllib.request.urlopen('http://localhost:8080/')
-              body = response.read().decode()
-              backend = 'app1' if 'app1' in body.lower() else 'app2'
-              results.append(backend)
-          
-          expected = ['app1', 'app2', 'app1', 'app2']
-          return results == expected
-      ```
-      
-    rubric:
-      5: "Correct completion + design decisions explanation"
-      4: "Correct completion without explanation"
-      3: "2 of 3 correct"
-      2: "1 of 3 correct"
-      0: "Incorrect or empty"
+    misconception_ref: "docs/misconceptions.md#misconception-7"
 
   - id: q14
-    type: architecture_design
+    type: multiple_choice
     bloom_level: "Create"
     lo_ref: "LO3"
-    difficulty: "expert"
+    difficulty: "advanced"
     points: 5
     
     stem: |
-      Design an extension to the Week 14 topology that adds:
-      1. A third backend (app3) on 172.20.0.4
-      2. A monitoring service (monitor) that checks health of all services
-      3. Network isolation: monitor can see everything but apps cannot see each other
-      
-      Complete the docker-compose.yml fragment:
-      
-    code_template: |
-      services:
-        app3:
-          image: week14/backend
-          container_name: week14_app3
-          networks:
-            backend_net:
-              ipv4_address: ___  # Q1
-          environment:
-            - APP_NAME=app3
-            
-        monitor:
-          image: week14/monitor
-          container_name: week14_monitor
-          networks:
-            - ___  # Q2: Which networks should it be on?
-            - ___
-          depends_on:
-            - ___  # Q3: Which services does it depend on?
-            
-      networks:
-        # Q4: How do you ensure isolation between apps?
-        backend_net:
-          driver: bridge
-          internal: ___
-          ipam:
-            config:
-              - subnet: 172.20.0.0/24
+      Design a Docker Compose network topology for: 2 backend servers, 
+      1 load balancer (public) and 1 database (private). 
+      Which design is MOST secure?
     
-    correct:
-      q1: "172.20.0.4"
-      q2: ["backend_net", "frontend_net"]
-      q3: ["app1", "app2", "app3", "lb"]
-      q4: "false"
+    options:
+      a: "All containers on default bridge network"
+      b: "Single custom network for all containers"
+      c: "Frontend network (LB + backends) and backend network (backends + DB)"
+      d: "Each container on its own network"
+      
+    correct: "c"
     
     explanation: |
-      Design considerations:
+      Creating secure network topology:
+      - LB needs to reach backends (frontend network)
+      - Backends need to reach DB (backend network)
+      - DB should NOT be accessible from LB (isolation)
       
-      1. **IP app3**: 172.20.0.4 follows existing scheme (app1=.2, app2=.3)
+      Option C provides proper network segmentation:
+      - LB → frontend_net → Backends
+      - Backends → backend_net → DB
+      - DB isolated from direct LB access
       
-      2. **Monitor networks**: Must be on BOTH networks to see all services
-         - backend_net: sees app1, app2, app3
-         - frontend_net: sees lb, client
-      
-      3. **Dependencies**: Monitor depends on services it monitors
-      
-      4. **Isolation**: 
-         - `internal: true` = no external access (not applicable here)
-         - Isolation between apps is done by NOT putting them on same network
-         - Docker default: containers on same network can communicate
-         
-      For real isolation between apps, separate networks would be needed:
-      ```yaml
-      networks:
-        app1_net:
-          internal: true
-        app2_net:
-          internal: true
-        lb_net:
-          # LB connected to all
-      ```
+    misconception_ref: "docs/misconceptions.md#misconception-6"
 
   - id: q15
-    type: troubleshooting_design
+    type: multiple_choice
     bloom_level: "Create"
     lo_ref: "LO5"
-    difficulty: "expert"
+    difficulty: "advanced"
     points: 5
     
     stem: |
-      Create a troubleshooting checklist for the scenario:
-      "HTTP requests intermittently return 502 Bad Gateway"
-      
-      Requirements:
-      1. Minimum 5 diagnostic steps
-      2. Each step with a concrete command
-      3. Logical order (simple to complex)
-      4. Include interpretation of results
-      
-    format: "open_response"
+      Create a troubleshooting procedure for "Connection refused" errors 
+      when accessing http://localhost:8080. What is the CORRECT order?
     
-    correct_elements:
-      - "Check if all containers are running: docker ps"
-      - "Check backend health: curl localhost:8001/health"
-      - "Check LB logs: docker logs week14_lb"
-      - "Check network connectivity: docker exec week14_lb ping app1"
-      - "Check backend logs: docker logs week14_app1"
-      - "Check resource usage: docker stats"
-      - "Verify port mappings: docker port week14_lb"
+    options:
+      a: "Check firewall → Check DNS → Check container → Check port"
+      b: "Check container running → Check port mapping → Check service logs → Check firewall"
+      c: "Check DNS → Check container → Check firewall → Check logs"
+      d: "Check logs → Check container → Check network → Check DNS"
+      
+    correct: "b"
     
-    rubric:
-      5: "5+ correct steps, logically ordered, with interpretations"
-      4: "5 correct steps but suboptimal order"
-      3: "3-4 correct steps"
-      2: "1-2 correct steps"
-      0: "Incorrect or missing steps"
-    
-    model_answer: |
-      ## Troubleshooting Checklist: Intermittent 502 Bad Gateway
+    explanation: |
+      Creating systematic troubleshooting procedure:
+      1. Container running? (docker ps)
+      2. Port mapping correct? (docker port / compose config)
+      3. Service started inside container? (docker logs)
+      4. Firewall blocking? (iptables / ufw)
       
-      ### Step 1: Verify Container Status
-      ```bash
-      docker ps --filter name=week14
-      ```
-      **Interpret**: All containers should show "Up" and "healthy"
-      **If failing**: `docker start week14_app1 week14_app2`
+      This follows the OSI model from application down to network.
+      DNS is not relevant for localhost connections.
       
-      ### Step 2: Check Backend Health Directly
-      ```bash
-      curl -s http://localhost:8001/health
-      curl -s http://localhost:8002/health
-      ```
-      **Interpret**: Should return 200 OK with health status
-      **If failing**: Backend application issue, check Step 5
-      
-      ### Step 3: Examine Load Balancer Logs
-      ```bash
-      docker logs week14_lb --since 5m | grep -E "(error|502|upstream)"
-      ```
-      **Interpret**: Look for "upstream connection refused" or timeout messages
-      **If errors**: Note timestamp correlation with 502s
-      
-      ### Step 4: Test Internal Network Connectivity
-      ```bash
-      docker exec week14_lb ping -c 3 app1
-      docker exec week14_lb ping -c 3 app2
-      ```
-      **Interpret**: Should succeed with <1ms latency
-      **If failing**: Network configuration issue
-      
-      ### Step 5: Check Backend Application Logs
-      ```bash
-      docker logs week14_app1 --since 5m
-      docker logs week14_app2 --since 5m
-      ```
-      **Interpret**: Look for exceptions, crashes or restart messages
-      **If errors**: Application bug or resource exhaustion
+    misconception_ref: "docs/misconceptions.md#misconception-10"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SCORING CONFIGURATION
+# METADATA FOOTER
 # ═══════════════════════════════════════════════════════════════════════════════
-
-scoring:
-  total_points: 42
-  passing_threshold: 29
-  
-  bloom_distribution:
-    Remember: 
-      questions: 3
-      points: 3
-      percentage: 7
-    Understand: 
-      questions: 3
-      points: 6
-      percentage: 14
-    Apply: 
-      questions: 2
-      points: 4
-      percentage: 10
-    Analyse: 
-      questions: 2
-      points: 6
-      percentage: 14
-    Evaluate: 
-      questions: 2
-      points: 8
-      percentage: 19
-    Create: 
-      questions: 3
-      points: 15
-      percentage: 36
-  
-  grade_boundaries:
-    A_plus:
-      min_points: 40
-      min_percent: 95
-      label: "Excellent"
-    A:
-      min_points: 36
-      min_percent: 85
-      label: "Very Good"
-    B:
-      min_points: 32
-      min_percent: 75
-      label: "Good"
-    C:
-      min_points: 29
-      min_percent: 70
-      label: "Satisfactory"
-    D:
-      min_points: 25
-      min_percent: 60
-      label: "Sufficient"
-    F:
-      min_points: 0
-      min_percent: 0
-      label: "Insufficient"
-
+#
+# Document version: 2.1.0 | Week 14: Integrated Recap | January 2025
+# NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim
+#
+# Cumulative Export Formats:
+#   - YAML: This file (run with run_quiz.py)
+#   - JSON: formative/quiz.json (LMS compatible)
+#   - Moodle XML: Generated via export_moodle.py
+#   - Canvas QTI: Generated via export_moodle.py --format qti
+#
 # ═══════════════════════════════════════════════════════════════════════════════
-# FEEDBACK CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-feedback:
-  on_pass: |
-    Congratulations! You have demonstrated solid understanding of 
-    networking concepts covered in this course.
-    
-    You are prepared for:
-    - Final practical assessment
-    - Semester project
-    
-    Continue practising with exercises in src/exercises/!
-    
-  on_fail: |
-    You need more preparation. Here is what to review:
-    
-    1. Read docs/theory_summary.md for basic concepts
-    2. Study docs/misconceptions.md for common errors
-    3. Practise with exercises in src/exercises/
-    4. Try the quiz again after 30 minutes of study
-    
-  per_lo_feedback:
-    LO1: |
-      Review OSI/TCP-IP layers in docs/theory_summary.md section 1.
-      Practise: python src/exercises/ex_14_01_review_drills.py --selftest
-    LO2: |
-      Study load balancing in docs/theory_summary.md section 4.
-      Check: docs/misconceptions.md#misconception-8 and #misconception-9
-    LO3: |
-      Practise Docker networking in docs/theory_summary.md section 8.
-      Run: docker network inspect week14_backend_net
-    LO4: |
-      Practise with Wireshark using filters from docs/commands_cheatsheet.md.
-      Capture: python scripts/capture_traffic.py
-    LO5: |
-      Study docs/troubleshooting.md for verification strategies.
-      Try: python tests/smoke_test.py
-    LO6: |
-      Analyse scenarios from docs/peer_instruction.md.
-      Experiment: stop a backend and observe LB behaviour
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# EXPORT CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
-
-export:
-  moodle:
-    category: "Computer Networks / Week 14"
-    question_type_mapping:
-      multiple_choice: "multichoice"
-      fill_blank: "shortanswer"
-      scenario_analysis: "multichoice"
-      design_task: "essay"
-      architecture_design: "essay"
-      troubleshooting_design: "essay"
-    shuffle_answers: true
-    penalty_factor: 0.25
-    
-  canvas:
-    points_possible: 42
-    quiz_type: "practice_quiz"
-    time_limit: 25
-    allowed_attempts: 3
-    
-  json:
-    include_explanations: true
-    include_verification: false
-    include_hints: true
-    format_version: "2.0"

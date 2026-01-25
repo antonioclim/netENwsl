@@ -247,4 +247,17 @@ Block I is a distractor — `docker network inspect` returns a JSON array, so we
 
 ---
 
-*Document version: 2.0 | Week 14: Integrated Recap | January 2025*
+## Summary
+
+| Problem | LO | Topic | Distractor Type |
+|---------|-----|-------|-----------------|
+| P1 | LO1 | TCP socket programming | Server vs client operation |
+| P2 | LO2 | HTTP protocol | Incomplete receive pattern |
+| P3 | LO3 | Docker subprocess | Misleading return code check |
+| P4 | LO4 | Algorithm design | Missing modulo wrap |
+| P5 | LO5 | JSON parsing | Wrong data structure access |
+
+---
+
+*Document version: 2.1 | Week 14: Integrated Recap | January 2025*
+*NETWORKING class — ASE, CSIE | by ing. dr. Antonio Clim*
