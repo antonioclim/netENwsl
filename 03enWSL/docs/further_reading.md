@@ -6,7 +6,7 @@
 
 ## Core Concepts Covered
 
-This week's laboratory explored fundamental network programming concepts: UDP broadcast and multicast communication and TCP tunnelling. The resources below provide deeper theoretical foundations and advanced applications.
+This week's laboratory explored core network programming concepts: UDP broadcast and multicast communication and TCP tunnelling. The resources below provide deeper theoretical foundations and advanced applications.
 
 ---
 
@@ -27,7 +27,7 @@ This week's laboratory explored fundamental network programming concepts: UDP br
 ### Multicasting
 
 **RFC 1112 - Host Extensions for IP Multicasting** (1989)
-- Foundational document for IP multicast
+- Original specification for IP multicast
 - Defines IGMP version 1
 - Specifies multicast address range (224.0.0.0 - 239.255.255.255)
 - URL: https://datatracker.ietf.org/doc/html/rfc1112
@@ -51,7 +51,7 @@ This week's laboratory explored fundamental network programming concepts: UDP br
 
 **RFC 793 - Transmission Control Protocol** (1981)
 - Definitive TCP specification
-- Essential for understanding TCP tunnel behaviour
+- Useful for understanding TCP tunnel behaviour
 - URL: https://datatracker.ietf.org/doc/html/rfc793
 
 **RFC 768 - User Datagram Protocol** (1980)
@@ -232,7 +232,7 @@ This week's laboratory explored fundamental network programming concepts: UDP br
 - URL: https://ocw.mit.edu/
 
 **Computerphile**
-- Networking fundamentals explained accessibly
+- Networking basics explained accessibly
 - URL: https://www.youtube.com/user/Computerphile
 
 ---

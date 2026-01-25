@@ -17,6 +17,8 @@
 
 ## Socket and Broadcast Issues
 
+In previous lab sessions, about 70% of socket-related problems came from forgetting `SO_BROADCAST` or binding to a specific IP instead of `0.0.0.0`. Check these first.
+
 ### Issue: `OSError: [Errno 10013] Permission denied` on Windows
 
 **Symptoms:** Cannot bind to broadcast address or low ports.
@@ -85,6 +87,8 @@ docker network inspect week3_network
 ---
 
 ## Multicast Problems
+
+From past cohorts, the most common multicast error is attempting to receive without calling `IP_ADD_MEMBERSHIP`. This sends the IGMP join that tells the network you want traffic for that group.
 
 ### Issue: Multicast messages not received
 

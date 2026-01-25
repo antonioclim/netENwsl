@@ -1,10 +1,10 @@
-# Theory Summary: Network Programming Fundamentals
+# Theory Summary: Network Programming — Core Concepts
 
 > NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 ## Overview
 
-This document provides a condensed theoretical framework for Week 3 laboratory concepts, covering the essential principles of broadcast, multicast and tunnelling mechanisms within the TCP/IP protocol suite.
+This document provides a condensed theoretical framework for Week 3 laboratory concepts, covering the key principles of broadcast, multicast and tunnelling mechanisms within the TCP/IP protocol suite.
 
 ---
 
@@ -12,7 +12,7 @@ This document provides a condensed theoretical framework for Week 3 laboratory c
 
 ### Unicast Transmission
 
-Unicast represents the fundamental one-to-one communication model where a single source transmits data to a single destination. The network layer routes packets through intermediate nodes using destination IP addresses, with each packet independently addressed. This approach dominates conventional client-server architectures and constitutes the baseline for understanding more sophisticated transmission modes.
+Unicast represents the basic one-to-one communication model where a single source transmits data to a single destination. The network layer routes packets through intermediate nodes using destination IP addresses, with each packet independently addressed. This approach dominates conventional client-server architectures and constitutes the baseline for understanding other transmission modes.
 
 **Characteristics:**
 - Point-to-point addressing (single source → single destination)
@@ -23,6 +23,8 @@ Unicast represents the fundamental one-to-one communication model where a single
 ### Broadcast Transmission
 
 Broadcasting enables a single source to transmit data to all hosts within a defined network segment simultaneously. The network layer interprets specific destination addresses as broadcast indicators, prompting switches to flood frames to all ports (except the source) and hosts to process the incoming data regardless of application interest.
+
+In past lab sessions, students often confused the limited broadcast address with directed broadcasts. The key distinction: `255.255.255.255` never leaves your local segment, no matter what.
 
 **IPv4 Broadcast Addresses:**
 - **Limited broadcast** (`255.255.255.255`): Never forwarded by routers; confined to local segment
@@ -45,6 +47,8 @@ The `SO_BROADCAST` option must be explicitly enabled, serving as an intentional 
 ### Multicast Transmission
 
 Multicasting provides an elegant middle ground between unicast inefficiency and broadcast indiscrimination. A single source transmits to a group address and only hosts that have expressed interest (through IGMP group membership) receive and process the data. Network infrastructure (switches, routers) optimises delivery paths to avoid unnecessary duplication.
+
+This usually breaks when students forget the `IP_ADD_MEMBERSHIP` call. Without it, binding to a port is not enough — the kernel simply ignores incoming multicast packets.
 
 **IPv4 Multicast Address Range:**
 - Class D addresses: `224.0.0.0` to `239.255.255.255`
@@ -138,7 +142,7 @@ A TCP tunnel encapsulates application traffic within a TCP connection, providing
 
 ---
 
-## 4. Protocol Analysis Fundamentals
+## 4. Protocol Analysis Basics
 
 ### Wireshark Display Filters
 

@@ -9,7 +9,7 @@
 Pair programming is not just about writing code together — it is a proven technique that:
 - Catches errors earlier (Navigator reviews in real-time)
 - Deepens understanding through explanation
-- Builds communication skills essential for professional work
+- Builds communication skills needed for professional work
 - Reduces frustration when debugging network issues
 
 ---

@@ -11,7 +11,7 @@ for the Week 3 Network Programming laboratory.
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SETUP_ENVIRONMENT
+# IMPORTS
 # ═══════════════════════════════════════════════════════════════════════════════
 import subprocess
 import sys
@@ -21,26 +21,17 @@ from pathlib import Path
 from typing import Tuple
 
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# CLASS_DEFINITION
+# CHECKER CLASS
 # ═══════════════════════════════════════════════════════════════════════════════
 class Checker:
     """Verification result collector with formatted output."""
     
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
     def __init__(self):
         self.passed = 0
         self.failed = 0
         self.warnings = 0
     
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
     def check(self, name: str, condition: bool, fix_hint: str = "") -> bool:
         """Record a check result."""
         if condition:
@@ -53,33 +44,22 @@ class Checker:
             self.failed += 1
         return condition
     
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CORE_LOGIC
-# ═══════════════════════════════════════════════════════════════════════════════
     def warn(self, name: str, message: str) -> None:
         """Record a warning."""
         print(f"  [\033[93mWARN\033[0m] {name}: {message}")
         self.warnings += 1
     
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CORE_LOGIC
-# ═══════════════════════════════════════════════════════════════════════════════
     def info(self, name: str, message: str) -> None:
         """Display informational message."""
         print(f"  [\033[94mINFO\033[0m] {name}: {message}")
     
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CORE_LOGIC
-# ═══════════════════════════════════════════════════════════════════════════════
     def summary(self) -> int:
         """Print summary and return exit code."""
         print()
         print("=" * 60)
         total = self.passed + self.failed
-        print(f"Results: {self.passed}/{total} passed, {self.failed} failed, {self.warnings} warnings")
+        print(f"Results: {self.passed}/{total} passed, "
+              f"{self.failed} failed, {self.warnings} warnings")
         print()
         
         if self.failed == 0:
@@ -101,9 +81,8 @@ class Checker:
             return 1
 
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
+# DETECTION HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
 def check_running_in_wsl() -> bool:
     """Check if we're running inside WSL."""
@@ -120,10 +99,6 @@ def check_running_in_wsl() -> bool:
     return False
 
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CORE_LOGIC
-# ═══════════════════════════════════════════════════════════════════════════════
 def get_wsl_distro_info() -> Tuple[str, str]:
     """Get WSL distribution name and version."""
     distro_name = os.environ.get("WSL_DISTRO_NAME", "Unknown")
@@ -131,9 +106,7 @@ def get_wsl_distro_info() -> Tuple[str, str]:
     try:
         result = subprocess.run(
             ["lsb_release", "-rs"],
-            capture_output=True,
-            text=True,
-            timeout=5
+            capture_output=True, text=True, timeout=5
         )
         if result.returncode == 0:
             version = result.stdout.strip()
@@ -149,18 +122,11 @@ def get_wsl_distro_info() -> Tuple[str, str]:
     return distro_name, version
 
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# LOG_RESULTS
-# ═══════════════════════════════════════════════════════════════════════════════
 def get_command_output(cmd: list, timeout: int = 10) -> Tuple[bool, str]:
     """Execute command and return success status with output."""
     try:
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            timeout=timeout,
-            text=True
+            cmd, capture_output=True, timeout=timeout, text=True
         )
         output = result.stdout.strip() or result.stderr.strip()
         return result.returncode == 0, output
@@ -172,18 +138,13 @@ def get_command_output(cmd: list, timeout: int = 10) -> Tuple[bool, str]:
         return False, str(e)
 
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
 def check_command_exists(cmd: str) -> bool:
     """Check if command is available in PATH."""
     return shutil.which(cmd) is not None
 
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
+# PYTHON CHECKS
 # ═══════════════════════════════════════════════════════════════════════════════
 def check_python_version() -> Tuple[bool, str]:
     """Verify Python version meets requirements."""
@@ -193,10 +154,6 @@ def check_python_version() -> Tuple[bool, str]:
     return meets_req, version_str
 
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
 def check_python_package(package: str) -> bool:
     """Check if Python package is installed."""
     try:
@@ -206,9 +163,8 @@ def check_python_package(package: str) -> bool:
         return False
 
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
+# DOCKER CHECKS
 # ═══════════════════════════════════════════════════════════════════════════════
 def check_docker_running() -> Tuple[bool, str]:
     """Verify Docker daemon is running."""
@@ -218,10 +174,6 @@ def check_docker_running() -> Tuple[bool, str]:
     return False, output
 
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
 def check_docker_compose() -> Tuple[bool, str]:
     """Verify Docker Compose is available."""
     success, output = get_command_output(["docker", "compose", "version"])
@@ -230,19 +182,13 @@ def check_docker_compose() -> Tuple[bool, str]:
     return False, "Docker Compose not found"
 
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
 def check_portainer_running() -> Tuple[bool, str]:
     """Check if Portainer is running on port 9000."""
     try:
         result = subprocess.run(
             ["docker", "ps", "--filter", "name=portainer",
              "--format", "{{.Status}}"],
-            capture_output=True,
-            text=True,
-            timeout=10
+            capture_output=True, text=True, timeout=10
         )
         if result.returncode == 0 and result.stdout.strip():
             if "up" in result.stdout.lower():
@@ -252,42 +198,13 @@ def check_portainer_running() -> Tuple[bool, str]:
         return False, str(e)
 
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
-def check_wireshark() -> Tuple[bool, str]:
-    """Check for Wireshark installation."""
-    windows_paths = [
-        Path("/mnt/c/Program Files/Wireshark/Wireshark.exe"),
-        Path("/mnt/c/Program Files (x86)/Wireshark/Wireshark.exe"),
-    ]
-    
-    for path in windows_paths:
-        if path.exists():
-            return True, str(path)
-    
-    if check_command_exists("wireshark"):
-        return True, "Available in PATH"
-    
-    if check_command_exists("tshark"):
-        return True, "tshark available (CLI mode)"
-    
-    return False, "Not found"
-
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# EXECUTE_OPERATION
-# ═══════════════════════════════════════════════════════════════════════════════
 def try_start_docker() -> bool:
     """Attempt to start Docker service."""
     print("         \033[93mAttempting to start Docker...\033[0m")
     try:
         result = subprocess.run(
             ["sudo", "service", "docker", "start"],
-            capture_output=True,
-            timeout=30
+            capture_output=True, timeout=30
         )
         if result.returncode == 0:
             import time
@@ -299,118 +216,104 @@ def try_start_docker() -> bool:
     return False
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# WIRESHARK CHECK
+# ═══════════════════════════════════════════════════════════════════════════════
+def check_wireshark() -> Tuple[bool, str]:
+    """Check for Wireshark installation."""
+    windows_paths = [
+        Path("/mnt/c/Program Files/Wireshark/Wireshark.exe"),
+        Path("/mnt/c/Program Files (x86)/Wireshark/Wireshark.exe"),
+    ]
+    for path in windows_paths:
+        if path.exists():
+            return True, str(path)
+    if check_command_exists("wireshark"):
+        return True, "Available in PATH"
+    if check_command_exists("tshark"):
+        return True, "tshark available (CLI mode)"
+    return False, "Not found"
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MAIN_ENTRY_POINT
+# VERIFICATION SECTIONS
 # ═══════════════════════════════════════════════════════════════════════════════
-def main() -> int:
-    """Main verification routine."""
-    print()
-    print("=" * 60)
-    print("  Environment Verification for Week 3 Laboratory")
-    print("  Network Programming: Broadcast, Multicast, Tunnelling")
-    print("  NETWORKING class - ASE, Informatics")
-    print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
-    print("=" * 60)
-    print()
-    
-    c = Checker()
-    
-    # WSL2 Environment
+def verify_wsl_environment(c: Checker) -> bool:
+    """Verify WSL2 environment is correctly configured."""
     print("\033[1mWSL2 Environment:\033[0m")
     is_wsl = check_running_in_wsl()
-    c.check(
-        "Running in WSL",
-        is_wsl,
-        "Run this script from WSL Ubuntu terminal"
-    )
+    c.check("Running in WSL", is_wsl,
+            "Run this script from WSL Ubuntu terminal")
     
     if is_wsl:
         distro_name, distro_version = get_wsl_distro_info()
         c.info("WSL Distribution", distro_name)
         is_ubuntu_22 = distro_version.startswith("22.")
-        c.check(
-            f"Ubuntu version {distro_version}",
-            is_ubuntu_22,
-            "Recommended: Ubuntu 22.04 LTS"
-        )
-    
+        c.check(f"Ubuntu version {distro_version}", is_ubuntu_22,
+                "Recommended: Ubuntu 22.04 LTS")
     print()
-    
-    # Python Environment
+    return is_wsl
+
+
+def verify_python_environment(c: Checker) -> None:
+    """Verify Python and required packages."""
     print("\033[1mPython Environment:\033[0m")
     py_ok, py_version = check_python_version()
-    c.check(
-        f"Python {py_version}",
-        py_ok,
-        "Install Python 3.11+: sudo apt install python3.11"
-    )
+    c.check(f"Python {py_version}", py_ok,
+            "Install Python 3.11+: sudo apt install python3.11")
     
-    optional_packages = {
+    packages = {
         "docker": "pip install docker --break-system-packages",
         "requests": "pip install requests --break-system-packages",
         "pyyaml": "pip install pyyaml --break-system-packages",
     }
-    
-    for pkg, install_cmd in optional_packages.items():
+    for pkg, install_cmd in packages.items():
         if check_python_package(pkg):
             c.check(f"Python package: {pkg}", True)
         else:
             c.check(f"Python package: {pkg}", False, install_cmd)
-    
     print()
-    
-    # Docker Environment
+
+
+def verify_docker_environment(c: Checker) -> None:
+    """Verify Docker installation and daemon status."""
     print("\033[1mDocker Environment:\033[0m")
-    c.check(
-        "Docker CLI installed",
-        check_command_exists("docker"),
-        "Install Docker: sudo apt install docker.io"
-    )
+    c.check("Docker CLI installed", check_command_exists("docker"),
+            "Install Docker: sudo apt install docker.io")
     
     docker_ok, docker_msg = check_docker_running()
     if not docker_ok:
         docker_ok = try_start_docker()
         docker_msg = "Started successfully" if docker_ok else "Failed to start"
     
-    c.check(
-        f"Docker daemon: {docker_msg[:40]}",
-        docker_ok,
-        "Start Docker: sudo service docker start"
-    )
+    c.check(f"Docker daemon: {docker_msg[:40]}", docker_ok,
+            "Start Docker: sudo service docker start")
     
     compose_ok, compose_msg = check_docker_compose()
-    c.check(
-        f"Docker Compose: {compose_msg[:40]}",
-        compose_ok,
-        "Included with docker.io package"
-    )
-    
+    c.check(f"Docker Compose: {compose_msg[:40]}", compose_ok,
+            "Included with docker.io package")
     print()
-    
-    # Portainer (Global Service)
+
+
+def verify_portainer(c: Checker) -> None:
+    """Verify Portainer global service."""
     print("\033[1mPortainer (Global Service - Port 9000):\033[0m")
     portainer_ok, portainer_msg = check_portainer_running()
-    c.check(
-        f"Portainer: {portainer_msg}",
-        portainer_ok,
-        "Start: docker start portainer"
-    )
+    c.check(f"Portainer: {portainer_msg}", portainer_ok,
+            "Start: docker start portainer")
     
     if portainer_ok:
         c.info("Portainer URL", "http://localhost:9000")
         c.info("Credentials", "stud / studstudstud")
-    
     print()
-    
-    # Network Tools
+
+
+def verify_network_tools(c: Checker) -> None:
+    """Verify network analysis tools."""
     print("\033[1mNetwork Analysis Tools:\033[0m")
     ws_ok, ws_msg = check_wireshark()
-    c.check(
-        f"Wireshark: {ws_msg[:40]}",
-        ws_ok,
-        "Install on Windows from wireshark.org"
-    )
+    c.check(f"Wireshark: {ws_msg[:40]}", ws_ok,
+            "Install on Windows from wireshark.org")
     
     if check_command_exists("tcpdump"):
         c.check("tcpdump: Available", True)
@@ -421,10 +324,11 @@ def main() -> int:
         c.check("Netcat: Available", True)
     else:
         c.warn("Netcat", "Install: sudo apt install netcat-openbsd")
-    
     print()
-    
-    # Project Structure
+
+
+def verify_project_structure(c: Checker) -> None:
+    """Verify project directory structure."""
     print("\033[1mProject Structure:\033[0m")
     project_root = Path(__file__).parent.parent
     
@@ -444,6 +348,30 @@ def main() -> int:
     for file_path in required_files:
         full_path = project_root / file_path
         c.check(f"File: {file_path}", full_path.is_file())
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MAIN ENTRY POINT
+# ═══════════════════════════════════════════════════════════════════════════════
+def main() -> int:
+    """Main verification routine."""
+    print()
+    print("=" * 60)
+    print("  Environment Verification for Week 3 Laboratory")
+    print("  Network Programming: Broadcast, Multicast, Tunnelling")
+    print("  NETWORKING class - ASE, Informatics")
+    print("  WSL2 + Ubuntu 22.04 + Docker + Portainer")
+    print("=" * 60)
+    print()
+    
+    c = Checker()
+    
+    verify_wsl_environment(c)
+    verify_python_environment(c)
+    verify_docker_environment(c)
+    verify_portainer(c)
+    verify_network_tools(c)
+    verify_project_structure(c)
     
     return c.summary()
 

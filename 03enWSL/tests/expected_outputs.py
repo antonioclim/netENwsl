@@ -8,7 +8,7 @@
 
 DESCRIPTION:
     Executable expected outputs for automated test verification.
-    Each entry defines a command, expected output patterns, and exit codes.
+    Each entry defines a command, expected output patterns and exit codes.
 
 USAGE:
     from tests.expected_outputs import EXPECTED_OUTPUTS

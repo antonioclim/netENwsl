@@ -61,7 +61,7 @@
             "remember": {"type": "integer", "minimum": 0},
             "understand": {"type": "integer", "minimum": 0},
             "apply": {"type": "integer", "minimum": 0},
-            "analyze": {"type": "integer", "minimum": 0},
+            "analyse": {"type": "integer", "minimum": 0},
             "evaluate": {"type": "integer", "minimum": 0},
             "create": {"type": "integer", "minimum": 0}
           },
@@ -100,7 +100,7 @@
           },
           "bloom_level": {
             "type": "string",
-            "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
+            "enum": ["remember", "understand", "apply", "analyse", "evaluate", "create"],
             "description": "Bloom taxonomy level"
           },
           "difficulty": {

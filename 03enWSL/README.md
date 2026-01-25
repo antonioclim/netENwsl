@@ -165,7 +165,7 @@ From Windows Start Menu: Search "Wireshark" → Click to open
 | **Loopback Adapter** | Only for localhost traffic (127.0.0.1) |
 | **Ethernet/Wi-Fi** | Physical network traffic (not Docker) |
 
-### Essential Wireshark Filters for Week 3
+### Key Wireshark Filters for Week 3
 
 | Filter | Purpose |
 |--------|---------|
@@ -191,19 +191,19 @@ From Windows Start Menu: Search "Wireshark" → Click to open
 
 ## Overview
 
-This laboratory introduces the fundamental concepts and practical techniques of network programming using Python sockets. The session focuses on three essential communication approachs that form the backbone of distributed systems: UDP broadcast, UDP multicast and TCP tunnelling.
+This laboratory introduces the core concepts and practical techniques of network programming using Python sockets. The session focuses on three primary communication approachs that form the backbone of distributed systems: UDP broadcast, UDP multicast and TCP tunnelling.
 
 UDP broadcast represents the simplest form of one-to-many communication, where a single transmission reaches all hosts within a Layer 2 broadcast domain. While straightforward to implement, broadcast communication is inherently limited to local network segments and generates traffic that all hosts must process, making it suitable primarily for service discovery and local announcements.
 
 UDP multicast provides a more sophisticated approach to group communication, allowing selective delivery to hosts that have explicitly joined a multicast group. This mechanism reduces network overhead compared to broadcast while enabling efficient one-to-many delivery across routed networks when IGMP (Internet Group Management Protocol) is properly configured.
 
-TCP tunnelling (port forwarding) demonstrates how to create a relay point that bridges connections between network segments. This technique is foundational for understanding proxy servers, NAT traversal and the construction of overlay networks. The tunnel accepts incoming TCP connections and establishes corresponding outbound connections to a target server, forwarding data bidirectionally.
+TCP tunnelling (port forwarding) demonstrates how to create a relay point that bridges connections between network segments. This technique serves as a basis for understanding proxy servers, NAT traversal and the construction of overlay networks. The tunnel accepts incoming TCP connections and establishes corresponding outbound connections to a target server, forwarding data bidirectionally.
 
 ## Learning Objectives
 
 By the end of this laboratory session, you will be able to:
 
-1. **Recall** the fundamental differences between unicast, broadcast and multicast addressing at the IP layer and identify the socket options required for each communication mode
+1. **Recall** the key differences between unicast, broadcast and multicast addressing at the IP layer and identify the socket options required for each communication mode
 2. **Explain** why broadcast is constrained to Layer 2 domains while multicast can traverse routers when IGMP is enabled and describe the role of TTL in multicast propagation
 3. **Implement** functional UDP broadcast and multicast senders and receivers using Python's socket library, correctly configuring SO_BROADCAST and multicast group membership
 4. **Construct** a TCP tunnel that accepts connections on one port and forwards traffic bidirectionally to a target server, using threading for full-duplex communication
@@ -216,7 +216,7 @@ By the end of this laboratory session, you will be able to:
 
 Before beginning this laboratory, you should be familiar with:
 - OSI and TCP/IP reference models (covered in Week 2)
-- Fundamental differences between TCP and UDP transport protocols
+- Key differences between TCP and UDP transport protocols
 - Basic Python programming including functions, classes and exception handling
 - Command-line navigation in Linux environments
 - IP addressing and subnetting concepts
@@ -371,7 +371,7 @@ python3 tests/test_exercises.py --exercise 2
 
 **Duration:** 35 minutes
 
-**Theory:** TCP tunnelling creates a relay point that accepts incoming connections on one port and forwards data to a target server on another port (possibly on a different host). This pattern is fundamental to proxy servers, load balancers and NAT traversal techniques.
+**Theory:** TCP tunnelling creates a relay point that accepts incoming connections on one port and forwards data to a target server on another port (possibly on a different host). This pattern is central to proxy servers, load balancers and NAT traversal techniques.
 
 **Steps:**
 
@@ -413,7 +413,7 @@ python3 tests/test_exercises.py --exercise 3
 
 ### Demo 1: Broadcast vs Multicast Comparison
 
-This demonstration highlights the fundamental difference between broadcast (all hosts receive) and multicast (only group members receive).
+This demonstration highlights the core difference between broadcast (all hosts receive) and multicast (only group members receive).
 
 ```bash
 python3 scripts/run_demo.py --demo broadcast_vs_multicast

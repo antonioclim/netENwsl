@@ -2,7 +2,7 @@
 
 > NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
-A quick reference for essential commands used in Week 3 laboratory exercises.
+A quick reference for key commands used in Week 3 laboratory exercises.
 
 ---
 

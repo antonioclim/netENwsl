@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 400" width="750" height="400">
+  <title>Multicast TTL Scope</title>
+  <desc>Diagram showing how TTL value controls multicast packet propagation distance</desc>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <linearGradient id="ttl1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4CAF50"/>
+      <stop offset="100%" style="stop-color:#81C784"/>
+    </linearGradient>
+    <linearGradient id="ttl32" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2196F3"/>
+      <stop offset="100%" style="stop-color:#64B5F6"/>
+    </linearGradient>
+    <linearGradient id="ttl128" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9C27B0"/>
+      <stop offset="100%" style="stop-color:#BA68C8"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="750" height="400" fill="#fafafa"/>
+  
+  <!-- Title -->
+  <text x="375" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#333">
+    Multicast TTL (Time To Live) Scope
+  </text>
+  
+  <!-- Sender -->
+  <rect x="30" y="170" width="60" height="60" rx="5" fill="#FF9800" stroke="#E65100" stroke-width="2"/>
+  <text x="60" y="205" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">SENDER</text>
+  
+  <!-- Router 1 -->
+  <rect x="180" y="170" width="50" height="60" rx="5" fill="#607D8B" stroke="#455A64" stroke-width="2"/>
+  <text x="205" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">R1</text>
+  <text x="205" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#CFD8DC">hop 1</text>
+  
+  <!-- Router 2 -->
+  <rect x="320" y="170" width="50" height="60" rx="5" fill="#607D8B" stroke="#455A64" stroke-width="2"/>
+  <text x="345" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">R2</text>
+  <text x="345" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#CFD8DC">hop 2</text>
+  
+  <!-- Router 3 -->
+  <rect x="460" y="170" width="50" height="60" rx="5" fill="#607D8B" stroke="#455A64" stroke-width="2"/>
+  <text x="485" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">R3</text>
+  <text x="485" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#CFD8DC">hop 3</text>
+  
+  <!-- Internet Cloud -->
+  <ellipse cx="620" cy="200" rx="80" ry="50" fill="#E3F2FD" stroke="#1976D2" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="620" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#1565C0">Internet</text>
+  <text x="620" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#1976D2">(many hops)</text>
+  
+  <!-- Connection lines -->
+  <line x1="90" y1="200" x2="175" y2="200" stroke="#999" stroke-width="2"/>
+  <line x1="230" y1="200" x2="315" y2="200" stroke="#999" stroke-width="2"/>
+  <line x1="370" y1="200" x2="455" y2="200" stroke="#999" stroke-width="2"/>
+  <line x1="510" y1="200" x2="540" y2="200" stroke="#999" stroke-width="2"/>
+  
+  <!-- TTL=1 Zone (Link-local) -->
+  <rect x="25" y="260" width="170" height="50" rx="8" fill="url(#ttl1)" opacity="0.8"/>
+  <text x="110" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">TTL = 1</text>
+  <text x="110" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Link-local only</text>
+  
+  <!-- TTL=32 Zone (Site-local) -->
+  <rect x="25" y="320" width="380" height="50" rx="8" fill="url(#ttl32)" opacity="0.8"/>
+  <text x="215" y="345" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white" font-weight="bold">TTL = 32</text>
+  <text x="215" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Organisation/site scope (up to 32 hops)</text>
+  
+  <!-- TTL=128+ Zone (Global) -->
+  <rect x="25" y="380" width="700" height="15" rx="5" fill="url(#ttl128)" opacity="0.6"/>
+  <text x="375" y="392" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">TTL = 128+ (Global scope — requires multicast routing infrastructure)</text>
+  
+  <!-- Legend box -->
+  <rect x="520" y="55" width="210" height="100" rx="5" fill="white" stroke="#ddd" stroke-width="1"/>
+  <text x="625" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">TTL Values</text>
+  
+  <rect x="530" y="85" width="15" height="12" fill="#4CAF50"/>
+  <text x="550" y="95" font-family="Arial, sans-serif" font-size="10" fill="#333">1 = Same segment only</text>
+  
+  <rect x="530" y="103" width="15" height="12" fill="#2196F3"/>
+  <text x="550" y="113" font-family="Arial, sans-serif" font-size="10" fill="#333">32 = Site/campus</text>
+  
+  <rect x="530" y="121" width="15" height="12" fill="#9C27B0"/>
+  <text x="550" y="131" font-family="Arial, sans-serif" font-size="10" fill="#333">128+ = Global (rare)</text>
+  
+  <text x="625" y="148" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#666" font-style="italic">Each router decrements TTL by 1</text>
+  
+  <!-- Note -->
+  <text x="375" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    ↑ Packet dropped when TTL reaches 0
+  </text>
+</svg>

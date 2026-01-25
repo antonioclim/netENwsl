@@ -11,22 +11,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.2.0] - 2026-01-25
+
+### Added
+
+#### Quality Improvements
+- Refactored large functions into smaller helpers (15-20 lines each)
+- Added unit tests for LMS export validation (Canvas/Moodle JSON)
+- Added unit tests for quiz YAML schema validation
+- British English consistency throughout all documentation
+
+#### Documentation
+- Authorial voice anchors in troubleshooting and theory sections
+- Improved Parsons problems with 5 exercises and distractors
+- Enhanced LO traceability matrix with artefact mapping
+
+### Changed
+- Bloom level terminology: "Analyze" → "Analyse" (British English)
+- Reduced AI-characteristic vocabulary patterns
+- Improved code readability without uniform comment density
+
+### Fixed
+- Oxford comma removal for British English consistency
+- American spelling corrections (analyze → analyse)
+
+---
+
 ## [3.1.0] - 2026-01-24
 
 ### Added
 
 #### Formative Assessment System
-- `formative/quiz.yaml` — 15 questions covering all 6 Learning Objectives
-  - Bloom levels: Remember (4), Understand (4), Apply (4), Analyze (3)
+- `formative/quiz.yaml` — 17 questions covering all 6 Learning Objectives
+  - Bloom levels: Remember (4), Understand (4), Apply (4), Analyse (3), Evaluate (2)
   - Auto-scoring with 70% passing threshold
   - LO-specific feedback and study recommendations
-- `formative/run_quiz.py` — Interactive CLI quiz runner (450+ lines)
+- `formative/run_quiz.py` — Interactive CLI quiz runner
   - Coloured terminal output with progress tracking
   - Performance analytics by LO and Bloom level
   - JSON export for gradebook integration
 
 #### Project Configuration & Tooling
-- `pyproject.toml` — Complete project metadata
+- `pyproject.toml` — Project metadata with linter and test configuration
   - Ruff linter configuration with educational-friendly rules
   - Pytest configuration with markers (slow, docker, network)
   - Mypy type checking configuration
@@ -68,16 +94,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Initial WSL2 release** for academic year 2025-2026
 - Three main laboratory exercises:
-  1. `ex_3_01_udp_broadcast.py` — UDP broadcast sender/receiver (376 lines)
-  2. `ex_3_02_udp_multicast.py` — UDP multicast with IGMP (376 lines)
-  3. `ex_3_03_tcp_tunnel.py` — TCP tunnel with threading (415 lines)
+  1. `ex_3_01_udp_broadcast.py` — UDP broadcast sender/receiver
+  2. `ex_3_02_udp_multicast.py` — UDP multicast with IGMP
+  3. `ex_3_03_tcp_tunnel.py` — TCP tunnel with threading
   
 - Docker-based lab environment:
   - 4 containers: server, router, client, receiver
   - Custom bridge network: 172.20.0.0/24
   - Health checks and dependency ordering
   
-- Comprehensive pedagogical documentation suite
+- Full pedagogical documentation suite
 - Homework assignments with scaffolds and rubrics
 - Automated testing framework
 

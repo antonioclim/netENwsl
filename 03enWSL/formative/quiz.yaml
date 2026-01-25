@@ -25,7 +25,7 @@ metadata:
     remember: 4      # LO1 - Recall fundamentals
     understand: 4    # LO2 - Explain concepts
     apply: 4         # LO3, LO4 - Implement/Construct
-    analyze: 3       # LO5 - Analyse traffic
+    analyse: 3       # LO5 - Analyse traffic
     evaluate: 2      # LO6 - Evaluate appropriateness
   
   lo_coverage:
@@ -426,7 +426,7 @@ questions:
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q13
     lo_ref: LO5
-    bloom_level: analyze
+    bloom_level: analyse
     difficulty: advanced
     points: 3
     type: multiple_choice
@@ -465,7 +465,7 @@ questions:
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q14
     lo_ref: LO5
-    bloom_level: analyze
+    bloom_level: analyse
     difficulty: advanced
     points: 3
     type: multiple_choice
@@ -496,7 +496,7 @@ questions:
   # ─────────────────────────────────────────────────────────────────────────────
   - id: q15
     lo_ref: LO6
-    bloom_level: analyze
+    bloom_level: analyse
     difficulty: advanced
     points: 3
     type: multiple_choice

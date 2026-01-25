@@ -152,7 +152,7 @@ When `server` sends a multicast message to 239.1.1.1:5008, which containers rece
 
 ### Targeted Misconception
 
-**"Multicast is just broadcast with a different address"** — Students confuse the two. Multicast requires explicit group membership via IGMP; simply binding to a port is not sufficient. This is the fundamental difference that makes multicast more efficient.
+**"Multicast is just broadcast with a different address"** — Students confuse the two. Multicast requires explicit group membership via IGMP; simply binding to a port is not sufficient. This is the key difference that makes multicast more efficient.
 
 ### Instructor Notes
 

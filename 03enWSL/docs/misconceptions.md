@@ -200,7 +200,7 @@ docker exec week3_router ss -tn
 
 **WRONG:** "Tunnels work the same way regardless of protocol."
 
-**CORRECT:** UDP tunnels are fundamentally different because UDP is connectionless. A UDP tunnel:
+**CORRECT:** UDP tunnels are quite different because UDP is connectionless. A UDP tunnel:
 - Does not have "connections" to terminate
 - Cannot guarantee delivery or ordering
 - May have different latency characteristics

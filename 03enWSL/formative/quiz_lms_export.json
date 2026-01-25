@@ -16,7 +16,7 @@
       "remember": 4,
       "understand": 4,
       "apply": 4,
-      "analyze": 3,
+      "analyse": 3,
       "evaluate": 2
     },
     "lo_coverage": ["LO1", "LO2", "LO3", "LO4", "LO5", "LO6"]
@@ -267,7 +267,7 @@
     {
       "id": "q13",
       "lo_ref": "LO5",
-      "bloom_level": "analyze",
+      "bloom_level": "analyse",
       "difficulty": "advanced",
       "points": 3,
       "type": "multiple_choice",
@@ -288,7 +288,7 @@
     {
       "id": "q14",
       "lo_ref": "LO5",
-      "bloom_level": "analyze",
+      "bloom_level": "analyse",
       "difficulty": "advanced",
       "points": 3,
       "type": "multiple_choice",
@@ -309,7 +309,7 @@
     {
       "id": "q15",
       "lo_ref": "LO6",
-      "bloom_level": "analyze",
+      "bloom_level": "analyse",
       "difficulty": "advanced",
       "points": 3,
       "type": "multiple_choice",
