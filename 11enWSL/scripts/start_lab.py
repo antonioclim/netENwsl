@@ -4,7 +4,7 @@
   Week 11 Laboratory Launcher
 ═══════════════════════════════════════════════════════════════════════════════
 
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
 This script starts all Docker containers and verifies the laboratory environment.

@@ -1,6 +1,6 @@
 # Week 11 Homework Assignments
 
-> NETWORKING class - ASE, Informatics | by Revolvix
+> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 ## Overview
 
@@ -229,4 +229,4 @@ Implement the circuit breaker pattern in the load balancer:
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

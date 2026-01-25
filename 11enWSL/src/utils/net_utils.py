@@ -207,7 +207,7 @@ def format_duration(seconds: float) -> str:
         return f"{seconds:.3f} s"
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim
 
 if __name__ == "__main__":
     # Module loaded directly - display module info

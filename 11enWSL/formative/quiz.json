@@ -8,7 +8,7 @@
     "show_correct_answers": true,
     "export_format": "LMS-compatible JSON",
     "lms_compatibility": ["Moodle", "Canvas", "Blackboard"],
-    "version": "2.0.0",
+    "version": "2.1.0",
     "week": 11,
     "lo_coverage": ["LO1", "LO2", "LO3", "LO4", "LO5", "LO7"]
   },
@@ -166,7 +166,7 @@
       "points": 1,
       "answers": [
         {"text": "21", "correct": false},
-        {"text": "22", "correct": true},
+        {"text": "22", "correct": true, "feedback": "SSH uses TCP port 22 by default."},
         {"text": "23", "correct": false},
         {"text": "25", "correct": false}
       ]

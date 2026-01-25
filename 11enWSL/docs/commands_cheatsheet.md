@@ -2,7 +2,7 @@
 
 > NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 > 
-> by Revolvix
+> by ing. dr. Antonio Clim
 
 Quick reference for commands used during the Week 11 laboratory session.
 
@@ -356,4 +356,4 @@ docker inspect --format='{{.State.Health.Status}}' s11_nginx_lb
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

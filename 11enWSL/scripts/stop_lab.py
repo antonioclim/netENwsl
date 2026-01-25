@@ -4,7 +4,7 @@
   Week 11 Laboratory Shutdown
 ═══════════════════════════════════════════════════════════════════════════════
 
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment
 
 This script gracefully stops all laboratory containers while preserving data.

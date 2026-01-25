@@ -4,7 +4,7 @@
   Automated Demonstration Script for Week 11 Laboratory
 ═══════════════════════════════════════════════════════════════════════════════
 
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 This script runs automated demonstrations of load balancing and failover.
 ═══════════════════════════════════════════════════════════════════════════════
 """
@@ -291,7 +291,7 @@ Examples:
     args = parser.parse_args()
     
     print_banner("Week 11 Laboratory Demonstrations")
-    print("NETWORKING class - ASE, Informatics | by Revolvix")
+    print("NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim")
     print("")
     
     docker_dir = PROJECT_ROOT / "docker"
@@ -345,4 +345,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim

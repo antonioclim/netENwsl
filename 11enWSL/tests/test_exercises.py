@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Exercise Verification Tests for Week 11 Laboratory
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Tests to verify exercise implementations are working correctly.
 """
@@ -387,4 +387,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim

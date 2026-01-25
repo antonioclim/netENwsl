@@ -1,1 +1,1 @@
-"""Week 11 Exercises - by Revolvix"""
+"""Week 11 Exercises - by ing. dr. Antonio Clim"""

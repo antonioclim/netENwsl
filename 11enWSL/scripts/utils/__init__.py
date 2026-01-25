@@ -1,6 +1,6 @@
 """
 Utility modules for Week 11 Laboratory scripts.
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 """
 from .logger import setup_logger, print_banner, print_section
 from .docker_utils import DockerManager
@@ -31,4 +31,4 @@ __all__ = [
     'HTTPResponse',
 ]
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim

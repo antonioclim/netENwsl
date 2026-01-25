@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Network testing utilities for Week 11 Laboratory.
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Provides HTTP testing, health checking, and network diagnostics.
 """
@@ -365,7 +365,7 @@ def print_distribution(distribution: Dict[str, int], total: int) -> None:
     print("-" * 40)
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim
 
 if __name__ == "__main__":
     # Module loaded directly - display module info

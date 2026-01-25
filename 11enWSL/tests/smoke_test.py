@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Quick Smoke Test for Week 11 Laboratory
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Fast validation that the laboratory environment is working.
 Should complete in under 60 seconds.
@@ -151,4 +151,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim

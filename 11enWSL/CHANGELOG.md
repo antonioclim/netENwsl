@@ -2,7 +2,7 @@
 
 > NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 > 
-> by Revolvix
+> by ing. dr. Antonio Clim
 
 All notable changes to the Week 11 Laboratory Starter Kit will be documented in this file.
 
@@ -86,4 +86,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

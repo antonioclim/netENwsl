@@ -1,18 +1,16 @@
 # =============================================================================
 # quiz.yaml — Week 11 Formative Quiz
 # =============================================================================
-# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+# NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
 #
 # Run: python formative/run_quiz.py
-# Run with options: python formative/run_quiz.py --random --limit 5
-# Run by level: python formative/run_quiz.py --level basic
 # Export to LMS: python formative/run_quiz.py --export-json
 # =============================================================================
 
 metadata:
   week: 11
   topic: "Application Protocols & Load Balancing"
-  version: "2.0.0"
+  version: "2.1.0"
   estimated_time: "10-15 minutes"
   passing_score: 70
   total_questions: 15
@@ -99,13 +97,11 @@ questions:
     topic: "Nginx"
     stem: |
       Given this Nginx config, what percentage of traffic goes to web1?
-      ```
       upstream backend {
           server web1:80 weight=3;
           server web2:80 weight=2;
           server web3:80 weight=1;
       }
-      ```
     options:
       a: "30%"
       b: "33%"
@@ -131,7 +127,7 @@ questions:
       c: "80"
       d: "443"
     correct: b
-    explanation: "DNS uses port 53 for both UDP (queries) and TCP (zone transfers, large responses)."
+    explanation: "DNS uses port 53 for both UDP (queries) and TCP (zone transfers)."
     misconception_ref: "docs/misconceptions.md#2.2"
     
   - id: q07
@@ -232,7 +228,7 @@ questions:
     topic: "SSH"
     stem: |
       You set up SSH local port forwarding:
-      `ssh -L 8080:internal-web:80 user@jumphost`
+      ssh -L 8080:internal-web:80 user@jumphost
       Which network segment is encrypted?
     options:
       a: "Browser → localhost:8080"

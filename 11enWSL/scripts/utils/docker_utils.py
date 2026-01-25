@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Docker management utilities for Week 11 Laboratory.
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Provides Docker Compose orchestration and health checking functions.
 """
@@ -406,7 +406,7 @@ class DockerManager:
             return f"Error fetching logs: {e}"
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim
 
 if __name__ == "__main__":
     # Module loaded directly - display module info

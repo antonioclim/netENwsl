@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Environment Validation Tests for Week 11 Laboratory
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Tests to verify the laboratory environment is correctly configured.
 """
@@ -198,4 +198,4 @@ if __name__ == "__main__":
     unittest.main(verbosity=2)
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim

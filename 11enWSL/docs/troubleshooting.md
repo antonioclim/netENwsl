@@ -2,7 +2,7 @@
 
 > NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 > 
-> by Revolvix
+> by ing. dr. Antonio Clim
 
 This document addresses common issues encountered during the Week 11 laboratory session on load balancing and application protocols.
 
@@ -498,4 +498,4 @@ For issues not covered in this guide:
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

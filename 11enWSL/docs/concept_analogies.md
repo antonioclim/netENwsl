@@ -171,7 +171,7 @@ upstream backend_pool {
 
 **Postal Sorting by Postcode**
 
-The postal service sorts letters by postcode. Letters with postcode 01XXXX always go to Sorting Centre A, 02XXXX to Centre B, and so on. Your address determines your sorting centre.
+The postal service sorts letters by postcode. Letters with postcode 01XXXX always go to Sorting Centre A, 02XXXX to Centre B and so on. Your address determines your sorting centre.
 
 - Same postcode = same sorting centre (consistent)
 - You cannot choose your sorting centre

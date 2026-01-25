@@ -40,6 +40,8 @@ ALGORITHMS:
   - ip_hash: Hash client IP for sticky sessions
 
 ═══════════════════════════════════════════════════════════════════════════════
+NETWORKING class - ASE, CSIE | by ing. dr. Antonio Clim
+═══════════════════════════════════════════════════════════════════════════════
 """
 from __future__ import annotations
 
@@ -61,14 +63,12 @@ import urllib.parse
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
-# Import network utilities (handles recv_until, connect_tcp, etc.)
 try:
     from src.utils.net_utils import (
-        recv_until, parse_http_content_length, recv_exact, 
+        recv_until, parse_http_content_length, recv_exact,
         connect_tcp, set_timeouts, now_s
     )
 except ImportError:
-    # Fallback for different import paths
     from python.utils.net_utils import (
         recv_until, parse_http_content_length, recv_exact,
         connect_tcp, set_timeouts, now_s
@@ -79,6 +79,7 @@ except ImportError:
 # CONSTANTS
 # ═══════════════════════════════════════════════════════════════════════════════
 BUFFER_SIZE = 4096
+MAX_RESPONSE_SIZE = 5_000_000
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -89,7 +90,7 @@ BUFFER_SIZE = 4096
 class Backend:
     """
     Represents a backend server with health tracking.
-    
+
     Attributes:
         host: Backend hostname or IP address
         port: Backend port number
@@ -119,13 +120,13 @@ class Backend:
 class LoadBalancer:
     """
     Load balancer with multiple distribution algorithms.
-    
+
     Supports:
     - Round-robin (rr): Cycle through backends sequentially
     - Least connections (least_conn): Route to least busy backend
     - IP hash (ip_hash): Consistent hashing for session affinity
     """
-    
+
     def __init__(self,
                  backends: List[Backend],
                  algo: str,
@@ -134,7 +135,7 @@ class LoadBalancer:
                  sock_timeout: float):
         """
         Initialise the load balancer.
-        
+
         Args:
             backends: List of Backend objects
             algo: Algorithm name ('rr', 'least_conn', 'ip_hash')
@@ -147,7 +148,6 @@ class LoadBalancer:
         self.passive_failures = passive_failures
         self.fail_timeout_s = fail_timeout_s
         self.sock_timeout = sock_timeout
-
         self._rr_idx = 0
         self._lock = threading.Lock()
 
@@ -170,7 +170,6 @@ class LoadBalancer:
             alive = [b for b in self.backends if not b.is_down(now_s())]
             if not alive:
                 return None
-            # Tie-break: active count, fail count, then stable ordering
             alive.sort(key=lambda b: (b.active, b.fails, b.host, b.port))
             return alive[0]
 
@@ -181,7 +180,6 @@ class LoadBalancer:
             alive = [b for b in self.backends if not b.is_down(now_s())]
             if not alive:
                 return None
-            # Simple hash function
             h = 0
             for ch in client_ip:
                 h = (h * 131 + ord(ch)) & 0xFFFFFFFF
@@ -189,15 +187,7 @@ class LoadBalancer:
 
     # ─── BACKEND SELECTION ──────────────────────────────────────────────────
     def pick(self, client_ip: str) -> Optional[Backend]:
-        """
-        Select a backend using the configured algorithm.
-        
-        Args:
-            client_ip: Client IP address (used for ip_hash)
-            
-        Returns:
-            Selected Backend or None if all are down
-        """
+        """Select a backend using the configured algorithm."""
         if self.algo == "rr":
             return self._pick_rr(client_ip)
         if self.algo == "least_conn":
@@ -210,7 +200,7 @@ class LoadBalancer:
     def mark_success(self, b: Backend) -> None:
         """Mark backend as healthy after successful request."""
         with self._lock:
-            b.fails = 0  # Reset on success
+            b.fails = 0
 
     def mark_failure(self, b: Backend) -> None:
         """Record backend failure and mark down if threshold reached."""
@@ -235,12 +225,7 @@ class LoadBalancer:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def parse_backends(s: str) -> List[Backend]:
-    """
-    Parse backend string into list of Backend objects.
-    
-    Format: "host:port,host:port,..."
-    Example: "localhost:8081,localhost:8082,localhost:8083"
-    """
+    """Parse backend string into list of Backend objects."""
     out: List[Backend] = []
     for item in s.split(","):
         item = item.strip()
@@ -254,87 +239,103 @@ def parse_backends(s: str) -> List[Backend]:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# REQUEST_HANDLING_HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _read_client_request(client_sock: socket.socket) -> Optional[bytes]:
+    """Read complete HTTP request from client socket."""
+    req_head = recv_until(client_sock)
+    if not req_head:
+        return None
+    content_len = parse_http_content_length(req_head)
+    body = b""
+    if content_len > 0:
+        body = recv_exact(client_sock, content_len)
+    return req_head + body
+
+
+def _send_error_response(client_sock: socket.socket,
+                         status: int, message: str) -> None:
+    """Send HTTP error response to client."""
+    status_messages = {502: "Bad Gateway", 503: "Service Unavailable"}
+    status_text = status_messages.get(status, "Error")
+    response = (
+        f"HTTP/1.1 {status} {status_text}\r\n"
+        f"Connection: close\r\n\r\n"
+        f"{message}\n"
+    ).encode("utf-8")
+    client_sock.sendall(response)
+
+
+def _forward_to_backend(request_data: bytes, backend: Backend,
+                        timeout: float) -> Optional[bytes]:
+    """Forward request to backend and return response."""
+    try:
+        with connect_tcp(backend.host, backend.port, timeout=timeout) as be:
+            be.sendall(request_data)
+            response = b""
+            while True:
+                chunk = be.recv(BUFFER_SIZE)
+                if not chunk:
+                    break
+                response += chunk
+                if len(response) > MAX_RESPONSE_SIZE:
+                    break
+            return response
+    except Exception:
+        return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # FORWARD_REQUEST
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def forward_one_request(client_sock: socket.socket,
                         client_addr: Tuple[str, int],
                         lb: LoadBalancer) -> None:
-    """
-    Read an HTTP request and forward it to a selected backend.
-    
-    This is the core proxy logic:
-    1. Read request from client
-    2. Select backend using configured algorithm
-    3. Forward request to backend
-    4. Return response to client
-    5. Handle failures with retry
-    """
+    """Read an HTTP request and forward it to a selected backend."""
     client_ip = client_addr[0]
     set_timeouts(client_sock, lb.sock_timeout)
 
     # ─── READ_CLIENT_REQUEST ────────────────────────────────────────────────
-    req_head = recv_until(client_sock)
-    if not req_head:
+    request_data = _read_client_request(client_sock)
+    if not request_data:
         return
-
-    # Handle request body if present
-    content_len = parse_http_content_length(req_head)
-    body = b""
-    if content_len > 0:
-        body = recv_exact(client_sock, content_len)
-
-    request_data = req_head + body
 
     # ─── SELECT_BACKEND ─────────────────────────────────────────────────────
-    b = lb.pick(client_ip)
-    if b is None:
-        client_sock.sendall(
-            b"HTTP/1.1 503 Service Unavailable\r\n"
-            b"Connection: close\r\n\r\n"
-            b"No backends available\n"
-        )
+    backend = lb.pick(client_ip)
+    if backend is None:
+        _send_error_response(client_sock, 503, "No backends available")
         return
 
-    # ─── FORWARD_AND_RESPOND ────────────────────────────────────────────────
-    lb.inc_active(b)
+    # ─── FORWARD_WITH_RETRY ─────────────────────────────────────────────────
+    lb.inc_active(backend)
     try:
-        # Try backend; on failure, try once more with another (simplified failover)
-        for attempt in (1, 2):
-            try:
-                with connect_tcp(b.host, b.port, timeout=lb.sock_timeout) as be:
-                    be.sendall(request_data)
-                    response = b""
-                    while True:
-                        chunk = be.recv(BUFFER_SIZE)
-                        if not chunk:
-                            break
-                        response += chunk
-                        if len(response) > 5_000_000:
-                            break
-                    client_sock.sendall(response)
-                    lb.mark_success(b)
-                    return
-            except Exception:
-                lb.mark_failure(b)
-                if attempt == 2:
-                    client_sock.sendall(
-                        b"HTTP/1.1 502 Bad Gateway\r\n"
-                        b"Connection: close\r\n\r\n"
-                        b"Bad Gateway\n"
-                    )
-                    return
-                # Pick another backend for retry
-                b = lb.pick(client_ip)
-                if b is None:
-                    client_sock.sendall(
-                        b"HTTP/1.1 503 Service Unavailable\r\n"
-                        b"Connection: close\r\n\r\n"
-                        b"No backends available\n"
-                    )
-                    return
+        _try_forward_with_retry(client_sock, request_data, backend, lb, client_ip)
     finally:
-        lb.dec_active(b)
+        lb.dec_active(backend)
+
+
+def _try_forward_with_retry(client_sock: socket.socket, request_data: bytes,
+                            backend: Backend, lb: LoadBalancer,
+                            client_ip: str) -> None:
+    """Attempt to forward request with one retry on failure."""
+    for attempt in (1, 2):
+        response = _forward_to_backend(request_data, backend, lb.sock_timeout)
+        if response is not None:
+            client_sock.sendall(response)
+            lb.mark_success(backend)
+            return
+
+        lb.mark_failure(backend)
+        if attempt == 2:
+            _send_error_response(client_sock, 502, "Bad Gateway")
+            return
+
+        backend = lb.pick(client_ip)
+        if backend is None:
+            _send_error_response(client_sock, 503, "No backends available")
+            return
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -351,48 +352,64 @@ def run_proxy(args: argparse.Namespace) -> None:
         fail_timeout_s=args.fail_timeout,
         sock_timeout=args.sock_timeout,
     )
-
     host, port_s = args.listen.split(":")
     port = int(port_s)
 
     # ─── DISPLAY_CONFIGURATION ──────────────────────────────────────────────
-    print(f"[LB] listen {host}:{port} | algo={args.algo} | backends={[(b.host, b.port) for b in backends]}")
-    print(f"[LB] passive_failures={args.passive_failures} fail_timeout={args.fail_timeout}s sock_timeout={args.sock_timeout}s")
+    print(f"[LB] listen {host}:{port} | algo={args.algo} | "
+          f"backends={[(b.host, b.port) for b in backends]}")
+    print(f"[LB] passive_failures={args.passive_failures} "
+          f"fail_timeout={args.fail_timeout}s sock_timeout={args.sock_timeout}s")
 
     # ─── ACCEPT_LOOP ────────────────────────────────────────────────────────
+    _run_accept_loop(host, port, lb)
+
+
+def _run_accept_loop(host: str, port: int, lb: LoadBalancer) -> None:
+    """Run the main accept loop for incoming connections."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen(128)
-
         while True:
             client_sock, client_addr = s.accept()
             t = threading.Thread(
-                target=_handle_client, 
-                args=(client_sock, client_addr, lb), 
+                target=_handle_client,
+                args=(client_sock, client_addr, lb),
                 daemon=True
             )
             t.start()
 
 
-def _handle_client(client_sock: socket.socket, client_addr, lb: LoadBalancer) -> None:
+def _handle_client(client_sock: socket.socket, client_addr,
+                   lb: LoadBalancer) -> None:
     """Handle a single client connection."""
     try:
         forward_one_request(client_sock, client_addr, lb)
     except Exception:
-        try:
-            client_sock.sendall(
-                b"HTTP/1.1 500 Internal Server Error\r\n"
-                b"Connection: close\r\n\r\n"
-                b"Internal Error\n"
-            )
-        except Exception:
-            pass
+        _send_internal_error(client_sock)
     finally:
-        try:
-            client_sock.close()
-        except Exception:
-            pass
+        _close_socket_safely(client_sock)
+
+
+def _send_internal_error(client_sock: socket.socket) -> None:
+    """Send 500 Internal Server Error response."""
+    try:
+        client_sock.sendall(
+            b"HTTP/1.1 500 Internal Server Error\r\n"
+            b"Connection: close\r\n\r\n"
+            b"Internal Error\n"
+        )
+    except Exception:
+        pass
+
+
+def _close_socket_safely(sock: socket.socket) -> None:
+    """Close socket ignoring any errors."""
+    try:
+        sock.close()
+    except Exception:
+        pass
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -400,12 +417,7 @@ def _handle_client(client_sock: socket.socket, client_addr, lb: LoadBalancer) ->
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def http_get_once(url: str, timeout: float = 2.5) -> Tuple[int, float]:
-    """
-    Perform a single HTTP GET request.
-    
-    Returns:
-        Tuple of (status_code, latency_seconds)
-    """
+    """Perform a single HTTP GET request."""
     u = urllib.parse.urlparse(url)
     host = u.hostname or "127.0.0.1"
     port = u.port or (443 if u.scheme == "https" else 80)
@@ -414,6 +426,13 @@ def http_get_once(url: str, timeout: float = 2.5) -> Tuple[int, float]:
         path += "?" + u.query
 
     t0 = time.time()
+    status, _ = _execute_http_get(host, port, path, timeout)
+    return status, (time.time() - t0)
+
+
+def _execute_http_get(host: str, port: int, path: str,
+                      timeout: float) -> Tuple[int, bytes]:
+    """Execute HTTP GET and return status code and body."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(timeout)
         s.connect((host, port))
@@ -425,34 +444,36 @@ def http_get_once(url: str, timeout: float = 2.5) -> Tuple[int, float]:
         ).encode("ascii", errors="replace")
         s.sendall(req)
         head = recv_until(s, max_bytes=65536)
-        # Parse status code
-        status = 0
-        try:
-            line = head.split(b"\r\n", 1)[0].decode("ascii", errors="replace")
-            status = int(line.split()[1])
-        except Exception:
-            status = 0
-        # Consume remaining response
-        while True:
-            chunk = s.recv(4096)
-            if not chunk:
-                break
-    return status, (time.time() - t0)
+        status = _parse_status_code(head)
+        _consume_response_body(s)
+        return status, head
+
+
+def _parse_status_code(head: bytes) -> int:
+    """Parse HTTP status code from response header."""
+    try:
+        line = head.split(b"\r\n", 1)[0].decode("ascii", errors="replace")
+        return int(line.split()[1])
+    except Exception:
+        return 0
+
+
+def _consume_response_body(sock: socket.socket) -> None:
+    """Read and discard remaining response body."""
+    while True:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
 
 
 def run_loadgen(args: argparse.Namespace) -> None:
     """Run the load generator for benchmarking."""
-    url = args.url
-    n = args.n
-    c = args.c
-    timeout = args.timeout
-
+    url, n, c, timeout = args.url, args.n, args.c, args.timeout
     latencies: List[float] = []
     statuses: Dict[int, int] = {}
     lock = threading.Lock()
-
-    start = time.time()
     counter = {"sent": 0}
+    start = time.time()
 
     def worker():
         while True:
@@ -471,7 +492,13 @@ def run_loadgen(args: argparse.Namespace) -> None:
     for t in threads:
         t.join()
 
-    dur = time.time() - start
+    _display_loadgen_results(url, n, c, time.time() - start, latencies, statuses)
+
+
+def _display_loadgen_results(url: str, n: int, c: int, dur: float,
+                             latencies: List[float],
+                             statuses: Dict[int, int]) -> None:
+    """Display load generator results."""
     latencies_sorted = sorted(latencies)
 
     def pct(p: float) -> float:
@@ -481,12 +508,11 @@ def run_loadgen(args: argparse.Namespace) -> None:
         return latencies_sorted[idx]
 
     rps = (n / dur) if dur > 0 else 0.0
-
-    # ─── DISPLAY_RESULTS ────────────────────────────────────────────────────
     print(f"[loadgen] url={url}")
     print(f"[loadgen] n={n} c={c} duration={dur:.3f}s rps={rps:.2f}")
-    print(f"[loadgen] status_counts={dict(sorted(statuses.items(), key=lambda kv: kv[0]))}")
-    print(f"[loadgen] latency_s: p50={pct(50):.4f} p90={pct(90):.4f} p95={pct(95):.4f} p99={pct(99):.4f}")
+    print(f"[loadgen] status_counts={dict(sorted(statuses.items()))}")
+    print(f"[loadgen] latency_s: p50={pct(50):.4f} p90={pct(90):.4f} "
+          f"p95={pct(95):.4f} p99={pct(99):.4f}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -502,23 +528,21 @@ def build_argparser() -> argparse.ArgumentParser:
 Examples:
   # Start load balancer with round-robin
   %(prog)s --backends localhost:8081,localhost:8082,localhost:8083 --algo rr
-  
+
   # Start with IP hash for sticky sessions
   %(prog)s --backends localhost:8081,localhost:8082,localhost:8083 --algo ip_hash
-  
+
   # Run load generator
   %(prog)s loadgen --url http://localhost:8080/ --n 500 --c 20
         """
     )
     sub = p.add_subparsers(dest="cmd")
-
-    # Proxy arguments
     p.add_argument("--listen", type=str, default="0.0.0.0:8080",
                    help="Listen address (default: 0.0.0.0:8080)")
-    p.add_argument("--backends", type=str, 
+    p.add_argument("--backends", type=str,
                    default="localhost:8081,localhost:8082,localhost:8083",
                    help="Comma-separated backend list (host:port)")
-    p.add_argument("--algo", type=str, choices=["rr", "least_conn", "ip_hash"], 
+    p.add_argument("--algo", type=str, choices=["rr", "least_conn", "ip_hash"],
                    default="rr", help="Load balancing algorithm")
     p.add_argument("--passive-failures", type=int, default=1,
                    help="Failures before marking backend down")
@@ -527,16 +551,11 @@ Examples:
     p.add_argument("--sock-timeout", type=float, default=2.5,
                    help="Socket timeout for backend connections")
 
-    # Load generator subcommand
     p_lg = sub.add_parser("loadgen", help="Run load generator")
-    p_lg.add_argument("--url", type=str, required=True,
-                      help="Target URL to test")
-    p_lg.add_argument("--n", type=int, default=200,
-                      help="Number of requests")
-    p_lg.add_argument("--c", type=int, default=10,
-                      help="Concurrency level")
-    p_lg.add_argument("--timeout", type=float, default=2.5,
-                      help="Request timeout")
+    p_lg.add_argument("--url", type=str, required=True, help="Target URL")
+    p_lg.add_argument("--n", type=int, default=200, help="Number of requests")
+    p_lg.add_argument("--c", type=int, default=10, help="Concurrency level")
+    p_lg.add_argument("--timeout", type=float, default=2.5, help="Request timeout")
 
     return p
 
@@ -549,11 +568,9 @@ def main() -> None:
     """Entry point."""
     p = build_argparser()
     args = p.parse_args()
-
     if args.cmd == "loadgen":
         run_loadgen(args)
         return
-
     run_proxy(args)
 
 

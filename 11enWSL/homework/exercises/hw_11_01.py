@@ -4,7 +4,7 @@
   Homework 11.01 – Extended Load Balancer with Active Health Checks
 ═══════════════════════════════════════════════════════════════════════════════
 
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 Week 11: Application Protocols - FTP, DNS, SSH and Load Balancing
 
 LEVEL: Advanced

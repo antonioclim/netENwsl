@@ -1,6 +1,6 @@
 # Expected Outputs for Week 11 Laboratory
 
-> NETWORKING class - ASE, Informatics | by Revolvix
+> NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 This document describes the expected outputs for each exercise to help verify correct operation.
 
@@ -266,4 +266,4 @@ tshark -r pcap/week11_*.pcap -Y http
 
 ---
 
-*NETWORKING class - ASE, Informatics | by Revolvix*
+*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*

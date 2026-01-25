@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Docker Configuration Helper for Week 11 Laboratory
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Assists with Docker Desktop configuration for WSL2.
 """
@@ -209,7 +209,7 @@ def test_docker_compose() -> bool:
 # ═══════════════════════════════════════════════════════════════════════════════
 def main() -> int:
     print_header("Docker Configuration Helper - Week 11")
-    print("NETWORKING class - ASE, Informatics | by Revolvix")
+    print("NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim")
     
     if platform.system() != "Windows":
         print("\nNote: This helper is designed for Windows with WSL2.")
@@ -260,4 +260,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim

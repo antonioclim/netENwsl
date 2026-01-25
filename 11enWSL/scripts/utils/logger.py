@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Logger utility for Week 11 Laboratory scripts.
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Provides consistent, coloured logging across all laboratory scripts.
 """
@@ -120,7 +120,7 @@ def print_section(title: str, width: int = 60) -> None:
     print("-" * width)
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim
 
 if __name__ == "__main__":
     # Module loaded directly - display module info

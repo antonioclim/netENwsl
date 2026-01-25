@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Prerequisites Installation Helper for Week 11 Laboratory
-NETWORKING class - ASE, Informatics | by Revolvix
+NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 Assists with installing required dependencies.
 """
@@ -69,7 +69,7 @@ def install_python_packages() -> bool:
     if not requirements_file.exists():
         print("    Creating requirements.txt...")
         requirements_file.write_text("""# Week 11 Laboratory Dependencies
-# NETWORKING class - ASE, Informatics | by Revolvix
+# NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
 
 # Core dependencies
 requests>=2.28.0
@@ -242,7 +242,7 @@ def create_directory_structure() -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 def main() -> int:
     print_header("Week 11 Laboratory - Prerequisites Installation")
-    print("NETWORKING class - ASE, Informatics | by Revolvix")
+    print("NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim")
     
     print(f"\nOperating System: {platform.system()} {platform.release()}")
     print(f"Python Version: {sys.version}")
@@ -293,4 +293,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# Revolvix&Hypotheticalandrei
+# ing. dr. Antonio Clim
