@@ -2,7 +2,7 @@
 
 ## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
-> This document lists common misunderstandings about NAT, SDN and how to correct them.
+> This document lists common misunderstandings about NAT, SDN and how to correct them. I recommend reviewing this before the lab session — it will save debugging time.
 
 ---
 
@@ -10,9 +10,9 @@
 
 ### 🚫 Misconception 1: "NAT provides security"
 
-**WRONG:** "Our network is secure because we use NAT — attackers can't reach our internal hosts."
+**WRONG:** "Our network is secure because we use NAT — attackers cannot reach our internal hosts."
 
-**CORRECT:** NAT provides *obscurity*, not *security*. While NAT does block unsolicited inbound connections (because there's no conntrack entry to map them), it does not:
+**CORRECT:** NAT provides *obscurity*, not *security*. Whilst NAT does block unsolicited inbound connections (because there is no conntrack entry to map them), it does not:
 - Inspect packet contents for malware
 - Block attacks initiated from inside the network
 - Prevent phishing or social engineering
@@ -29,13 +29,15 @@
 
 **Why this matters:** Organisations relying solely on NAT for security are vulnerable to insider threats, malware that phones home and attacks via legitimate-looking outbound connections.
 
+This confusion comes up every semester. I find it helps to ask: "If an employee clicks a malicious link, does NAT stop the malware from calling home?" The answer is no.
+
 ---
 
 ### 🚫 Misconception 2: "NAT preserves the original source port"
 
 **WRONG:** "If my application uses port 12345, the server will see port 12345."
 
-**CORRECT:** The NAT router selects a source port from its available pool. It *may* reuse your original port if it's available, but there's no guarantee.
+**CORRECT:** The NAT router selects a source port from its available pool. It *may* reuse your original port if available, but there is no guarantee.
 
 **Practical verification:**
 ```bash
@@ -43,11 +45,11 @@
 h1 python3 -c "import socket; s=socket.socket(); s.bind(('',12345)); s.connect(('203.0.113.2',5000))"
 h2 python3 -c "import socket; s=socket.socket(); s.bind(('',12345)); s.connect(('203.0.113.2',5000))"
 
-# On the server, you'll see DIFFERENT source ports for each connection
+# On the server, you will see DIFFERENT source ports for each connection
 # Both h1 and h2 used port 12345 internally, but the NAT assigned different external ports
 ```
 
-**Why this matters:** Applications that assume port preservation (e.g., some P2P protocols) may fail behind NAT.
+**Why this matters:** Applications that assume port preservation (some P2P protocols, certain VoIP implementations) may fail behind NAT. This usually breaks things in subtle ways that are hard to debug.
 
 ---
 
@@ -98,108 +100,99 @@ watch -n 1 'conntrack -L | wc -l'
 - Statistics queries
 
 ```
-Packet flow (first packet):
-  Host → Switch → [table-miss] → Controller → [flow-mod] → Switch → Host
-
-Packet flow (subsequent packets):
-  Host → Switch → [flow match] → Host
-  (Controller not involved!)
+┌─────────────────────────────────────────────────────────────┐
+│                     CONTROL PLANE                            │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │  Controller (OS-Ken)                                  │ │
+│   │  - Computes paths                                     │ │
+│   │  - Installs flow rules                                │ │
+│   │  - Handles table-miss events                          │ │
+│   └───────────────────────────────────────────────────────┘ │
+└────────────────────────┬────────────────────────────────────┘
+                         │ OpenFlow (rules only)
+┌────────────────────────▼────────────────────────────────────┐
+│                      DATA PLANE                              │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│   │  Switch s1  │──│  Switch s2  │──│  Switch s3  │        │
+│   │  (forwards  │  │  (forwards  │  │  (forwards  │        │
+│   │   packets)  │  │   packets)  │  │   packets)  │        │
+│   └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+                    Packets flow here (line rate)
 ```
 
-**Why this matters:** If the controller forwarded every packet, SDN would be extremely slow and the controller would be a bottleneck.
+**Why this matters:** If the controller forwarded every packet, SDN would be very slow and the controller would be a bottleneck. This misconception about SDN controllers comes up every semester. I find it helps to compare with a GPS navigator — it tells you where to go but does not drive the car.
 
 ---
 
-### 🚫 Misconception 6: "Higher priority number = lower importance"
+### 🚫 Misconception 6: "Higher priority number means lower importance"
 
-**WRONG:** "Priority 1 is the most important rule, like Unix nice values."
+**WRONG:** "Priority 1 is the most important rule because it is checked first."
 
-**CORRECT:** In OpenFlow, **higher priority number = higher importance**. A rule with priority=300 takes precedence over priority=30.
+**CORRECT:** In OpenFlow, **higher priority number = higher importance**. Priority 100 beats priority 10.
 
-| Priority | Matches first? |
-|----------|----------------|
-| 300 | ✓ Yes |
-| 100 | Second |
-| 30 | Third |
-| 0 | Last (table-miss) |
+| Priority | Meaning |
+|----------|---------|
+| 65535 | Maximum priority (checked first) |
+| 100 | Higher priority |
+| 10 | Lower priority |
+| 0 | Lowest priority (table-miss) |
 
 **Practical verification:**
 ```bash
-# Add two conflicting rules
-ovs-ofctl -O OpenFlow13 add-flow s1 "priority=10,ip,nw_dst=10.0.6.13,actions=drop"
-ovs-ofctl -O OpenFlow13 add-flow s1 "priority=100,icmp,nw_dst=10.0.6.13,actions=output:3"
+# Install two conflicting rules
+ovs-ofctl -O OpenFlow13 add-flow s1 "priority=10,ip,actions=drop"
+ovs-ofctl -O OpenFlow13 add-flow s1 "priority=100,ip,actions=output:1"
 
-# ICMP to h3 will be FORWARDED (priority 100 > priority 10)
-h1 ping -c 1 10.0.6.13  # Works!
+# Packet will be forwarded (priority 100 wins), not dropped
 ```
 
-**Why this matters:** Misunderstanding priority leads to security policies that don't work as intended.
+**Why this matters:** Getting priorities wrong causes traffic to be dropped or allowed unexpectedly.
 
 ---
 
-### 🚫 Misconception 7: "Flow rules are permanent"
+### 🚫 Misconception 7: "Flow rules persist across controller restarts"
 
-**WRONG:** "Once I install a flow, it stays until I delete it."
+**WRONG:** "I installed the flow rules yesterday, so they should still be there."
 
-**CORRECT:** Flow rules can have timeouts:
-- **idle_timeout:** Delete after N seconds of no matching packets
-- **hard_timeout:** Delete after N seconds regardless of traffic
+**CORRECT:** By default, flow rules are stored in the switch's memory (volatile). When the controller restarts or the connection drops, the rules may be lost unless:
+- Rules have `hard_timeout=0` (no expiry)
+- Rules are proactively reinstalled by the controller on reconnection
+- The switch is configured for persistent storage
 
-```bash
-# This rule will expire after 60 seconds of inactivity
-ovs-ofctl -O OpenFlow13 add-flow s1 "idle_timeout=60,priority=100,icmp,actions=output:1"
-
-# This rule will expire after 300 seconds no matter what
-ovs-ofctl -O OpenFlow13 add-flow s1 "hard_timeout=300,priority=100,tcp,actions=output:2"
-```
-
-**Why this matters:** Security policies should use appropriate timeouts. Stale rules can create vulnerabilities or consume switch memory.
+**Why this matters:** SDN applications need to handle controller restarts gracefully by re-pushing rules.
 
 ---
 
-### 🚫 Misconception 8: "ovs-ofctl dump-flows shows real-time traffic"
+### 🚫 Misconception 8: "OpenFlow is the only SDN protocol"
 
-**WRONG:** "The packet counter updates instantly as traffic flows."
+**WRONG:** "SDN means OpenFlow."
 
-**CORRECT:** Flow statistics are cached and may have a slight delay. The counters show *cumulative* totals, not real-time rates.
+**CORRECT:** OpenFlow is the most common southbound interface, but SDN is an architecture pattern. Other protocols and approaches exist:
+- P4 (programmable data planes)
+- NETCONF/YANG (configuration)
+- gRPC (modern controller APIs)
+- Proprietary APIs (Cisco ACI, VMware NSX)
 
-**Practical verification:**
-```bash
-# Check flows before and after traffic
-ovs-ofctl -O OpenFlow13 dump-flows s1  # Note n_packets value
-h1 ping -c 10 10.0.6.12
-ovs-ofctl -O OpenFlow13 dump-flows s1  # n_packets increased by ~10
-```
-
-**Why this matters:** For real-time traffic analysis, use packet capture tools (tcpdump, Wireshark), not flow statistics.
+**Why this matters:** Understanding SDN as an architecture (separation of control and data planes) rather than a specific protocol helps when evaluating different technologies.
 
 ---
 
-## Quick Reference Table
+## Quick Self-Check
 
-| Misconception | Reality |
-|---------------|---------|
-| NAT = security | NAT = obscurity only |
-| Source port preserved | Port may change |
-| Private IPs visible externally | Only public NAT IP visible |
-| Conntrack entries permanent | Entries timeout |
-| Controller forwards packets | Controller installs rules only |
-| Low priority = important | High priority number = important |
-| Flow rules permanent | Rules can timeout |
-| dump-flows = real-time | Statistics are cached/cumulative |
+Before the lab, verify you understand:
 
----
+- [ ] NAT provides obscurity, not security
+- [ ] Source ports are not guaranteed to be preserved
+- [ ] Private IPs are never visible to external servers
+- [ ] Conntrack entries expire
+- [ ] SDN controller installs rules; switches forward packets
+- [ ] Higher priority number = checked first
+- [ ] Flow rules can expire or be lost
 
-## Self-Check Questions
-
-Before the lab, answer these questions (check your answers against this document):
-
-1. If I configure NAT, do I still need a firewall?
-2. What happens to a NAT connection after 30 minutes of inactivity?
-3. In OpenFlow, which rule matches first: priority=50 or priority=5?
-4. Does every packet in an SDN network go through the controller?
-5. Can a server at Google see my private IP address (192.168.x.x)?
+If any of these feels confusing, review the corresponding section above before starting the exercises.
 
 ---
 
-*NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
+*Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*
+*Issues: Open an issue in GitHub*

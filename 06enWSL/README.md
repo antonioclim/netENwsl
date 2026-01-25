@@ -55,6 +55,8 @@ Before starting, review these frequent misunderstandings in `docs/misconceptions
 - "SDN controller forwards packets" — it only installs rules; switches forward
 - "Higher priority number means lower importance" — opposite is true in OpenFlow
 
+In my experience teaching this module, the NAT-as-security misconception causes the most debugging frustration later. Take a few minutes to read through the misconceptions document before starting.
+
 For technical terms, consult `docs/glossary.md`.
 
 ## Quick Start

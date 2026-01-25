@@ -1,0 +1,84 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    SDN ARCHITECTURE — Week 6
+═══════════════════════════════════════════════════════════════════════════════
+
+    Traditional Networking vs Software-Defined Networking:
+
+    TRADITIONAL                           SDN
+    ═══════════════                       ═══════════════
+
+    ┌─────────────┐                       ┌─────────────────────────────────┐
+    │  Router 1   │                       │         CONTROL PLANE           │
+    │ ┌─────────┐ │                       │  ┌───────────────────────────┐  │
+    │ │ Control │ │                       │  │      SDN CONTROLLER       │  │
+    │ │  Plane  │ │                       │  │       (OS-Ken)            │  │
+    │ ├─────────┤ │                       │  │                           │  │
+    │ │  Data   │ │                       │  │  • Centralised logic      │  │
+    │ │  Plane  │ │                       │  │  • Global network view    │  │
+    │ └─────────┘ │                       │  │  • Policy decisions       │  │
+    └─────────────┘                       │  │  • Flow rule computation  │  │
+           │                              │  └─────────────┬─────────────┘  │
+           │                              └────────────────┼────────────────┘
+    ┌─────────────┐                                        │
+    │  Router 2   │                                        │ OpenFlow 1.3
+    │ ┌─────────┐ │                       ┌────────────────┼────────────────┐
+    │ │ Control │ │                       │         DATA PLANE              │
+    │ │  Plane  │ │                       │                │                │
+    │ ├─────────┤ │                       │  ┌─────────────▼─────────────┐  │
+    │ │  Data   │ │                       │  │     Open vSwitch (s1)     │  │
+    │ │  Plane  │ │                       │  │                           │  │
+    │ └─────────┘ │                       │  │  • Flow table storage     │  │
+    └─────────────┘                       │  │  • Packet matching        │  │
+                                          │  │  • Line-rate forwarding   │  │
+    Each device has its                   │  └───────────────────────────┘  │
+    own control plane!                    └─────────────────────────────────┘
+
+                                          Control and data are SEPARATED!
+
+
+    SDN COMMUNICATION MODEL:
+    ════════════════════════
+
+                    ┌─────────────────────────────────┐
+                    │       SDN CONTROLLER            │
+                    │         (OS-Ken)                │
+                    │                                 │
+                    │  ┌───────────────────────────┐  │
+                    │  │    Application Logic      │  │
+                    │  │  • L2 learning switch     │  │
+                    │  │  • Firewall policies      │  │
+                    │  │  • Load balancing         │  │
+                    │  └───────────────────────────┘  │
+                    └──────────────┬──────────────────┘
+                                   │
+                    ═══════════════╪═══════════════════  Southbound API
+                                   │                     (OpenFlow 1.3)
+                    ┌──────────────┼──────────────────┐
+                    │              │                  │
+              ┌─────▼─────┐  ┌─────▼─────┐  ┌────────▼────────┐
+              │ Switch 1  │  │ Switch 2  │  │    Switch 3     │
+              │   (s1)    │  │   (s2)    │  │      (s3)       │
+              │           │  │           │  │                 │
+              │ ┌───────┐ │  │ ┌───────┐ │  │ ┌─────────────┐ │
+              │ │ Flow  │ │  │ │ Flow  │ │  │ │    Flow     │ │
+              │ │ Table │ │  │ │ Table │ │  │ │    Table    │ │
+              │ └───────┘ │  │ └───────┘ │  │ └─────────────┘ │
+              └───────────┘  └───────────┘  └─────────────────┘
+                    │              │                  │
+              ══════╪══════════════╪══════════════════╪══════
+                    │              │                  │
+               ┌────▼────┐   ┌─────▼────┐      ┌──────▼─────┐
+               │   h1    │   │    h2    │      │     h3     │
+               │10.0.6.11│   │10.0.6.12 │      │ 10.0.6.13  │
+               └─────────┘   └──────────┘      └────────────┘
+
+
+    KEY INSIGHT:
+    ════════════
+    The controller does NOT forward packets!
+    It only INSTALLS RULES. Switches forward at line rate.
+
+    PACKET-IN occurs only when NO matching flow exists (table-miss).
+
+
+═══════════════════════════════════════════════════════════════════════════════

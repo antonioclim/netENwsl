@@ -323,7 +323,7 @@ class ConntrackParser:
 
 def analyse_connections(entries: List[NATEntry]) -> AnalysisResult:
     """
-    Perform comprehensive analysis of NAT entries.
+    Perform full analysis of NAT entries.
     
     Args:
         entries: List of parsed NAT entries

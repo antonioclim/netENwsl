@@ -22,6 +22,8 @@ Each question follows **5 mandatory steps**:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+I recommend writing students' first-vote percentages on the board before discussion — it makes the shift visible after re-voting and students find it motivating.
+
 ---
 
 ## Question 1: NAT vs PAT (LO1, LO2)
@@ -53,10 +55,10 @@ Many students confuse static NAT (one-to-one mapping) with PAT (many-to-one). Th
 
 ### Instructor Notes
 
-- **Target accuracy:** ~50% on first vote
+- **Target accuracy:** ~55% on first vote
 - **Key concept:** Port multiplexing enables address sharing
 - **After discussion:** Show conntrack table with two entries sharing same public IP
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
+- **Historical note:** In previous years, roughly 60% chose option A on first vote. After peer discussion, this typically drops to under 15%.
 
 ---
 
@@ -89,14 +91,14 @@ What source port will the server (8.8.8.8) observe for this connection?
 
 ### Targeted Misconception
 
-Students often assume the source port passes through unchanged. This leads to confusion when debugging NAT issues or understanding why port prediction attacks work.
+Students often assume the source port passes through unchanged. This confusion surfaces frequently when debugging NAT traversal issues or understanding why port prediction attacks work.
 
 ### Instructor Notes
 
-- **Target accuracy:** ~40% on first vote
+- **Target accuracy:** ~35% on first vote
 - **Key concept:** NAT port selection is implementation-dependent
 - **After discussion:** Show two connections from same internal port getting different external ports
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
+- **Tip:** This usually breaks applications that assume port preservation. P2P protocols learned this the hard way.
 
 ---
 
@@ -127,14 +129,14 @@ A packet arrives that matches both rules. Which rule is applied?
 
 ### Targeted Misconception
 
-Students often assume "priority 1" means "first priority" (most important). OpenFlow uses the opposite convention: higher numbers = higher priority.
+Students often assume "priority 1" means "first priority" (most important). OpenFlow uses the opposite convention: higher numbers = higher priority. This trips up nearly everyone the first time.
 
 ### Instructor Notes
 
-- **Target accuracy:** ~35% on first vote
+- **Target accuracy:** ~30% on first vote
 - **Key concept:** OpenFlow priority semantics
 - **After discussion:** Compare with CSS specificity or iptables rule ordering
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
+- **From experience:** If students struggle here, ask them about the priority=0 table-miss rule. Why zero? That usually clicks.
 
 ---
 
@@ -163,14 +165,13 @@ How many packets does the controller process?
 
 ### Targeted Misconception
 
-Students often believe the controller is always in the forwarding path, making SDN seem inherently slower than traditional networking. In reality, the data plane operates independently once flows are installed.
+Students often believe the controller is always in the forwarding path, making SDN seem inherently slower than traditional networking. In reality, the data plane operates independently once flows are installed. I find it helps to compare with a GPS navigator — it tells you where to go but does not drive the car.
 
 ### Instructor Notes
 
-- **Target accuracy:** ~45% on first vote
+- **Target accuracy:** ~50% on first vote
 - **Key concept:** Data plane independence, reactive vs proactive flow installation
 - **After discussion:** Show Wireshark capture with packet-in only for first packet
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
 
 ---
 
@@ -199,14 +200,13 @@ Is NAT an adequate replacement for a firewall?
 
 ### Targeted Misconception
 
-Many believe NAT is a security feature. Whilst it incidentally blocks some attacks, relying on NAT for security is dangerous. It creates a false sense of protection.
+Many believe NAT is a security feature. Whilst it incidentally blocks some attacks, relying on NAT for security is dangerous. In my experience teaching this module, the NAT-as-security misconception causes the most debugging frustration when students later encounter real network security issues.
 
 ### Instructor Notes
 
-- **Target accuracy:** ~55% on first vote
+- **Target accuracy:** ~60% on first vote
 - **Key concept:** Obscurity ≠ security; defence in depth required
 - **After discussion:** List what NAT blocks vs. what a firewall blocks
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
 
 ---
 
@@ -239,10 +239,10 @@ Students frequently confuse PREROUTING (used for DNAT/port forwarding of inbound
 
 ### Instructor Notes
 
-- **Target accuracy:** ~35% on first vote
+- **Target accuracy:** ~40% on first vote
 - **Key concept:** Chain selection based on packet flow position
 - **After discussion:** Draw the netfilter packet flow diagram showing where each chain applies
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
+- **Common error:** Using -i (input interface) instead of -o (output interface) for POSTROUTING. I see this in about a third of first attempts.
 
 ---
 
@@ -275,10 +275,9 @@ Students often believe the controller is always in the forwarding path, making S
 
 ### Instructor Notes
 
-- **Target accuracy:** ~45% on first vote
+- **Target accuracy:** ~48% on first vote
 - **Key concept:** Reactive vs proactive flow installation; data plane independence
 - **After discussion:** Show packet-in/flow-mod sequence in Wireshark, demonstrate that subsequent packets do not generate packet-in
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
 
 ---
 
@@ -306,7 +305,7 @@ What priority ordering correctly implements this policy?
 
 ### Correct Answer
 
-**A** — The most specific permit rule (SSH to .12) needs the highest priority (100) so it is checked first. The block rule (50) catches everything else destined for .12. The default allow (10) handles all remaining traffic. Remember: in OpenFlow, higher priority number = higher importance.
+**A** — The most specific permit rule (SSH to .12) needs the highest priority (100) so it is checked first. The block rule (50) catches everything else destined for .12. The default allow (10) handles all remaining traffic. Higher priority number = higher importance.
 
 ### Targeted Misconception
 
@@ -314,10 +313,10 @@ Students often place the block rule at highest priority, forgetting that specifi
 
 ### Instructor Notes
 
-- **Target accuracy:** ~30% on first vote
+- **Target accuracy:** ~25% on first vote
 - **Key concept:** Priority layering for security policies
 - **After discussion:** Walk through packet matching for SSH packet, HTTP packet, and packet to different host
-- **Timing:** Present (1 min) → Vote (1 min) → Discuss (3 min) → Revote (30 sec) → Explain (2 min)
+- **Teaching tip:** Draw three packets on the board and trace them through the rules. The visual really helps here.
 
 ---
 
@@ -325,14 +324,14 @@ Students often place the block rule at highest priority, forgetting that specifi
 
 | Question | Topic | LO | Target Accuracy | Key Misconception |
 |----------|-------|-----|-----------------|-------------------|
-| Q1 | NAT vs PAT | LO1, LO2 | ~50% | NAT requires multiple public IPs |
-| Q2 | Port preservation | LO2 | ~40% | Source port always preserved |
-| Q3 | SDN priority | LO5 | ~35% | Lower number = higher priority |
-| Q4 | Controller role | LO4, LO6 | ~45% | Controller forwards packets |
-| Q5 | NAT security | LO1 | ~55% | NAT = firewall |
-| Q6 | NAT implementation | LO3 | ~35% | PREROUTING vs POSTROUTING confusion |
-| Q7 | Flow installation | LO4 | ~45% | Controller always involved |
-| Q8 | Policy design | LO7 | ~30% | Block at highest priority |
+| Q1 | NAT vs PAT | LO1, LO2 | ~55% | NAT requires multiple public IPs |
+| Q2 | Port preservation | LO2 | ~35% | Source port always preserved |
+| Q3 | SDN priority | LO5 | ~30% | Lower number = higher priority |
+| Q4 | Controller role | LO4, LO6 | ~50% | Controller forwards packets |
+| Q5 | NAT security | LO1 | ~60% | NAT = firewall |
+| Q6 | NAT implementation | LO3 | ~40% | PREROUTING vs POSTROUTING confusion |
+| Q7 | Flow installation | LO4 | ~48% | Controller always involved |
+| Q8 | Policy design | LO7 | ~25% | Block at highest priority |
 
 ---
 
@@ -358,7 +357,9 @@ Students often place the block rule at highest priority, forgetting that specifi
 - Explain correct answer with emphasis on common mistakes
 - Connect to upcoming lab exercises
 
+If this feels like too much structure at first, focus on just Q1, Q4 and Q5 — they generate the best discussions.
+
 ---
 
 *Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*
-*Contact: Issues: Open an issue in GitHub*
+*Issues: Open an issue in GitHub*

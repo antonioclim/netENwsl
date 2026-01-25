@@ -6,6 +6,8 @@
 
 ## Network Address Translation (NAT)
 
+If this section feels dense, focus first on MASQUERADE — that is what you will use 90% of the time in practice.
+
 ### The IPv4 Exhaustion Problem
 
 The Internet's explosive growth in the 1990s revealed a fundamental limitation: the 32-bit IPv4 address space (approximately 4.3 billion addresses) could not accommodate the projected number of devices. While IPv6 was developed as the long-term solution, NAT emerged as a practical interim measure that remains ubiquitous today.

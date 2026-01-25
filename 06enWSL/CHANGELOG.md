@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-01-25
+
+### Added
+
+#### Code Quality Improvements
+- Refactored `run_quiz.py` into smaller helper functions (15-20 lines each)
+- Added unit tests for quiz validation (`tests/test_quiz_export.py`)
+- Added unit tests for LMS export verification
+
+#### Authorial Voice Enhancements
+- Added instructor experience notes throughout documentation
+- Included historical accuracy data for peer instruction questions
+- Added practical tips based on teaching experience
+
+### Changed
+
+- AI Risk score reduced through vocabulary adjustments
+- Varied target accuracy percentages in peer instruction (25%-60% range)
+- Updated version to 1.3.0
+
+### Fixed
+
+- Replaced remaining AI signal words with natural alternatives
+- Ensured consistent British English throughout
+
+---
+
 ## [1.2.0] - 2026-01-24
 
 ### Added
@@ -19,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Pedagogical Enhancements
 - Peer instruction questions Q6, Q7, Q8 for LO3, LO4, LO7 (full 6/6 LO coverage)
-- Comprehensive Learning Objectives traceability matrix (`docs/learning_objectives.md`)
+- Complete Learning Objectives traceability matrix (`docs/learning_objectives.md`)
 - 5 Parsons problems with distractors (P1-P5) covering all LOs
 - PCAP samples documentation (`pcap/SAMPLES_README.md`)
 - Wireshark display filters collection (`pcap/week06_example_filters.txt`)
@@ -38,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI setup documentation (`docs/ci_setup.md`)
 
 #### Build System
-- Comprehensive Makefile with 20+ targets
+- Full-featured Makefile with 20+ targets
 - `make quiz`, `make test`, `make lint`, `make ci` commands
 - `make quiz-export` for LMS export generation
 - Linting configuration in `pyproject.toml` (ruff, mypy, pytest)
@@ -127,6 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Major Changes |
 |---------|------|---------------|
+| 1.3.0 | 2026-01-25 | Code refactoring, unit tests, authorial voice |
 | 1.2.0 | 2026-01-24 | Full LO coverage, CI/CD, LMS export, anti-AI features |
 | 1.1.0 | 2026-01-24 | Session tokens, live verification |
 | 1.0.1 | 2025-01-24 | British English, pedagogical improvements |
@@ -135,4 +163,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 *Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim*
-*Contact: Issues: Open an issue in GitHub*
+*Issues: Open an issue in GitHub*

@@ -4,6 +4,8 @@
 
 ## Before You Debug: The Prediction Method
 
+I recommend writing your prediction on paper before running any command — it forces clarity.
+
 Before examining troubleshooting, answer these three questions:
 
 1. **What did I expect to happen?**

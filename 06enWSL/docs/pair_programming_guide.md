@@ -2,6 +2,8 @@
 
 ## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
+In my experience, pairs that swap roles every 15 minutes produce better results than those who forget to swap. Set a timer.
+
 ---
 
 ## Roles
