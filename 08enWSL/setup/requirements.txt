@@ -5,25 +5,31 @@
 #
 # Install with: pip install -r setup/requirements.txt --break-system-packages
 #
+# For WSL2 Ubuntu environment with Python 3.11+
+# Last updated: 2026-01-25
+#
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Core dependencies
-docker>=6.0.0
-requests>=2.28.0
-pyyaml>=6.0
-httpx>=0.24.0
+# Core dependencies (required)
+docker>=6.0.0              # Docker SDK for Python
+requests>=2.28.0           # HTTP client library
+pyyaml>=6.0                # YAML parser for quiz files
+httpx>=0.24.0              # Async HTTP client
 
-# Testing
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
+# Testing framework
+pytest>=7.0.0              # Test runner
+pytest-asyncio>=0.21.0     # Async test support
 
 # CLI output formatting
-rich>=13.0.0
+rich>=13.0.0               # Rich terminal output
 
-# Development (optional but recommended)
-ruff>=0.3.0
-mypy>=1.0.0
+# Linting and type checking (CI/development)
+ruff>=0.3.0                # Fast Python linter
+mypy>=1.0.0                # Static type checker
 
-# Type stubs (optional)
-types-requests>=2.28.0
-types-PyYAML>=6.0.0
+# Type stubs for better IDE support
+types-requests>=2.28.0     # Request type stubs
+types-PyYAML>=6.0.0        # PyYAML type stubs
+
+# Optional utilities
+scapy>=2.5.0               # Packet manipulation (for advanced exercises)

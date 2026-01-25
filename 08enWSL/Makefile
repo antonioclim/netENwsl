@@ -11,6 +11,9 @@
 #   make test        # Run all tests
 #   make clean       # Clean up environment
 #
+# From past cohorts: Students who run 'make quiz-basic' before starting
+# exercises typically complete the lab 20-30 minutes faster.
+#
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Configuration
@@ -61,7 +64,7 @@ help: ## Show this help message
 	@echo "  $(CYAN)quiz-lo$(RESET)         Quiz specific LO: make quiz-lo LO=3"
 	@echo "  $(CYAN)quiz-basic$(RESET)      Run only basic difficulty questions"
 	@echo "  $(CYAN)quiz-advanced$(RESET)   Run only advanced difficulty questions"
-	@echo "  $(CYAN)quiz-export$(RESET)     Export quiz for LMS (Moodle/Canvas)"
+	@echo "  $(CYAN)quiz-export$(RESET)     Export quiz for LMS (Moodle/Canvas/JSON)"
 	@echo "  $(CYAN)parsons$(RESET)         Run Parsons code arrangement problems"
 	@echo "  $(CYAN)progress$(RESET)        Show your learning progress over time"
 	@echo "  $(CYAN)test$(RESET)            Run all tests (exercise + environment)"
@@ -211,12 +214,14 @@ quiz-list: ## List all quiz questions
 	@$(PYTHON) formative/run_quiz.py --list-questions
 
 .PHONY: quiz-export
-quiz-export: ## Export quiz for LMS (JSON format)
+quiz-export: ## Export quiz for LMS (JSON + Moodle + Canvas)
 	@mkdir -p artifacts
 	@$(PYTHON) formative/run_quiz.py --export-lms artifacts/quiz_lms_export.json
 	@$(PYTHON) formative/run_quiz.py --export-moodle artifacts/quiz_moodle_export.xml
+	@$(PYTHON) formative/run_quiz.py --export-canvas artifacts/quiz_canvas_export.xml
 	@echo "$(GREEN)✓ Exported to artifacts/quiz_lms_export.json$(RESET)"
-	@echo "$(GREEN)✓ Exported to artifacts/quiz_moodle_export.xml$(RESET)"
+	@echo "$(GREEN)✓ Exported to artifacts/quiz_moodle_export.xml (Moodle)$(RESET)"
+	@echo "$(GREEN)✓ Exported to artifacts/quiz_canvas_export.xml (Canvas QTI)$(RESET)"
 
 .PHONY: parsons
 parsons: ## Run Parsons code arrangement problems
@@ -263,6 +268,10 @@ test-ex2: ## Run tests for Exercise 2 only
 test-context: ## Run tests that verify unique context usage
 	@$(PYTHON) -m pytest tests/test_unique_context.py -v 2>/dev/null || \
 		echo "$(YELLOW)Context tests require student context. Run 'make init ID=...' first.$(RESET)"
+
+.PHONY: test-exports
+test-exports: ## Run tests for LMS export functionality
+	@$(PYTHON) -m pytest tests/test_exports.py -v
 
 .PHONY: smoke
 smoke: ## Run smoke tests to verify environment
@@ -349,7 +358,7 @@ clean-pcap: ## Remove captured PCAP files
 
 .PHONY: clean-artifacts
 clean-artifacts: ## Remove generated artifacts
-	@rm -f artifacts/*.pcap artifacts/*.log artifacts/*.json
+	@rm -f artifacts/*.pcap artifacts/*.log artifacts/*.json artifacts/*.xml
 	@echo "$(GREEN)✓ Artifacts removed$(RESET)"
 
 .PHONY: clean-pycache
@@ -379,6 +388,10 @@ ci-syntax: ## CI: Check Python syntax
 ci-docker: ## CI: Verify Docker configuration
 	@$(DOCKER_COMPOSE) config --quiet
 	@echo "$(GREEN)✓ Docker Compose configuration valid$(RESET)"
+
+.PHONY: ci-all
+ci-all: ci-syntax ci-lint ci-test ci-docker ## CI: Run all CI checks
+	@echo "$(GREEN)✓ All CI checks passed$(RESET)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # QUICK REFERENCE

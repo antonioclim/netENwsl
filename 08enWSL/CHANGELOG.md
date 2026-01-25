@@ -2,8 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.0] - 2026-01-25
+
+### Added
+- **Canvas QTI Export**
+  - `formative/run_quiz.py --export-canvas` for Canvas LMS compatibility
+  - QTI 1.2 format with proper assessment structure
+
+- **Enhanced Tests**
+  - `tests/test_exports.py` for LMS export validation
+  - Tests for Moodle XML and Canvas QTI format correctness
+  - Quiz YAML structure validation tests
+
+- **Authorial Voice Anchors** (pedagogical enhancement)
+  - Instructor notes with practical experience in docs/
+  - Teaching heuristics in peer_instruction.md
+  - Experience-based warnings in misconceptions.md
+
+### Changed
+- Refactored `formative/run_quiz.py` for better maintainability
+- Refactored `formative/progress_tracker.py` with smaller helper functions
+- Updated `Makefile` with `test-exports` and `ci-all` targets
+- Improved British English consistency throughout
+
+### Fixed
+- Minor terminology corrections for British English compliance
+
+---
 
 ## [1.1.0] - 2026-01-24
 

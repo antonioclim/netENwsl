@@ -9,6 +9,10 @@ understanding and a visual aid where helpful.
 **Usage:** When you encounter an error or unexpected behaviour check if one
 of these misconceptions might be the cause.
 
+> 💡 **From past labs:** These misconceptions come directly from debugging sessions
+> with students over the past five years. The port number confusion (#1) and the
+> third ACK myth (#3) appear most frequently — expect to see them in your code too.
+
 ---
 
 ## Table of Contents

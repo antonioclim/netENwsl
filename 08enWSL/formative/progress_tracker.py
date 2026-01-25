@@ -16,6 +16,9 @@ Usage:
 Data stored in: artifacts/quiz_progress.json
 
 Course: Computer Networks — ASE, CSIE
+
+Implements Brown & Wilson Principle 9 (novice support) through
+adaptive recommendations based on demonstrated understanding.
 """
 
 import argparse
@@ -29,6 +32,10 @@ from typing import Any, Optional
 
 PROGRESS_FILE = Path(__file__).parent.parent / "artifacts" / "quiz_progress.json"
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DATA_PERSISTENCE
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def load_progress() -> dict[str, Any]:
     """Load existing progress or create new tracking file."""
@@ -53,22 +60,13 @@ def save_progress(progress: dict[str, Any]) -> None:
         json.dump(progress, f, indent=2, ensure_ascii=False)
 
 
-def record_attempt(results: dict[str, Any]) -> None:
-    """
-    Record a quiz attempt.
-    
-    Args:
-        results: Dictionary containing:
-            - score: Number of correct answers
-            - total: Total questions
-            - percentage: Score as percentage
-            - lo_scores: Dict mapping LO -> percentage
-            - wrong_questions: List of question IDs answered incorrectly
-            - questions_answered: List of all question IDs attempted
-    """
-    progress = load_progress()
-    
-    attempt = {
+# ═══════════════════════════════════════════════════════════════════════════════
+# ATTEMPT_RECORDING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _build_attempt_record(results: dict[str, Any]) -> dict[str, Any]:
+    """Build an attempt record from quiz results."""
+    return {
         "timestamp": datetime.now().isoformat(),
         "score": results.get("score", 0),
         "total": results.get("total", 0),
@@ -77,10 +75,10 @@ def record_attempt(results: dict[str, Any]) -> None:
         "wrong_questions": results.get("wrong_questions", []),
         "time_spent_seconds": results.get("time_spent_seconds"),
     }
-    
-    progress["attempts"].append(attempt)
-    
-    # Update LO history for trend analysis
+
+
+def _update_lo_history(progress: dict, attempt: dict, results: dict) -> None:
+    """Update LO history for trend analysis."""
     for lo, score in results.get("lo_scores", {}).items():
         if lo not in progress["lo_history"]:
             progress["lo_history"][lo] = []
@@ -88,17 +86,39 @@ def record_attempt(results: dict[str, Any]) -> None:
             "timestamp": attempt["timestamp"],
             "score": score
         })
-    
-    # Update question history (for identifying persistently difficult questions)
+
+
+def _update_question_history(progress: dict, results: dict) -> None:
+    """Update question history for difficulty tracking."""
     for qid in results.get("questions_answered", []):
         if qid not in progress["question_history"]:
             progress["question_history"][qid] = {"attempts": 0, "correct": 0}
         progress["question_history"][qid]["attempts"] += 1
         if qid not in results.get("wrong_questions", []):
             progress["question_history"][qid]["correct"] += 1
+
+
+def record_attempt(results: dict[str, Any]) -> None:
+    """
+    Record a quiz attempt.
+    
+    Args:
+        results: Dictionary containing score, total, percentage,
+                 lo_scores, wrong_questions, questions_answered
+    """
+    progress = load_progress()
+    attempt = _build_attempt_record(results)
+    
+    progress["attempts"].append(attempt)
+    _update_lo_history(progress, attempt, results)
+    _update_question_history(progress, results)
     
     save_progress(progress)
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANALYSIS_FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def get_weak_spots(min_attempts: int = 2, threshold: float = 70.0) -> list[str]:
     """
@@ -116,7 +136,6 @@ def get_weak_spots(min_attempts: int = 2, threshold: float = 70.0) -> list[str]:
     
     for lo, history in progress.get("lo_history", {}).items():
         if len(history) >= min_attempts:
-            # Use last 3 attempts for trend
             recent = history[-3:]
             avg = sum(h["score"] for h in recent) / len(recent)
             if avg < threshold:
@@ -156,10 +175,7 @@ def calculate_improvement() -> Optional[float]:
     if len(attempts) < 2:
         return None
     
-    first = attempts[0]["percentage"]
-    last = attempts[-1]["percentage"]
-    
-    return last - first
+    return attempts[-1]["percentage"] - attempts[0]["percentage"]
 
 
 def get_streak() -> int:
@@ -180,8 +196,6 @@ def get_streak() -> int:
 def get_recommended_review() -> list[str]:
     """Get recommended LOs to review based on weak spots and recency."""
     weak = get_weak_spots()
-    
-    # Also recommend LOs not attempted recently
     progress = load_progress()
     lo_history = progress.get("lo_history", {})
     
@@ -192,11 +206,12 @@ def get_recommended_review() -> list[str]:
     return sorted(set(recommendations))
 
 
-def show_progress_report() -> None:
-    """Display comprehensive progress summary."""
-    progress = load_progress()
-    attempts = progress.get("attempts", [])
-    
+# ═══════════════════════════════════════════════════════════════════════════════
+# REPORT_DISPLAY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _print_report_header(attempts: list) -> None:
+    """Print the report header with overview stats."""
     print("\n" + "═" * 70)
     print("📊 QUIZ PROGRESS REPORT — Week 8")
     print("═" * 70)
@@ -207,70 +222,70 @@ def show_progress_report() -> None:
         print("═" * 70 + "\n")
         return
     
-    # Basic stats
     print(f"\n📈 Overview")
     print(f"   Total attempts: {len(attempts)}")
     print(f"   First attempt:  {attempts[0]['timestamp'][:10]}")
     print(f"   Last attempt:   {attempts[-1]['timestamp'][:10]}")
-    
-    # Score trend
+
+
+def _print_score_trend(attempts: list) -> None:
+    """Print score trend visualisation."""
     scores = [a["percentage"] for a in attempts]
-    print(f"\n📉 Score Trend")
     
-    # Visual trend (last 5 attempts)
+    print(f"\n📉 Score Trend")
     recent_scores = scores[-5:]
     trend_visual = " → ".join(f"{s:.0f}%" for s in recent_scores)
     print(f"   Recent: {trend_visual}")
     
-    # Improvement
     improvement = calculate_improvement()
     if improvement is not None:
         direction = "📈" if improvement > 0 else "📉" if improvement < 0 else "➡️"
         print(f"   Change: {direction} {improvement:+.1f}% (first to last)")
     
-    # Streak
     streak = get_streak()
     if streak > 0:
         print(f"   🔥 Current passing streak: {streak} attempts")
-    
-    # LO breakdown
+
+
+def _print_lo_breakdown(lo_history: dict) -> None:
+    """Print LO breakdown with visual bars."""
     print(f"\n🎯 Learning Objective Breakdown")
-    lo_history = progress.get("lo_history", {})
     
     for lo in sorted(lo_history.keys()):
         history = lo_history[lo]
         if history:
             latest = history[-1]["score"]
-            # Simple bar visualisation
             filled = int(latest / 10)
             bar = "█" * filled + "░" * (10 - filled)
             status = "✅" if latest >= 70 else "⚠️" if latest >= 50 else "❌"
             print(f"   {lo}: {bar} {latest:.0f}% {status}")
-    
-    # Weak spots
+
+
+def _print_weak_spots_and_difficult(progress: dict) -> None:
+    """Print weak spots and frequently missed questions."""
     weak = get_weak_spots()
     if weak:
         print(f"\n⚠️  Persistent Weak Spots")
         for lo in weak:
             print(f"   • {lo} — Review: docs/learning_objectives.md#{lo.lower()}")
     
-    # Difficult questions
     difficult = get_difficult_questions()
     if difficult:
         print(f"\n🔴 Frequently Missed Questions")
-        for qid in difficult[:5]:  # Top 5
+        for qid in difficult[:5]:
             stats = progress["question_history"][qid]
             rate = stats["correct"] / stats["attempts"] * 100
             print(f"   • {qid}: {rate:.0f}% correct ({stats['attempts']} attempts)")
-    
-    # Recommendations
+
+
+def _print_recommendations(scores: list) -> None:
+    """Print next steps recommendations."""
     recommendations = get_recommended_review()
     if recommendations:
         print(f"\n📚 Recommended Review")
         for lo in recommendations[:3]:
             print(f"   • {lo}: make quiz-lo LO={lo[-1]}")
     
-    # Next steps
     print(f"\n📌 Next Steps")
     latest_score = scores[-1] if scores else 0
     
@@ -279,6 +294,7 @@ def show_progress_report() -> None:
         print("   Consider: make quiz-advanced")
     elif latest_score >= 70:
         print("   👍 Good progress! Focus on weak LOs before homework.")
+        weak = get_weak_spots()
         if weak:
             print(f"   Try: make quiz-lo LO={weak[0][-1]}")
     else:
@@ -287,6 +303,26 @@ def show_progress_report() -> None:
     
     print("\n" + "═" * 70 + "\n")
 
+
+def show_progress_report() -> None:
+    """Display full progress summary."""
+    progress = load_progress()
+    attempts = progress.get("attempts", [])
+    
+    _print_report_header(attempts)
+    
+    if not attempts:
+        return
+    
+    _print_score_trend(attempts)
+    _print_lo_breakdown(progress.get("lo_history", {}))
+    _print_weak_spots_and_difficult(progress)
+    _print_recommendations([a["percentage"] for a in attempts])
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXPORT_FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def export_to_csv(output_path: Path) -> None:
     """Export progress to CSV for external analysis."""
@@ -297,18 +333,16 @@ def export_to_csv(output_path: Path) -> None:
         print("No data to export.")
         return
     
+    all_los = sorted(set(
+        lo for a in attempts 
+        for lo in a.get("lo_scores", {}).keys()
+    ))
+    
     with open(output_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        
-        # Header
-        all_los = sorted(set(
-            lo for a in attempts 
-            for lo in a.get("lo_scores", {}).keys()
-        ))
         header = ["timestamp", "score", "total", "percentage"] + all_los
         writer.writerow(header)
         
-        # Data rows
         for attempt in attempts:
             row = [
                 attempt["timestamp"],
@@ -332,31 +366,30 @@ def reset_progress() -> None:
         print("No progress data to clear.")
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# MAIN_ENTRY
+# ═══════════════════════════════════════════════════════════════════════════════
+
 def main() -> int:
-    """Main entry point."""
+    """Main entry point for progress tracker."""
     parser = argparse.ArgumentParser(
         description="Track and analyse quiz progress"
     )
     
     parser.add_argument(
-        "--reset",
-        action="store_true",
+        "--reset", action="store_true",
         help="Clear all progress data"
     )
     parser.add_argument(
-        "--export",
-        type=Path,
-        metavar="FILE",
+        "--export", type=Path, metavar="FILE",
         help="Export progress to CSV file"
     )
     parser.add_argument(
-        "--weak",
-        action="store_true",
+        "--weak", action="store_true",
         help="Show only weak spots"
     )
     parser.add_argument(
-        "--json",
-        action="store_true",
+        "--json", action="store_true",
         help="Output raw JSON data"
     )
     

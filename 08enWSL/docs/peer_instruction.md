@@ -1,6 +1,11 @@
 # 🗳️ Peer Instruction Questions — Week 8
 ## Computer Networks — ASE, CSIE | by ing. dr. Antonio Clim
 
+> 💡 **Teaching heuristic:** If vote distribution is >80% correct on first vote,
+> the question is too easy — skip the discussion phase. If <20% correct, provide
+> a hint before the peer discussion. The sweet spot is 40-60% where discussion
+> produces the most learning.
+
 ---
 
 ## Peer Instruction Protocol (5 steps)
