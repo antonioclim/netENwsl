@@ -195,6 +195,23 @@ From Windows Start Menu: Search "Wireshark" → Click to open
 | `http contains "jsonrpc"` | JSON-RPC content |
 | `http contains "methodCall"` | XML-RPC content |
 
+---
+
+## Anti-AI evidence workflow (homework)
+
+Week 12 homework requires a small evidence pack based on real packet capture.
+You will be issued a short-lived challenge containing unique tokens. Your capture
+must contain the SMTP token and the RPC token.
+
+The kit provides helper scripts:
+
+- `make anti-ai-challenge STUDENT_ID=...`
+- `python scripts/anti_ai_run_week12_probes.py --challenge artifacts/anti_ai/challenge_<id>.yaml`
+- `python scripts/anti_ai_generate_evidence.py --student-id <id> --pcap pcap/week12_<id>.pcap`
+- `python scripts/anti_ai_validate.py --challenge ... --evidence ...`
+
+For the exact submission requirements, see `homework/README.md`.
+
 ### Analysing Protocol Traffic
 
 1. **SMTP Analysis**: Filter `tcp.port == 1025`, follow TCP stream

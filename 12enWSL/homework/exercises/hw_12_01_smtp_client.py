@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
-SMTP_PORT = 2525
+SMTP_PORT = 1025
 CRLF = "\r\n"
 TIMEOUT = 10
 

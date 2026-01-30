@@ -10,19 +10,14 @@ Computer Networks - ASE Bucharest | by ing. dr. Antonio Clim
 Utility modules for Docker management, network testing and logging.
 """
 
+from __future__ import annotations
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # IMPORTS
 # ═══════════════════════════════════════════════════════════════════════════════
-from .logger import setup_logger, setup_colour_logger
 from .docker_utils import DockerManager
-from .network_utils import (
-from typing import Optional, List, Dict, Tuple, Any
-    SMTPTester,
-    JSONRPCTester,
-    XMLRPCTester,
-    check_port,
-    wait_for_port,
-)
+from .logger import setup_colour_logger, setup_logger
+from .network_utils import JSONRPCTester, SMTPTester, XMLRPCTester, check_port, wait_for_port
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODULE_EXPORTS

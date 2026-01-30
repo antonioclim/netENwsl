@@ -4,6 +4,7 @@
 # Usage: make help
 
 .PHONY: help start stop status logs test smoke quiz lint lint-fix syntax verify clean
+.PHONY: anti-ai-challenge anti-ai-run anti-ai-evidence anti-ai-validate
 .PHONY: smtp-server smtp-send smtp-list demo-smtp demo-rpc capture analyse
 .PHONY: ci docker-build docker-test export-moodle export-canvas export-csv
 
@@ -42,6 +43,10 @@ help:
 	@echo "Development:"
 	@echo "  make verify        Verify environment setup"
 	@echo "  make clean         Clean artifacts and caches"
+	@echo "  make anti-ai-challenge STUDENT_ID=...  Issue a short-lived anti-AI challenge"
+	@echo "  make anti-ai-run STUDENT_ID=...        Run the required protocol interactions"
+	@echo "  make anti-ai-evidence STUDENT_ID=... PCAP=...  Write evidence JSON"
+	@echo "  make anti-ai-validate STUDENT_ID=...  Validate evidence against the challenge"
 	@echo ""
 	@echo "SMTP Services:"
 	@echo "  make smtp-server   Start SMTP server (foreground)"
@@ -77,7 +82,8 @@ logs:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TESTING AND QUALITY
 # ═══════════════════════════════════════════════════════════════════════════════
-test: smoke
+
+test:
 	@echo "Running pytest..."
 	@$(PYTHON) -m pytest tests/ -v --tb=short
 
@@ -99,23 +105,36 @@ quiz-lo:
 
 lint:
 	@echo "Running ruff linter..."
-	@$(RUFF) check src/ scripts/ tests/ formative/ --config ruff.toml || true
+	@$(RUFF) check src/ scripts/ tests/ formative/ anti_ai/ --config ruff.toml || true
 	@echo "Lint check complete."
 
 lint-fix:
 	@echo "Running ruff linter with auto-fix..."
-	@$(RUFF) check src/ scripts/ tests/ formative/ --config ruff.toml --fix
+	@$(RUFF) check src/ scripts/ tests/ formative/ anti_ai/ --config ruff.toml --fix
 
 syntax:
 	@echo "Checking Python syntax..."
-	@$(PYTHON) -m py_compile src/apps/email/*.py 2>/dev/null && echo "  ✓ src/apps/email/ OK"
-	@$(PYTHON) -m py_compile src/apps/rpc/jsonrpc/*.py 2>/dev/null && echo "  ✓ src/apps/rpc/jsonrpc/ OK"
-	@$(PYTHON) -m py_compile src/apps/rpc/xmlrpc/*.py 2>/dev/null && echo "  ✓ src/apps/rpc/xmlrpc/ OK"
-	@$(PYTHON) -m py_compile src/apps/rpc/grpc/grpc_*.py 2>/dev/null && echo "  ✓ src/apps/rpc/grpc/ OK"
-	@$(PYTHON) -m py_compile scripts/*.py 2>/dev/null && echo "  ✓ scripts/ OK"
-	@$(PYTHON) -m py_compile tests/*.py 2>/dev/null && echo "  ✓ tests/ OK"
-	@$(PYTHON) -m py_compile formative/*.py 2>/dev/null && echo "  ✓ formative/ OK"
+	@$(PYTHON) -m compileall -q src scripts tests formative anti_ai && echo "  ✓ compileall OK"
 	@echo "Syntax check complete."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANTI-AI (HOMEWORK)
+# ═══════════════════════════════════════════════════════════════════════════════
+anti-ai-challenge:
+	@if [ -z "$(STUDENT_ID)" ]; then echo "Usage: make anti-ai-challenge STUDENT_ID=..."; exit 2; fi
+	@$(PYTHON) scripts/anti_ai_issue_challenge.py --student-id "$(STUDENT_ID)" $(if $(STRICT),--strict,)
+
+anti-ai-run:
+	@if [ -z "$(STUDENT_ID)" ]; then echo "Usage: make anti-ai-run STUDENT_ID=..."; exit 2; fi
+	@$(PYTHON) scripts/anti_ai_run_week12_probes.py --challenge artifacts/anti_ai/challenge_$(STUDENT_ID).yaml
+
+anti-ai-evidence:
+	@if [ -z "$(STUDENT_ID)" ] || [ -z "$(PCAP)" ]; then echo "Usage: make anti-ai-evidence STUDENT_ID=... PCAP=..."; exit 2; fi
+	@$(PYTHON) scripts/anti_ai_generate_evidence.py --student-id "$(STUDENT_ID)" --pcap "$(PCAP)"
+
+anti-ai-validate:
+	@if [ -z "$(STUDENT_ID)" ]; then echo "Usage: make anti-ai-validate STUDENT_ID=..."; exit 2; fi
+	@$(PYTHON) scripts/anti_ai_validate.py --challenge artifacts/anti_ai/challenge_$(STUDENT_ID).yaml --evidence artifacts/anti_ai/evidence_$(STUDENT_ID).json
 
 ci: syntax lint
 	@echo ""
