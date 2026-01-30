@@ -61,6 +61,36 @@ Before starting, ensure you have completed:
 3. Answer all prediction prompts
 4. Document any additional findings
 
+
+## Anti-AI submission package (required for graded homework)
+
+For graded homework you must submit a small evidence package in addition to your answers. You may still use an LLM for learning support but the submission must include artefacts from real execution.
+
+Required items
+
+- A challenge file generated for your identifier  
+  `artifacts/anti_ai/challenge_YOUR_ID.yaml`
+
+- An evidence file that lists your artefacts and their hashes  
+  `artifacts/anti_ai/evidence_YOUR_ID.json`
+
+- At least one packet capture that contains the **payload token** on the **TCP or UDP port** specified by the challenge  
+  `*.pcap`
+
+- At least one text artefact (for example a Markdown report) that contains the **report token** specified by the challenge  
+  `*.md` or `*.txt`
+
+Recommended workflow
+
+```bash
+make anti-ai-challenge STUDENT_ID=YOUR_ID
+# Create report.md and capture.pcap
+make anti-ai-evidence STUDENT_ID=YOUR_ID ANTI_AI_ARTEFACTS="report.md capture.pcap"
+make anti-ai-validate STUDENT_ID=YOUR_ID
+```
+
+If you run the laboratory inside Docker you may also set `RUN_PROBES=1` for an additional NAT and SDN probe record.
+
 ## Grading Rubric
 
 | Criterion | Points |

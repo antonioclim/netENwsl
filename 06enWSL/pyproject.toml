@@ -106,7 +106,7 @@ unfixable = []
 
 [tool.ruff.lint.isort]
 # Import sorting configuration
-known-first-party = ["src"]
+known-first-party = ["src", "anti_ai"]
 force-single-line = false
 lines-after-imports = 2
 

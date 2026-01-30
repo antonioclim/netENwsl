@@ -55,8 +55,6 @@ Before starting, review these frequent misunderstandings in `docs/misconceptions
 - "SDN controller forwards packets" — it only installs rules; switches forward
 - "Higher priority number means lower importance" — opposite is true in OpenFlow
 
-In my experience teaching this module, the NAT-as-security misconception causes the most debugging frustration later. Take a few minutes to read through the misconceptions document before starting.
-
 For technical terms, consult `docs/glossary.md`.
 
 ## Quick Start
@@ -126,6 +124,42 @@ python scripts/start_lab.py --rebuild
 | 6653 | TCP | OpenFlow controller (standard) |
 | 5000 | TCP | NAT observer application |
 | 5600-5699 | - | Week 6 custom port range |
+
+
+## Academic integrity and anti-AI workflow
+
+You may use an LLM as a learning aid (for explanations, debugging and alternative perspectives). For graded submissions however you must provide execution artefacts that are difficult to fabricate from text alone.
+
+Week 6 includes a lightweight challenge–evidence–validator workflow in `anti_ai/`:
+
+1. Generate a per-student challenge
+
+   ```bash
+   make anti-ai-challenge STUDENT_ID=YOUR_ID
+   ```
+
+2. Produce a short report in plain text or Markdown that includes the **report token** printed by the challenge generator
+
+3. Generate real traffic in the NAT or SDN topology that includes the **payload token** then capture that traffic in a `.pcap` file
+
+   The easiest approach is to send the payload token as the `--message` argument of `src/apps/tcp_echo.py` or `src/apps/udp_echo.py` and capture with `tcpdump`
+
+4. Collect evidence and hash the artefacts
+
+   ```bash
+   make anti-ai-evidence STUDENT_ID=YOUR_ID \
+     ANTI_AI_ARTEFACTS="path/to/report.md path/to/capture.pcap"
+   ```
+
+   If you want the collector to attempt live probes via `docker exec` set `RUN_PROBES=1`
+
+5. Validate locally before submission
+
+   ```bash
+   make anti-ai-validate STUDENT_ID=YOUR_ID
+   ```
+
+This workflow does not prevent misuse completely but it raises the cost of submitting purely synthetic answers and encourages students to engage with the laboratory environment.
 
 ## Laboratory Exercises
 

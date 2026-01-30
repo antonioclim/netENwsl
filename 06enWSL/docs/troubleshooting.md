@@ -4,8 +4,6 @@
 
 ## Before You Debug: The Prediction Method
 
-I recommend writing your prediction on paper before running any command — it forces clarity.
-
 Before examining troubleshooting, answer these three questions:
 
 1. **What did I expect to happen?**
@@ -319,6 +317,33 @@ sudo sysctl -w net.netfilter.nf_conntrack_max=131072
 ```bash
 pip install --break-system-packages os-ken scapy requests pyyaml docker
 ```
+
+### Permission denied in `__pycache__` or when writing `.pyc`
+
+**Symptoms:** You see errors such as `Permission denied` when running `py_compile`, `pytest` or any script that imports modules.
+
+**Cause:** The kit should not ship `__pycache__` directories. If they are present and owned by another user (for example root) Python cannot write bytecode caches.
+
+**Solutions:**
+1. Remove all cache directories and compiled files:
+
+   ```bash
+   # From the Week 6 kit root
+   make clean
+
+   # If the cache directories are owned by root
+   sudo make clean
+   ```
+
+2. If you prefer manual removal:
+
+   ```bash
+   find . -type d -name "__pycache__" -exec rm -rf {} +
+   find . -type f -name "*.pyc" -delete
+   ```
+
+Python will recreate `__pycache__` directories with correct permissions when needed.
+
 
 ### Mininet Python API Not Found
 

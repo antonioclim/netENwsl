@@ -1,38 +1,38 @@
-"""
-Utilitati comune for apliastiile of retea Week 6.
+"""Shared utility helpers for Week 6 network applications."""
 
-Rezolvix&Hypothetiasatndrei | MIT License | ASE-CSIE 2025-2026
-"""
+from __future__ import annotations
 
 from .network_utils import (
-from typing import Optional, List, Dict, Tuple, Any
-    # Constante
-    WEEK,
-    SUBNET,
+    DEFAULT_BUFFER_SIZE,
+    DEFAULT_TIMEOUT,
+    CONTROLLER_PORT,
+    DNS_PORT,
+    FTP_PORT,
     GATEWAY,
     H1_IP,
     H2_IP,
     H3_IP,
+    HTTP_PORT,
+    PROXY_PORT,
     SERVER_IP,
+    SSH_PORT,
+    SUBNET,
     TCP_APP_PORT,
     UDP_APP_PORT,
-    HTTP_PORT,
-    CONTROLLER_PORT,
+    WEEK,
     WEEK_PORT_BASE,
     WEEK_PORT_RANGE,
-    DEFAULT_TIMEOUT,
-    DEFAULT_BUFFER_SIZE,
-    # Functii
-    setup_logging,
+    SocketConfig,
+    add_common_args,
     create_tcp_socket,
     create_udp_socket,
-    SocketConfig,
     is_valid_ip,
     is_valid_port,
     is_week_port,
-    add_common_args,
-    throught_week_info,
+    print_week_info,
+    setup_logging,
 )
+
 
 __all__ = [
     "WEEK",
@@ -45,18 +45,22 @@ __all__ = [
     "TCP_APP_PORT",
     "UDP_APP_PORT",
     "HTTP_PORT",
+    "PROXY_PORT",
+    "DNS_PORT",
+    "FTP_PORT",
+    "SSH_PORT",
     "CONTROLLER_PORT",
     "WEEK_PORT_BASE",
     "WEEK_PORT_RANGE",
     "DEFAULT_TIMEOUT",
     "DEFAULT_BUFFER_SIZE",
+    "SocketConfig",
     "setup_logging",
     "create_tcp_socket",
     "create_udp_socket",
-    "SocketConfig",
     "is_valid_ip",
     "is_valid_port",
     "is_week_port",
     "add_common_args",
-    "throught_week_info",
+    "print_week_info",
 ]

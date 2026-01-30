@@ -48,6 +48,14 @@ REQUIRED_FILES = [
     "homework/README.md",
     "setup/requirements.txt",
     "scripts/generate_session_token.py",
+"scripts/run_demo.py",
+"anti_ai/__init__.py",
+"anti_ai/challenge.py",
+"anti_ai/challenge_generator.py",
+"anti_ai/evidence_collector.py",
+"anti_ai/fingerprint.py",
+"anti_ai/pcap_tools.py",
+"anti_ai/submission_validator.py",
 ]
 
 

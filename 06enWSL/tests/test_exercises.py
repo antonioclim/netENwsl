@@ -73,7 +73,7 @@ def check_imports(path: Path, required_imports: List[str]) -> Tuple[bool, List[s
 # EXERCISE 1 TESTS: NAT TOPOLOGY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def test_exercise_1() -> bool:
+def check_exercise_1() -> bool:
     """
     Test Exercise 1: NAT/PAT Topology.
     
@@ -123,7 +123,7 @@ def test_exercise_1() -> bool:
 # EXERCISE 2 TESTS: SDN TOPOLOGY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def test_exercise_2() -> bool:
+def check_exercise_2() -> bool:
     """
     Test Exercise 2: SDN Topology and Flow Observation.
     
@@ -168,7 +168,7 @@ def test_exercise_2() -> bool:
 # EXERCISE 3 TESTS: SDN POLICY DESIGN
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def test_exercise_3() -> bool:
+def check_exercise_3() -> bool:
     """
     Test Exercise 3: SDN Policy Design.
     
@@ -209,7 +209,7 @@ def test_exercise_3() -> bool:
 # APPLICATION TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def test_applications() -> bool:
+def check_applications() -> bool:
     """Test supporting applications."""
     print("Testing Supporting Applications")
     print("-" * 50)
@@ -242,7 +242,7 @@ def test_applications() -> bool:
 # HOMEWORK TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def test_homework() -> bool:
+def check_homework() -> bool:
     """Test homework exercise files."""
     print("Testing Homework Exercises")
     print("-" * 50)
@@ -278,6 +278,30 @@ def test_homework() -> bool:
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
+# ─────────────────────────────────────────────────────────────
+# PYTEST WRAPPERS (avoid returning non-None from test_* functions)
+# ─────────────────────────────────────────────────────────────
+
+def test_exercise_1() -> None:
+    assert check_exercise_1()
+
+
+def test_exercise_2() -> None:
+    assert check_exercise_2()
+
+
+def test_exercise_3() -> None:
+    assert check_exercise_3()
+
+
+def test_applications() -> None:
+    assert check_applications()
+
+
+def test_homework() -> None:
+    assert check_homework()
+
 def main() -> int:
     """Run all tests."""
     print()
@@ -287,11 +311,11 @@ def main() -> int:
     print()
     
     results = {
-        "Exercise 1 (NAT)": test_exercise_1(),
-        "Exercise 2 (SDN)": test_exercise_2(),
-        "Exercise 3 (Policy)": test_exercise_3(),
-        "Applications": test_applications(),
-        "Homework": test_homework(),
+        "Exercise 1 (NAT)": check_exercise_1(),
+        "Exercise 2 (SDN)": check_exercise_2(),
+        "Exercise 3 (Policy)": check_exercise_3(),
+        "Applications": check_applications(),
+        "Homework": check_homework(),
     }
     
     # Summary

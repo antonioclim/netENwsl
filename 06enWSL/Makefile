@@ -14,7 +14,8 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 .PHONY: help quiz quiz-random quiz-quick quiz-export test smoke lint typecheck \
-        verify start stop clean session-token docker-build docker-up docker-down \
+        verify start stop clean session-token nat-demo nat-test sdn-demo sdn-test \
+        anti-ai-challenge anti-ai-evidence anti-ai-validate docker-build docker-up docker-down \
         checksums all ci docs-check install-deps
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -32,6 +33,15 @@ YELLOW := \033[0;33m
 RED := \033[0;31m
 BLUE := \033[0;34m
 NC := \033[0m  # No Colour
+
+# Anti-AI configuration (used by make anti-ai-*)
+STUDENT_ID ?= student
+ANTI_AI_CHALLENGE ?= artifacts/anti_ai/challenge_$(STUDENT_ID).yaml
+ANTI_AI_EVIDENCE ?= artifacts/anti_ai/evidence_$(STUDENT_ID).json
+# Space-separated list of artefact paths to include in evidence, relative to project root
+ANTI_AI_ARTEFACTS ?=
+RUN_PROBES ?= 0
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELP
@@ -60,8 +70,15 @@ help:
 	@echo "  $(GREEN)LABORATORY$(NC)"
 	@echo "    make start           Start lab environment"
 	@echo "    make stop            Stop lab environment"
+	@echo "    make nat-demo        Run NAT topology (interactive, requires root)"
+	@echo "    make sdn-demo        Run SDN topology (interactive, requires root)"
 	@echo "    make session-token   Generate unique session token"
 	@echo "    make clean           Clean up artefacts and caches"
+	@echo ""
+	@echo "  $(GREEN)ANTI-AI$(NC)"
+	@echo "    make anti-ai-challenge STUDENT_ID=...   Generate a challenge file"
+	@echo "    make anti-ai-evidence  STUDENT_ID=...   Collect evidence and hash artefacts"
+	@echo "    make anti-ai-validate  STUDENT_ID=...   Validate evidence and artefacts"
 	@echo ""
 	@echo "  $(GREEN)DOCKER$(NC)"
 	@echo "    make docker-build    Build Docker images"
@@ -116,12 +133,12 @@ smoke:
 
 lint:
 	@echo "$(GREEN)Running linter (ruff)...$(NC)"
-	@ruff check src/ scripts/ tests/ homework/ formative/ --ignore E501 || \
+	@ruff check src/ scripts/ tests/ homework/ formative/ anti_ai/ --ignore E501 || \
 		echo "$(YELLOW)Ruff not installed. Install with: pip install ruff$(NC)"
 
 typecheck:
 	@echo "$(GREEN)Running type checker (mypy)...$(NC)"
-	@mypy src/ scripts/ --ignore-missing-imports || \
+	@mypy src/ scripts/ anti_ai/ --ignore-missing-imports || \
 		echo "$(YELLOW)MyPy not installed. Install with: pip install mypy$(NC)"
 
 verify:
@@ -149,7 +166,7 @@ ci:
 		(echo "  ✗ Syntax errors found" && exit 1)
 	@echo ""
 	@echo "$(BLUE)Step 2/5: Lint check$(NC)"
-	@ruff check src/ scripts/ --ignore E501 --quiet && echo "  ✓ Linting passed" || echo "  ⚠ Linting warnings"
+	@ruff check src/ scripts/ anti_ai/ --ignore E501 --quiet && echo "  ✓ Linting passed" || echo "  ⚠ Linting warnings"
 	@echo ""
 	@echo "$(BLUE)Step 3/5: Smoke tests$(NC)"
 	@$(PYTHON) tests/smoke_test.py
@@ -177,9 +194,41 @@ stop:
 	@echo "$(GREEN)Stopping lab environment...$(NC)"
 	@$(PYTHON) scripts/stop_lab.py || echo "$(YELLOW)Stop script not found$(NC)"
 
+nat-demo:
+	@echo "$(GREEN)Starting NAT topology (interactive)...$(NC)"
+	@echo "If you see a permissions error, rerun as root or use sudo."
+	@$(PYTHON) src/exercises/ex_6_01_nat_topology.py --cli
+
+nat-test:
+	@echo "$(GREEN)Running NAT topology smoke test...$(NC)"
+	@echo "If you see a permissions error, rerun as root or use sudo."
+	@$(PYTHON) src/exercises/ex_6_01_nat_topology.py --test
+
+sdn-demo:
+	@echo "$(GREEN)Starting SDN topology (interactive)...$(NC)"
+	@echo "If you see a permissions error, rerun as root or use sudo."
+	@$(PYTHON) src/exercises/ex_6_02_sdn_topology.py --cli --install-flows
+
+sdn-test:
+	@echo "$(GREEN)Running SDN topology smoke test...$(NC)"
+	@echo "If you see a permissions error, rerun as root or use sudo."
+	@$(PYTHON) src/exercises/ex_6_02_sdn_topology.py --test --install-flows
+
 session-token:
 	@echo "$(GREEN)Generating session token...$(NC)"
 	@$(PYTHON) scripts/generate_session_token.py --save
+
+anti-ai-challenge:
+	@echo "$(GREEN)Generating anti-AI challenge...$(NC)"
+	@$(PYTHON) -m anti_ai.challenge_generator --student-id $(STUDENT_ID) --output $(ANTI_AI_CHALLENGE)
+
+anti-ai-evidence:
+	@echo "$(GREEN)Collecting anti-AI evidence...$(NC)"
+	@$(PYTHON) -m anti_ai.evidence_collector --challenge $(ANTI_AI_CHALLENGE) --output $(ANTI_AI_EVIDENCE) --base-dir . $(foreach a,$(ANTI_AI_ARTEFACTS),--artefact $(a)) $(if $(filter 1,$(RUN_PROBES)),--run-probes,)
+
+anti-ai-validate:
+	@echo "$(GREEN)Validating anti-AI evidence...$(NC)"
+	@$(PYTHON) -m anti_ai.submission_validator --challenge $(ANTI_AI_CHALLENGE) --evidence $(ANTI_AI_EVIDENCE) --base-dir .
 
 clean:
 	@echo "$(GREEN)Cleaning up artefacts...$(NC)"
@@ -188,8 +237,9 @@ clean:
 	@find . -type f -name "*.pyo" -delete 2>/dev/null || true
 	@find . -type f -name ".DS_Store" -delete 2>/dev/null || true
 	@rm -rf .pytest_cache .mypy_cache .ruff_cache 2>/dev/null || true
-	@rm -rf artefacts/*.pcap artefacts/*.log 2>/dev/null || true
-	@rm -f artefacts/.session_token 2>/dev/null || true
+	@rm -rf artifacts/*.pcap artifacts/*.log 2>/dev/null || true
+	@rm -rf artifacts/anti_ai/*.yaml artifacts/anti_ai/*.yml artifacts/anti_ai/*.json 2>/dev/null || true
+	@rm -f artifacts/.session_token 2>/dev/null || true
 	@echo "$(GREEN)Clean complete$(NC)"
 
 # ─────────────────────────────────────────────────────────────────────────────
