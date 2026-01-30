@@ -126,7 +126,7 @@ unfixable = []
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "scripts", "tests", "formative"]
+known-first-party = ["src", "scripts", "tests", "formative", "anti_ai"]
 
 [tool.ruff.format]
 quote-style = "double"

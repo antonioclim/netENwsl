@@ -6,6 +6,19 @@
 
 This week's homework combines IoT protocol implementation with network security auditing, providing both offensive understanding and defensive skills.
 
+
+## Anti-AI submission package (if required)
+
+Some cohorts use an anti-AI workflow for assessed homework. If enabled you will receive a
+`challenge_*.yaml` file and you must embed the provided tokens in your outputs.
+
+- **Security audit report:** run `hw_13_02_security_audit.py` with `--challenge` and save the JSON
+  report to the location requested by your instructor.
+- **MQTT capture:** publish the provided payload token to the provided MQTT topic on port 1883 and
+  capture the traffic to a PCAP file.
+
+A local validator is included in `scripts/anti_ai_validate.py`.
+
 ## Assignments
 
 | File | Topic | Difficulty | Est. Time |

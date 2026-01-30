@@ -17,6 +17,7 @@ Estimated time: 75-90 minutes
 """
 
 from __future__ import annotations
+import argparse
 import json
 import socket
 import sys
@@ -51,6 +52,7 @@ class HostResult:
     scan_time: str
     open_ports: List[PortResult] = field(default_factory=list)
     risk_score: int = 0
+    meta: Dict[str, str] = field(default_factory=dict)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SCANNING_FUNCTIONS
@@ -132,36 +134,84 @@ def display_results(result: HostResult) -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
+def _parse_ports(value: str) -> List[int]:
+    parts = [p.strip() for p in value.split(",") if p.strip()]
+    out: List[int] = []
+    for p in parts:
+        try:
+            out.append(int(p))
+        except ValueError:
+            raise SystemExit(f"Invalid port: {p}")
+    return out
+
+
+def _maybe_load_challenge(path: str | None) -> Optional[Dict[str, str]]:
+    if not path:
+        return None
+    try:
+        import yaml
+    except ImportError as exc:
+        raise SystemExit("pyyaml is required for --challenge. Install with: pip install pyyaml") from exc
+    data = yaml.safe_load(open(path, "r", encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise SystemExit("Invalid challenge format")
+    return {
+        "challenge_id": str(data.get("challenge_id", "")),
+        "student_id": str(data.get("student_id", "")),
+        "report_token": str(data.get("report_token", "")),
+    }
+
+
 def main() -> int:
     """Main entry point."""
+    parser = argparse.ArgumentParser(description="Homework 13.2: Network security audit")
+    parser.add_argument("--host", default="localhost", help="Host to scan (default: localhost)")
+    parser.add_argument(
+        "--ports",
+        default="22,80,443,1883,8080,9000",
+        help="Comma-separated list of ports (default: 22,80,443,1883,8080,9000)",
+    )
+    parser.add_argument("--output", default="security_audit.json", help="Output JSON path")
+    parser.add_argument(
+        "--challenge",
+        default=None,
+        help="Optional challenge YAML path (embeds report token in the output)",
+    )
+    args = parser.parse_args()
+
     print("=" * 70)
     print("Homework 13.2: Network Security Audit")
     print("Computer Networks - Week 13 | ASE Bucharest, CSIE")
     print("=" * 70)
     print("\n⚠️ Only scan systems you own or have permission to test.")
-    
-    print("""
+
+    print(
+        """
 Port States:
   OPEN     - Service accepting connections
   CLOSED   - No service listening
   FILTERED - Firewall dropping packets
-    """)
-    
-    demo_ports = [22, 80, 443, 1883, 8080, 9000]
-    result = scan_host("localhost", demo_ports)
+    """
+    )
+
+    ports = _parse_ports(args.ports)
+    result = scan_host(args.host, ports)
+    challenge_meta = _maybe_load_challenge(args.challenge)
+    if challenge_meta and challenge_meta.get("report_token"):
+        result.meta.update(challenge_meta)
+
     display_results(result)
-    
-    # Export
-    with open("security_audit.json", 'w') as f:
+
+    with open(args.output, "w", encoding="utf-8") as f:
         json.dump(asdict(result), f, indent=2)
-    print("\n📁 Report saved to: security_audit.json")
-    
+    print(f"\n📁 Report saved to: {args.output}")
+
     print("\n📝 Defence Recommendations:")
     print("   1. Close unnecessary ports")
     print("   2. Use TLS for all services")
     print("   3. Enable authentication everywhere")
     print("   4. Keep software updated")
-    
+
     return 0
 
 if __name__ == "__main__":

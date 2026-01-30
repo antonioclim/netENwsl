@@ -237,6 +237,43 @@ By the end of this laboratory session, you will be able to:
 - 10GB free disk space
 - Network connectivity (for initial setup only)
 
+
+## Anti-AI assessed submission workflow (optional)
+
+If your instructor enables the anti-AI workflow for Week 13 you will submit a small package that
+can be validated automatically. The design goal is simple: AI tools may help you understand and
+debug but they are not sufficient on their own because the submission must include execution
+artefacts tied to your environment.
+
+**What you submit (typical):**
+- a per-student `challenge_*.yaml`
+- a security audit report JSON that contains a challenge token
+- a PCAP capture that contains a unique MQTT payload token on port 1883
+- (optionally required) a TLS handshake capture on port 8883
+- an `evidence_*.json` file with SHA256 hashes for integrity
+
+**Workflow:**
+
+```bash
+# 1) Issue a challenge
+make anti-ai-challenge STUDENT_ID=<your_id>
+
+# 2) Generate probe traffic (capture this in Wireshark or via scripts/capture_traffic.py)
+python3 scripts/anti_ai_run_week13_probes.py --challenge "$ANTI_AI_CHALLENGE" --tls
+
+# 3) Produce the security audit report (token is embedded automatically when --challenge is used)
+python3 homework/exercises/hw_13_02_security_audit.py \
+  --challenge "$ANTI_AI_CHALLENGE" \
+  --output "$ANTI_AI_REPORT"
+
+# 4) Generate evidence and validate locally
+make anti-ai-evidence STUDENT_ID=<your_id>
+make anti-ai-validate STUDENT_ID=<your_id>
+```
+
+If validation fails read the error message carefully as it will point to the missing or invalid
+artefact.
+
 ## Quick Start
 
 ### First-Time Setup (Run Once)

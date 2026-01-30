@@ -47,7 +47,12 @@ import time
 from dataclasses import dataclass
 from typing import Optional
 
-import paho.mqtt.client as mqtt
+try:
+    import paho.mqtt.client as mqtt  # type: ignore
+    MQTT_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    mqtt = None  # type: ignore
+    MQTT_AVAILABLE = False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -382,7 +387,9 @@ def parse_args() -> MqttConfig:
                         help="MQTT broker port (default: 1883)")
     parser.add_argument("--mode", choices=["publish", "subscribe"], required=True,
                         help="Client mode")
-    parser.add_argument("--topic", required=True,
+    parser.add_argument("--challenge", default=None,
+                        help="Optional challenge YAML path (prefills topic, ports and tokens)")
+    parser.add_argument("--topic", default=None,
                         help="Topic (publish) or topic filter (subscribe)")
     parser.add_argument("--message", default="",
                         help="Payload for publish mode")
@@ -403,6 +410,30 @@ def parse_args() -> MqttConfig:
     parser.add_argument("--timeout", type=int, default=20,
                         help="Subscribe timeout in seconds (default: 20)")
     args = parser.parse_args()
+
+    if args.challenge:
+        try:
+            import yaml
+        except ImportError as exc:
+            raise SystemExit("pyyaml is required for --challenge. Install with: pip install pyyaml") from exc
+        challenge = yaml.safe_load(open(args.challenge, "r", encoding="utf-8"))
+        if isinstance(challenge, dict):
+            if not args.topic:
+                args.topic = str(challenge.get("mqtt_topic", "")) or None
+            if args.tls:
+                args.port = int(challenge.get("mqtt_tls_port", args.port))
+            else:
+                args.port = int(challenge.get("mqtt_plain_port", args.port))
+            if args.mode == "publish" and not args.message:
+                token = str(challenge.get("payload_token", ""))
+                report_token = str(challenge.get("report_token", ""))
+                if token:
+                    args.message = json.dumps({"token": token, "report_token": report_token})
+        else:
+            raise SystemExit("Invalid challenge format")
+
+    if not args.topic:
+        raise SystemExit("--topic is required (or provide --challenge)")
 
     if args.mode == "publish" and not args.message:
         raise SystemExit("Publish mode requires --message.")
@@ -431,6 +462,11 @@ def parse_args() -> MqttConfig:
 def main() -> int:
     """Main entry point."""
     cfg = parse_args()
+
+    if not MQTT_AVAILABLE:
+        print("paho-mqtt is required for this exercise")
+        print("Install with: pip install paho-mqtt")
+        return 1
     if cfg.mode == "publish":
         return run_publish(cfg)
     return run_subscribe(cfg)

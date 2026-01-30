@@ -44,15 +44,13 @@ import datetime as _dt
 import binascii
 from typing import Optional
 
+SCAPY_AVAILABLE = True
 try:
     from scapy.all import sniff, wrpcap  # type: ignore
     from scapy.layers.inet import IP, TCP, UDP  # type: ignore
-except ImportError as exc:
-    raise SystemExit(
-        "Scapy is required for this exercise.\n"
-        "Install with: pip install scapy\n"
-        f"Import error: {exc}"
-    )
+except ImportError:  # pragma: no cover
+    SCAPY_AVAILABLE = False
+    sniff = wrpcap = IP = TCP = UDP = None  # type: ignore
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -318,6 +316,11 @@ Note: Requires elevated privileges (sudo) on Linux.
 def main() -> int:
     """Main entry point."""
     args = parse_args()
+
+    if not SCAPY_AVAILABLE:
+        print("Scapy is required for this exercise")
+        print("Install with: pip install scapy")
+        return 1
     
     try:
         packet_count = run_capture(

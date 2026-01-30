@@ -41,11 +41,11 @@ from datetime import datetime
 from typing import Optional, List, Dict, Tuple, Any
 
 try:
-    import paho.mqtt.client as mqtt
-except ImportError:
-    print("Error: paho-mqtt not installed")
-    print("Install with: pip install paho-mqtt")
-    exit(1)
+    import paho.mqtt.client as mqtt  # type: ignore
+    MQTT_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    mqtt = None  # type: ignore
+    MQTT_AVAILABLE = False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -105,6 +105,11 @@ Examples:
     parser.add_argument("--cafile", default=None,
                         help="CA certificate file for TLS")
     args = parser.parse_args()
+
+    if not MQTT_AVAILABLE:
+        print("paho-mqtt is required for this application")
+        print("Install with: pip install paho-mqtt")
+        return 1
     
     # ─────────────────────────────────────────────────────────────────────────
     # CREATE_MQTT_CLIENT

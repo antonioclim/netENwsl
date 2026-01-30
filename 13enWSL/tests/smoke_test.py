@@ -59,12 +59,16 @@ def run_smoke_test() -> int:
     
     # Test 2: Docker available
     print("[TEST] Docker availability...")
-    result = subprocess.run(["docker", "--version"], capture_output=True)
-    if result.returncode == 0:
-        print("  [PASS] Docker available")
-        passed += 1
-    else:
-        print("  [FAIL] Docker not found")
+    try:
+        result = subprocess.run(["docker", "--version"], capture_output=True, timeout=10)
+        if result.returncode == 0:
+            print("  [PASS] Docker available")
+            passed += 1
+        else:
+            print("  [FAIL] Docker not available")
+            failed += 1
+    except (FileNotFoundError, PermissionError) as exc:
+        print(f"  [FAIL] Docker not available: {exc}")
         failed += 1
     
     # Test 3: Project structure
