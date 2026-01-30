@@ -11,7 +11,7 @@
 This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
 
 **Repository:** https://github.com/antonioclim/netENwsl
-**This Week's Folder:** `8enWSL`
+**This Week's Folder:** `08enWSL`
 
 | Component | Details |
 |-----------|---------|
@@ -100,7 +100,7 @@ Open browser and go to: **http://localhost:9000**
 ### Step 4: Go to Laboratory Directory
 
 ```bash
-cd /mnt/d/NETWORKING/WEEK8/8enWSL
+cd /mnt/d/NETWORKING/WEEK8/08enWSL
 ls -la
 ```
 
@@ -246,7 +246,7 @@ By the end of this laboratory session, you will be able to:
 wsl
 
 # Go to the kit directory
-cd /mnt/d/NETWORKING/WEEK8/8enWSL
+cd /mnt/d/NETWORKING/WEEK8/08enWSL
 
 # Start Docker if not running
 sudo service docker start
@@ -324,6 +324,29 @@ pedagogical framework from DPPD module, Universitatea Politehnica București.
 
 ---
 
+## Required First Step: Initialise Your Context
+
+Before you begin the exercises or capture any traffic you must generate your
+student-specific context. This creates a unique port and token that are used by
+the PCAP and anti-AI validators.
+
+```bash
+cd /mnt/d/NETWORKING/WEEK8/08enWSL
+make init ID=YOUR_STUDENT_ID
+make check-context
+```
+
+This generates:
+- `artifacts/student_context.json` (unique parameters)
+- `artifacts/anti_ai/challenge_week08.json` (time-limited challenge)
+
+Before submission run:
+
+```bash
+make verify-pcap
+make anti-ai
+```
+
 ## Laboratory Exercises
 
 ### Exercise 1: Minimal HTTP Server Implementation
@@ -342,7 +365,7 @@ HTTP/1.1 transmits requests as plaintext over TCP with a defined structure: a re
 
 1. Go to the exercise file and examine the provided skeleton:
    ```bash
-   cd /mnt/d/NETWORKING/WEEK8/8enWSL
+   cd /mnt/d/NETWORKING/WEEK8/08enWSL
    # View the exercise template
    python3 -c "print(open('src/exercises/ex_8_01_http_server.py').read())"
    ```
@@ -566,7 +589,16 @@ python3 scripts/run_demo.py --demo handshake
 
 ### Capturing Traffic
 
+For submissions, capture traffic on your unique port from `artifacts/student_context.json`.
+The examples below show the Docker demo ports, you should adapt the filter for your context.
+
 ```bash
+# Extract your unique port
+PORT=$(python3 -c "import json; print(json.load(open('artifacts/student_context.json'))['http_server']['port'])")
+
+# Example: capture submission traffic on your unique port
+python3 scripts/capture_traffic.py --interface lo --filter "tcp port ${PORT}" --output pcap/week8_unique.pcap
+
 # Start capture for HTTP traffic
 python3 scripts/capture_traffic.py --interface lo --filter "tcp port 8080" --output pcap/week8_http.pcap
 
@@ -583,7 +615,11 @@ http
 # TCP handshake (SYN packets)
 tcp.flags.syn == 1 && tcp.flags.ack == 0
 
-# All packets to/from port 8080
+# All packets to/from your unique port
+# (read it from artifacts/student_context.json)
+tcp.port == <YOUR_UNIQUE_PORT>
+
+# All packets to/from port 8080 (Docker demo)
 tcp.port == 8080
 
 # HTTP requests only
@@ -898,7 +934,7 @@ sudo ss -tlnp | grep 8080
 
 ```bash
 # Stop lab containers (Portainer stays running!)
-cd /mnt/d/NETWORKING/WEEK8/8enWSL
+cd /mnt/d/NETWORKING/WEEK8/08enWSL
 docker compose -f docker/docker-compose.yml down
 
 # Verify - should still show portainer

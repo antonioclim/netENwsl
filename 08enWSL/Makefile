@@ -11,9 +11,6 @@
 #   make test        # Run all tests
 #   make clean       # Clean up environment
 #
-# From past cohorts: Students who run 'make quiz-basic' before starting
-# exercises typically complete the lab 20-30 minutes faster.
-#
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Configuration
@@ -22,6 +19,8 @@ DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
 QUIZ_FILE := formative/quiz.yaml
 SHELL := /bin/bash
 CONTEXT_FILE := artifacts/student_context.json
+ANTI_AI_CHALLENGE := artifacts/anti_ai/challenge_week08.json
+ANTI_AI_EVIDENCE := artifacts/anti_ai/evidence.json
 
 # Colours for output (works on most terminals)
 GREEN := \033[92m
@@ -64,7 +63,7 @@ help: ## Show this help message
 	@echo "  $(CYAN)quiz-lo$(RESET)         Quiz specific LO: make quiz-lo LO=3"
 	@echo "  $(CYAN)quiz-basic$(RESET)      Run only basic difficulty questions"
 	@echo "  $(CYAN)quiz-advanced$(RESET)   Run only advanced difficulty questions"
-	@echo "  $(CYAN)quiz-export$(RESET)     Export quiz for LMS (Moodle/Canvas/JSON)"
+	@echo "  $(CYAN)quiz-export$(RESET)     Export quiz for LMS (Moodle/Canvas)"
 	@echo "  $(CYAN)parsons$(RESET)         Run Parsons code arrangement problems"
 	@echo "  $(CYAN)progress$(RESET)        Show your learning progress over time"
 	@echo "  $(CYAN)test$(RESET)            Run all tests (exercise + environment)"
@@ -73,6 +72,10 @@ help: ## Show this help message
 	@echo "$(BOLD)Submission:$(RESET)"
 	@echo "  $(CYAN)verify-pcap$(RESET)     Verify PCAP files before submission"
 	@echo "  $(CYAN)check-context$(RESET)   Show your unique context values"
+	@echo "  $(CYAN)anti-ai$(RESET)         Run anti-AI workflow (challenge + evidence + validate)"
+	@echo "  $(CYAN)anti-ai-challenge$(RESET) Generate a time-limited challenge file"
+	@echo "  $(CYAN)anti-ai-evidence$(RESET) Collect evidence.json for your captures"
+	@echo "  $(CYAN)anti-ai-validate$(RESET) Validate evidence.json and PCAPs"
 	@echo ""
 	@echo "$(BOLD)Development:$(RESET)"
 	@echo "  $(CYAN)lint$(RESET)            Run code linter (ruff)"
@@ -107,9 +110,11 @@ init: ## ⭐ FIRST: Initialise session with your student ID
 		exit 1; \
 	fi
 	@$(PYTHON) scripts/generate_student_context.py "$(ID)"
+	@$(PYTHON) -m anti_ai.challenge_generator --context "$(CONTEXT_FILE)" --out "$(ANTI_AI_CHALLENGE)" --ttl-hours 12
 	@echo ""
 	@echo "$(GREEN)✓ Session initialised for: $(ID)$(RESET)"
 	@echo "  Your context: $(CONTEXT_FILE)"
+	@echo "  Your challenge: $(ANTI_AI_CHALLENGE)"
 	@echo ""
 	@echo "$(BOLD)Next steps:$(RESET)"
 	@echo "  1. make start      # Start lab environment"
@@ -132,6 +137,37 @@ check-context: ## Show your unique context values
 	fi
 	@echo "$(BOLD)Your Unique Context:$(RESET)"
 	@cat $(CONTEXT_FILE) | $(PYTHON) -m json.tool
+
+.PHONY: anti-ai-challenge
+anti-ai-challenge: ## Generate a time-limited anti-AI challenge file
+	@if [ ! -f "$(CONTEXT_FILE)" ]; then \
+		echo "$(RED)Error: Run 'make init ID=...' first$(RESET)"; \
+		exit 1; \
+	fi
+	@$(PYTHON) -m anti_ai.challenge_generator --context "$(CONTEXT_FILE)" --out "$(ANTI_AI_CHALLENGE)" --ttl-hours 12
+
+.PHONY: anti-ai-evidence
+anti-ai-evidence: ## Collect evidence.json for PCAP captures
+	@if [ ! -f "$(CONTEXT_FILE)" ]; then \
+		echo "$(RED)Error: Run 'make init ID=...' first$(RESET)"; \
+		exit 1; \
+	fi
+	@$(PYTHON) scripts/collect_anti_ai_evidence.py --context "$(CONTEXT_FILE)" --out "$(ANTI_AI_EVIDENCE)"
+
+.PHONY: anti-ai-validate
+anti-ai-validate: ## Validate evidence.json and PCAPs
+	@if [ ! -f "$(ANTI_AI_CHALLENGE)" ]; then \
+		echo "$(RED)Error: Challenge missing. Run: make anti-ai-challenge$(RESET)"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(ANTI_AI_EVIDENCE)" ]; then \
+		echo "$(RED)Error: Evidence missing. Run: make anti-ai-evidence$(RESET)"; \
+		exit 1; \
+	fi
+	@$(PYTHON) scripts/validate_anti_ai_submission.py --challenge "$(ANTI_AI_CHALLENGE)" --evidence "$(ANTI_AI_EVIDENCE)"
+
+.PHONY: anti-ai
+anti-ai: verify-pcap anti-ai-evidence anti-ai-validate ## Run the full anti-AI workflow
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LAB ENVIRONMENT
@@ -214,14 +250,12 @@ quiz-list: ## List all quiz questions
 	@$(PYTHON) formative/run_quiz.py --list-questions
 
 .PHONY: quiz-export
-quiz-export: ## Export quiz for LMS (JSON + Moodle + Canvas)
+quiz-export: ## Export quiz for LMS (JSON format)
 	@mkdir -p artifacts
 	@$(PYTHON) formative/run_quiz.py --export-lms artifacts/quiz_lms_export.json
 	@$(PYTHON) formative/run_quiz.py --export-moodle artifacts/quiz_moodle_export.xml
-	@$(PYTHON) formative/run_quiz.py --export-canvas artifacts/quiz_canvas_export.xml
 	@echo "$(GREEN)✓ Exported to artifacts/quiz_lms_export.json$(RESET)"
-	@echo "$(GREEN)✓ Exported to artifacts/quiz_moodle_export.xml (Moodle)$(RESET)"
-	@echo "$(GREEN)✓ Exported to artifacts/quiz_canvas_export.xml (Canvas QTI)$(RESET)"
+	@echo "$(GREEN)✓ Exported to artifacts/quiz_moodle_export.xml$(RESET)"
 
 .PHONY: parsons
 parsons: ## Run Parsons code arrangement problems
@@ -269,10 +303,6 @@ test-context: ## Run tests that verify unique context usage
 	@$(PYTHON) -m pytest tests/test_unique_context.py -v 2>/dev/null || \
 		echo "$(YELLOW)Context tests require student context. Run 'make init ID=...' first.$(RESET)"
 
-.PHONY: test-exports
-test-exports: ## Run tests for LMS export functionality
-	@$(PYTHON) -m pytest tests/test_exports.py -v
-
 .PHONY: smoke
 smoke: ## Run smoke tests to verify environment
 	@echo "$(BOLD)Running smoke tests...$(RESET)"
@@ -296,17 +326,17 @@ install: ## Install Python dependencies
 .PHONY: lint
 lint: ## Run code linter (ruff)
 	@echo "$(BOLD)Running linter...$(RESET)"
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --ignore E501 2>/dev/null || \
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ anti_ai/ homework/ --ignore E501 2>/dev/null || \
 		echo "$(YELLOW)Ruff not installed. Install with: pip install ruff$(RESET)"
 
 .PHONY: lint-fix
 lint-fix: ## Run linter and auto-fix issues
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --fix 2>/dev/null || \
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ anti_ai/ homework/ --fix 2>/dev/null || \
 		echo "$(YELLOW)Ruff not installed. Install with: pip install ruff$(RESET)"
 
 .PHONY: format
 format: ## Format code with ruff
-	@$(PYTHON) -m ruff format src/ scripts/ tests/ formative/ 2>/dev/null || \
+	@$(PYTHON) -m ruff format src/ scripts/ tests/ formative/ anti_ai/ homework/ 2>/dev/null || \
 		echo "$(YELLOW)Ruff not installed. Install with: pip install ruff$(RESET)"
 
 .PHONY: typecheck
@@ -358,7 +388,7 @@ clean-pcap: ## Remove captured PCAP files
 
 .PHONY: clean-artifacts
 clean-artifacts: ## Remove generated artifacts
-	@rm -f artifacts/*.pcap artifacts/*.log artifacts/*.json artifacts/*.xml
+	@rm -f artifacts/*.pcap artifacts/*.log artifacts/*.json
 	@echo "$(GREEN)✓ Artifacts removed$(RESET)"
 
 .PHONY: clean-pycache
@@ -373,7 +403,7 @@ clean-pycache: ## Remove Python cache directories
 
 .PHONY: ci-lint
 ci-lint: ## CI: Run linting checks
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ anti_ai/ homework/
 
 .PHONY: ci-test
 ci-test: ## CI: Run tests for CI pipeline
@@ -388,10 +418,6 @@ ci-syntax: ## CI: Check Python syntax
 ci-docker: ## CI: Verify Docker configuration
 	@$(DOCKER_COMPOSE) config --quiet
 	@echo "$(GREEN)✓ Docker Compose configuration valid$(RESET)"
-
-.PHONY: ci-all
-ci-all: ci-syntax ci-lint ci-test ci-docker ## CI: Run all CI checks
-	@echo "$(GREEN)✓ All CI checks passed$(RESET)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # QUICK REFERENCE

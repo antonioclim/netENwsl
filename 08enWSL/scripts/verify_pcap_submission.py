@@ -28,6 +28,18 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+# Ensure repository root is on sys.path when running as a script
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from anti_ai.pcap_tools import (
+    capture_contains_ascii,
+    capture_mentions_port,
+    count_http_header_values,
+    has_basic_tcp_handshake,
+)
+
 
 class PcapVerifier:
     """Verifies PCAP submissions against student context."""
@@ -105,10 +117,14 @@ class PcapVerifier:
     def verify_contains_port(self, pcap_path: Path, port: int) -> Optional[bool]:
         """Check if PCAP contains traffic to specific port (requires tshark)."""
         if not self.tshark_available:
-            self.warnings.append(
-                f"Cannot verify port {port} in {pcap_path.name} — tshark not available"
+            # Fallback: dependency-free parser (best effort)
+            if capture_mentions_port(pcap_path, port):
+                return True
+            self.errors.append(
+                f"No traffic to port {port} found in {pcap_path.name}\n"
+                f"   Your unique port is {port} — did you capture from the right interface?"
             )
-            return None
+            return False
         
         try:
             result = subprocess.run(
@@ -140,10 +156,15 @@ class PcapVerifier:
     def verify_handshake(self, pcap_path: Path) -> Optional[bool]:
         """Verify PCAP contains TCP handshake (SYN, SYN-ACK, ACK)."""
         if not self.tshark_available:
-            self.warnings.append(
-                f"Cannot verify handshake in {pcap_path.name} — tshark not available"
+            # Fallback: dependency-free parser (best effort)
+            unique_port = int(self.context.get("http_server", {}).get("port", 0))
+            if unique_port and has_basic_tcp_handshake(pcap_path, unique_port):
+                return True
+            self.errors.append(
+                f"TCP handshake not detected in {pcap_path.name}\n"
+                f"   Expected a three-way handshake on port {unique_port}."
             )
-            return None
+            return False
         
         try:
             # Check for SYN packets
@@ -197,10 +218,28 @@ class PcapVerifier:
     def verify_http_traffic(self, pcap_path: Path) -> Optional[bool]:
         """Verify PCAP contains HTTP traffic."""
         if not self.tshark_available:
-            self.warnings.append(
-                f"Cannot verify HTTP traffic in {pcap_path.name} — tshark not available"
-            )
-            return None
+            # Fallback: dependency-free parser (best effort)
+            http_cfg = self.context.get("http_server", {})
+            port = int(http_cfg.get("port", 0))
+            token = str(http_cfg.get("secret_header_value", ""))
+
+            if not capture_contains_ascii(pcap_path, "HTTP/", port=None) and not capture_contains_ascii(
+                pcap_path, "GET ", port=None
+            ):
+                self.errors.append(
+                    f"No obvious HTTP payload detected in {pcap_path.name}\n"
+                    "   Ensure you captured the request and the response."
+                )
+                return False
+
+            if token and port and not capture_contains_ascii(pcap_path, token, port=port):
+                self.errors.append(
+                    f"Student token not detected in {pcap_path.name}\n"
+                    f"   Include the header when testing: X-Student-Token: {token}"
+                )
+                return False
+
+            return True
         
         try:
             result = subprocess.run(
@@ -238,8 +277,8 @@ class PcapVerifier:
         print("=" * 70)
         
         if not self.tshark_available:
-            print("\n⚠️  tshark not available — deep analysis will be skipped")
-            print("   Install Wireshark for full verification\n")
+            print("\n⚠️  tshark not available — using built-in PCAP parser")
+            print("   For the most detailed checks install Wireshark (tshark)\n")
         
         all_passed = True
         captures = self.context.get("required_captures", {})
@@ -273,10 +312,15 @@ class PcapVerifier:
                         capture_passed = False
                 
                 elif capture_name == "load_balance":
-                    # For load balance just check it has substantial content
-                    min_packets = capture_info.get("min_packets", 30)
-                    if not self.verify_file_size(pcap_path, min_bytes=min_packets * 100):
-                        capture_passed = False
+                    # Prefer protocol signal if possible
+                    backend_counts = count_http_header_values(pcap_path, "X-Backend-ID", port=None)
+                    if len(backend_counts) >= 2:
+                        pass
+                    else:
+                        # Fallback: at least has substantial content
+                        min_packets = capture_info.get("min_packets", 30)
+                        if not self.verify_file_size(pcap_path, min_bytes=min_packets * 100):
+                            capture_passed = False
             
             if capture_passed:
                 print(f"   ✅ PASSED")

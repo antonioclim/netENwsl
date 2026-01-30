@@ -144,24 +144,20 @@ class WeightedLoadBalancer:
             ...
         """
         with self.lock:
-            # TODO: Implement weighted selection
-            # 
-            # healthy_backends = [b for b in self.backends if b.healthy]
-            # if not healthy_backends:
-            #     return None
-            # 
-            # total_weight = sum(b.weight for b in healthy_backends)
-            # 
-            # for backend in healthy_backends:
-            #     backend.current_weight += backend.weight
-            # 
-            # selected = max(healthy_backends, key=lambda b: b.current_weight)
-            # selected.current_weight -= total_weight
-            # 
-            # self.stats[selected.address] += 1
-            # return selected
-            
-            raise NotImplementedError("Implement select_backend()")
+            healthy_backends = [b for b in self.backends if b.healthy]
+            if not healthy_backends:
+                return None
+
+            total_weight = sum(b.weight for b in healthy_backends)
+
+            for backend in healthy_backends:
+                backend.current_weight += backend.weight
+
+            selected = max(healthy_backends, key=lambda b: b.current_weight)
+            selected.current_weight -= total_weight
+
+            self.stats[selected.address] += 1
+            return selected
     
     # ═══════════════════════════════════════════════════════════════════════════
     # SECTION 2: HEALTH CHECKING
@@ -195,7 +191,12 @@ class WeightedLoadBalancer:
         # except (URLError, TimeoutError):
         #     return False
         
-        raise NotImplementedError("Implement check_health()")
+        try:
+            url = f"http://{backend.address}/"
+            with urlopen(url, timeout=HEALTH_CHECK_TIMEOUT) as response:
+                return 200 <= int(getattr(response, "status", 0)) < 300
+        except (URLError, TimeoutError, ValueError):
+            return False
     
     def run_health_checks(self) -> None:
         """
@@ -210,14 +211,12 @@ class WeightedLoadBalancer:
         
         while True:
             for backend in self.backends:
-                # TODO: Check health and update status
-                # was_healthy = backend.healthy
-                # backend.healthy = self.check_health(backend)
-                # 
-                # if was_healthy != backend.healthy:
-                #     status = "UP" if backend.healthy else "DOWN"
-                #     print(f"[Health] {backend.address} is now {status}")
-                pass
+                was_healthy = backend.healthy
+                backend.healthy = self.check_health(backend)
+
+                if was_healthy != backend.healthy:
+                    status = "UP" if backend.healthy else "DOWN"
+                    print(f"[Health] {backend.address} is now {status}")
             
             time.sleep(HEALTH_CHECK_INTERVAL)
     
@@ -253,33 +252,29 @@ class WeightedLoadBalancer:
         if not backend:
             # No healthy backends
             return b"HTTP/1.1 503 Service Unavailable\r\n\r\nNo backends available"
-        
-        # TODO: Forward to backend
-        # 
-        # try:
-        #     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as backend_socket:
-        #         backend_socket.connect((backend.host, backend.port))
-        #         
-        #         # Add X-Forwarded-For header
-        #         client_ip = client_socket.getpeername()[0]
-        #         modified_request = self.add_forwarded_header(request, client_ip)
-        #         
-        #         backend_socket.sendall(modified_request)
-        #         
-        #         response = b""
-        #         while True:
-        #             chunk = backend_socket.recv(4096)
-        #             if not chunk:
-        #                 break
-        #             response += chunk
-        #         
-        #         return response
-        # except Exception as e:
-        #     print(f"[Proxy] Error forwarding to {backend.address}: {e}")
-        #     backend.healthy = False
-        #     return b"HTTP/1.1 502 Bad Gateway\r\n\r\nBackend error"
-        
-        raise NotImplementedError("Implement forward_request()")
+
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as backend_socket:
+                backend_socket.settimeout(5)
+                backend_socket.connect((backend.host, backend.port))
+
+                client_ip = client_socket.getpeername()[0]
+                modified_request = self.add_forwarded_header(request, client_ip)
+
+                backend_socket.sendall(modified_request)
+
+                response_chunks: list[bytes] = []
+                while True:
+                    chunk = backend_socket.recv(4096)
+                    if not chunk:
+                        break
+                    response_chunks.append(chunk)
+
+                return b"".join(response_chunks)
+        except Exception as e:
+            print(f"[Proxy] Error forwarding to {backend.address}: {e}")
+            backend.healthy = False
+            return b"HTTP/1.1 502 Bad Gateway\r\n\r\nBackend error"
     
     def add_forwarded_header(self, request: bytes, client_ip: str) -> bytes:
         """

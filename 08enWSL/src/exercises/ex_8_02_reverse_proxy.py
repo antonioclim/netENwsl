@@ -84,17 +84,9 @@ class RoundRobinBalancer:
             >>> backends = [('localhost', 9001), ('localhost', 9002), ('localhost', 9003)]
             >>> balancer = RoundRobinBalancer(backends)
         """
-        # TODO: Implement initialisation
-        #
-        # Steps:
-        # 1. Store the backends list
-        # 2. Initialise index to 0
-        # 3. Create a threading.Lock for thread safety
-        #
-        # Why a lock? Multiple threads may call next_backend() simultaneously.
-        # Without a lock, two threads could get the same backend.
-        
-        pass  # Replace with your implementation
+        self.backends: list[tuple[str, int]] = list(backends)
+        self.index = 0
+        self.lock = threading.Lock()
     
     def next_backend(self) -> Optional[tuple[str, int]]:
         """
@@ -108,29 +100,36 @@ class RoundRobinBalancer:
             This method is thread-safe. Multiple threads can call it
             simultaneously without race conditions.
         """
-        # TODO: Implement round-robin selection
-        #
-        # Steps:
-        # 1. Acquire the lock (use 'with self.lock:')
-        # 2. Check if backends list is empty - return None if so
-        # 3. Get the backend at current index
-        # 4. Increment index with wraparound: (index + 1) % len(backends)
-        # 5. Return the selected backend
-        #
-        # KEY INSIGHT: The modulo operation (%) makes the index wrap around:
-        #   0 → 1 → 2 → 0 → 1 → 2 → ... (with 3 backends)
-        
-        pass  # Replace with your implementation
+        with self.lock:
+            if not self.backends:
+                return None
+
+            backend = self.backends[self.index]
+            self.index = (self.index + 1) % len(self.backends)
+            return backend
     
     def add_backend(self, host: str, port: int) -> None:
         """Add a new backend server to the pool."""
-        # TODO: Implement backend addition (thread-safe)
-        pass
+        with self.lock:
+            if (host, port) not in self.backends:
+                self.backends.append((host, port))
+                # Keep index valid if this is the first backend
+                if len(self.backends) == 1:
+                    self.index = 0
     
     def remove_backend(self, host: str, port: int) -> bool:
         """Remove a backend server from the pool. Returns True if found."""
-        # TODO: Implement backend removal (thread-safe)
-        pass
+        with self.lock:
+            try:
+                self.backends.remove((host, port))
+            except ValueError:
+                return False
+
+            if self.backends:
+                self.index %= len(self.backends)
+            else:
+                self.index = 0
+            return True
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -171,19 +170,45 @@ def add_proxy_headers(request_str: str, client_ip: str) -> str:
         >>> "X-Forwarded-For: 10.0.0.1, 192.168.1.100" in modified
         True
     """
-    # TODO: Implement proxy header injection
-    #
-    # Steps:
-    # 1. Split request into lines on '\r\n'
-    # 2. Find if X-Forwarded-For header exists
-    # 3. If exists: append client_ip to existing value
-    # 4. If not exists: insert new X-Forwarded-For header
-    # 5. Also add X-Real-IP header with client_ip
-    # 6. Rejoin lines with '\r\n'
-    #
-    # IMPORTANT: Insert headers BEFORE the blank line that ends headers!
-    
-    pass  # Replace with your implementation
+    lines = request_str.split("\r\n")
+
+    # Identify header end (blank line). If missing, treat end as len(lines).
+    try:
+        header_end = lines.index("")
+    except ValueError:
+        header_end = len(lines)
+
+    def find_header(name: str) -> Optional[int]:
+        name_lc = name.lower()
+        for i, line in enumerate(lines[:header_end]):
+            if ":" not in line:
+                continue
+            k, _ = line.split(":", 1)
+            if k.strip().lower() == name_lc:
+                return i
+        return None
+
+    # X-Forwarded-For
+    xff_idx = find_header("X-Forwarded-For")
+    if xff_idx is None:
+        lines.insert(header_end, f"X-Forwarded-For: {client_ip}")
+        header_end += 1
+    else:
+        _, value = lines[xff_idx].split(":", 1)
+        existing = value.strip()
+        if existing:
+            lines[xff_idx] = f"X-Forwarded-For: {existing}, {client_ip}"
+        else:
+            lines[xff_idx] = f"X-Forwarded-For: {client_ip}"
+
+    # X-Real-IP
+    xri_idx = find_header("X-Real-IP")
+    if xri_idx is None:
+        lines.insert(header_end, f"X-Real-IP: {client_ip}")
+    else:
+        lines[xri_idx] = f"X-Real-IP: {client_ip}"
+
+    return "\r\n".join(lines)
 
 
 def modify_host_header(request_str: str, backend_host: str, backend_port: int) -> str:
@@ -201,14 +226,26 @@ def modify_host_header(request_str: str, backend_host: str, backend_port: int) -
     Returns:
         Request with modified Host header
     """
-    # TODO: Implement Host header modification
-    #
-    # Steps:
-    # 1. Find the Host header line
-    # 2. Replace its value with backend_host:backend_port
-    # 3. Return modified request
-    
-    pass  # Replace with your implementation
+    lines = request_str.split("\r\n")
+    try:
+        header_end = lines.index("")
+    except ValueError:
+        header_end = len(lines)
+
+    target = f"{backend_host}:{backend_port}"
+
+    host_idx = None
+    for i, line in enumerate(lines[:header_end]):
+        if line.lower().startswith("host:"):
+            host_idx = i
+            break
+
+    if host_idx is None:
+        lines.insert(header_end, f"Host: {target}")
+    else:
+        lines[host_idx] = f"Host: {target}"
+
+    return "\r\n".join(lines)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -247,24 +284,41 @@ def forward_request(
         ConnectionError: If unable to connect to backend
         TimeoutError: If backend doesn't respond in time
     """
-    # TODO: Implement request forwarding
-    #
-    # Steps:
-    # 1. Create a new TCP socket for backend connection
-    # 2. Set socket timeout to CONNECTION_TIMEOUT
-    # 3. Connect to (backend_host, backend_port)
-    # 4. Decode request bytes to string
-    # 5. Add proxy headers with add_proxy_headers()
-    # 6. Optionally modify Host header
-    # 7. Encode back to bytes and send to backend
-    # 8. Receive response in a loop until no more data
-    # 9. Close the backend socket
-    # 10. Return the complete response
-    #
-    # IMPORTANT: Use a loop for recv() because responses may be larger
-    # than BUFFER_SIZE and arrive in multiple chunks!
-    
-    pass  # Replace with your implementation
+    backend_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    backend_socket.settimeout(CONNECTION_TIMEOUT)
+
+    try:
+        backend_socket.connect((backend_host, backend_port))
+
+        request_str = request.decode("iso-8859-1", errors="replace")
+        request_str = add_proxy_headers(request_str, client_ip)
+        request_str = modify_host_header(request_str, backend_host, backend_port)
+        backend_socket.sendall(request_str.encode("iso-8859-1"))
+
+        chunks: list[bytes] = []
+        while True:
+            try:
+                data = backend_socket.recv(BUFFER_SIZE)
+            except socket.timeout as e:
+                raise TimeoutError(
+                    f"Backend {backend_host}:{backend_port} did not respond in time"
+                ) from e
+
+            if not data:
+                break
+            chunks.append(data)
+
+        return b"".join(chunks)
+
+    except socket.timeout as e:
+        raise TimeoutError(f"Backend {backend_host}:{backend_port} timed out") from e
+    except OSError as e:
+        raise ConnectionError(f"Could not connect to backend {backend_host}:{backend_port}") from e
+    finally:
+        try:
+            backend_socket.close()
+        except Exception:
+            pass
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -297,21 +351,13 @@ def check_backend_health(host: str, port: int, timeout: float = 2.0) -> bool:
         >>> check_backend_health('localhost', 9999)  # Nothing running
         False
     """
-    # TODO: Implement health check
-    #
-    # Steps:
-    # 1. Create a TCP socket
-    # 2. Set timeout
-    # 3. Try to connect
-    # 4. If successful, close socket and return True
-    # 5. If any exception, return False
-    #
-    # NOTE: A more complete health check would:
-    # - Send "HEAD /health HTTP/1.1\r\n..."
-    # - Check for 200 OK response
-    # - This ensures the HTTP server is working, not just TCP
-    
-    pass  # Replace with your implementation
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(timeout)
+            s.connect((host, port))
+            return True
+    except Exception:
+        return False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

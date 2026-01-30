@@ -93,7 +93,7 @@ unfixable = []
 "homework/*" = ["FIX002", "TD002", "TD003"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "scripts", "tests", "formative"]
+known-first-party = ["src", "scripts", "tests", "formative", "anti_ai", "homework"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.format]
@@ -194,4 +194,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*", "scripts*", "formative*"]
+include = ["src*", "scripts*", "formative*", "anti_ai*"]

@@ -28,6 +28,7 @@ Course: Computer Networks - ASE, CSIE
 import socket
 import os
 import argparse
+import urllib.parse
 from datetime import datetime
 from typing import Optional
 
@@ -103,18 +104,37 @@ def parse_request(raw_data: bytes) -> Optional[dict]:
         >>> result['headers']['host']
         'localhost'
     """
-    # TODO: Implement HTTP request parsing
-    # 
-    # Steps:
-    # 1. Decode bytes to string using 'iso-8859-1' (HTTP header encoding)
-    # 2. Split on '\r\n' to get individual lines
-    # 3. Parse the first line (request line) into method, path, version
-    # 4. Parse remaining lines as headers until empty line
-    # 5. Normalise header names to lowercase for case-insensitive matching
-    #
-    # Handle errors gracefully - return None if parsing fails
-    
-    pass  # Replace with your implementation
+    try:
+        text = raw_data.decode("iso-8859-1", errors="replace")
+        lines = text.split("\r\n")
+
+        if not lines or not lines[0].strip():
+            return None
+
+        # Request line: METHOD SP PATH SP VERSION
+        parts = lines[0].split(" ")
+        if len(parts) < 3:
+            return None
+
+        method, path, version = parts[0].upper(), parts[1], parts[2]
+
+        headers: dict[str, str] = {}
+        for line in lines[1:]:
+            if line == "":
+                break
+            if ":" not in line:
+                continue
+            key, value = line.split(":", 1)
+            headers[key.strip().lower()] = value.strip()
+
+        return {
+            "method": method,
+            "path": path,
+            "version": version,
+            "headers": headers,
+        }
+    except Exception:
+        return None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -151,18 +171,27 @@ def is_safe_path(requested_path: str, docroot: str) -> bool:
         Always normalise paths BEFORE joining with docroot to prevent
         path traversal. The order of operations matters!
     """
-    # TODO: Implement path safety check
-    #
-    # Steps:
-    # 1. Use os.path.normpath() to collapse '..' and '.' sequences
-    # 2. Strip leading '/' from the normalised path
-    # 3. Join with docroot using os.path.join()
-    # 4. Get absolute paths of both docroot and full path
-    # 5. Check if the full path starts with docroot path
-    #
-    # WARNING: Do NOT join paths before normalising!
-    
-    pass  # Replace with your implementation
+    try:
+        # Only consider the path part (ignore query string and fragments)
+        parsed = urllib.parse.urlparse(requested_path)
+        path = urllib.parse.unquote(parsed.path)
+
+        # Convert to a relative path for joining
+        path = path.lstrip("/")
+
+        # Normalise to collapse './' and '../'
+        normalised = os.path.normpath(path)
+
+        # If the normalised path escapes upwards, it is unsafe
+        if normalised.startswith("..") or os.path.isabs(normalised):
+            return False
+
+        docroot_abs = os.path.abspath(docroot)
+        full_path = os.path.abspath(os.path.join(docroot_abs, normalised))
+
+        return full_path == docroot_abs or full_path.startswith(docroot_abs + os.sep)
+    except Exception:
+        return False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -189,15 +218,8 @@ def get_mime_type(filepath: str) -> str:
         >>> get_mime_type('/var/www/style.css')
         'text/css; charset=utf-8'
     """
-    # TODO: Implement MIME type lookup
-    #
-    # Steps:
-    # 1. Extract file extension using os.path.splitext()
-    # 2. Convert extension to lowercase
-    # 3. Look up in MIME_TYPES dictionary
-    # 4. Return default "application/octet-stream" if not found
-    
-    pass  # Replace with your implementation
+    _, ext = os.path.splitext(filepath)
+    return MIME_TYPES.get(ext.lower(), "application/octet-stream")
 
 
 def serve_file(filepath: str, docroot: str) -> tuple[int, bytes, str]:
@@ -218,20 +240,38 @@ def serve_file(filepath: str, docroot: str) -> tuple[int, bytes, str]:
         >>> mime
         'text/html; charset=utf-8'
     """
-    # TODO: Implement file serving
-    #
-    # Steps:
-    # 1. Check path safety with is_safe_path() - return 403 if unsafe
-    # 2. Build full filesystem path
-    # 3. If path is a directory, append 'index.html'
-    # 4. Check if file exists - return 404 if not
-    # 5. Read file content in binary mode
-    # 6. Determine MIME type
-    # 7. Return (200, content, mime_type)
-    #
-    # Handle exceptions and return appropriate error codes
-    
-    pass  # Replace with your implementation
+    try:
+        if not is_safe_path(filepath, docroot):
+            body = b"Forbidden"
+            return 403, body, "text/plain; charset=utf-8"
+
+        parsed = urllib.parse.urlparse(filepath)
+        path = urllib.parse.unquote(parsed.path)
+        rel = path.lstrip("/")
+        rel = os.path.normpath(rel) if rel else ""
+
+        docroot_abs = os.path.abspath(docroot)
+        full_path = os.path.join(docroot_abs, rel)
+
+        # Default document
+        if os.path.isdir(full_path):
+            full_path = os.path.join(full_path, "index.html")
+
+        if not os.path.exists(full_path) or not os.path.isfile(full_path):
+            body = b"Not Found"
+            return 404, body, "text/plain; charset=utf-8"
+
+        with open(full_path, "rb") as f:
+            content = f.read()
+
+        mime = get_mime_type(full_path)
+        return 200, content, mime
+    except PermissionError:
+        body = b"Forbidden"
+        return 403, body, "text/plain; charset=utf-8"
+    except Exception:
+        body = b"Internal Server Error"
+        return 500, body, "text/plain; charset=utf-8"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -270,19 +310,13 @@ def build_response(
         >>> resp.startswith(b'HTTP/1.1 200 OK')
         True
     """
-    # TODO: Implement response building
-    #
-    # Steps:
-    # 1. Build status line: "HTTP/1.1 {code} {message}\r\n"
-    # 2. Build header lines: "{name}: {value}\r\n" for each header
-    # 3. Add blank line to separate headers from body: "\r\n"
-    # 4. Encode the text part to bytes
-    # 5. Append the body bytes
-    # 6. Return complete response
-    #
-    # IMPORTANT: The blank line (\r\n\r\n) is REQUIRED!
-    
-    pass  # Replace with your implementation
+    reason = STATUS_MESSAGES.get(status_code, "Unknown")
+    status_line = f"HTTP/1.1 {status_code} {reason}\r\n"
+
+    header_lines = "".join(f"{k}: {v}\r\n" for k, v in headers.items())
+
+    head = (status_line + header_lines + "\r\n").encode("iso-8859-1")
+    return head + body
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -314,21 +348,43 @@ def handle_request(raw_data: bytes, docroot: str) -> bytes:
         >>> b'200 OK' in resp
         True
     """
-    # TODO: Implement request handling
-    #
-    # Steps:
-    # 1. Parse the request with parse_request()
-    # 2. If parsing fails, return 400 Bad Request
-    # 3. Check method - only allow GET and HEAD (return 405 otherwise)
-    # 4. Serve the requested file with serve_file()
-    # 5. Build response headers (Date, Server, Content-Type, Content-Length)
-    # 6. For HEAD requests, send headers but NO body
-    # 7. For GET requests, send headers AND body
-    # 8. Return the complete response
-    #
-    # Remember: HEAD must include Content-Length of what GET would return!
-    
-    pass  # Replace with your implementation
+    request = parse_request(raw_data)
+
+    if request is None:
+        body = b"Bad Request"
+        headers = {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Content-Length": str(len(body)),
+            "Connection": "close",
+        }
+        return build_response(400, headers, body)
+
+    method = request.get("method", "")
+    path = request.get("path", "/")
+
+    if method not in {"GET", "HEAD"}:
+        body = b"Method Not Allowed"
+        headers = {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Content-Length": str(len(body)),
+            "Allow": "GET, HEAD",
+            "Connection": "close",
+        }
+        return build_response(405, headers, body if method == "GET" else b"")
+
+    status_code, content, mime = serve_file(path, docroot)
+
+    date_hdr = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+    headers = {
+        "Date": date_hdr,
+        "Server": "Week8HTTP/1.0",
+        "Content-Type": mime,
+        "Content-Length": str(len(content)),
+        "Connection": "close",
+    }
+
+    response_body = content if method == "GET" else b""
+    return build_response(status_code, headers, response_body)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
