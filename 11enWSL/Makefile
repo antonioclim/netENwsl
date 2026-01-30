@@ -271,6 +271,24 @@ clean-all: clean docker-down
 	@echo "$(GREEN)✓ Full cleanup complete$(NC)"
 
 # =============================================================================
+
+# =============================================================================
+# ANTI-AI
+# =============================================================================
+
+anti-ai-issue:
+	@echo "$(YELLOW)Issuing Week 11 anti-AI challenge...$(NC)"
+	@if [ -z "$(STUDENT_ID)" ]; then echo "Set STUDENT_ID=<id>"; exit 2; fi
+	$(PYTHON) scripts/anti_ai_issue_challenge.py --student-id $(STUDENT_ID)
+
+anti-ai-evidence:
+	@echo "$(YELLOW)Generating Week 11 anti-AI evidence...$(NC)"
+	$(PYTHON) scripts/anti_ai_generate_evidence.py
+
+anti-ai-validate:
+	@echo "$(YELLOW)Validating Week 11 anti-AI artefacts...$(NC)"
+	$(PYTHON) scripts/anti_ai_validate.py
+
 # UTILITIES
 # =============================================================================
 

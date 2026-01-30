@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Exercise Verification Tests for Week 11 Laboratory
-NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+NETWORKING class - ASE, Informatics | by Revolvix
 
 Tests to verify exercise implementations are working correctly.
 """
@@ -24,8 +24,21 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.utils.network_utils import (
     http_get, check_port, wait_for_port,
-    test_load_balancer, extract_backend_id
+    probe_load_balancer, extract_backend_id
 )
+
+WEEK11_SENTINEL_HEADER = 'x-netenwsl-week'
+WEEK11_SENTINEL_VALUE = '11'
+
+def is_week11_service(url: str) -> bool:
+    """Return True if the service at URL looks like the Week 11 lab stack."""
+    try:
+        response = http_get(url)
+    except Exception:
+        return False
+    headers_lower = {k.lower(): v for k, v in (response.headers or {}).items()}
+    return headers_lower.get(WEEK11_SENTINEL_HEADER) == WEEK11_SENTINEL_VALUE
+
 
 
 
@@ -43,10 +56,14 @@ class TestExercise1Backend(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════════
     def setUpClass(cls) -> None:
         """Check if backends are running."""
-        cls.backends_running = all(
-            check_port("localhost", port) 
-            for port in [8081, 8082, 8083]
-        )
+        cls.backends_running = True
+        for port in [8081, 8082, 8083]:
+            if not check_port('localhost', port):
+                cls.backends_running = False
+                break
+            if not is_week11_service(f'http://localhost:{port}/'):
+                cls.backends_running = False
+                break
     
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -101,7 +118,9 @@ class TestExercise2RoundRobin(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════════
     def setUpClass(cls) -> None:
         """Check if load balancer is running."""
-        cls.lb_running = check_port("localhost", 8080)
+        cls.lb_running = False
+        if check_port('localhost', 8080):
+            cls.lb_running = is_week11_service('http://localhost:8080/')
     
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -124,12 +143,12 @@ class TestExercise2RoundRobin(unittest.TestCase):
         if not self.lb_running:
             self.skipTest("Load balancer not running")
         
-        stats = test_load_balancer("http://localhost:8080/", num_requests=12)
+        stats = probe_load_balancer("http://localhost:8080/", num_requests=12)
         
         # Should have at least 2 different backends
         self.assertGreaterEqual(
             len(stats['distribution']),
-            1,  # At least one backend
+            2,  # At least two backends
             "Traffic not distributed to any backend"
         )
 
@@ -149,7 +168,9 @@ class TestExercise3IPHash(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════════
     def setUpClass(cls) -> None:
         """Check if load balancer is running."""
-        cls.lb_running = check_port("localhost", 8080)
+        cls.lb_running = False
+        if check_port('localhost', 8080):
+            cls.lb_running = is_week11_service('http://localhost:8080/')
     
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -188,7 +209,9 @@ class TestExercise4Failover(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════════
     def setUpClass(cls) -> None:
         """Check if load balancer is running."""
-        cls.lb_running = check_port("localhost", 8080)
+        cls.lb_running = False
+        if check_port('localhost', 8080):
+            cls.lb_running = is_week11_service('http://localhost:8080/')
     
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -224,7 +247,9 @@ class TestExercise5NginxDocker(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════════
     def setUpClass(cls) -> None:
         """Check if Nginx stack is running."""
-        cls.nginx_running = check_port("localhost", 8080)
+        cls.nginx_running = False
+        if check_port('localhost', 8080):
+            cls.nginx_running = is_week11_service('http://localhost:8080/')
     
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -298,7 +323,9 @@ class TestExercise7Benchmark(unittest.TestCase):
 # ═══════════════════════════════════════════════════════════════════════════════
     def setUpClass(cls) -> None:
         """Check if load balancer is running."""
-        cls.lb_running = check_port("localhost", 8080)
+        cls.lb_running = False
+        if check_port('localhost', 8080):
+            cls.lb_running = is_week11_service('http://localhost:8080/')
     
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -387,4 +414,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# ing. dr. Antonio Clim
+# Revolvix&Hypotheticalandrei

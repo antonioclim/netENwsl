@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Docker management utilities for Week 11 Laboratory.
-NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+NETWORKING class - ASE, Informatics | by Revolvix
 
 Provides Docker Compose orchestration and health checking functions.
 """
@@ -211,73 +211,132 @@ class DockerManager:
 # CORE_LOGIC
 # ═══════════════════════════════════════════════════════════════════════════════
     def show_status(self, services: Dict[str, Any]) -> None:
-        """
-        Display status of all services.
-        
-        Args:
-            services: Dictionary of service definitions with ports
-        """
-        running = self.get_running_containers()
-        
+        """Display status of all services defined by the weekly scripts."""
         print("\nService Status:")
-        print("-" * 50)
-        
+        print("-" * 70)
+
         for name, config in services.items():
-            container = config.get('container', '')
-            port = config.get('port', '')
-            status = "RUNNING" if container in running else "STOPPED"
-            colour = "\033[32m" if status == "RUNNING" else "\033[31m"
+            container = config.get("container", "")
+            ports = self._normalise_ports(config)
+
+            running = self._is_container_running(container)
+            health = self.get_container_health(container) if running else None
+
+            if not running:
+                status = "STOPPED"
+                colour = "\033[31m"
+            else:
+                if health is None or health == "healthy":
+                    status = "RUNNING"
+                    colour = "\033[32m"
+                else:
+                    status = f"RUNNING ({health})"
+                    colour = "\033[33m"
+
+            port_str = ",".join(str(p) for p in ports) if ports else "-"
             reset = "\033[0m"
-            print(f"  {name:20} {colour}{status:10}{reset} :{port}")
-        
-        print("-" * 50)
-    
+            print(f"  {name:20} {colour}{status:20}{reset} ports: {port_str}")
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
-    def verify_services(self, 
-                        services: Dict[str, Any],
-                        timeout: int = 30) -> bool:
+        print("-" * 70)
+
+    def _normalise_ports(self, config: Dict[str, Any]) -> List[int]:
+        """Normalise service port configuration.
+
+        The weekly kits sometimes use 'ports' (list) and sometimes 'port' (single).
+        This helper guarantees a list of integers.
         """
-        Verify all services are healthy.
-        
-        Args:
-            services: Dictionary of service definitions
-            timeout: Maximum wait time in seconds
-        
-        Returns:
-            True if all services are healthy
+        ports = config.get("ports")
+        if ports is None:
+            port = config.get("port")
+            ports = [] if port in (None, "") else [port]
+        out: List[int] = []
+        for p in ports:
+            try:
+                out.append(int(p))
+            except (TypeError, ValueError):
+                continue
+        return out
+
+    def _is_container_running(self, container_name: str) -> bool:
+        """Return True if the container exists and is running."""
+        if not container_name:
+            return False
+        try:
+            result = subprocess.run(
+                ["docker", "inspect", "-f", "{{.State.Running}}", container_name],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            return result.returncode == 0 and result.stdout.strip().lower() == "true"
+        except Exception:
+            return False
+
+    def get_container_health(self, container_name: str) -> Optional[str]:
+        """Return container health status (healthy, unhealthy, starting) or None.
+
+        If no health check is defined or the container does not exist, returns None.
         """
-        start_time = time.time()
+        if not container_name:
+            return None
+        try:
+            result = subprocess.run(
+                ["docker", "inspect", "-f", "{{if .State.Health}}{{.State.Health.Status}}{{end}}", container_name],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if result.returncode != 0:
+                return None
+            status = result.stdout.strip()
+            return status if status else None
+        except Exception:
+            return None
+
+    def verify_services(self, services: Dict[str, Any], timeout: int = 30) -> bool:
+        """Verify that all services are running and, where applicable, healthy."""
+        deadline = time.time() + float(timeout)
         all_healthy = True
-        
-        for name, config in services.items():
-            port = config.get('port')
-            health_check = config.get('health_check')
-            startup_time = config.get('startup_time', 5)
-            
-            # Wait for startup
-            time.sleep(min(startup_time, 2))
-            
-            if health_check:
-                url = f"http://localhost:{port}{health_check}"
-                healthy = self._check_http_health(url, timeout=10)
-            else:
-                healthy = self._check_port_open(port, timeout=10)
-            
-            if healthy:
-                logger.info(f"  ✓ {name} is healthy (port {port})")
-            else:
-                logger.error(f"  ✗ {name} is NOT healthy (port {port})")
-                all_healthy = False
-        
-        return all_healthy
-    
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# VERIFY_PREREQUISITES
-# ═══════════════════════════════════════════════════════════════════════════════
+        for name, config in services.items():
+            container = config.get("container", "")
+            ports = self._normalise_ports(config)
+            health_check = config.get("health_check")
+            startup_time = float(config.get("startup_time", 0) or 0)
+
+            # Give containers a moment to initialise but do not block excessively
+            if startup_time > 0:
+                time.sleep(min(startup_time, 2.0))
+
+            ok = False
+            while time.time() < deadline:
+                if not self._is_container_running(container):
+                    ok = False
+                else:
+                    # If host ports are published, validate them from the host
+                    if ports:
+                        if health_check:
+                            url = f"http://localhost:{ports[0]}{health_check}"
+                            ok = self._check_http_health(url, timeout=5)
+                        else:
+                            ok = all(self._check_port_open(p, timeout=2) for p in ports)
+                    else:
+                        # No host ports published: rely on Docker health check when present
+                        health = self.get_container_health(container)
+                        ok = True if health is None else (health == "healthy")
+
+                if ok:
+                    break
+                time.sleep(1)
+
+            if ok:
+                logger.info(f"  ✓ {name} is healthy")
+            else:
+                logger.error(f"  ✗ {name} is NOT healthy")
+                all_healthy = False
+
+        return all_healthy
+
     def _check_http_health(self, url: str, timeout: int = 5) -> bool:
         """Check if HTTP endpoint responds with 2xx status."""
         try:
@@ -406,7 +465,7 @@ class DockerManager:
             return f"Error fetching logs: {e}"
 
 
-# ing. dr. Antonio Clim
+# Revolvix&Hypotheticalandrei
 
 if __name__ == "__main__":
     # Module loaded directly - display module info

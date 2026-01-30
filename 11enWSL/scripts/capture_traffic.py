@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Traffic Capture Helper for Week 11 Laboratory
-NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+NETWORKING class - ASE, Informatics | by Revolvix
 
 This script assists with capturing network traffic for analysis in Wireshark.
 """
@@ -58,6 +58,7 @@ def start_tshark_capture(interface: str,
         'tshark',
         '-i', interface,
         '-w', output_file,
+        '-F', 'pcap',
     ]
     
     if capture_filter:
@@ -161,8 +162,8 @@ Examples:
                         help="Network interface (default: any)")
     parser.add_argument("-o", "--output", default=None,
                         help="Output file (default: pcap/week11_TIMESTAMP.pcap)")
-    parser.add_argument("-f", "--filter", default="tcp port 8080",
-                        help="Capture filter (default: tcp port 8080)")
+    parser.add_argument("-f", "--filter", default="tcp port 8080 or udp port 53",
+                        help="Capture filter (default: tcp port 8080 or udp port 53)")
     parser.add_argument("-d", "--duration", type=int, default=0,
                         help="Capture duration in seconds (default: until Ctrl+C)")
     parser.add_argument("--analyse", metavar="FILE",
@@ -240,4 +241,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# ing. dr. Antonio Clim
+# Revolvix&Hypotheticalandrei

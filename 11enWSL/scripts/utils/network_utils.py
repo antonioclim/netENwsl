@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Network testing utilities for Week 11 Laboratory.
-NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+NETWORKING class - ASE, Informatics | by Revolvix
 
 Provides HTTP testing, health checking, and network diagnostics.
 """
@@ -151,11 +151,11 @@ def wait_for_port(host: str,
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST_VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_load_balancer(url: str, 
+def probe_load_balancer(url: str, 
                        num_requests: int = 10,
                        concurrency: int = 1) -> Dict[str, Any]:
     """
-    Test load balancer distribution.
+    Probe load balancer distribution.
     
     Args:
         url: Load balancer URL
@@ -365,7 +365,7 @@ def print_distribution(distribution: Dict[str, int], total: int) -> None:
     print("-" * 40)
 
 
-# ing. dr. Antonio Clim
+# Revolvix&Hypotheticalandrei
 
 if __name__ == "__main__":
     # Module loaded directly - display module info

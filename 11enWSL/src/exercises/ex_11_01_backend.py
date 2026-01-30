@@ -112,6 +112,7 @@ def build_response(backend_id: int, request_count: int) -> bytes:
         b"Content-Type: text/plain; charset=utf-8\r\n"
         b"Connection: close\r\n"
         b"X-Backend-ID: " + str(backend_id).encode() + b"\r\n"
+        b"X-netENwsl-Week: 11\r\n"
         b"Content-Length: " + str(len(body_bytes)).encode() + b"\r\n"
         b"\r\n"
     ) + body_bytes

@@ -4,7 +4,7 @@
   Automated Demonstration Script for Week 11 Laboratory
 ═══════════════════════════════════════════════════════════════════════════════
 
-NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim
+NETWORKING class - ASE, Informatics | by Revolvix
 This script runs automated demonstrations of load balancing and failover.
 ═══════════════════════════════════════════════════════════════════════════════
 """
@@ -28,7 +28,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from scripts.utils.docker_utils import DockerManager
 from scripts.utils.logger import setup_logger, print_banner, print_section
 from scripts.utils.network_utils import (
-    http_get, test_load_balancer, benchmark_endpoint,
+    http_get, probe_load_balancer, benchmark_endpoint,
     print_distribution, print_benchmark_results, wait_for_port
 )
 
@@ -51,7 +51,7 @@ def demo_load_balancing(url: str = "http://localhost:8080/") -> bool:
     logger.info("Observing round-robin distribution...")
     print("")
     
-    stats = test_load_balancer(url, num_requests=12, concurrency=1)
+    stats = probe_load_balancer(url, num_requests=12, concurrency=1)
     
     if stats['successful'] < 10:
         logger.error(f"Too many failures: {stats['failed']}/{stats['total_requests']}")
@@ -118,7 +118,7 @@ def demo_failover(docker: DockerManager,
     print_section("Demo 2: Failover Simulation")
     
     logger.info("Phase 1: Baseline distribution")
-    baseline = test_load_balancer(url, num_requests=6, concurrency=1)
+    baseline = probe_load_balancer(url, num_requests=6, concurrency=1)
     print_distribution(baseline['distribution'], baseline['successful'])
     
     logger.info("\nPhase 2: Stopping Backend 2...")
@@ -138,7 +138,7 @@ def demo_failover(docker: DockerManager,
     time.sleep(2)  # Allow health check to detect failure
     
     logger.info("\nPhase 3: Distribution with Backend 2 down")
-    failover = test_load_balancer(url, num_requests=6, concurrency=1)
+    failover = probe_load_balancer(url, num_requests=6, concurrency=1)
     print_distribution(failover['distribution'], failover['successful'])
     
     # Verify backend 2 is not receiving traffic
@@ -163,7 +163,7 @@ def demo_failover(docker: DockerManager,
     time.sleep(3)  # Allow recovery
     
     logger.info("\nPhase 5: Distribution after recovery")
-    recovery = test_load_balancer(url, num_requests=6, concurrency=1)
+    recovery = probe_load_balancer(url, num_requests=6, concurrency=1)
     print_distribution(recovery['distribution'], recovery['successful'])
     
     return True
@@ -291,7 +291,7 @@ Examples:
     args = parser.parse_args()
     
     print_banner("Week 11 Laboratory Demonstrations")
-    print("NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim")
+    print("NETWORKING class - ASE, Informatics | by Revolvix")
     print("")
     
     docker_dir = PROJECT_ROOT / "docker"
@@ -345,4 +345,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-# ing. dr. Antonio Clim
+# Revolvix&Hypotheticalandrei

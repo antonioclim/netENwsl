@@ -17,7 +17,7 @@ fixable = ["ALL"]
 unfixable = []
 
 [lint.isort]
-known-first-party = ["src", "scripts", "formative", "tests"]
+known-first-party = ["src", "scripts", "anti_ai", "formative", "tests"]
 force-single-line = false
 lines-after-imports = 2
 
