@@ -4,10 +4,11 @@
 # Usage: make [target]
 # Run 'make help' to see all available targets.
 
-.PHONY: help install lint lint-fix typecheck test smoke quiz quiz-random \
-        quiz-quick quiz-review quiz-export docker-up docker-down docker-logs \
-        docker-shell docker-build docker-status clean clean-docker ci all \
-        verify verify-integrity check-syntax test-coverage
+.PHONY: help install lint lint-fix typecheck test smoke quiz quiz-random quiz-quick \
+        quiz-review quiz-export anti-ai-challenge anti-ai-run anti-ai-evidence anti-ai-validate anti-ai-validate-practice anti-ai \
+        docker-up docker-down docker-logs docker-shell docker-build docker-status clean clean-docker \
+        ci all verify verify-integrity check-syntax test-coverage
+
 
 # Configuration
 PYTHON := python3
@@ -15,6 +16,13 @@ PIP := pip
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
 QUIZ_FILE := formative/quiz.yaml
 RUFF_CONFIG := ruff.toml
+
+# Anti‑AI configuration
+STUDENT_ID ?= STUDENT
+ANTI_AI_DIR := artifacts/anti_ai
+ANTI_AI_CHALLENGE := $(ANTI_AI_DIR)/challenge_$(STUDENT_ID).yaml
+ANTI_AI_PROOF_DIR := $(ANTI_AI_DIR)/proof_$(STUDENT_ID)
+ANTI_AI_EVIDENCE := $(ANTI_AI_DIR)/evidence_$(STUDENT_ID).json
 
 # Colours for terminal output
 CYAN := \033[36m
@@ -54,6 +62,13 @@ help: ## Show this help message
 	@echo "  $(CYAN)quiz-review$(RESET)      Review all questions"
 	@echo "  $(CYAN)quiz-export$(RESET)      Export to LMS formats"
 	@echo ""
+	@echo "$(GREEN)Anti‑AI Evidence:$(RESET)"
+	@echo "  $(CYAN)anti-ai-challenge$(RESET)  Generate a per‑student challenge file"
+	@echo "  $(CYAN)anti-ai-run$(RESET)        Run proof traffic and capture logs"
+	@echo "  $(CYAN)anti-ai-evidence$(RESET)   Collect evidence.json for artefacts"
+	@echo "  $(CYAN)anti-ai-validate$(RESET)   Validate submission (strict)"
+	@echo "  $(CYAN)anti-ai$(RESET)            Run the full anti‑AI workflow"
+	@echo ""
 	@echo "$(GREEN)Docker:$(RESET)"
 	@echo "  $(CYAN)docker-up$(RESET)        Start containers"
 	@echo "  $(CYAN)docker-down$(RESET)      Stop containers"
@@ -87,20 +102,20 @@ verify-integrity: ## Verify file checksums
 
 check-syntax: ## Check Python syntax
 	@echo "$(CYAN)Checking syntax...$(RESET)"
-	@find src scripts tests formative -name "*.py" -exec $(PYTHON) -m py_compile {} \;
+	@find src scripts tests formative anti_ai -name "*.py" -exec $(PYTHON) -m py_compile {} \;
 	@echo "$(GREEN)✓ No syntax errors$(RESET)"
 
 lint: ## Run ruff linter
 	@echo "$(CYAN)Running linter...$(RESET)"
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --config $(RUFF_CONFIG) || true
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ anti_ai/ --config $(RUFF_CONFIG) || true
 	@echo "$(GREEN)✓ Linting complete$(RESET)"
 
 lint-fix: ## Run ruff with auto-fix
-	$(PYTHON) -m ruff check --fix src/ scripts/ tests/ formative/ --config $(RUFF_CONFIG)
+	$(PYTHON) -m ruff check --fix src/ scripts/ tests/ formative/ anti_ai/ --config $(RUFF_CONFIG)
 	@echo "$(GREEN)✓ Auto-fixes applied$(RESET)"
 
 typecheck: ## Run mypy type checker
-	@$(PYTHON) -m mypy src/ scripts/ --ignore-missing-imports --no-error-summary 2>/dev/null || true
+	@$(PYTHON) -m mypy src/ scripts/ anti_ai/ --ignore-missing-imports --no-error-summary 2>/dev/null || true
 	@echo "$(GREEN)✓ Type check complete$(RESET)"
 
 test: ## Run all tests
@@ -136,6 +151,44 @@ quiz-export: ## Export to LMS formats
 	$(PYTHON) formative/export_quiz_to_lms.py --format gift --output exports/quiz.gift
 	$(PYTHON) formative/export_quiz_to_lms.py --format json --output exports/quiz_export.json
 	@echo "$(GREEN)✓ Exports in exports/$(RESET)"
+
+
+anti-ai-challenge: ## Generate a per‑student anti‑AI challenge file
+	@mkdir -p $(ANTI_AI_DIR)
+	$(PYTHON) -m anti_ai.challenge_generator --student-id $(STUDENT_ID) --out $(ANTI_AI_CHALLENGE)
+
+anti-ai-run: ## Run proof traffic and capture logs
+	$(PYTHON) -m anti_ai.proof_runner --challenge $(ANTI_AI_CHALLENGE) --out-dir $(ANTI_AI_PROOF_DIR)
+
+anti-ai-evidence: ## Collect evidence.json for the generated proof logs
+	$(PYTHON) -m anti_ai.evidence_collector \
+		--challenge $(ANTI_AI_CHALLENGE) \
+		--base-dir . \
+		--artefact $(ANTI_AI_PROOF_DIR)/tcp_client.txt \
+		--artefact $(ANTI_AI_PROOF_DIR)/udp_client.txt \
+		--artefact $(ANTI_AI_PROOF_DIR)/tcp_server.txt \
+		--artefact $(ANTI_AI_PROOF_DIR)/udp_server.txt \
+		--artefact $(ANTI_AI_PROOF_DIR)/proof_summary.json \
+		--output $(ANTI_AI_EVIDENCE) \
+		--include-commands
+
+anti-ai-validate: ## Validate submission (strict)
+	$(PYTHON) -m anti_ai.submission_validator \
+		--challenge $(ANTI_AI_CHALLENGE) \
+		--evidence $(ANTI_AI_EVIDENCE) \
+		--base-dir . \
+		--verbose
+
+anti-ai-validate-practice: ## Validate submission (practice mode, unsigned challenges allowed)
+	$(PYTHON) -m anti_ai.submission_validator \
+		--challenge $(ANTI_AI_CHALLENGE) \
+		--evidence $(ANTI_AI_EVIDENCE) \
+		--base-dir . \
+		--allow-unsigned \
+		--verbose
+
+anti-ai: anti-ai-challenge anti-ai-run anti-ai-evidence anti-ai-validate-practice ## Run full anti‑AI workflow
+	@echo "$(GREEN)✓ Anti‑AI workflow complete$(RESET)"
 
 docker-up: ## Start containers
 	$(DOCKER_COMPOSE) up -d

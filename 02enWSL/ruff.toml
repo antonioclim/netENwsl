@@ -19,7 +19,7 @@ ignore = ["E501", "B008", "B905"]
 "homework/*" = ["B"]
 
 [lint.isort]
-known-first-party = ["src", "scripts", "formative"]
+known-first-party = ["src", "scripts", "formative", "anti_ai"]
 force-single-line = false
 lines-after-imports = 2
 

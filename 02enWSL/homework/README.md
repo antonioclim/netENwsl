@@ -152,6 +152,37 @@ Create a tool that analyses captured network traffic and generates statistics ab
 
 ---
 
+## Submission with anti‑AI evidence
+
+For assessed submissions, you must include machine‑checkable evidence that you ran the lab. You may use AI tools for explanations and debugging but the submitted artefacts must be produced by real execution.
+
+### Required artefacts
+
+When asked for anti‑AI evidence, include:
+- `artifacts/anti_ai/challenge_<YOUR_ID>.yaml`
+- `artifacts/anti_ai/proof_<YOUR_ID>/tcp_client.txt`
+- `artifacts/anti_ai/proof_<YOUR_ID>/udp_client.txt`
+- `artifacts/anti_ai/proof_<YOUR_ID>/tcp_server.txt`
+- `artifacts/anti_ai/proof_<YOUR_ID>/udp_server.txt`
+- `artifacts/anti_ai/proof_<YOUR_ID>/proof_summary.json`
+- `artifacts/anti_ai/evidence_<YOUR_ID>.json`
+
+### Commands
+
+From inside `02enWSL/`:
+
+```bash
+make anti-ai STUDENT_ID=YOUR_ID
+```
+
+To validate locally:
+
+```bash
+make anti-ai-validate-practice STUDENT_ID=YOUR_ID
+```
+
+The instructor can require signed challenges by setting `ANTI_AI_MASTER_KEY` for generation and validation.
+
 ## Submission Checklist
 
 Before submitting, verify:

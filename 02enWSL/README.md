@@ -6,7 +6,7 @@
 
 ---
 
-## 🧭 Quick Start
+## 🧭 Quick Navigation
 
 | Section | Time | Description |
 |---------|------|-------------|
@@ -33,8 +33,8 @@
 
 This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
 
-**Repository:** https://github.com/antonioclim/netENwsl  
-**This Week's Folder:** `2enWSL`
+**Repository:** https://github.com/antonioclim/netENwsl
+**This Week's Folder:** `02enWSL`
 
 | Component | Details |
 |-----------|---------|
@@ -54,7 +54,7 @@ This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portain
 
 Press `Win + X` → Select "Windows Terminal" or "PowerShell"
 
-### Step 2: Clone the Repository
+### Step 2: Navigate and Clone
 
 ```powershell
 # Create networking folder if it doesn't exist
@@ -118,16 +118,16 @@ abc123...      portainer/portainer-ce   Up 2 hours      portainer
 
 ### Step 3: Verify Portainer Access
 
-Open browser and go to: **http://localhost:9000**
+Open browser and navigate to: **http://localhost:9000**
 
 **Login credentials:**
 - Username: `stud`
 - Password: `studstudstud`
 
-### Step 4: Go to Laboratory Directory
+### Step 4: Navigate to Laboratory Directory
 
 ```bash
-cd /mnt/d/NETWORKING/WEEK2/2enWSL
+cd /mnt/d/NETWORKING/WEEK2/02enWSL
 ls -la
 ```
 
@@ -138,7 +138,7 @@ ls -la
 Before continuing, verify:
 - [ ] Docker is running (`docker ps` shows portainer)
 - [ ] Portainer is accessible at http://localhost:9000
-- [ ] You can access the lab directory
+- [ ] You can navigate to the lab directory
 
 **If any check fails, see [Troubleshooting](#troubleshooting) section.**
 
@@ -156,7 +156,7 @@ After login at http://localhost:9000, you will see:
 
 ### Viewing Containers
 
-Path: **Home → local → Containers**
+Navigate: **Home → local → Containers**
 
 You will see a table showing all containers with:
 - Name, State, Image, Created, IP Address, Ports
@@ -172,7 +172,7 @@ For any container, you can:
 
 ### Modifying Container IP Address
 
-1. Go to: **Networks → week2_network**
+1. Navigate: **Networks → week2_network**
 2. View current IPAM configuration (10.0.2.0/24)
 3. To change:
    - Stop containers using the network
@@ -225,7 +225,7 @@ From Windows Start Menu: Search "Wireshark" → Click to open
 ### Saving Captures
 
 1. **File → Save As**
-2. Go to: `D:\NETWORKING\WEEK2\pcap\`
+2. Navigate to: `D:\NETWORKING\WEEK2\pcap\`
 3. Filename: `capture_exercise_N.pcap`
 
 ---
@@ -247,8 +247,6 @@ The practical component introduces the Berkeley Sockets API, the de facto standa
 
 Throughout the exercises, students will capture network traffic to observe protocol behaviour at the packet level, correlating application code with the encapsulation process described in architectural models.
 
-**From previous cohorts:** The most common mistake is binding to `127.0.0.1` and then wondering why Docker containers cannot connect. If this happens to you, check your bind address first — it should be `0.0.0.0` for container access.
-
 ## Learning Objectives
 
 By the end of this laboratory session, you will be able to:
@@ -257,201 +255,355 @@ By the end of this laboratory session, you will be able to:
 2. **Explain** the encapsulation process and how data units transform as they traverse the protocol stack
 3. **Implement** concurrent TCP servers using Python's socket module with threading
 4. **Implement** UDP servers and clients demonstrating connectionless communication patterns
-5. **Capture** network traffic using Wireshark and filter by protocol type
-6. **Analyse** TCP handshake sequences and correlate packets with socket API calls
-7. **Debug** common socket programming errors including "Address already in use"
+5. **Analyse** network captures to identify TCP three-way handshake and compare with UDP's connectionless behaviour
+6. **Evaluate** the trade-offs between TCP and UDP for different application requirements
 
-See [docs/learning_objectives.md](docs/learning_objectives.md) for the complete traceability matrix linking objectives to exercises and assessments.
-
----
+For detailed Bloom taxonomy mapping, see [docs/learning_objectives.md](docs/learning_objectives.md).
 
 ## 📚 Pedagogical Resources
 
-| Resource | Purpose |
-|----------|---------|
-| [docs/theory_summary.md](docs/theory_summary.md) | OSI/TCP-IP theory with CPA analogies |
-| [docs/peer_instruction.md](docs/peer_instruction.md) | 5 MCQ questions for class voting |
-| [docs/pair_programming_guide.md](docs/pair_programming_guide.md) | Collaborative exercise structure |
-| [docs/misconceptions.md](docs/misconceptions.md) | 12 common errors with corrections |
-| [docs/glossary.md](docs/glossary.md) | Technical terms reference |
-| [docs/code_tracing.md](docs/code_tracing.md) | Trace execution exercises |
-| [docs/parsons_problems.md](docs/parsons_problems.md) | Code reordering exercises |
-| [docs/concept_analogies.md](docs/concept_analogies.md) | Real-world analogies |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | Problem-solving guide |
-| [docs/reflection_prompts.md](docs/reflection_prompts.md) | Post-lab reflection questions |
-| [docs/commands_cheatsheet.md](docs/commands_cheatsheet.md) | Quick reference |
+This laboratory includes evidence-based learning materials:
 
-### Formative Assessment
+| Resource | Purpose | Location |
+|----------|---------|----------|
+| **Learning Objectives** | Bloom taxonomy mapping and skills checklist | [docs/learning_objectives.md](docs/learning_objectives.md) |
+| **Peer Instruction Questions** | MCQ for think-pair-share activities | [docs/peer_instruction.md](docs/peer_instruction.md) |
+| **Pair Programming Guide** | Structured collaborative exercises | [docs/pair_programming_guide.md](docs/pair_programming_guide.md) |
+| **Common Misconceptions** | Frequent errors and corrections | [docs/misconceptions.md](docs/misconceptions.md) |
+| **Glossary** | Technical terms reference | [docs/glossary.md](docs/glossary.md) |
+| **Code Tracing** | Execution prediction exercises | [docs/code_tracing.md](docs/code_tracing.md) |
+| **Parsons Problems** | Code reordering challenges | [docs/parsons_problems.md](docs/parsons_problems.md) |
+| **Concept Analogies** | Practical analogies for abstract concepts | [docs/concept_analogies.md](docs/concept_analogies.md) |
+| **Diagrams** | Visual aids with ASCII and PNG versions | [docs/images/README.md](docs/images/README.md) |
 
-Run the interactive quiz:
-```bash
-make quiz           # Full quiz
-make quiz-quick     # 5 random questions
-make quiz-review    # Review mode
-```
+
+### 🗺️ Recommended Learning Path
+
+Follow this sequence for best learning:
+
+| Order | Resource | Time | Purpose |
+|-------|----------|------|---------|
+| 1 | [docs/theory_summary.md](docs/theory_summary.md) | 15 min | OSI/TCP-IP model overview |
+| 2 | [docs/concept_analogies.md](docs/concept_analogies.md) | 10 min | Build intuition with CPA analogies |
+| 3 | [docs/glossary.md](docs/glossary.md) | Reference | Keep open during exercises |
+| 4 | **Exercise 1** (TCP) | 25 min | Start with connection-oriented |
+| 5 | [docs/code_tracing.md](docs/code_tracing.md) | 15 min | Trace TCP execution |
+| 6 | **Exercise 2** (UDP) | 20 min | Compare with connectionless |
+| 7 | [docs/misconceptions.md](docs/misconceptions.md) | 10 min | Check your understanding |
+| 8 | **Exercise 3** (Capture) | 25 min | Observe protocols in action |
+| 9 | [docs/peer_instruction.md](docs/peer_instruction.md) | 35 min | Group discussion (if in class) |
+
+**Total estimated time:** 2.5 hours (self-study) or 3 hours (with peer instruction)
+
+### 💭 Prediction Checkpoints
+
+Before running each exercise, pause and predict the outcome. This builds deeper understanding.
+
+**Exercise 1 (TCP):**
+- [ ] How many packets does `listen()` generate? _(Answer: Zero — it's local)_
+- [ ] What packets will `connect()` trigger? _(Answer: SYN → SYN-ACK → ACK)_
+- [ ] Threaded server with 10 clients: total time? _(Answer: ~100ms parallel)_
+
+**Exercise 2 (UDP):**
+- [ ] Does `bind()` send any packets? _(Answer: No — local operation)_
+- [ ] Packets for one "ping" exchange? _(Answer: 2 — request + response)_
+- [ ] What if server is down when client sends? _(Answer: sendto succeeds, recvfrom times out)_
+
+**Exercise 3 (Capture):**
+- [ ] TCP vs UDP: what's missing in UDP capture? _(Answer: No SYN, ACK, FIN packets)_
 
 ---
+
+## Prerequisites
+
+### Knowledge Requirements
+
+- Understanding of basic networking concepts from Week 1
+- Familiarity with Python programming (functions, classes, basic I/O)
+- Basic command-line proficiency in WSL2 terminal
+
+### Software Requirements
+
+- Windows 10/11 with WSL2 enabled
+- Docker Engine (in WSL)
+- Portainer CE (running globally on port 9000)
+- Wireshark (native Windows installation)
+- Python 3.11 or later
+
+### Hardware Requirements
+
+- Minimum 8GB RAM (16GB recommended)
+- 10GB free disk space
+- Network connectivity (for initial setup only)
 
 ## Quick Start
 
+**⏱️ Estimated time: 5 minutes**
+
+### First-Time Setup (Run Once)
+
 ```bash
-# 1. Go to lab directory
-cd /mnt/d/NETWORKING/WEEK2/2enWSL
+# Open Ubuntu terminal (WSL)
+wsl
 
-# 2. Start Docker containers
-docker compose -f docker/docker-compose.yml up -d
+# Navigate to the laboratory directory
+cd /mnt/d/NETWORKING/WEEK2/02enWSL
 
-# 3. Verify everything is running
+# Start Docker if not running
+sudo service docker start
+
+# Verify prerequisites
+python3 setup/verify_environment.py
+```
+
+### Starting the Laboratory
+
+```bash
+# Start all services
+python3 scripts/start_lab.py
+
+# Verify everything is running
+python3 scripts/start_lab.py --status
+
+# For a quick demonstration
+python3 scripts/run_demo.py
+```
+
+### Accessing Services
+
+| Service | URL/Port | Credentials |
+|---------|----------|-------------|
+| Portainer | http://localhost:9000 | stud / studstudstud |
+| TCP Server | localhost:9090 | N/A |
+| UDP Server | localhost:9091 | N/A |
+
+---
+
+## Laboratory Exercises
+
+### Exercise 1: TCP Concurrent Server Implementation
+
+**⏱️ Duration:** 25 minutes
+
+**Objective:** Implement and operate a multi-threaded TCP server that transforms received messages, demonstrating connection-oriented communication patterns.
+
+**Theoretical Context:** TCP operates at the Transport Layer (L4), providing reliable, ordered and error-checked delivery. The three-way handshake establishes a connection before data transfer.
+
+> 💭 **PREDICTION CHECKPOINT:** Before starting, predict:
+> - What will Wireshark show when the client connects?
+> - How will threaded vs iterative mode differ under load?
+
+**Steps:**
+
+1. **Start the laboratory environment:**
+   ```bash
+   python3 scripts/start_lab.py
+   ```
+
+2. **Launch the TCP server in threaded mode:**
+   ```bash
+   python3 src/exercises/ex_2_01_tcp.py server --port 9090 --mode threaded
+   ```
+   
+   > 💡 **Learning mode:** Add `--interactive` for built-in prediction prompts:
+   > ```bash
+   > python3 src/exercises/ex_2_01_tcp.py server --port 9090 --interactive
+   > ```
+
+3. **In a separate terminal, send a message:**
+   ```bash
+   python3 src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 --message "Hello from client"
+   ```
+   
+   **Expected output:**
+   ```
+   [HH:MM:SS.mmm][CLIENT] RX 20B in X.Xms: b'OK: HELLO FROM CLIENT'
+   ```
+
+4. **Test concurrent connections:**
+   ```bash
+   python3 src/exercises/ex_2_01_tcp.py load --host 127.0.0.1 --port 9090 --clients 10
+   ```
+
+5. **Compare with iterative mode:**
+   ```bash
+   python3 src/exercises/ex_2_01_tcp.py server --port 9090 --mode iterative
+   ```
+
+**Verification:**
+```bash
+python3 tests/test_exercises.py --exercise 1
+```
+
+---
+
+### ✅ Checkpoint: TCP Understanding
+
+After completing Exercise 1, verify:
+- [ ] I can explain why the server needs `listen()` and `accept()`
+- [ ] I understand why threaded mode is faster under load
+- [ ] I can identify the three-way handshake in Wireshark
+
+---
+
+### Exercise 2: UDP Server with Application Protocol
+
+**⏱️ Duration:** 20 minutes
+
+**Objective:** Implement a connectionless UDP server with a custom application-layer protocol.
+
+**Theoretical Context:** UDP provides minimal transport service with no connection establishment, no acknowledgements and no guaranteed delivery.
+
+> 💭 **PREDICTION CHECKPOINT:** Before starting, predict:
+> - How will the Wireshark capture differ from TCP?
+> - What happens if you send to a server that isn't running?
+
+**Steps:**
+
+1. **Start the UDP server:**
+   ```bash
+   python3 src/exercises/ex_2_02_udp.py server --port 9091
+   ```
+
+2. **Use the interactive client:**
+   ```bash
+   python3 src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 --interactive
+   ```
+   
+   **Try these commands:**
+   ```
+   > ping
+   > upper:hello world
+   > reverse:networking
+   > time
+   > help
+   > exit
+   ```
+
+3. **Test single-command mode:**
+   ```bash
+   python3 src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 --once "upper:protocol"
+   ```
+
+**Verification:**
+```bash
+python3 tests/test_exercises.py --exercise 2
+```
+
+---
+
+### ✅ Checkpoint: UDP Understanding
+
+After completing Exercise 2, verify:
+- [ ] I understand why UDP doesn't need `listen()` or `accept()`
+- [ ] I can explain why the same socket sends and receives
+- [ ] I know why `recvfrom()` returns the sender's address
+
+---
+
+### Exercise 3: Traffic Capture and Analysis
+
+**⏱️ Duration:** 25 minutes
+
+**Objective:** Capture and analyse network traffic to correlate application-level communication with transport-layer protocol behaviour.
+
+**Steps:**
+
+1. **Start traffic capture:**
+   ```bash
+   python3 scripts/capture_traffic.py --interface lo --filter "tcp port 9090" --output pcap/tcp_session.pcap &
+   ```
+
+2. **Generate TCP traffic:**
+   ```bash
+   python3 src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 --message "capture test"
+   ```
+
+3. **Analyse with tshark:**
+   ```bash
+   tshark -r pcap/tcp_session.pcap -Y "tcp.port==9090"
+   ```
+
+4. **Identify the TCP handshake packets:**
+   - SYN (client → server)
+   - SYN-ACK (server → client)
+   - ACK (client → server)
+
+5. **Compare with UDP capture:**
+   ```bash
+   python3 scripts/capture_traffic.py --interface lo --filter "udp port 9091" --output pcap/udp_session.pcap &
+   python3 src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 --once "ping"
+   ```
+
+**Verification:**
+```bash
+python3 tests/test_exercises.py --exercise 3
+```
+
+---
+
+### ✅ Checkpoint: Protocol Analysis
+
+After completing Exercise 3, verify:
+- [ ] I can identify TCP handshake packets in a capture
+- [ ] I understand why UDP captures have fewer packets
+- [ ] I can follow a TCP stream in Wireshark
+
+---
+
+## Demonstrations
+
+### Demo 1: TCP vs UDP Comparison
+
+```bash
+python3 scripts/run_demo.py --demo tcp_vs_udp
+```
+
+### Demo 2: Concurrent Connections
+
+```bash
+python3 scripts/run_demo.py --demo concurrent
+```
+
+## Packet Capture Guide
+
+### Wireshark Filters for This Week
+
+```
+tcp.port == 9090
+tcp.port == 9090 and tcp.len > 0
+udp.port == 9091
+tcp.stream eq 0
+```
+
+### Analysis Commands
+
+```bash
+# Show TCP conversation summary
+tshark -r pcap/week2_tcp.pcap -z conv,tcp
+
+# Extract payload data
+tshark -r pcap/week2_tcp.pcap -Y "tcp.port==9090 and data" -T fields -e tcp.payload
+```
+
+## Shutdown and Cleanup
+
+### End of Session
+
+```bash
+# Stop lab containers (Portainer stays running!)
+python3 scripts/stop_lab.py
+
+# Verify shutdown
 docker ps
-
-# 4. Run the TCP exercise
-python3 src/exercises/ex_2_01_tcp.py server --port 9090
-
-# In another terminal:
-python3 src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 -m "Hello"
 ```
 
----
-
-## Exercise 1: TCP Concurrent Server Implementation
-
-**⏱️ Estimated time: 25 minutes**
-
-### Objectives
-- Implement a TCP server using Python sockets
-- Compare iterative vs threaded server behaviour
-- Observe TCP three-way handshake in Wireshark
-
-### Preparation
-
-1. Open Wireshark and select **vEthernet (WSL)** interface
-2. Apply filter: `tcp.port == 9090`
-3. Start capture
-
-### Step 1: Start the Server
+### Full Cleanup (Before Next Week)
 
 ```bash
-# Terminal 1
-python3 src/exercises/ex_2_01_tcp.py server --port 9090 --mode threaded
+python3 scripts/cleanup.py --full
+docker system df
 ```
-
-**💭 PREDICTION:** What packets will Wireshark show when you start the server?
-> Answer: None! `bind()` and `listen()` are local operations.
-
-### Step 2: Connect a Client
-
-```bash
-# Terminal 2
-python3 src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 -m "Hello World"
-```
-
-**💭 PREDICTION:** What packets will appear in Wireshark now?
-> Answer: SYN → SYN-ACK → ACK (handshake), then DATA packets with PSH flag.
-
-### Step 3: Compare Iterative Mode
-
-```bash
-# Restart server in iterative mode
-python3 src/exercises/ex_2_01_tcp.py server --port 9090 --mode iterative
-
-# Run load test
-python3 src/exercises/ex_2_01_tcp.py load --host 127.0.0.1 --port 9090 --clients 5
-```
-
-**💭 PREDICTION:** With 5 clients and 100ms per request, what's the total time?
-> Iterative: ~500ms (sequential). Threaded: ~100ms (parallel).
-
-### Exercise Deliverables
-
-- [ ] Screenshot of Wireshark showing TCP handshake
-- [ ] Measured timings: iterative vs threaded (5 clients)
-- [ ] Answer: Why does iterative mode take longer?
-
----
-
-## Exercise 2: UDP Server with Application Protocol
-
-**⏱️ Estimated time: 20 minutes**
-
-### Objectives
-- Implement a UDP server processing commands
-- Observe connectionless communication
-- Compare UDP traffic pattern with TCP
-
-### Preparation
-
-1. Clear Wireshark capture
-2. Apply filter: `udp.port == 9091`
-
-### Step 1: Start UDP Server
-
-```bash
-python3 src/exercises/ex_2_02_udp.py server --port 9091
-```
-
-### Step 2: Interactive Client Session
-
-```bash
-python3 src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 -i
-```
-
-Try these commands:
-```
-> ping
-> upper:hello world
-> time
-> help
-> exit
-```
-
-**💭 PREDICTION:** How many packets per command?
-> Answer: 2 (request + response). No handshake!
-
-### Exercise Deliverables
-
-- [ ] Screenshot showing UDP request-response pairs
-- [ ] Comparison: How does UDP traffic differ from TCP?
-
----
-
-## Exercise 3: Traffic Capture and Analysis
-
-**⏱️ Estimated time: 25 minutes**
-
-### Objectives
-- Capture complete TCP and UDP sessions
-- Identify protocol differences visually
-- Save captures for later analysis
-
-### Step 1: Capture TCP Session
-
-```bash
-# Clear Wireshark, start fresh capture
-# Run a complete TCP session:
-python3 src/exercises/ex_2_01_tcp.py server --port 9090 &
-sleep 1
-python3 src/exercises/ex_2_01_tcp.py client --host 127.0.0.1 --port 9090 -m "Capture test"
-```
-
-Save as: `pcap/tcp_session.pcap`
-
-### Step 2: Capture UDP Session
-
-```bash
-python3 src/exercises/ex_2_02_udp.py server --port 9091 &
-sleep 1
-python3 src/exercises/ex_2_02_udp.py client --host 127.0.0.1 --port 9091 -o "ping"
-```
-
-Save as: `pcap/udp_session.pcap`
-
-### Analysis Questions
-
-1. How many packets in the TCP capture vs UDP capture?
-2. What is the total overhead (headers) for TCP vs UDP?
-3. Identify the FIN-ACK sequence in the TCP capture.
-
----
 
 ## Homework Assignments
 
@@ -471,29 +623,14 @@ Modify the TCP server to track connection statistics accessible via a `stats` co
 
 #### Issue: `Address already in use`
 
-This happens when a previous server is still running or the socket is in TIME_WAIT state.
-
 ```bash
-# Find what's using the port
 lsof -i :9090
-
-# Kill it
 kill <pid>
-
-# Or use SO_REUSEADDR (already in our code)
 ```
-
-**From experience:** About 70% of "Address already in use" errors come from forgetting to stop the previous server. Check with `ps aux | grep python` first.
 
 #### Issue: Connection refused
 
-The server isn't running or is bound to a different address.
-
 ```bash
-# Check if server is listening
-ss -tlnp | grep 9090
-
-# Start server on all interfaces
 python3 src/exercises/ex_2_01_tcp.py server --bind 0.0.0.0 --port 9090
 ```
 
@@ -503,21 +640,6 @@ python3 src/exercises/ex_2_01_tcp.py server --bind 0.0.0.0 --port 9090
 sudo service docker start
 docker ps
 ```
-
-#### Issue: Cannot reach server from Docker container
-
-If you bound to `127.0.0.1`, containers cannot connect. Use `0.0.0.0` instead.
-
-#### Issue: Wireshark shows no packets
-
-- Verify you selected **vEthernet (WSL)** interface
-- Ensure traffic is generated DURING capture
-- Clear display filter to see all traffic
-- Try: `ip.addr == 127.0.0.1`
-
-**If nothing else works:** Try restarting WSL with `wsl --shutdown` from PowerShell. This fixes about 30% of mysterious Docker and networking issues.
-
----
 
 ## Theoretical Background
 
@@ -632,7 +754,7 @@ docker start portainer
 docker stop portainer
 docker rm portainer
 docker volume rm portainer_data
-# Recreate Portainer with initial setup
+# Recreate Portainer
 ```
 
 ### Socket Programming Issues
@@ -662,7 +784,7 @@ ss -tlnp | grep 9090
 ### End of Session (Quick)
 
 ```bash
-cd /mnt/d/NETWORKING/WEEK2/2enWSL
+cd /mnt/d/NETWORKING/WEEK2/02enWSL
 docker compose -f docker/docker-compose.yml down
 docker ps  # Should still show portainer
 ```
@@ -737,15 +859,32 @@ Before proceeding to Week 3, verify your understanding:
 
 ---
 
-## 📋 Support
+*NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim*
+*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
 
-Having issues? Follow this order:
-1. Check [docs/troubleshooting.md](docs/troubleshooting.md)
-2. Review the [docs/misconceptions.md](docs/misconceptions.md)
-3. Ask a colleague (pair programming helps!)
-4. Issues: Open an issue in GitHub
 
 ---
 
-*NETWORKING class — ASE, CSIE Bucharest | by ing. dr. Antonio Clim*  
-*Adapted for WSL2 + Ubuntu 22.04 + Docker + Portainer Environment*
+## Anti‑AI evidence workflow for assessed work
+
+You may use AI tools to clarify concepts and troubleshoot. Your submission must still include proof of real execution. The anti‑AI workflow in this kit generates per‑student challenges and machine‑checkable evidence.
+
+### Quick start
+
+From inside `02enWSL/`:
+
+```bash
+make install
+make anti-ai STUDENT_ID=YOUR_ID
+```
+
+This will generate:
+- a personalised challenge file under `artifacts/anti_ai/`
+- proof logs for TCP and UDP traffic under `artifacts/anti_ai/proof_YOUR_ID/`
+- an `evidence_YOUR_ID.json` manifest with SHA256 hashes and minimal environment metadata
+
+### What is checked
+
+The validator checks that your proof logs contain the per‑student payload token and that the artefacts match the recorded hashes. This makes it impractical to submit plausible looking results without running the programs.
+
+For strict validation with signed challenges, the instructor sets `ANTI_AI_MASTER_KEY` when generating challenges and when validating submissions.

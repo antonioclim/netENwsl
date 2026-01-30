@@ -54,6 +54,15 @@ def main() -> int:
         if result.returncode != 0:
             errors.append(f"Syntax error: {py_file.name}")
     
+
+    anti_ai_dir = PROJECT_ROOT / "anti_ai"
+    for py_file in anti_ai_dir.rglob("*.py"):
+        result = subprocess.run(
+            [sys.executable, "-m", "py_compile", str(py_file)],
+            capture_output=True
+        )
+        if result.returncode != 0:
+            errors.append(f"Syntax error: {py_file.name}")
     print(f"  ✓ Python syntax check complete")
     
     # Check imports
@@ -62,6 +71,10 @@ def main() -> int:
         sys.path.insert(0, str(PROJECT_ROOT))
         from src.exercises import ex_2_01_tcp
         from src.exercises import ex_2_02_udp
+        from anti_ai import challenge
+        from anti_ai import proof_runner
+        from anti_ai import submission_validator
+        print(f"  ✓ Anti‑AI modules import successfully")
         print(f"  ✓ Exercise modules import successfully")
     except ImportError as e:
         errors.append(f"Import error: {e}")
