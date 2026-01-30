@@ -244,6 +244,65 @@ class Session:
     def reset_timeout(self) -> None:
         """Reset the activity timer."""
         self.last_activity = datetime.now()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CHECKPOINTING
+# ═══════════════════════════════════════════════════════════════════════════════
+    def save_checkpoint(self) -> Dict[str, Any]:
+        """
+        Save a checkpoint snapshot that can later be used to restore or resume a session.
+
+        The checkpoint is a lightweight serialisable structure (dictionary) suitable for JSON.
+        It is intentionally simple so it can be used in formative tests and debugging.
+        """
+        return {
+            "version": 1,
+            "saved_at": datetime.now().isoformat(timespec="seconds"),
+            "state": self.state.name,
+            "username": self.username,
+            "timeout_seconds": self.timeout_seconds,
+            "last_activity": self.last_activity.isoformat(timespec="seconds"),
+            "history": [
+                {
+                    "timestamp": t.timestamp.isoformat(timespec="seconds"),
+                    "from_state": t.from_state.name,
+                    "to_state": t.to_state.name,
+                    "event": t.event,
+                    "success": t.success,
+                    "details": t.details,
+                }
+                for t in self.history
+            ],
+        }
+
+    @classmethod
+    def restore_from_checkpoint(cls, checkpoint: Dict[str, Any]) -> "Session":
+        """
+        Restore a Session instance from a checkpoint snapshot.
+
+        The restored session can resume processing after the transport connection is re-established.
+        """
+        session = cls(timeout_seconds=int(checkpoint.get("timeout_seconds", 300)))
+        state_name = str(checkpoint.get("state", "DISCONNECTED"))
+
+        if state_name in SessionState.__members__:
+            session.state = SessionState[state_name]
+        else:
+            session.state = SessionState.DISCONNECTED
+
+        session.username = checkpoint.get("username")
+
+        last_activity = checkpoint.get("last_activity")
+        if isinstance(last_activity, str):
+            try:
+                session.last_activity = datetime.fromisoformat(last_activity)
+            except ValueError:
+                # Keep default if parsing fails
+                pass
+
+        return session
+
     
 
 # ═══════════════════════════════════════════════════════════════════════════════

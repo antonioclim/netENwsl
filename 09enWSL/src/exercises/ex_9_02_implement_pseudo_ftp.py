@@ -93,6 +93,7 @@ import struct
 import sys
 import threading
 import zlib
+from enum import Enum, auto
 from pathlib import Path
 from typing import Optional
 
@@ -210,6 +211,13 @@ def recv_framed(sock: socket.socket) -> tuple[bytes, dict]:
 # SESSION_LAYER_STATE
 # ═══════════════════════════════════════════════════════════════════════════════
 
+class SessionState(Enum):
+    """High-level session states for the pseudo-FTP dialogue (L5)."""
+    DISCONNECTED = auto()
+    CONNECTED = auto()
+    AUTHENTICATED = auto()
+
+
 class Session:
     """
     Client session representation (L5).
@@ -222,18 +230,20 @@ class Session:
     
     def __init__(self, root_dir: Path):
         self.root_dir = root_dir.resolve()
+        self.state = SessionState.CONNECTED
         self.authenticated = False
         self.username: Optional[str] = None
         self.cwd = Path("/")  # Relative current directory
         
     def is_authenticated(self) -> bool:
-        return self.authenticated
+        return self.authenticated and self.state == SessionState.AUTHENTICATED
     
     def login(self, username: str, password: str) -> bool:
         """Simple authentication (demo)."""
         # For demo, we accept test/12345
         if username == DEFAULT_USER and password == DEFAULT_PASS:
             self.authenticated = True
+            self.state = SessionState.AUTHENTICATED
             self.username = username
             return True
         return False
@@ -335,13 +345,16 @@ class PseudoFTPServer:
                 print(f"[{addr}] <- {command}")
                 
                 # Process command
-                self.process_command(client, session, command)
+                close_connection = self.process_command(client, session, command)
+                if close_connection:
+                    break
                 
         except (ConnectionResetError, BrokenPipeError):
             print(f"[{addr}] Connection lost")
         except Exception as e:
             print(f"[{addr}] Error: {e}")
         finally:
+            session.state = SessionState.DISCONNECTED
             client.close()
             print(f"[{addr}] Disconnected")
     
@@ -350,7 +363,7 @@ class PseudoFTPServer:
         response = f"{code} {message}\n"
         client.sendall(response.encode("utf-8"))
     
-    def process_command(self, client: socket.socket, session: Session, command: str):
+    def process_command(self, client: socket.socket, session: Session, command: str) -> bool:
         """Process an FTP-like command."""
         parts = command.split(maxsplit=1)
         cmd = parts[0].upper()
@@ -360,23 +373,24 @@ class PseudoFTPServer:
         if cmd == "USER":
             session.username = arg
             self.send_response(client, 331, "Username OK, need password")
-            return
+            return False
         
         if cmd == "PASS":
             if session.login(session.username or "", arg):
                 self.send_response(client, 230, "Login successful")
             else:
                 self.send_response(client, 530, "Login failed")
-            return
+            return False
         
         if cmd == "QUIT":
             self.send_response(client, 221, "Goodbye")
-            return
+            session.state = SessionState.DISCONNECTED
+            return True
         
         # Commands that require authentication
         if not session.is_authenticated():
             self.send_response(client, 530, "Not logged in")
-            return
+            return False
         
         if cmd == "PWD":
             self.send_response(client, 257, f'"/{session.cwd}" is current directory')
@@ -405,6 +419,9 @@ class PseudoFTPServer:
         else:
             self.send_response(client, 502, f"Command not implemented: {cmd}")
     
+        return False
+
+
     def cmd_list(self, client: socket.socket, session: Session):
         """List files in current directory."""
         try:

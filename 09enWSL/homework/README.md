@@ -156,6 +156,27 @@ Check your course schedule or Moodle for the submission deadline.
 
 ---
 
+
+## Anti-AI evidence bundle
+
+Alongside your homework source files you must submit an evidence bundle generated with the Week 9 toolkit. This is not an AI detector. It is a provenance check linking your work to a time-bounded challenge and real traffic you captured yourself.
+
+Include:
+
+- `artifacts/anti_ai/challenge_week09_<student_id>.json`
+- `artifacts/anti_ai/evidence_week09_<student_id>.json`
+- One capture file (`.pcap` or `.pcapng`) containing your payload token
+- One short report (`.md` or `.txt`) containing your report token
+
+Local self-check before submission:
+
+```bash
+make anti-ai-validate STUDENT_ID=<student_id>
+```
+
+If validation fails, fix the missing artefact or re-capture traffic within the active challenge window.
+
+
 ## Academic Integrity
 
 - Work must be your own

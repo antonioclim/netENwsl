@@ -157,6 +157,71 @@ make clean
 
 ---
 
+
+## 🧪 Anti-AI submission workflow
+
+This week includes a small *challenge–evidence–validator* toolkit. It is not an AI detector. Instead it asks you to produce time-bounded, student-specific evidence tied to real network traffic and your own written explanation.
+
+### What you will submit
+
+- One capture file (`.pcap` or `.pcapng`) that contains your **payload token** inside TCP payload on the *challenge-selected control port*
+- One short written report (`.md` or `.txt`) that contains your **report token**
+- The generated challenge and evidence JSON files
+
+### Step-by-step
+
+1. **Generate your challenge**
+   ```bash
+   make anti-ai-challenge STUDENT_ID=YOURID
+   ```
+   This creates:
+   - `artifacts/anti_ai/challenge_week09_YOURID.json`
+
+2. **Read your tokens and required port**
+   Open the challenge JSON and note:
+   - `tokens.payload_token`
+   - `tokens.report_token`
+   - `constraints.expected_control_port`
+
+3. **Create a tokenised payload file for pseudo-FTP**
+   ```bash
+   mkdir -p server-files
+   echo "PASTE_PAYLOAD_TOKEN_HERE" > server-files/payload.txt
+   ```
+
+4. **Capture traffic while transferring the file**
+   In terminal A (server):
+   ```bash
+   python src/exercises/ex_9_02_implement_pseudo_ftp.py server --host 127.0.0.1 --port EXPECTED_PORT --root ./server-files
+   ```
+
+   In terminal B (capture, 30 seconds):
+   ```bash
+   python scripts/capture_traffic.py --port EXPECTED_PORT --duration 30 --output pcap/week09_YOURID.pcapng
+   ```
+
+   In terminal C (client):
+   ```bash
+   python src/exercises/ex_9_02_implement_pseudo_ftp.py client --host 127.0.0.1 --port EXPECTED_PORT --user test --password 12345 get payload.txt
+   ```
+
+5. **Write your short report**
+   Create a file such as:
+   - `artifacts/week09_report_YOURID.md`
+
+   Include at minimum:
+   - `Report token: PASTE_REPORT_TOKEN_HERE`
+   - A short explanation of what you captured and where the token appears in the stream
+
+6. **Collect evidence and validate locally**
+   ```bash
+   make anti-ai-evidence STUDENT_ID=YOURID ANTI_AI_PCAP=pcap/week09_YOURID.pcapng ANTI_AI_REPORT=artifacts/week09_report_YOURID.md
+   make anti-ai-validate STUDENT_ID=YOURID
+   ```
+
+If `make anti-ai-validate` passes, your evidence bundle is internally consistent.
+
+
 ## 🖥️ Understanding Portainer Interface
 
 ### Dashboard Overview
@@ -291,7 +356,7 @@ By the end of this laboratory session, you will be able to:
 09enWSL/
 ├── .github/workflows/     # CI/CD pipeline configuration
 │   └── ci.yml
-├── artifacts/             # Generated outputs (pcap, logs)
+├── artifacts/             # Generated outputs (pcap, logs, anti-AI evidence)
 ├── docker/                # Docker configuration
 │   ├── docker-compose.yml
 │   ├── configs/
@@ -314,6 +379,7 @@ By the end of this laboratory session, you will be able to:
 │   ├── quiz.yaml          # YAML format (standalone)
 │   ├── quiz_lms.json      # JSON format (Moodle/Canvas)
 │   └── run_quiz.py        # Quiz runner
+├── anti_ai/               # Anti-AI challenge, evidence collector and validator
 ├── homework/              # Take-home assignments
 │   ├── exercises/
 │   └── README.md
@@ -344,9 +410,6 @@ Demonstrates Presentation Layer concepts:
 ```bash
 python src/exercises/ex_9_01_demonstrate_endianness.py --selftest --demo
 ```
-
-> If the `struct` module feels confusing at first, focus only on `!I` (network order unsigned int) and `!H` (network order unsigned short) — these two format strings cover 90% of what you need for this lab's exercises.
-
 
 ### Exercise 2: Pseudo-FTP Protocol (ex_9_02)
 

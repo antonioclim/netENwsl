@@ -18,7 +18,7 @@ metadata:
   author: "ing. dr. Antonio Clim"
   estimated_time_minutes: 15
   passing_score_percent: 70
-  total_questions: 12
+  total_questions: 15
   bloom_levels_covered:
     - remember
     - understand
@@ -316,7 +316,6 @@ questions:
       is Transport Layer; error correction is Data Link/Transport.
     time_seconds: 45
 
-
   # ─────────────────────────────────────────────────────────────────────────────
   # LO5: Additional PCAP Analysis Question (Analyse)
   # ─────────────────────────────────────────────────────────────────────────────
@@ -405,6 +404,7 @@ questions:
     misconception_ref: "docs/misconceptions.md#misconception-4"
     time_seconds: 60
 
+# ═══════════════════════════════════════════════════════════════════════════════
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SCORING CONFIGURATION
@@ -453,7 +453,11 @@ feedback:
       Start with docs/theory_summary.md and docs/misconceptions.md.
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STATISTICS
+# END OF QUESTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+# UPDATED STATISTICS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 statistics:
