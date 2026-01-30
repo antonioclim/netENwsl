@@ -195,8 +195,6 @@ From Windows Start Menu: Search "Wireshark" → Click to open
 
 This laboratory session explores the practical foundations of network traffic observation and policy enforcement at the packet level. The week builds upon your understanding of TCP/IP fundamentals and socket programming, introducing the critical skill of capturing and analysing real network traffic as forensic evidence. You will learn to distinguish between application-layer behaviour and network-layer phenomena, a distinction that proves essential when debugging distributed systems in production environments.
 
-If this is your first time working with packet captures, expect some initial confusion about interface selection and filter syntax. That's normal — by the end of the session, these tools become second nature.
-
 The seminar component focuses on packet filtering and defensive port probing techniques. Filtering rules transform abstract security policies into concrete, enforceable decisions at the network boundary. Rather than treating firewalls as opaque infrastructure, you will construct and verify filtering rules programmatically, understanding exactly why a connection succeeds or fails. This approach prepares you for container networking, reverse proxies and incident response scenarios covered in subsequent weeks.
 
 All exercises operate within an isolated laboratory network created by Docker containers or Mininet topologies. The kit emphasises reproducibility: every observation you make should be backed by packet captures and logs that another engineer could verify independently.
@@ -238,6 +236,43 @@ By the end of this laboratory session, you will be able to:
 - Network connectivity for initial setup
 
 ## Quick Start
+
+## Anti-AI integrity workflow
+
+This week uses a lightweight challenge–evidence–validation workflow for individual submissions.
+It does not block legitimate learning. It simply requires you to produce environment-derived artefacts
+that a text-only tool cannot generate on its own.
+
+**What you will do**
+
+1. Generate a per-attempt challenge file (contains two tokens).
+2. Include the *report token* in your homework report.
+3. Send the *payload token* through both TCP (port 9090) and UDP (port 9091) then capture the traffic in a classic PCAP file.
+4. Collect an evidence JSON that hashes your artefacts then validate locally before submission.
+
+**Commands**
+
+```bash
+# 1) Challenge
+make anti-ai-challenge STUDENT_ID=<your_id>
+
+# 2) Run the lab as usual then capture and inject tokens
+# Capture in one terminal (classic PCAP, not PCAPNG)
+sudo tcpdump -i any -w artifacts/anti_ai/week07_tokens.pcap '(tcp port 9090) or (udp port 9091)'
+
+# In another terminal send the payload token as the message
+python3 src/apps/tcp_client.py --host localhost --port 9090 --message "<payload token>"
+python3 src/apps/udp_sender.py --host localhost --port 9091 --message "<payload token>"
+
+# Stop tcpdump with Ctrl+C when you are done capturing
+
+# 3) Evidence and validation
+make anti-ai-evidence STUDENT_ID=<your_id>
+make anti-ai-validate STUDENT_ID=<your_id>
+```
+
+**Important note:** the validator supports classic PCAP only. Use tcpdump `-w file.pcap`.
+
 
 ### First-Time Setup (Run Once)
 

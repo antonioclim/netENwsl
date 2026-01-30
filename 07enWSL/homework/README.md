@@ -6,13 +6,49 @@
 
 These assignments extend the laboratory exercises and must be completed individually. Submit your work through the course portal by the deadline specified in class.
 
+
+## Anti-AI integrity requirements
+
+For this week you must submit an **anti-AI evidence pack** alongside the usual deliverables.
+The goal is to ensure that the work includes environment-derived artefacts that cannot be produced by a text-only model.
+
+**Required components**
+
+- A challenge file generated for your attempt
+- An evidence JSON produced by the collector
+- At least one classic PCAP file that contains your payload token in both:
+  - TCP payload to port 9090
+  - UDP payload to port 9091
+- Your report must include the report token verbatim
+
+**Minimal workflow**
+
+```bash
+make anti-ai-challenge STUDENT_ID=<your_id>
+
+# Start the lab and capture traffic (classic PCAP, not PCAPNG)
+sudo tcpdump -i any -w artifacts/anti_ai/week07_tokens.pcap '(tcp port 9090) or (udp port 9091)'
+
+# Inject the payload token as application data
+python3 src/apps/tcp_client.py --host localhost --port 9090 --message "<payload token>"
+python3 src/apps/udp_sender.py --host localhost --port 9091 --message "<payload token>"
+
+# Collect evidence hashes for the files you will submit
+make anti-ai-evidence STUDENT_ID=<your_id>
+
+# Validate locally (recommended before uploading)
+make anti-ai-validate STUDENT_ID=<your_id>
+```
+
+**Submission note:** if you capture with Wireshark default settings you may end up with PCAPNG. Convert to PCAP or capture using tcpdump `-w`.
+
 ## Assignment 1: Custom Firewall Profile
 
 **Objective:** Design and implement a firewall profile that meets specific security requirements.
 
 **Task:**
 
-Create a new firewall profile (`configs/firewall_profiles.json`) that:
+Create a new firewall profile (`docker/configs/firewall_profiles.json`) that:
 
 1. Allows TCP traffic on port 9090 only from the subnet 10.0.7.0/24
 2. Blocks all UDP traffic to port 9091 except from host 10.0.7.200
@@ -42,7 +78,7 @@ Create a new firewall profile (`configs/firewall_profiles.json`) that:
 Using the laboratory environment:
 
 1. Start with a working baseline (TCP and UDP connectivity verified)
-2. Apply the `mixed_filtering` profile from `configs/firewall_profiles.json`
+2. Apply the `mixed_filtering` profile from `docker/configs/firewall_profiles.json`
 3. Capture traffic during the following sequence:
    - TCP client sends message to server
    - UDP sender sends datagram to receiver

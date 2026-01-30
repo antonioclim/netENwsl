@@ -66,6 +66,8 @@ DEFAULT_TIMEOUT = 5.0
 # INDIVIDUAL TEST FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
+TestResult.__test__ = False  # Prevent pytest collecting this helper dataclass
 def test_tcp_connectivity(
     host: str = DEFAULT_TCP_HOST,
     port: int = DEFAULT_TCP_PORT,
@@ -315,12 +317,54 @@ def run_exercise_tests(exercise: int) -> list[TestResult]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # These functions allow running with pytest
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PYTEST COLLECTION GUARDS
+# ═══════════════════════════════════════════════════════════════════════════════
+# The helper functions below are designed for standalone execution. When this
+# module is imported by pytest we do not want them to be collected as tests.
+#
+# This avoids mixing "baseline" and "blocked" expectations in a single test run.
+test_tcp_connectivity.__test__ = False  # type: ignore[attr-defined]
+test_tcp_echo.__test__ = False  # type: ignore[attr-defined]
+test_tcp_blocked.__test__ = False  # type: ignore[attr-defined]
+test_udp_send.__test__ = False  # type: ignore[attr-defined]
+test_proxy_connectivity.__test__ = False  # type: ignore[attr-defined]
+
+def _docker_lab_running() -> bool:
+    """Return True if the Week 7 Docker lab containers appear to be running."""
+    try:
+        import subprocess
+
+        p = subprocess.run(
+            ["docker", "ps", "--format", "{{.Names}}"],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
+        )
+        if p.returncode != 0:
+            return False
+        names = set((p.stdout or "").splitlines())
+        # Container names are defined in docker/docker-compose.yml
+        return "week7_tcp_server" in names
+    except Exception:
+        return False
+
+def _require_docker_lab() -> None:
+    """Skip docker-dependent pytest checks when the lab is not running."""
+    if not _docker_lab_running():
+        import pytest
+
+        pytest.skip("Docker lab not running (start with: python scripts/start_lab.py)")
+
 import pytest  # noqa: E402 (import not at top)
 
 
 @pytest.mark.exercise1
 def test_exercise1_tcp_connectivity():
     """Pytest: Exercise 1 - TCP connectivity."""
+    _require_docker_lab()
     passed, msg = test_tcp_connectivity()
     assert passed, msg
 
@@ -328,6 +372,7 @@ def test_exercise1_tcp_connectivity():
 @pytest.mark.exercise1
 def test_exercise1_tcp_echo():
     """Pytest: Exercise 1 - TCP echo."""
+    _require_docker_lab()
     passed, msg = test_tcp_echo()
     assert passed, msg
 
@@ -335,6 +380,7 @@ def test_exercise1_tcp_echo():
 @pytest.mark.exercise1
 def test_exercise1_udp_send():
     """Pytest: Exercise 1 - UDP send."""
+    _require_docker_lab()
     passed, msg = test_udp_send()
     assert passed, msg
 
@@ -342,6 +388,7 @@ def test_exercise1_udp_send():
 @pytest.mark.exercise2
 def test_exercise2_tcp_blocked():
     """Pytest: Exercise 2 - TCP blocked."""
+    _require_docker_lab()
     passed, msg = test_tcp_blocked()
     assert passed, msg
 
@@ -349,6 +396,7 @@ def test_exercise2_tcp_blocked():
 @pytest.mark.exercise2
 def test_exercise2_udp_works():
     """Pytest: Exercise 2 - UDP still works."""
+    _require_docker_lab()
     passed, msg = test_udp_send()
     assert passed, msg
 
@@ -356,6 +404,7 @@ def test_exercise2_udp_works():
 @pytest.mark.exercise3
 def test_exercise3_tcp_connectivity():
     """Pytest: Exercise 3 - TCP connectivity."""
+    _require_docker_lab()
     passed, msg = test_tcp_connectivity()
     assert passed, msg
 
@@ -363,6 +412,7 @@ def test_exercise3_tcp_connectivity():
 @pytest.mark.exercise4
 def test_exercise4_proxy_connectivity():
     """Pytest: Exercise 4 - Proxy connectivity."""
+    _require_docker_lab()
     passed, msg = test_proxy_connectivity()
     assert passed, msg
 

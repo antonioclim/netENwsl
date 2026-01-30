@@ -108,7 +108,7 @@
 | 📝 Lab Exercise | `README.md#exercise-3-udp-filtering-with-drop` | ✅ | Apply DROP profile |
 | 📝 Lab Exercise | `README.md#exercise-4-application-layer-filter` | ✅ | Proxy filtering |
 | 🧪 App | `src/apps/firewallctl.py` | ✅ | Profile management tool |
-| 🧪 Config | `docker/configs/firewall_profiles.json` | ✅ | Profile definitions |
+| 🧪 Config | `docker/docker/configs/firewall_profiles.json` | ✅ | Profile definitions |
 | 🧪 Test | `tests/test_lo5_profile.py` | ✅ | Profile validation tests |
 | 📖 Misconception | `docs/misconceptions.md#misconception-8` | ✅ | iptables persistence |
 | 📖 Parsons | `docs/parsons_problems.md#problem-p2` | ✅ | Parse iptables output |
@@ -161,7 +161,7 @@
 | Artifact Type | Path | Status | Notes |
 |---------------|------|--------|-------|
 | 📖 Theory | `README.md#theoretical-background` | ✅ | Policy design principles |
-| 📖 Template | `docker/configs/firewall_profiles.json` | ✅ | Profile structure |
+| 📖 Template | `docker/docker/configs/firewall_profiles.json` | ✅ | Profile structure |
 | 📝 Homework | `homework/README.md#assignment-1` | ✅ | Custom profile task |
 | 📝 Homework | `homework/exercises/hw_7_01_validate_firewall_profile.py` | ✅ | Validation script |
 | 🧪 App | `src/apps/firewallctl.py` | ✅ | Profile application tool |
@@ -259,7 +259,7 @@ LO2 ──┬── pcap/samples/week07_lo2_*.pcap
       ├── docs/misconceptions.md#1,#2,#6,#7
       └── docs/concept_analogies.md#2,#3
 
-LO3 ──┬── docker/configs/firewall_profiles.json
+LO3 ──┬── docker/docker/configs/firewall_profiles.json
       ├── formative/quiz.yaml#q07-q09
       ├── src/apps/firewallctl.py
       └── docs/parsons_problems.md#p2,#p4

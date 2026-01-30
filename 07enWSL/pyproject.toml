@@ -75,7 +75,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Force single-line imports
 force-single-line = false
 # Known first-party modules
-known-first-party = ["src", "scripts", "formative"]
+known-first-party = ["src", "scripts", "formative", "anti_ai"]
 # Section order
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 

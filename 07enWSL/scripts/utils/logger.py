@@ -121,7 +121,7 @@ class LabLogger:
         use_colours: bool = True
     ) -> None:
         """
-        Initialise the logger.
+        Initialize the logger.
         
         Args:
             name: Logger identifier
@@ -367,3 +367,20 @@ if __name__ == "__main__":
     
     print()
     print("Demonstration complete.")
+
+
+
+def setup_logger(
+    name: str = "week7",
+    *,
+    level: Optional[int] = None,
+    log_file: Optional[str] = None,
+) -> logging.Logger:
+    """Backwards compatible wrapper for older scripts.
+
+    Several helper scripts historically imported `setup_logger`. The newer
+    implementation uses `get_logger`. This wrapper keeps the public API stable.
+    """
+    if level is None:
+        return get_logger(name=name, log_file=log_file)
+    return get_logger(name=name, level=level, log_file=log_file)

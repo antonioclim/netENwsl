@@ -4,7 +4,7 @@ Test Suite for LO5: Design Custom Firewall Profiles
 ====================================================
 NETWORKING class - ASE, Informatics | Computer Networks Laboratory
 
-This module provides thorough tests for Learning Objective 5:
+This module provides comprehensive tests for Learning Objective 5:
 "Design custom firewall profiles that enforce specific traffic policies"
 
 Tests validate:
@@ -591,6 +591,24 @@ if __name__ == "__main__":
 # ═══════════════════════════════════════════════════════════════════════════════
 # PYTEST INTEGRATION
 # ═══════════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PYTEST COLLECTION GUARDS
+# ═══════════════════════════════════════════════════════════════════════════════
+# The module-level functions named test_* are designed for standalone execution
+# where they return (success, message). The pytest integration below wraps them
+# and asserts on their return values.
+#
+# Without this guard pytest would collect these helper functions directly which
+# produces return-value warnings and makes the suite harder to interpret.
+for _name, _obj in list(globals().items()):
+    if _name.startswith("test_") and callable(_obj):
+        try:
+            _obj.__test__ = False  # type: ignore[attr-defined]
+        except Exception:
+            pass
+del _name, _obj
 
 import pytest
 

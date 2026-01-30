@@ -401,7 +401,7 @@ make help
 | Theory | `docs/theory_summary.md` |
 | Commands | `docs/commands_cheatsheet.md` |
 | Quiz | `formative/quiz.yaml` |
-| Profiles | `docker/configs/firewall_profiles.json` |
+| Profiles | `docker/docker/configs/firewall_profiles.json` |
 
 ---
 

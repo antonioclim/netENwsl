@@ -1,38 +1,112 @@
 {
+  "allow_all": {
+    "description": "Allow all forwarded traffic (baseline for demonstrations).",
+    "forward_policy": "ACCEPT",
+    "name": "Allow all",
+    "rules": [
+      {
+        "action": "ACCEPT",
+        "chain": "FORWARD",
+        "comment": "Allow all forwarding"
+      }
+    ]
+  },
   "baseline": {
     "description": "Allow forwarding and allow ICMP, TCP_APP_PORT and UDP_APP_PORT",
     "forward_policy": "ACCEPT",
+    "name": "Baseline",
     "rules": [
-      {"chain": "FORWARD", "proto": "icmp", "action": "ACCEPT"},
-      {"chain": "FORWARD", "proto": "tcp", "dport": 9090, "action": "ACCEPT"},
-      {"chain": "FORWARD", "proto": "udp", "dport": 9091, "action": "ACCEPT"}
+      {
+        "action": "ACCEPT",
+        "chain": "FORWARD",
+        "proto": "icmp"
+      },
+      {
+        "action": "ACCEPT",
+        "chain": "FORWARD",
+        "dport": 9090,
+        "proto": "tcp"
+      },
+      {
+        "action": "ACCEPT",
+        "chain": "FORWARD",
+        "dport": 9091,
+        "proto": "udp"
+      }
     ]
   },
   "block_tcp_9090": {
     "description": "Reject TCP on port 9090 while leaving UDP and ICMP untouched",
     "forward_policy": "ACCEPT",
+    "name": "Block Tcp 9090",
     "rules": [
-      {"chain": "FORWARD", "proto": "tcp", "dport": 9090, "action": "REJECT"}
+      {
+        "action": "REJECT",
+        "chain": "FORWARD",
+        "dport": 9090,
+        "proto": "tcp"
+      }
     ]
   },
   "block_udp_9091": {
     "description": "Drop UDP on port 9091 while leaving TCP and ICMP untouched",
     "forward_policy": "ACCEPT",
+    "name": "Block Udp 9091",
     "rules": [
-      {"chain": "FORWARD", "proto": "udp", "dport": 9091, "action": "DROP"}
+      {
+        "action": "DROP",
+        "chain": "FORWARD",
+        "dport": 9091,
+        "proto": "udp"
+      }
     ]
   },
   "mixed_filtering": {
     "description": "Mixed policy: reject TCP 9090, allow UDP 9091, allow ICMP",
     "forward_policy": "DROP",
+    "name": "Mixed Filtering",
     "rules": [
-      {"chain": "FORWARD", "proto": "icmp", "action": "ACCEPT"},
-      {"chain": "FORWARD", "proto": "tcp", "dport": 22, "action": "DROP"},
-      {"chain": "FORWARD", "proto": "tcp", "dport": 80, "action": "DROP"},
-      {"chain": "FORWARD", "proto": "tcp", "dport": 443, "action": "DROP"},
-      {"chain": "FORWARD", "proto": "tcp", "dport": 8080, "action": "DROP"},
-      {"chain": "FORWARD", "proto": "tcp", "dport": 9090, "action": "REJECT"},
-      {"chain": "FORWARD", "proto": "udp", "dport": 9091, "action": "ACCEPT"}
+      {
+        "action": "ACCEPT",
+        "chain": "FORWARD",
+        "proto": "icmp"
+      },
+      {
+        "action": "DROP",
+        "chain": "FORWARD",
+        "dport": 22,
+        "proto": "tcp"
+      },
+      {
+        "action": "DROP",
+        "chain": "FORWARD",
+        "dport": 80,
+        "proto": "tcp"
+      },
+      {
+        "action": "DROP",
+        "chain": "FORWARD",
+        "dport": 443,
+        "proto": "tcp"
+      },
+      {
+        "action": "DROP",
+        "chain": "FORWARD",
+        "dport": 8080,
+        "proto": "tcp"
+      },
+      {
+        "action": "REJECT",
+        "chain": "FORWARD",
+        "dport": 9090,
+        "proto": "tcp"
+      },
+      {
+        "action": "ACCEPT",
+        "chain": "FORWARD",
+        "dport": 9091,
+        "proto": "udp"
+      }
     ]
   }
 }

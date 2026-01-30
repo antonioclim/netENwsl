@@ -66,6 +66,8 @@ class TestResult:
 # ═══════════════════════════════════════════════════════════════════════════════
 # VERIFY_PREREQUISITES
 # ═══════════════════════════════════════════════════════════════════════════════
+
+TestResult.__test__ = False  # Prevent pytest collecting this helper dataclass
 def check_docker_available() -> tuple[bool, str]:
     """Check if Docker is available and running."""
     if not shutil.which("docker"):

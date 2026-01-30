@@ -20,7 +20,7 @@
 # ============================================================================
 
 .PHONY: all help start stop restart clean test quiz parsons smoke verify install
-.PHONY: lint format ci export-quiz generate-pcap
+.PHONY: lint format ci export-quiz generate-pcap anti-ai-challenge anti-ai-evidence anti-ai-validate
 .DEFAULT_GOAL := help
 
 # ─── CONFIGURATION ──────────────────────────────────────────────────────────
@@ -203,21 +203,21 @@ export-quiz:
 
 lint:
 	@echo "$(BLUE)Running linter (ruff)...$(NC)"
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --ignore E501,E402 || true
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ anti_ai/ --ignore E501,E402 || true
 	@echo "$(GREEN)Linting complete.$(NC)"
 
 lint-fix:
 	@echo "$(BLUE)Running linter with auto-fix...$(NC)"
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --fix --ignore E501,E402 || true
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ anti_ai/ --fix --ignore E501,E402 || true
 
 format:
 	@echo "$(BLUE)Formatting code...$(NC)"
-	@$(PYTHON) -m ruff format src/ scripts/ tests/ formative/ || true
+	@$(PYTHON) -m ruff format src/ scripts/ tests/ formative/ anti_ai/ || true
 	@echo "$(GREEN)Formatting complete.$(NC)"
 
 format-check:
 	@echo "$(BLUE)Checking code formatting...$(NC)"
-	@$(PYTHON) -m ruff format --check src/ scripts/ tests/ formative/
+	@$(PYTHON) -m ruff format --check src/ scripts/ tests/ formative/ anti_ai/
 
 typecheck:
 	@echo "$(BLUE)Running type checker (mypy)...$(NC)"
@@ -230,11 +230,12 @@ ci: lint-ci syntax-check smoke pytest-ci
 
 lint-ci:
 	@echo "$(BLUE)CI: Running linter...$(NC)"
-	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ --output-format=github --ignore E501,E402
+	@$(PYTHON) -m ruff check src/ scripts/ tests/ formative/ anti_ai/ --output-format=github --ignore E501,E402
 
 syntax-check:
 	@echo "$(BLUE)CI: Checking Python syntax...$(NC)"
 	@$(PYTHON) -m py_compile src/apps/*.py scripts/*.py tests/*.py formative/*.py
+	@$(PYTHON) -m py_compile anti_ai/*.py
 	@echo "$(GREEN)Syntax check passed.$(NC)"
 
 security-check:
@@ -315,3 +316,29 @@ dist: clean
 	@echo "$(GREEN)Package created: dist/week7_lab_$$(date +%Y%m%d).zip$(NC)"
 
 # ============================================================================
+
+# ─── ANTI-AI WORKFLOW ─────────────────────────────────────────────────────────
+
+anti-ai-challenge:
+	@if [ -z "$(STUDENT_ID)" ]; then echo "Set STUDENT_ID, for example: make anti-ai-challenge STUDENT_ID=123"; exit 2; fi
+	@mkdir -p artifacts/anti_ai
+	@$(PYTHON) -m anti_ai.challenge_generator --student-id $(STUDENT_ID) --output artifacts/anti_ai/challenge_$(STUDENT_ID).yaml
+
+anti-ai-evidence:
+	@if [ -z "$(STUDENT_ID)" ]; then echo "Set STUDENT_ID, for example: make anti-ai-evidence STUDENT_ID=123"; exit 2; fi
+	@mkdir -p artifacts/anti_ai
+	@$(PYTHON) -m anti_ai.evidence_collector \
+		--challenge artifacts/anti_ai/challenge_$(STUDENT_ID).yaml \
+		--artefact homework/hw_7_01_report.md \
+		--artefact artifacts/anti_ai/week07_tokens.pcap \
+		--artefact docker/configs/firewall_profiles.json \
+		--probe "python3 src/apps/port_probe.py --host localhost --ports 9090,9091" \
+		--output artifacts/anti_ai/evidence_$(STUDENT_ID).json
+
+anti-ai-validate:
+	@if [ -z "$(STUDENT_ID)" ]; then echo "Set STUDENT_ID, for example: make anti-ai-validate STUDENT_ID=123"; exit 2; fi
+	@$(PYTHON) -m anti_ai.submission_validator \
+		--challenge artifacts/anti_ai/challenge_$(STUDENT_ID).yaml \
+		--evidence artifacts/anti_ai/evidence_$(STUDENT_ID).json \
+		--base-dir . \
+		--verbose

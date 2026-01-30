@@ -11,7 +11,7 @@ of packet filtering semantics and the behavioural distinction between REJECT
 and DROP actions.
 
 Requirements:
-1. Create a new profile in configs/firewall_profiles.json
+1. Create a new profile in docker/configs/firewall_profiles.json
 2. The profile must include at least 3 rules
 3. At least one rule must use REJECT action
 4. At least one rule must use DROP action
@@ -250,7 +250,7 @@ def main() -> int:
         print("ℹ️  No custom profile found (name starting with 'hw_')")
         print()
         print("To complete this homework:")
-        print("  1. Open docker/configs/firewall_profiles.json")
+        print("  1. Open docker/docker/configs/firewall_profiles.json")
         print("  2. Add a new profile with name starting with 'hw_'")
         print("  3. Include at least 3 rules with REJECT and DROP actions")
         print("  4. Run this script again to validate")
