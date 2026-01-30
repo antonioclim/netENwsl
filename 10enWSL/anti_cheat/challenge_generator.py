@@ -218,7 +218,9 @@ DNS CHALLENGE — Proof of Lab Interaction
         """
         filename = f"proof_{self.student_id}_{self.session_token[:8]}.txt"
         content = f"VERIFIED:{self.student_id}:{self.timestamp}:{self.session_token[:16]}"
-        remote_path = f"/home/labftp/{filename}"
+        # The FTP container exposes /home/ftp as the FTP root.
+        # Students can upload under /uploads/ which is created at container start.
+        remote_path = f"/uploads/{filename}"
         
         challenge = FTPChallenge(
             filename=filename,
@@ -302,9 +304,17 @@ DNS CHALLENGE — Proof of Lab Interaction
             },
             'challenges': self.challenges,
             'instructions': {
-                'overview': 'Complete ALL challenges below to prove lab interaction.',
-                'submission': 'Include this file and all proof artifacts in your submission.',
-                'expiry': f'Challenges expire {CHALLENGE_VALIDITY_HOURS} hours after generation.'
+                'overview': 'Complete ALL challenges below to prove genuine lab interaction.',
+                'submission': 'Include this file and all proof artefacts in your submission.',
+                'expiry': f'Challenges expire {CHALLENGE_VALIDITY_HOURS} hours after generation.',
+                'step_by_step': [
+                    '1) Start the lab: python3 scripts/start_lab.py',
+                    '2) Complete DNS: add the TXT record under STATIC_TXT_RECORDS in docker/dns-server/dns_server.py then restart the DNS container',
+                    '3) Complete HTTPS: start Exercise 1 with --challenge <challenge.yaml> so it serves the /verify/<token> endpoint on the specified port',
+                    '4) Complete FTP: upload the specified file to the FTP server under /uploads/',
+                    '5) Complete PCAP: capture traffic containing the required HTTP header then save the capture under artifacts/',
+                    '6) Validate: python -m anti_cheat.submission_validator --challenge <challenge.yaml> --verbose'
+                ]
             }
         }
         

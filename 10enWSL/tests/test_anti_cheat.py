@@ -347,6 +347,33 @@ class TestSubmissionValidator:
         assert 'results' in data
         assert data['summary']['total'] > 0
 
+    def test_pcap_header_detection(self, monkeypatch: pytest.MonkeyPatch, valid_challenge_file: Path, tmp_path: Path) -> None:
+        """PCAP validation should detect the required header without external tools."""
+        try:
+            import anti_cheat.submission_validator as sv
+        except ImportError:
+            pytest.skip("anti_cheat module not available")
+
+        # Create a minimal binary file that contains the expected header.
+        import yaml
+        with open(valid_challenge_file, "r", encoding="utf-8") as fh:
+            challenge_data = yaml.safe_load(fh)
+
+        expected_header = challenge_data["challenges"]["pcap"]["full_header"]
+
+        pcap_file = tmp_path / "capture.pcapng"
+        pcap_file.write_bytes(
+            b"\x00\x01FAKEPCAP" + b"GET / HTTP/1.1\r\n" + expected_header.encode("utf-8") + b"\r\n\r\n"
+        )
+
+        # Point the validator at the temporary artefacts directory.
+        monkeypatch.setattr(sv, "ARTIFACTS_DIR", tmp_path)
+
+        validator = sv.SubmissionValidator(valid_challenge_file)
+        result = validator._validate_pcap_challenge()
+
+        assert result.passed is True
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST_FINGERPRINT

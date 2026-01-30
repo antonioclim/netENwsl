@@ -58,6 +58,19 @@ Follow the exercises in order:
 
 ---
 
+## Academic Integrity — Anti-AI verification (Week 10)
+
+This week includes a short interactive verification routine (DNS, HTTPS, FTP and
+PCAP) that confirms students interacted with the laboratory environment within a
+limited time window. The mechanism is challenge‑response based and is designed
+to be objective and quick to validate.
+
+For the required artefacts and the exact workflow, see:
+- `homework/README.md` (section: **Anti-AI Verification Bundle**)
+- `anti_cheat/challenge_generator.py` and `anti_cheat/submission_validator.py`
+
+---
+
 ## 📚 Learning Path
 
 Follow this recommended order for maximum learning effectiveness:

@@ -13,6 +13,47 @@
 
 ---
 
+## Academic Integrity — Anti-AI Verification Bundle (mandatory)
+
+Week 10 includes a short interactive verification routine that confirms you
+personally interacted with the laboratory environment within a limited time
+window. This is designed to support fair assessment and does not attempt to
+detect AI text.
+
+Include the following in your submission ZIP:
+
+- `artifacts/challenge_<YourID>_week10.yaml` (generated at the beginning)
+- `artifacts/validation_report_<YourID>_week10.json` (generated at the end)
+- At least one capture file in `artifacts/` (`*.pcap` or `*.pcapng`) containing
+  the required header from the challenge file
+- Any additional artefacts produced for the challenges (for example, the FTP
+  proof file and your DNS server modification)
+
+Recommended workflow:
+
+1) Generate your personalised challenge (do this first):
+
+   `python -m anti_cheat.challenge_generator --student-id <YourID>`
+
+2) Start the lab environment:
+
+   `python scripts/start_lab.py`
+
+3) Complete the four micro-challenges described in the generated YAML file:
+
+   - DNS TXT record in `docker/dns-server/dns_server.py` under `STATIC_TXT_RECORDS`
+   - HTTPS verification endpoint by starting Exercise 1 with:
+     `python src/exercises/ex_10_01_tls_rest_crud.py serve --challenge <challenge.yaml>`
+     (the HTTPS port is taken from the challenge file)
+   - FTP upload to `/uploads/` using the filename and content from the challenge
+   - PCAP capture containing the required HTTP header `X-Student-Verify: ...`
+
+4) Run the validator while the lab services and HTTPS server are running:
+
+   `python -m anti_cheat.submission_validator --challenge <challenge.yaml> --report <report.json> --verbose`
+
+---
+
 ## 📝 Assignment 1: HTTPS Traffic Analysis (30 points)
 
 ### Objective
@@ -27,7 +68,7 @@ Analyse the difference between HTTP and HTTPS traffic using Wireshark.
 
 2. **Capture HTTPS traffic** (10 points)
    - Generate a self-signed certificate
-   - Start the HTTPS server on port 8443
+   - Start the HTTPS server on port 8443 (or on the port specified by your challenge file)
    - Capture traffic while making requests
    - Identify: TLS handshake messages, encrypted application data
 

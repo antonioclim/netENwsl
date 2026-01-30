@@ -198,6 +198,13 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         """Handle GET requests."""
+        # Optional anti-AI verification endpoint.
+        path = self.path.split("?", 1)[0]
+        if path.startswith("/verify/"):
+            token = path[len("/verify/"):]
+            self._handle_verify(token)
+            return
+
         route, rid = self._route()
         if route == "/":
             self._send_html(
@@ -236,6 +243,32 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         self._send_json(404, {"error": "Not found"})
+
+    def _handle_verify(self, token: str) -> None:
+        """Handle the anti-AI verification endpoint.
+
+        This endpoint is intentionally simple and only becomes active if the
+        server is started with a challenge configuration.
+        """
+        expected_token = getattr(self.server, "verify_token", None)
+        expected_response = getattr(self.server, "verify_response", None)
+
+        if not expected_token or expected_response is None:
+            self._send_json(404, {"error": "Verification endpoint not enabled"})
+            return
+
+        if token != expected_token:
+            self._send_json(404, {"error": "Invalid verification token"})
+            return
+
+        # Prevent caching.
+        self.send_response(HTTPStatus.OK)
+        body = json.dumps(expected_response, ensure_ascii=False).encode("utf-8")
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def do_POST(self) -> None:  # noqa: N802
         """Handle POST requests (create resource)."""
@@ -347,27 +380,82 @@ def generate_self_signed_certificate(cert_path: Path, key_path: Path, common_nam
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERVER_SETUP
 # ═══════════════════════════════════════════════════════════════════════════════
-def build_server(host: str, port: int, cert: Path, key: Path) -> ThreadingHTTPServer:
+def load_https_challenge(challenge_path: Path) -> tuple[int, str, Dict[str, Any]]:
+    """Load the anti-AI HTTPS challenge from a Week 10 challenge YAML file.
+
+    The file is produced by :mod:`anti_cheat.challenge_generator`.
+
+    Returns:
+        (port, token, expected_response)
+    """
+    try:
+        import yaml  # type: ignore
+    except Exception as exc:  # pragma: no cover
+        raise SystemExit(f"PyYAML is required to read the challenge file: {exc}")
+
+    data = yaml.safe_load(challenge_path.read_text(encoding="utf-8")) or {}
+    https = (data.get("challenges") or {}).get("https")
+    if not https:
+        raise SystemExit("Challenge file does not contain an HTTPS challenge")
+
+    port = int(https.get("port"))
+    endpoint = str(https.get("endpoint", ""))
+    expected = https.get("expected_response")
+
+    if not endpoint.startswith("/verify/"):
+        raise SystemExit("HTTPS challenge endpoint is invalid (expected /verify/<token>)")
+    token = endpoint.split("/verify/", 1)[1]
+    if not token:
+        raise SystemExit("HTTPS challenge token is missing")
+
+    if not isinstance(expected, dict):
+        raise SystemExit("HTTPS challenge expected_response must be a JSON object")
+
+    return port, token, expected
+
+
+def build_server(
+    host: str,
+    port: int,
+    cert: Path,
+    key: Path,
+    verify_token: Optional[str] = None,
+    verify_response: Optional[Dict[str, Any]] = None,
+) -> ThreadingHTTPServer:
     """
     Build an HTTPS server with the given certificate.
     
     💭 PREDICTION: What will happen if we try to connect with HTTP (not HTTPS)?
     """
     httpd = ThreadingHTTPServer((host, port), Handler)
+    # Attach optional anti-AI verification parameters.
+    setattr(httpd, "verify_token", verify_token)
+    setattr(httpd, "verify_response", verify_response)
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(certfile=str(cert), keyfile=str(key))
     httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
     return httpd
 
 
-def serve(host: str, port: int, cert: Path, key: Path, common_name: str) -> None:
+def serve(
+    host: str,
+    port: int,
+    cert: Path,
+    key: Path,
+    common_name: str,
+    verify_token: Optional[str] = None,
+    verify_response: Optional[Dict[str, Any]] = None,
+) -> None:
     """Start the HTTPS server and serve requests."""
     generate_self_signed_certificate(cert, key, common_name)
-    httpd = build_server(host, port, cert, key)
+    httpd = build_server(host, port, cert, key, verify_token=verify_token, verify_response=verify_response)
 
     print("[INFO] HTTPS server ready")
     print(f"[INFO] URL: https://{host}:{httpd.server_address[1]}/")
     print(f"[INFO] Certificate: {cert}")
+    if verify_token and verify_response is not None:
+        print("[INFO] Verification endpoint enabled")
+        print(f"[INFO] Verify URL: https://{host}:{httpd.server_address[1]}/verify/{verify_token}")
     print("[INFO] Press Ctrl+C to stop")
 
     try:
@@ -469,6 +557,15 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p_serve.add_argument("--cert", default=str(DEFAULT_CERT))
     p_serve.add_argument("--key", default=str(DEFAULT_KEY))
     p_serve.add_argument("--cn", default=DEFAULT_CN, help="Certificate common name")
+    p_serve.add_argument(
+        "--challenge",
+        type=str,
+        default=None,
+        help=(
+            "Path to a Week 10 anti-AI challenge YAML file. "
+            "When supplied, the server enables /verify/<token> and uses the HTTPS port from the file."
+        ),
+    )
 
     p_cert = sub.add_parser("generate-cert", help="Generate a self-signed TLS certificate")
     p_cert.add_argument("--cert", default=str(DEFAULT_CERT))
@@ -496,7 +593,26 @@ def main(argv: list[str]) -> int:
         return 0
 
     if args.cmd == "serve":
-        serve(args.host, args.port, Path(args.cert), Path(args.key), args.cn)
+        verify_token = None
+        verify_response = None
+        port = args.port
+
+        if args.challenge:
+            challenge_path = Path(args.challenge)
+            port, verify_token, verify_response = load_https_challenge(challenge_path)
+            if port != args.port:
+                print(f"[INFO] Port overridden by challenge file: {args.port} -> {port}")
+            print("[INFO] Anti-AI verification enabled from challenge file")
+
+        serve(
+            args.host,
+            port,
+            Path(args.cert),
+            Path(args.key),
+            args.cn,
+            verify_token=verify_token,
+            verify_response=verify_response,
+        )
         return 0
 
     if args.cmd == "selftest":

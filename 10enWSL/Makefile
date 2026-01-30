@@ -134,11 +134,12 @@ smoke:
 selftest:
 	@echo "$(GREEN)Running exercise selftests...$(NC)"
 	$(PYTHON) src/exercises/ex_10_01_tls_rest_crud.py selftest
-	@echo "$(GREEN)✓ HTTPS selftest passed$(NC)"
+	$(PYTHON) src/exercises/ex_10_02_richardson_maturity.py selftest
+	@echo "$(GREEN)✓ Exercise selftests passed$(NC)"
 
 test-anti-cheat:
 	@echo "$(GREEN)Running anti-cheat tests...$(NC)"
-	$(PYTHON) -m pytest tests/test_anti_cheat.py -v || true
+	$(PYTHON) -m pytest tests/test_anti_cheat.py -v
 	@echo "$(GREEN)✓ Anti-cheat tests complete$(NC)"
 
 test-coverage:

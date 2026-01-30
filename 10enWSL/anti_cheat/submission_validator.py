@@ -27,6 +27,7 @@ Validation checks:
 from __future__ import annotations
 
 import argparse
+import ftplib
 import hashlib
 import json
 import subprocess
@@ -186,6 +187,7 @@ class SubmissionValidator:
             self._validate_hash_integrity,
             self._validate_dns_challenge,
             self._validate_https_challenge,
+            self._validate_ftp_challenge,
             self._validate_pcap_challenge,
             self._validate_environment_fingerprint,
         ]
@@ -340,37 +342,155 @@ class SubmissionValidator:
                 message="No HTTPS challenge in file"
             )
         
-        port = https['port']
-        endpoint = https['endpoint']
-        
+        port = int(https['port'])
+        endpoint = str(https['endpoint'])
+        expected_response = https.get('expected_response')
+
+        last_error: Optional[str] = None
+
         try:
             import urllib.request
             import ssl
-            
-            # Create context that doesn't verify certificates (self-signed)
+
+            # Create a context that does not verify certificates (self-signed).
             context = ssl.create_default_context()
             context.check_hostname = False
             context.verify_mode = ssl.CERT_NONE
-            
+
             url = f"https://127.0.0.1:{port}{endpoint}"
-            
+
             with urllib.request.urlopen(url, timeout=5, context=context) as response:
-                if response.getcode() == 200:
+                status = response.getcode()
+                body = response.read().decode('utf-8', errors='replace')
+
+            if status != 200:
+                return ValidationResult(
+                    name="https_challenge",
+                    passed=False,
+                    message=f"HTTPS endpoint returned status {status} (expected 200)",
+                    details={'port': port, 'endpoint': endpoint, 'status': status}
+                )
+
+            if expected_response is not None:
+                try:
+                    actual = json.loads(body)
+                except Exception:
                     return ValidationResult(
                         name="https_challenge",
-                        passed=True,
-                        message=f"HTTPS server responding on port {port}",
-                        details={'port': port, 'endpoint': endpoint}
+                        passed=False,
+                        message="HTTPS endpoint did not return valid JSON",
+                        details={'port': port, 'endpoint': endpoint, 'body': body[:200]}
                     )
-                    
+
+                if actual != expected_response:
+                    return ValidationResult(
+                        name="https_challenge",
+                        passed=False,
+                        message="HTTPS JSON response does not match the challenge",
+                        details={'expected': expected_response, 'actual': actual}
+                    )
+
+            return ValidationResult(
+                name="https_challenge",
+                passed=True,
+                message=f"HTTPS challenge verified on port {port}",
+                details={'port': port, 'endpoint': endpoint}
+            )
+
         except Exception as e:
-            pass
-        
+            last_error = str(e)
+
+        msg = f"HTTPS server not responding on port {port} — start the exercise server"
+        if last_error:
+            msg = f"{msg} ({last_error})"
+
         return ValidationResult(
             name="https_challenge",
             passed=False,
-            message=f"HTTPS server not responding on port {port} — start the exercise server"
+            message=msg,
+            details={'port': port, 'endpoint': endpoint}
         )
+
+    def _validate_ftp_challenge(self) -> ValidationResult:
+        """Validate that the FTP challenge file exists on the FTP server and matches the content."""
+        challenges = self.challenge_data.get('challenges', {})
+        ftp_ch = challenges.get('ftp')
+
+        if not ftp_ch:
+            return ValidationResult(
+                name="ftp_challenge",
+                passed=False,
+                message="No FTP challenge in file"
+            )
+
+        port = int(ftp_ch.get('port', 2121))
+        remote_path = str(ftp_ch.get('remote_path', '')).strip()
+        expected_content = str(ftp_ch.get('content', ''))
+
+        if not remote_path:
+            return ValidationResult(
+                name="ftp_challenge",
+                passed=False,
+                message="FTP challenge missing remote_path"
+            )
+
+        # The laboratory FTP server uses fixed credentials for reproducibility.
+        user = "labftp"
+        password = "labftp"
+
+        # Normalise path: FTP paths are relative to the server root.
+        path = remote_path.lstrip("/")
+        parts = [p for p in path.split("/") if p]
+        if not parts:
+            return ValidationResult(
+                name="ftp_challenge",
+                passed=False,
+                message="FTP challenge remote_path is invalid"
+            )
+
+        directory = "/".join(parts[:-1])
+        filename = parts[-1]
+
+        try:
+            ftp = ftplib.FTP()
+            ftp.connect("127.0.0.1", port, timeout=10)
+            ftp.login(user, password)
+
+            if directory:
+                ftp.cwd(directory)
+
+            buf = bytearray()
+            ftp.retrbinary(f"RETR {filename}", buf.extend)
+            ftp.quit()
+
+            text = buf.decode("utf-8", errors="replace")
+            if expected_content not in text:
+                return ValidationResult(
+                    name="ftp_challenge",
+                    passed=False,
+                    message="FTP file content does not match the challenge",
+                    details={
+                        'port': port,
+                        'remote_path': remote_path,
+                        'expected_snippet': expected_content[:80],
+                        'actual_snippet': text[:80]
+                    }
+                )
+
+            return ValidationResult(
+                name="ftp_challenge",
+                passed=True,
+                message=f"FTP challenge verified on port {port}",
+                details={'port': port, 'remote_path': remote_path}
+            )
+
+        except Exception as e:
+            return ValidationResult(
+                name="ftp_challenge",
+                passed=False,
+                message=f"FTP validation failed — start the FTP container ({e})",
+                details={'port': port, 'remote_path': remote_path}
+            )
     
     def _validate_pcap_challenge(self) -> ValidationResult:
         """Validate that PCAP contains the required header."""
@@ -384,7 +504,14 @@ class SubmissionValidator:
                 message="No PCAP challenge in file"
             )
         
-        expected_header = pcap.get('full_header', '')
+        expected_header = str(pcap.get('full_header', '')).strip()
+
+        if not expected_header:
+            return ValidationResult(
+                name="pcap_challenge",
+                passed=False,
+                message="PCAP challenge missing required header value"
+            )
         
         # Search for PCAP files in artifacts directory
         pcap_files = list(ARTIFACTS_DIR.glob('*.pcap')) + list(ARTIFACTS_DIR.glob('*.pcapng'))
@@ -396,30 +523,49 @@ class SubmissionValidator:
                 message=f"No PCAP files found in {ARTIFACTS_DIR}"
             )
         
+        needle = expected_header.encode("utf-8", errors="ignore")
+
+        def file_contains_needle(path: Path, needle_bytes: bytes) -> bool:
+            """Return True if needle_bytes is present anywhere in the file.
+
+            This avoids platform-specific tooling (such as the 'strings' command)
+            and works for both pcap and pcapng as we search for the HTTP header
+            bytes within the capture payload.
+            """
+            if not needle_bytes:
+                return False
+            chunk_size = 1024 * 1024
+            overlap = max(len(needle_bytes) - 1, 0)
+            tail = b""
+            with path.open("rb") as f:
+                while True:
+                    chunk = f.read(chunk_size)
+                    if not chunk:
+                        break
+                    data = tail + chunk
+                    if needle_bytes in data:
+                        return True
+                    tail = data[-overlap:] if overlap else b""
+            return False
+
         for pcap_file in pcap_files:
             try:
-                result = subprocess.run(
-                    ['strings', str(pcap_file)],
-                    capture_output=True,
-                    text=True,
-                    timeout=30
-                )
-                
-                if expected_header in result.stdout:
+                if file_contains_needle(pcap_file, needle):
                     return ValidationResult(
                         name="pcap_challenge",
                         passed=True,
                         message=f"Header found in {pcap_file.name}",
                         details={'file': str(pcap_file), 'header': expected_header}
                     )
-                    
-            except Exception:
+            except Exception as e:
+                self._log(f"[WARN] Failed to scan {pcap_file}: {e}")
                 continue
         
         return ValidationResult(
             name="pcap_challenge",
             passed=False,
-            message=f"Required header not found in any PCAP file"
+            message="Required header not found in any PCAP file",
+            details={'header': expected_header, 'searched_files': [p.name for p in pcap_files]}
         )
     
     def _validate_environment_fingerprint(self) -> ValidationResult:

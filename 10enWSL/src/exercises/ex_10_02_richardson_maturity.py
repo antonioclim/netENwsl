@@ -61,6 +61,70 @@ DEFAULT_PORT = 5000
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SELFTEST
+# ═══════════════════════════════════════════════════════════════════════════════
+def selftest() -> int:
+    """Run a minimal automated selftest for the REST maturity demo.
+
+    The intent is to confirm that each maturity level is reachable and returns
+    structurally correct responses. This does not attempt to be exhaustive.
+    """
+    try:
+        import requests  # type: ignore
+    except Exception as exc:
+        print(f"[ERROR] requests is required for selftest: {exc}")
+        return 1
+
+    try:
+        from werkzeug.serving import make_server  # type: ignore
+    except Exception as exc:
+        print(f"[ERROR] werkzeug is required for selftest: {exc}")
+        return 1
+
+    # Start an ephemeral local server.
+    httpd = make_server(DEFAULT_HOST, 0, app)
+    actual_port = int(httpd.socket.getsockname()[1])
+
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    time.sleep(0.2)
+
+    base = f"http://{DEFAULT_HOST}:{actual_port}"
+
+    try:
+        # Level 0: list users
+        r = requests.post(f"{base}/level0/service", json={"action": "list_users"}, timeout=5)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data.get("status") == "ok", data
+        assert isinstance(data.get("users"), list), data
+
+        # Level 2: list users
+        r = requests.get(f"{base}/level2/users", timeout=5)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert isinstance(data.get("users"), list), data
+
+        # Level 3: list users with hypermedia links
+        r = requests.get(f"{base}/level3/users", timeout=5)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert "_links" in data and "self" in data["_links"], data
+        assert isinstance(data.get("users"), list) and data["users"], data
+        assert "_links" in data["users"][0], data["users"][0]
+
+        print("[OK] REST maturity selftest passed")
+        return 0
+    except AssertionError as exc:
+        print(f"[ERROR] REST maturity selftest failed: {exc}")
+        return 1
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        thread.join(timeout=2)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # DATA_MODEL
 # ═══════════════════════════════════════════════════════════════════════════════
 @dataclass
@@ -466,6 +530,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p_serve.add_argument("--port", type=int, default=DEFAULT_PORT)
     p_serve.add_argument("--debug", action="store_true")
 
+    sub.add_parser("selftest", help="Run a local selftest")
+
     return parser.parse_args(argv)
 
 
@@ -481,6 +547,9 @@ def main(argv: list[str]) -> int:
         print("[INFO] Press Ctrl+C to stop")
         app.run(host=args.host, port=args.port, debug=args.debug)
         return 0
+
+    if args.cmd == "selftest":
+        return selftest()
 
     return 1
 
