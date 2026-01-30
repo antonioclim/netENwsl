@@ -22,7 +22,7 @@ stop: docker-down ## Stop lab environment
 
 .PHONY: lint
 lint: ## Run ruff linter
-	$(PYTHON) -m ruff check src/ scripts/ formative/ tests/
+	$(PYTHON) -m ruff check src/ scripts/ formative/ tests/ anti_ai/
 
 .PHONY: test
 test: ## Run all tests
@@ -65,6 +65,36 @@ docker-logs: ## Show container logs
 .PHONY: status
 status: ## Show container status
 	$(DOCKER_COMPOSE) ps
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Anti-AI workflow (Week 3)
+# ─────────────────────────────────────────────────────────────────────────────
+STUDENT_ID ?= YOUR_STUDENT_ID
+CHALLENGE ?= artifacts/anti_ai/challenge_$(STUDENT_ID).yaml
+EVIDENCE ?= artifacts/anti_ai/evidence_$(STUDENT_ID).json
+
+.PHONY: anti-ai-challenge
+anti-ai-challenge: ## Generate a per-student anti-AI challenge file
+	$(PYTHON) -m anti_ai.challenge_generator --student-id $(STUDENT_ID)
+
+.PHONY: anti-ai-evidence
+anti-ai-evidence: ## Collect evidence (hashes and fingerprint) for a submission
+	$(PYTHON) -m anti_ai.evidence_collector \
+		--challenge $(CHALLENGE) \
+		--base-dir . \
+		--output $(EVIDENCE) \
+		--artefact artifacts/anti_ai/w03_report_$(STUDENT_ID).md \
+		--artefact artifacts/anti_ai/w03_broadcast_$(STUDENT_ID).pcap \
+		--artefact artifacts/anti_ai/w03_multicast_$(STUDENT_ID).pcap \
+		--artefact artifacts/anti_ai/w03_tunnel_$(STUDENT_ID).pcap
+
+.PHONY: anti-ai-validate
+anti-ai-validate: ## Validate a submission against the challenge (anti-AI)
+	$(PYTHON) -m anti_ai.submission_validator \
+		--challenge $(CHALLENGE) \
+		--evidence $(EVIDENCE) \
+		--base-dir . \
+		--verbose
 
 .PHONY: validate
 validate: quiz-validate ## Run all validations

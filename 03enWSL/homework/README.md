@@ -8,6 +8,138 @@
 
 These homework assignments extend the concepts explored during the Week 3 laboratory session. Each assignment builds upon the broadcast, multicast and tunnelling exercises completed in class.
 
+
+## Anti-AI submission requirements
+
+These homework assignments are assessed with an **anti-AI** validator. You may use AI tools for clarification and debugging, but AI alone must not be sufficient to produce a valid submission.
+
+You must submit **verifiable execution evidence**:
+
+1. A per-student challenge file (`challenge_<student_id>.yaml`)
+2. Three PCAP captures that contain your unique **payload token**:
+   - UDP broadcast
+   - UDP multicast
+   - TCP tunnel traffic (including the TCP handshake)
+3. A short report file that contains your unique **report token**
+4. An evidence file (`evidence.json`) that lists SHA-256 hashes of the artefacts
+
+### Naming conventions (required)
+
+Place all anti-AI artefacts in `artifacts/anti_ai/` using these exact names:
+
+- `artifacts/anti_ai/w03_report_<student_id>.md`
+- `artifacts/anti_ai/w03_broadcast_<student_id>.pcap`
+- `artifacts/anti_ai/w03_multicast_<student_id>.pcap`
+- `artifacts/anti_ai/w03_tunnel_<student_id>.pcap`
+- `artifacts/anti_ai/evidence_<student_id>.json`
+
+### Step-by-step workflow
+
+From the `03enWSL/` directory:
+
+1) Start the lab environment
+
+```bash
+sudo service docker start
+docker compose -f docker/docker-compose.yml up -d
+```
+
+2) Generate your challenge
+
+```bash
+python3 -m anti_ai.challenge_generator --student-id <student_id>
+# Optional: randomise ports (advanced)
+# python3 -m anti_ai.challenge_generator --student-id <student_id> --random-ports
+```
+
+The command prints your recommended ports and your two tokens:
+- `payload_token` must appear inside your PCAP payloads
+- `report_token` must appear in your report file
+
+3) Create the report file and include the report token
+
+```bash
+mkdir -p artifacts/anti_ai
+cat > artifacts/anti_ai/w03_report_<student_id>.md << 'EOF'
+Week 3 anti-AI report
+
+Report token: <paste your report_token here>
+
+Brief notes:
+- What you ran and what you observed
+- Any issues and how you resolved them
+EOF
+```
+
+4) Produce and capture UDP broadcast traffic (payload token)
+
+Run a receiver and a sender and capture the traffic. Use the recommended broadcast port printed by the challenge generator.
+
+Example commands (inside Docker containers):
+
+```bash
+# Receiver (in one terminal)
+docker exec -it week3_receiver       python3 /app/src/exercises/ex_3_01_udp_broadcast.py recv       --port <broadcast_port> --count 5 --no-predict
+```
+
+```bash
+# Capture (in another terminal on the host)
+python3 scripts/capture_traffic.py       --container week3_receiver       --filter "udp port <broadcast_port>"       --duration 10       --output artifacts/anti_ai/w03_broadcast_<student_id>.pcap
+```
+
+```bash
+# Sender (in a third terminal)
+docker exec -it week3_client       python3 /app/src/exercises/ex_3_01_udp_broadcast.py send       --dst 255.255.255.255 --port <broadcast_port>       --count 5 --interval 0.2       --message "<payload_token> broadcast"       --no-predict
+```
+
+5) Produce and capture UDP multicast traffic (payload token)
+
+```bash
+# Receiver
+docker exec -it week3_receiver       python3 /app/src/exercises/ex_3_02_udp_multicast.py recv       --group 239.0.0.10 --port <multicast_port> --count 5 --no-predict
+```
+
+```bash
+# Capture
+python3 scripts/capture_traffic.py       --container week3_receiver       --filter "udp port <multicast_port>"       --duration 10       --output artifacts/anti_ai/w03_multicast_<student_id>.pcap
+```
+
+```bash
+# Sender
+docker exec -it week3_client       python3 /app/src/exercises/ex_3_02_udp_multicast.py send       --group 239.0.0.10 --port <multicast_port>       --count 5 --interval 0.2       --message "<payload_token> multicast"       --no-predict
+```
+
+6) Produce and capture TCP tunnel traffic (payload token)
+
+The router container already runs a tunnel from `router:9090` to `server:8080` in the default docker-compose setup.
+
+```bash
+# Capture on the router side (recommended)
+python3 scripts/capture_traffic.py       --container week3_router       --filter "tcp port 9090"       --duration 10       --output artifacts/anti_ai/w03_tunnel_<student_id>.pcap
+```
+
+```bash
+# Send payload through the tunnel (client -> router:9090 -> server:8080)
+docker exec -it week3_client bash -lc 'echo "<payload_token> tunnel" | nc -w 2 router 9090'
+```
+
+Ensure the capture includes the **connection setup** (SYN, SYN-ACK and ACK) and the payload bytes.
+
+7) Collect evidence (hashes)
+
+```bash
+python3 -m anti_ai.evidence_collector       --challenge artifacts/anti_ai/challenge_<student_id>.yaml       --output artifacts/anti_ai/evidence_<student_id>.json       --base-dir .       --artefact artifacts/anti_ai/w03_report_<student_id>.md       --artefact artifacts/anti_ai/w03_broadcast_<student_id>.pcap       --artefact artifacts/anti_ai/w03_multicast_<student_id>.pcap       --artefact artifacts/anti_ai/w03_tunnel_<student_id>.pcap
+```
+
+8) Validate locally before submission
+
+```bash
+python3 -m anti_ai.submission_validator       --challenge artifacts/anti_ai/challenge_<student_id>.yaml       --evidence artifacts/anti_ai/evidence_<student_id>.json       --base-dir .       --verbose
+```
+
+If the validator fails, fix the issue and re-capture. Do not submit failing evidence.
+
+---
 ---
 
 ## Assignment 1: Enhanced Broadcast Receiver with Statistics

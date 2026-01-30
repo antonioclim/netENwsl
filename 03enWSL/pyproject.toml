@@ -102,7 +102,7 @@ ignore = [
 "formative/*" = ["D"]  # Quiz runner has inline comments
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "scripts", "formative"]
+known-first-party = ["src", "scripts", "formative", "anti_ai"]
 force-single-line = false
 lines-after-imports = 2
 
