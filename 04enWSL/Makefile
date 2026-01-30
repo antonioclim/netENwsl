@@ -25,6 +25,7 @@
 .PHONY: verify-integrity generate-pcap syntax-check typecheck
 .PHONY: validate-quiz verify-manifest update-manifest pre-commit-install pre-commit
 .PHONY: export-quiz-moodle export-quiz-canvas export-quiz-all
+.PHONY: anti-ai-challenge anti-ai-run anti-ai-evidence anti-ai-validate
 
 PYTHON := python3
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
@@ -79,6 +80,10 @@ help:
 	@echo "    make typecheck        - Run type checker (mypy)"
 	@echo ""
 	@echo "  Integrity & Validation:"
+	@echo "    make anti-ai-challenge  - Generate a Week 4 anti-AI challenge"
+	@echo "    make anti-ai-run        - Generate required token traffic (capture separately)"
+	@echo "    make anti-ai-evidence   - Collect evidence.json for a submission"
+	@echo "    make anti-ai-validate   - Validate evidence and PCAP tokens"
 	@echo "    make validate-quiz    - Validate quiz.yaml schema"
 	@echo "    make verify-manifest  - Verify file checksums"
 	@echo "    make update-manifest  - Update manifest checksums"
@@ -328,6 +333,44 @@ pre-commit: verify-integrity syntax-check validate-quiz verify-manifest lint
 	@echo "║  ✓ All pre-commit checks passed                              ║"
 	@echo "╚══════════════════════════════════════════════════════════════╝"
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANTI-AI SUBMISSION EVIDENCE (Week 4)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Usage examples:
+#   make anti-ai-challenge STUDENT_ID=s12345
+#   make anti-ai-run CHALLENGE=artifacts/anti_ai/week04_challenge.yaml
+#   make anti-ai-evidence CHALLENGE=... PCAPS="a.pcap b.pcap" ARTEFACTS="homework/exercises"
+#   make anti-ai-validate CHALLENGE=... EVIDENCE=...
+
+STUDENT_ID ?= unknown
+CHALLENGE ?= artifacts/anti_ai/week04_challenge.yaml
+EVIDENCE ?= artifacts/anti_ai/evidence.json
+PCAPS ?=
+ARTEFACTS ?= homework/exercises
+
+anti-ai-challenge:
+	@echo ""
+	@echo "Generating Week 4 anti-AI challenge..."
+	@$(PYTHON) -m anti_ai.challenge_generator --student-id $(STUDENT_ID) --output $(CHALLENGE)
+
+anti-ai-run:
+	@echo ""
+	@echo "Generating Week 4 anti-AI traffic (capture separately)..."
+	@$(PYTHON) scripts/anti_ai_week04_run.py --challenge $(CHALLENGE)
+
+anti-ai-evidence:
+	@echo ""
+	@echo "Collecting evidence.json..."
+	@$(PYTHON) -m anti_ai.evidence_collector --challenge $(CHALLENGE) \
+		$(foreach p,$(PCAPS),--artefact $(p)) \
+		--artefact $(ARTEFACTS) --output $(EVIDENCE)
+
+anti-ai-validate:
+	@echo ""
+	@echo "Validating evidence and PCAP tokens..."
+	@$(PYTHON) -m anti_ai.submission_validator --challenge $(CHALLENGE) --evidence $(EVIDENCE) --base-dir .
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DEVELOPMENT (Instructor use)

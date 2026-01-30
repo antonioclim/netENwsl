@@ -139,7 +139,7 @@ def print_header(title: str) -> None:
 
 
 def print_status(name: str, passed: bool, message: str = "") -> None:
-    """Print test status with colour."""
+    """Print test status with color."""
     status = "\033[92m✓\033[0m" if passed else "\033[91m✗\033[0m"
     print(f"  {status} {name}", end="")
     if message:
@@ -155,27 +155,31 @@ def verify_file_exists(path: str) -> bool:
 def verify_lo_artifacts() -> Tuple[bool, int, int]:
     """
     Verify all Learning Objective artifacts exist.
-    
+
     Returns:
         Tuple of (all_passed, passed_count, total_count)
     """
     print_header("Learning Objective Artifacts")
-    
+
+    # Use a unique set for counting to avoid double-counting shared artefacts.
     all_files: Set[str] = set()
-    for lo, files in REQUIRED_ARTIFACTS.items():
+    for _lo, files in REQUIRED_ARTIFACTS.items():
         all_files.update(files)
-    
-    passed = 0
-    total = len(all_files)
-    
+
+    file_ok: Dict[str, bool] = {}
+    for filepath in sorted(all_files):
+        file_ok[filepath] = verify_file_exists(filepath)
+
+    passed = sum(1 for ok in file_ok.values() if ok)
+    total = len(file_ok)
+
     for lo, files in sorted(REQUIRED_ARTIFACTS.items()):
-        print(f"\n  {lo}:")
+        print()
+        print(f"  {lo}:")
         for filepath in files:
-            exists = verify_file_exists(filepath)
-            if exists:
-                passed += 1
+            exists = file_ok.get(filepath, False)
             print_status(f"    {filepath}", exists)
-    
+
     return passed == total, passed, total
 
 

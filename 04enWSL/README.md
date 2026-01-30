@@ -30,7 +30,7 @@ make quiz --limit 5      # Quick quiz test
 This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
 
 **Repository:** https://github.com/antonioclim/netENwsl
-**This Week's Folder:** `4enWSL`
+**This Week's Folder:** `04enWSL`
 
 | Component | Details |
 |-----------|---------|
@@ -119,7 +119,7 @@ Open your browser at: **http://localhost:9000**
 ### Step 4: Navigate to Laboratory Directory
 
 ```bash
-cd /mnt/d/NETWORKING/WEEK4/4enWSL
+cd /mnt/d/NETWORKING/WEEK4/04enWSL
 ls -la
 ```
 
@@ -278,7 +278,7 @@ By the end of this laboratory session, you will be able to:
 wsl
 
 # Navigate to the kit directory
-cd /mnt/d/NETWORKING/WEEK4/4enWSL
+cd /mnt/d/NETWORKING/WEEK4/04enWSL
 
 # Start Docker if not running
 sudo service docker start
@@ -571,6 +571,65 @@ python3 scripts/cleanup.py --full
 # Verify cleanup
 docker system df
 ```
+
+## Anti-AI evidence workflow (homework submissions)
+
+For Week 4 homework you must submit execution-backed evidence, not just source code.
+The marker will validate your submission using a per-challenge token and a network capture.
+
+The intended workflow is:
+
+1. Obtain your **Week 4 challenge YAML** from the LMS (recommended).  
+   For local practice you can generate a challenge with:
+
+   ```bash
+   python3 -m anti_ai.challenge_generator --student-id <YOUR_ID> --output artifacts/anti_ai/week04_challenge.yaml
+   ```
+
+2. Start the lab services and begin packet capture (Wireshark or tcpdump).  
+   If you prefer tcpdump you can use the helper:
+
+   ```bash
+   sudo python3 scripts/capture_traffic.py --interface any --port 5400 --output artifacts/anti_ai/week04_text.pcap
+   sudo python3 scripts/capture_traffic.py --interface any --port 5401 --output artifacts/anti_ai/week04_binary.pcap
+   sudo python3 scripts/capture_traffic.py --interface any --port 5402 --output artifacts/anti_ai/week04_udp.pcap
+   ```
+
+3. Generate the required traffic (tokens included) while the capture is running:
+
+   ```bash
+   python3 scripts/anti_ai_week04_run.py --challenge artifacts/anti_ai/week04_challenge.yaml
+   ```
+
+4. Collect evidence into a single file:
+
+   ```bash
+   python3 -m anti_ai.evidence_collector \
+     --challenge artifacts/anti_ai/week04_challenge.yaml \
+     --artefact artifacts/anti_ai/week04_text.pcap \
+     --artefact artifacts/anti_ai/week04_binary.pcap \
+     --artefact artifacts/anti_ai/week04_udp.pcap \
+     --artefact homework/exercises \
+     --output artifacts/anti_ai/evidence.json
+   ```
+
+5. Validate locally before submission:
+
+   ```bash
+   python3 -m anti_ai.submission_validator \
+     --challenge artifacts/anti_ai/week04_challenge.yaml \
+     --evidence artifacts/anti_ai/evidence.json \
+     --base-dir .
+   ```
+
+What is checked:
+
+- the PCAP contains the challenge token in a **TEXT** `SET anti_ai <token>` request on port 5400
+- the PCAP contains the challenge token in a **BINARY** `PUT_REQ` with a CRC-verified header on port 5401
+- the PCAP contains a CRC-verified **UDP sensor** datagram with the challenge sensor_id and location tag on port 5402
+- the evidence file hashes match the submitted artefacts
+
+This is not “anti-student”. It is anti-copying and anti-text-only generation.
 
 ## Homework Assignments
 
@@ -894,7 +953,7 @@ python3 -c "import struct; print(struct.pack('>I', 12345).hex())"
 
 ```bash
 # Stop lab containers (Portainer stays running!)
-cd /mnt/d/NETWORKING/WEEK4/4enWSL
+cd /mnt/d/NETWORKING/WEEK4/04enWSL
 docker compose -f docker/docker-compose.yml down
 
 # Verify - should still show portainer

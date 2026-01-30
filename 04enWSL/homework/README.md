@@ -278,3 +278,51 @@ hw_4_<student_name>/
 ---
 
 *NETWORKING class - ASE, Informatics | by ing. dr. Antonio Clim*
+
+## Anti-AI evidence requirements
+
+In addition to the usual deliverables you must include evidence that you executed your solution.
+
+Submit the following artefacts in your homework archive:
+
+- `artifacts/anti_ai/week04_challenge.yaml` (the challenge issued for your attempt)
+- `artifacts/anti_ai/evidence.json` (hashes and environment fingerprint)
+- at least one `.pcap` capture that contains all required tokens, for example:
+  - `artifacts/anti_ai/week04_text.pcap`
+  - `artifacts/anti_ai/week04_binary.pcap`
+  - `artifacts/anti_ai/week04_udp.pcap`
+
+The validator will check that:
+
+- the TEXT protocol capture contains `SET anti_ai <text_token>` as client→server traffic on TCP port 5400
+- the BINARY protocol capture contains a CRC-verified `PUT_REQ` for key `anti_ai` that includes `<binary_token>` on TCP port 5401
+- the UDP capture contains a CRC-verified sensor datagram with `sensor_id=<udp_sensor_id>` and `location=<udp_location_tag>` on UDP port 5402
+
+You can generate the required traffic with:
+
+```bash
+python3 scripts/anti_ai_week04_run.py --challenge artifacts/anti_ai/week04_challenge.yaml
+```
+
+Collect evidence with:
+
+```bash
+python3 -m anti_ai.evidence_collector \
+  --challenge artifacts/anti_ai/week04_challenge.yaml \
+  --artefact artifacts/anti_ai/week04_text.pcap \
+  --artefact artifacts/anti_ai/week04_binary.pcap \
+  --artefact artifacts/anti_ai/week04_udp.pcap \
+  --artefact homework/exercises \
+  --output artifacts/anti_ai/evidence.json
+```
+
+Validate locally with:
+
+```bash
+python3 -m anti_ai.submission_validator \
+  --challenge artifacts/anti_ai/week04_challenge.yaml \
+  --evidence artifacts/anti_ai/evidence.json \
+  --base-dir .
+```
+
+If you do not include a valid capture and evidence file your submission may be treated as incomplete.
