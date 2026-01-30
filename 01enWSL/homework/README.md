@@ -4,13 +4,82 @@
 
 ## Overview
 
-These homework assignments extend the laboratory exercises and are designed to be completed independently. Submit your work according to the course requirements.
+These homework assignments extend the laboratory exercises and are designed to
+be completed independently. Submit your work according to the course
+requirements.
+
+## Anti-AI workflow (challenge, evidence and validation)
+
+For this week, the homework includes a light-weight anti-AI mechanism. The goal
+is not to forbid AI tools. The goal is to ensure that a valid submission includes
+artefacts that cannot be produced credibly by a language model alone, especially
+PCAP captures.
+
+You will work with three files:
+- a challenge file (generated per student)
+- your artefacts (report and PCAP files)
+- an evidence.json file (hashes and optional command transcript)
+
+### 1) Generate your challenge file
+
+From the Week 1 kit root, run:
+
+```bash
+python -m anti_ai.challenge_generator --student-id <YOUR_ID>
+```
+
+This creates `artifacts/anti_ai/challenge_<YOUR_ID>.yaml`.
+
+### 2) Produce the required artefacts using the challenge
+
+- Homework 1.01: include the *report token* in your report by running:
+
+```bash
+python homework/exercises/hw_1_01_network_report.py --challenge artifacts/anti_ai/challenge_<YOUR_ID>.yaml --output network_report.md
+```
+
+- Homework 1.02: embed the *payload token* in your TCP and UDP traffic by running:
+
+```bash
+# TCP
+sudo python homework/exercises/hw_1_02_protocol_analysis.py --challenge artifacts/anti_ai/challenge_<YOUR_ID>.yaml --mode tcp --output tcp_analysis.pcap
+
+# UDP
+sudo python homework/exercises/hw_1_02_protocol_analysis.py --challenge artifacts/anti_ai/challenge_<YOUR_ID>.yaml --mode udp --output udp_analysis.pcap
+```
+
+### 3) Collect evidence and validate locally
+
+Create `evidence.json`:
+
+```bash
+python -m anti_ai.evidence_collector \
+  --challenge artifacts/anti_ai/challenge_<YOUR_ID>.yaml \
+  --artefact network_report.md \
+  --artefact tcp_analysis.pcap \
+  --artefact udp_analysis.pcap \
+  --output evidence.json \
+  --include-commands
+```
+
+Validate your submission:
+
+```bash
+python -m anti_ai.submission_validator \
+  --challenge artifacts/anti_ai/challenge_<YOUR_ID>.yaml \
+  --evidence evidence.json \
+  --base-dir . \
+  --verbose
+```
+
+If validation fails, fix the issue and regenerate the affected artefact.
 
 ---
 
 ## Assignment 1: Network Configuration Report
 
-**Objective:** Document the network configuration of your personal computer or a designated laboratory machine.
+**Objective:** Document the network configuration of your personal computer or a
+designated laboratory machine.
 
 **Deliverables:**
 - A markdown report (`network_report.md`) containing:
@@ -18,6 +87,7 @@ These homework assignments extend the laboratory exercises and are designed to b
   - The routing table with explanation of each route
   - Active network connections at the time of analysis
   - DNS configuration
+  - The Anti-AI Verification section if you used a challenge file
 
 **Instructions:**
 
@@ -36,7 +106,7 @@ These homework assignments extend the laboratory exercises and are designed to b
 
 ---
 
-## Assignment 2: TCP/UDP Traffic Analysis
+## Assignment 2: TCP and UDP Traffic Analysis
 
 **Objective:** Capture and analyse network traffic to identify protocol behaviour.
 
@@ -71,48 +141,33 @@ These homework assignments extend the laboratory exercises and are designed to b
 ### File Naming Convention
 
 ```
-hw1_<student_id>_<assignment_number>.zip
+hw1_<student_id>.zip
 ```
 
-Example: `hw1_12345_01.zip` for Assignment 1
+Example: `hw1_12345.zip`
 
 ### Archive Contents
 
 ```
-hw1_12345_01/
+hw1_12345/
+├── artifacts/anti_ai/
+│   └── challenge_12345.yaml
 ├── network_report.md
-├── screenshots/          # If applicable
-│   └── *.png
-└── scripts/              # Any custom scripts used
-    └── *.py
+├── tcp_analysis.pcap
+├── udp_analysis.pcap
+├── evidence.json
+└── protocol_analysis.md
 ```
-
-### Submission Deadline
-
-Refer to the course schedule for the deadline.
-
----
-
-## Tips for Success
-
-1. **Start early** - Network configuration changes; document it when stable
-
-2. **Use screenshots** where text output is insufficient
-
-3. **Explain, don't just list** - Show understanding, not just commands
-
-4. **Verify your captures** - Open PCAP files in Wireshark before submitting
-
-5. **Test your scripts** - Ensure they run without errors
 
 ---
 
 ## Academic Integrity
 
-- All work must be your own
-- You may discuss concepts with classmates
-- Do not share your submissions
-- Cite any external resources used
+- You may use AI tools for drafting explanations, checking grammar and exploring
+  concepts.
+- You must not submit AI-generated artefacts (for example fabricated PCAPs or
+  invented command outputs).
+- Your submission must pass the provided validator.
 
 ---
 

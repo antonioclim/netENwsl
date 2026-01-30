@@ -73,7 +73,7 @@ line-length = 100
 indent-width = 4
 
 # Directories to check
-src = ["src", "scripts", "tests", "formative"]
+src = ["src", "scripts", "tests", "formative", "anti_ai"]
 
 # Exclude common non-source directories
 exclude = [
@@ -126,7 +126,7 @@ unfixable = []
 "src/exercises/**/*.py" = ["T201", "E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "scripts"]
+known-first-party = ["src", "scripts", "anti_ai"]
 force-single-line = false
 lines-after-imports = 2
 

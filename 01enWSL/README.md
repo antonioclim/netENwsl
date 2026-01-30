@@ -22,7 +22,7 @@ If this feels confusing, ignore Portainer for ten minutes and focus on two obser
 This laboratory kit is designed for the **WSL2 + Ubuntu 22.04 + Docker + Portainer** environment.
 
 **Repository:** https://github.com/antonioclim/netENwsl
-**This Week's Folder:** `1enWSL`
+**This Week's Folder:** `01enWSL`
 
 | Component | Details |
 |-----------|---------|
@@ -114,7 +114,7 @@ Open your browser and go to: **http://localhost:9000**
 
 ```bash
 # From WSL, change into the cloned repository
-cd /mnt/d/NETWORKING/WEEK1/1enWSL
+cd /mnt/d/NETWORKING/WEEK1/01enWSL
 
 # Verify you're in the correct directory
 ls -la
@@ -357,7 +357,7 @@ By the end of this laboratory session, you will be able to:
 wsl
 
 # Go to to the laboratory directory
-cd /mnt/d/NETWORKING/WEEK1/1enWSL
+cd /mnt/d/NETWORKING/WEEK1/01enWSL
 
 # Start Docker if not running
 sudo service docker start
@@ -372,7 +372,7 @@ python3 setup/install_prerequisites.py
 ### Starting the Laboratory
 
 ```bash
-# From WSL, in the 1enWSL directory
+# From WSL, in the 01enWSL directory
 python3 scripts/start_lab.py
 
 # Verify everything is running
@@ -702,15 +702,20 @@ This laboratory kit includes evidence-based teaching materials to support your l
 
 ## Homework Assignments
 
-See the `homework/` directory for take-home exercises.
+See `homework/README.md` for the full specification including the Week 1
+anti-AI workflow (challenge, evidence and validation).
 
-### Assignment 1: Network Documentation
+In brief:
 
-Create a detailed network configuration report for your home or university network. Document interfaces, routes and connectivity test results using the techniques from Exercise 1 and 2.
+- **Homework 1.01**: generate `network_report.md` using real command outputs.
+  If you use a challenge file keep the *Anti-AI Verification* section unchanged.
+- **Homework 1.02**: generate `tcp_analysis.pcap` and `udp_analysis.pcap` that
+  contain your challenge payload token. This is a binary proof of laboratory
+  interaction.
 
-### Assignment 2: Protocol Analysis
-
-Capture and analyse a complete HTTP transaction (use `curl` or a web browser). Identify all TCP connection phases: establishment, data transfer and termination. Submit annotated screenshots and the PCAP file.
+You may use AI tools for drafting explanations and checking grammar. You must
+not submit fabricated command outputs or PCAPs. Your submission must pass the
+provided validator.
 
 ## Prediction prompts
 
@@ -1019,7 +1024,7 @@ python3.11 scripts/start_lab.py
 
 ```bash
 # Stop lab containers (Portainer stays running!)
-cd /mnt/d/NETWORKING/WEEK1/1enWSL
+cd /mnt/d/NETWORKING/WEEK1/01enWSL
 docker compose -f docker/docker-compose.yml down
 
 # Verify - should still show portainer
