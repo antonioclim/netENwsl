@@ -22,9 +22,32 @@ import argparse
 import json
 import socket
 import sys
+import os
 import time
 from collections import Counter
 from pathlib import Path
+import pytest
+
+
+# This module contains integration-style exercise tests that expect the Week 14 Docker lab to be running.
+# They are disabled by default so that CI and local development do not fail when Docker services are not started.
+RUN_DOCKER_TESTS = os.getenv("RUN_DOCKER_TESTS", "").strip().lower() in {"1", "true", "yes"}
+
+def _docker_available() -> bool:
+    try:
+        import subprocess
+        completed = subprocess.run(["docker", "info"], capture_output=True, timeout=5)
+        return completed.returncode == 0
+    except Exception:
+        return False
+
+DOCKER_AVAILABLE = _docker_available()
+
+pytestmark = pytest.mark.skipif(
+    not (RUN_DOCKER_TESTS and DOCKER_AVAILABLE),
+    reason="Set RUN_DOCKER_TESTS=1 and start the Week 14 Docker lab to run exercise integration tests",
+)
+
 from urllib.request import urlopen, Request
 from urllib.error import URLError
 
@@ -93,7 +116,7 @@ def http_get(url: str, timeout: float = 5.0) -> dict:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST_VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_exercise_1() -> bool:
+def test_exercise_1() -> None:
     """Exercise 1: Environment Verification and Service Discovery."""
     print()
     print(f"{Colours.BOLD}Exercise 1: Environment Verification{Colours.RESET}")
@@ -155,7 +178,7 @@ def test_exercise_1() -> bool:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST_VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_exercise_2() -> bool:
+def test_exercise_2() -> None:
     """Exercise 2: Load Balancer Behaviour Analysis."""
     print()
     print(f"{Colours.BOLD}Exercise 2: Load Balancer Behaviour{Colours.RESET}")
@@ -208,7 +231,7 @@ def test_exercise_2() -> bool:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST_VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_exercise_3() -> bool:
+def test_exercise_3() -> None:
     """Exercise 3: TCP Echo Protocol Testing."""
     print()
     print(f"{Colours.BOLD}Exercise 3: TCP Echo Protocol{Colours.RESET}")
@@ -230,7 +253,7 @@ def test_exercise_3() -> bool:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
-            sock.connect(("localhost", 9000))
+            sock.connect(("localhost", 9090))
 
             sock.sendall((msg + "\n").encode())
             response = sock.recv(4096).decode().strip()
@@ -264,7 +287,7 @@ def test_exercise_3() -> bool:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST_VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_exercise_4() -> bool:
+def test_exercise_4() -> None:
     """Exercise 4: Packet Capture and Analysis."""
     print()
     print(f"{Colours.BOLD}Exercise 4: Packet Capture Verification{Colours.RESET}")

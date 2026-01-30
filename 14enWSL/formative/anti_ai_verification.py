@@ -498,7 +498,7 @@ class AntiAIAssessmentSession:
         signature = hashlib.sha256(cert_string.encode()).hexdigest()[:16]
 
         cert_data["signature"] = signature
-        return json.dumps(cert_data, indent=2)
+        return cert_data
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -557,6 +557,31 @@ def main() -> None:
     print("\nVerifying responses...")
     report = session.submit_responses(responses)
 
+
+    # Persist artefacts for later auditing (optional but recommended)
+    try:
+        from pathlib import Path
+
+        artefacts_dir = Path(__file__).parent.parent / "artifacts" / "anti_ai"
+        artefacts_dir.mkdir(parents=True, exist_ok=True)
+
+        session_short = session.session.session_id[:8]
+        safe_student = "".join(ch for ch in student_id if ch.isalnum() or ch in ("-", "_"))[:32] or "student"
+        report_path = artefacts_dir / f"week14_anti_ai_report_{safe_student}_{session_short}.json"
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2)
+
+        if report.get("certificate"):
+            cert_path = artefacts_dir / f"week14_anti_ai_certificate_{safe_student}_{session_short}.json"
+            with open(cert_path, "w", encoding="utf-8") as f:
+                json.dump(report["certificate"], f, indent=2)
+
+        print(f"\nSaved report: {report_path}")
+        if report.get("certificate"):
+            print(f"Saved certificate: {cert_path}")
+    except Exception as e:
+        print(f"\nWarning: could not save verification artefacts: {e}")
+
     # Show results
     print(f"\n{'=' * 60}")
     print("VERIFICATION REPORT")
@@ -566,7 +591,7 @@ def main() -> None:
 
     if report["certificate"]:
         print(f"\nCertificate generated:")
-        print(report["certificate"])
+        print(json.dumps(report["certificate"], indent=2))
     else:
         print("\nInsufficient challenges passed for certification.")
         print("    Please ensure your Docker environment is running correctly.")

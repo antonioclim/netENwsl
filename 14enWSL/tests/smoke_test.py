@@ -47,7 +47,7 @@ class Colours:
 # DATA_MODELS
 # ═══════════════════════════════════════════════════════════════════════════════
 @dataclass
-class TestResult:
+class SmokeTestResult:
     """Result of a single test."""
     name: str
     passed: bool
@@ -60,7 +60,7 @@ class SmokeTestReport:
     """Complete smoke test report."""
     started: datetime = field(default_factory=datetime.now)
     ended: datetime = None
-    results: List[TestResult] = field(default_factory=list)
+    results: List[SmokeTestResult] = field(default_factory=list)
     
     @property
     def total_tests(self) -> int:
@@ -86,22 +86,22 @@ class SmokeTestReport:
 # ═══════════════════════════════════════════════════════════════════════════════
 # TEST_RUNNER
 # ═══════════════════════════════════════════════════════════════════════════════
-def run_test(name: str, test_fn) -> TestResult:
+def run_test(name: str, test_fn) -> SmokeTestResult:
     """Execute a test function and return result."""
     start = time.time()
     try:
         passed, message = test_fn()
         duration = (time.time() - start) * 1000
-        return TestResult(name, passed, duration, message)
+        return SmokeSmokeTestResult(name, passed, duration, message)
     except Exception as e:
         duration = (time.time() - start) * 1000
-        return TestResult(name, False, duration, str(e))
+        return SmokeSmokeTestResult(name, False, duration, str(e))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DOCKER_TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_docker_running() -> Tuple[bool, str]:
+def smoke_docker_running() -> Tuple[bool, str]:
     """Check if Docker daemon is accessible."""
     import subprocess
     try:
@@ -119,7 +119,7 @@ def test_docker_running() -> Tuple[bool, str]:
         return False, "Docker not installed"
 
 
-def test_containers_running() -> Tuple[bool, str]:
+def smoke_containers_running() -> Tuple[bool, str]:
     """Check if required containers are running."""
     import subprocess
     
@@ -159,7 +159,7 @@ def test_containers_running() -> Tuple[bool, str]:
         return False, str(e)
 
 
-def test_network_isolation() -> Tuple[bool, str]:
+def smoke_network_isolation() -> Tuple[bool, str]:
     """Verify Docker networks exist."""
     import subprocess
     
@@ -188,7 +188,7 @@ def test_network_isolation() -> Tuple[bool, str]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # PORT_TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_port_accessible(port: int, service: str) -> Tuple[bool, str]:
+def check_port_accessible(port: int, service: str) -> Tuple[bool, str]:
     """Check if a port is accessible."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(3)
@@ -202,30 +202,30 @@ def test_port_accessible(port: int, service: str) -> Tuple[bool, str]:
         return False, f"Port check failed: {e}"
 
 
-def test_load_balancer() -> Tuple[bool, str]:
+def smoke_load_balancer() -> Tuple[bool, str]:
     """Test load balancer HTTP endpoint."""
-    return test_port_accessible(8080, "Load Balancer")
+    return check_port_accessible(8080, "Load Balancer")
 
 
-def test_backend_app1() -> Tuple[bool, str]:
+def smoke_backend_app1() -> Tuple[bool, str]:
     """Test backend app1 HTTP endpoint."""
-    return test_port_accessible(8001, "Backend App 1")
+    return check_port_accessible(8001, "Backend App 1")
 
 
-def test_backend_app2() -> Tuple[bool, str]:
+def smoke_backend_app2() -> Tuple[bool, str]:
     """Test backend app2 HTTP endpoint."""
-    return test_port_accessible(8002, "Backend App 2")
+    return check_port_accessible(8002, "Backend App 2")
 
 
-def test_echo_server() -> Tuple[bool, str]:
+def smoke_echo_server() -> Tuple[bool, str]:
     """Test TCP echo server."""
-    return test_port_accessible(9090, "Echo Server")
+    return check_port_accessible(9090, "Echo Server")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FUNCTIONALITY_TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
-def test_http_response() -> Tuple[bool, str]:
+def smoke_http_response() -> Tuple[bool, str]:
     """Test HTTP response from load balancer."""
     try:
         import urllib.request
@@ -242,7 +242,7 @@ def test_http_response() -> Tuple[bool, str]:
         return False, str(e)
 
 
-def test_echo_functionality() -> Tuple[bool, str]:
+def smoke_echo_functionality() -> Tuple[bool, str]:
     """Test TCP echo server functionality."""
     test_message = "SMOKE_TEST_PING"
     
@@ -266,7 +266,7 @@ def test_echo_functionality() -> Tuple[bool, str]:
         return False, str(e)
 
 
-def test_round_robin() -> Tuple[bool, str]:
+def smoke_round_robin() -> Tuple[bool, str]:
     """Quick test of round-robin distribution."""
     try:
         import urllib.request

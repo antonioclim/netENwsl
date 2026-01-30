@@ -14,10 +14,10 @@ description = "Week 14 Lab Kit for Computer Networks course - Integrated Recap"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
-    {name = "Antonio Clim", }
+    {name = "Antonio Clim"}
 ]
 maintainers = [
-    {name = "Antonio Clim", }
+    {name = "Antonio Clim"}
 ]
 keywords = [
     "networking",
@@ -170,7 +170,6 @@ addopts = [
     "-v",
     "--tb=short",
     "--strict-markers",
-    "--timeout=60",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

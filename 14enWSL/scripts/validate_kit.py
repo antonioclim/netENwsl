@@ -79,8 +79,8 @@ REQUIRED_STRUCTURE = {
     "docs/parsons_problems.md": "Parsons problems",
     
     # Formative assessment
-    "formative/quiz_week14.yaml": "Quiz in YAML format",
-    "formative/quiz_week14.json": "Quiz in JSON format",
+    "formative/quiz.yaml": "Quiz in YAML format",
+    "formative/quiz.json": "Quiz in JSON format",
     "formative/run_quiz.py": "Interactive quiz runner",
     "formative/__init__.py": "Package init",
     
@@ -268,7 +268,7 @@ def validate_quiz_yaml(kit_path: Path, result: ValidationResult) -> None:
                 severity=Severity.ERROR,
                 category=Category.PEDAGOGICAL,
                 message="Quiz missing 'metadata' section",
-                file_path="formative/quiz_week14.yaml"
+                file_path="formative/quiz.yaml"
             ))
         
         # Check questions
@@ -285,7 +285,7 @@ def validate_quiz_yaml(kit_path: Path, result: ValidationResult) -> None:
                 severity=Severity.WARNING,
                 category=Category.PEDAGOGICAL,
                 message=f"Quiz has only {q_count} questions (recommended: {MIN_QUIZ_QUESTIONS}+)",
-                file_path="formative/quiz_week14.yaml"
+                file_path="formative/quiz.yaml"
             ))
         
         # Check LO coverage
@@ -307,7 +307,7 @@ def validate_quiz_yaml(kit_path: Path, result: ValidationResult) -> None:
                 severity=Severity.WARNING,
                 category=Category.PEDAGOGICAL,
                 message=f"Quiz missing coverage for: {', '.join(missing_los)}",
-                file_path="formative/quiz_week14.yaml"
+                file_path="formative/quiz.yaml"
             ))
         
         # Check Bloom coverage
@@ -341,7 +341,7 @@ def validate_quiz_yaml(kit_path: Path, result: ValidationResult) -> None:
                     severity=Severity.ERROR,
                     category=Category.PEDAGOGICAL,
                     message=f"Question {i+1} missing fields: {', '.join(missing_fields)}",
-                    file_path="formative/quiz_week14.yaml"
+                    file_path="formative/quiz.yaml"
                 ))
         
     except yaml.YAMLError as e:
@@ -350,7 +350,7 @@ def validate_quiz_yaml(kit_path: Path, result: ValidationResult) -> None:
             severity=Severity.ERROR,
             category=Category.PEDAGOGICAL,
             message=f"YAML parse error: {e}",
-            file_path="formative/quiz_week14.yaml"
+            file_path="formative/quiz.yaml"
         ))
 
 
@@ -388,7 +388,7 @@ def validate_quiz_json(kit_path: Path, result: ValidationResult) -> None:
             severity=Severity.ERROR,
             category=Category.PEDAGOGICAL,
             message=f"JSON parse error: {e}",
-            file_path="formative/quiz_week14.json"
+            file_path="formative/quiz.json"
         ))
 
 
@@ -529,6 +529,21 @@ def validate_code_quality(kit_path: Path, result: ValidationResult) -> None:
     if pyproject.exists():
         print_check(True, "pyproject.toml present (modern config)")
         result.add_pass()
+
+        # Basic TOML syntax validation (catches subtle errors early)
+        try:
+            import tomllib
+            with open(pyproject, 'rb') as f:
+                tomllib.load(f)
+            print_check(True, 'pyproject.toml parses (TOML syntax OK)')
+            result.add_pass()
+        except Exception as e:
+            result.add_issue(ValidationIssue(
+                severity=Severity.ERROR,
+                category=Category.CODE_QUALITY,
+                message=f'pyproject.toml has invalid TOML syntax: {e}',
+                file_path='pyproject.toml',
+            ))
     else:
         result.add_issue(ValidationIssue(
             severity=Severity.WARNING,
@@ -590,6 +605,35 @@ def validate_code_quality(kit_path: Path, result: ValidationResult) -> None:
             if has_type_hints:
                 result.add_pass()
 
+
+
+    # Syntax compilation check for the Python source tree
+    print(f"\n  {Colours.DIM}Checking Python syntax (py_compile)...{Colours.END}")
+    import py_compile
+    compile_errors: List[str] = []
+    for folder in ("src", "scripts", "formative", "tests"):
+        base = kit_path / folder
+        if not base.exists():
+            continue
+        for py_file in base.rglob("*.py"):
+            try:
+                py_compile.compile(str(py_file), doraise=True)
+            except Exception as e:
+                rel = str(py_file.relative_to(kit_path))
+                compile_errors.append(f"{rel}: {e}")
+
+    if compile_errors:
+        print_check(False, f"Python syntax errors: {len(compile_errors)} file(s)")
+        # Report first few errors to keep output readable
+        for err in compile_errors[:5]:
+            result.add_issue(ValidationIssue(
+                severity=Severity.ERROR,
+                category=Category.CODE_QUALITY,
+                message=f"Python syntax error: {err}",
+            ))
+    else:
+        print_check(True, "Python syntax OK")
+        result.add_pass()
 
 def validate_documentation(kit_path: Path, result: ValidationResult) -> None:
     """Validate documentation completeness."""

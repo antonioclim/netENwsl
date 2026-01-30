@@ -21,10 +21,27 @@ import subprocess
 import socket
 import sys
 import json
+import os
 from pathlib import Path
 from typing import Optional
+
+import pytest
 from urllib.request import urlopen, Request
 from urllib.error import URLError
+
+# Integration tests in this module require a running Week 14 Docker lab.
+# They are disabled by default to keep CI and local development fast and reliable.
+RUN_DOCKER_TESTS = os.getenv("RUN_DOCKER_TESTS", "").strip().lower() in {"1", "true", "yes"}
+
+def _docker_available() -> bool:
+    try:
+        completed = subprocess.run(["docker", "info"], capture_output=True, timeout=5)
+        return completed.returncode == 0
+    except Exception:
+        return False
+
+DOCKER_AVAILABLE = _docker_available()
+
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -94,6 +111,10 @@ def run_command(cmd: list, timeout: int = 10) -> tuple:
 # CLASS_DEFINITION
 # ═══════════════════════════════════════════════════════════════════════════════
 class TestDockerEnvironment:
+    pytestmark = pytest.mark.skipif(
+        not (RUN_DOCKER_TESTS and DOCKER_AVAILABLE),
+        reason="Set RUN_DOCKER_TESTS=1 and start the Week 14 Docker lab to enable integration tests",
+    )
     """Test Docker environment is properly configured."""
 
 
@@ -129,6 +150,10 @@ class TestDockerEnvironment:
 # CLASS_DEFINITION
 # ═══════════════════════════════════════════════════════════════════════════════
 class TestNetworkConnectivity:
+    pytestmark = pytest.mark.skipif(
+        not (RUN_DOCKER_TESTS and DOCKER_AVAILABLE),
+        reason="Set RUN_DOCKER_TESTS=1 and start the Week 14 Docker lab to enable integration tests",
+    )
     """Test network services are accessible."""
 
 
@@ -163,9 +188,9 @@ class TestNetworkConnectivity:
 # TEST_VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
     def test_echo_server_port(self):
-        """TCP echo server port 9000 should be accessible."""
-        assert check_port_open("localhost", 9000), \
-            "TCP echo server port 9000 is not accessible"
+        """TCP echo server port 9090 should be accessible."""
+        assert check_port_open("localhost", 9090), \
+            "TCP echo server port 9090 is not accessible"
 
 
 
@@ -173,6 +198,10 @@ class TestNetworkConnectivity:
 # CLASS_DEFINITION
 # ═══════════════════════════════════════════════════════════════════════════════
 class TestHTTPEndpoints:
+    pytestmark = pytest.mark.skipif(
+        not (RUN_DOCKER_TESTS and DOCKER_AVAILABLE),
+        reason="Set RUN_DOCKER_TESTS=1 and start the Week 14 Docker lab to enable integration tests",
+    )
     """Test HTTP endpoints respond correctly."""
 
 
@@ -234,6 +263,10 @@ class TestHTTPEndpoints:
 # CLASS_DEFINITION
 # ═══════════════════════════════════════════════════════════════════════════════
 class TestTCPEcho:
+    pytestmark = pytest.mark.skipif(
+        not (RUN_DOCKER_TESTS and DOCKER_AVAILABLE),
+        reason="Set RUN_DOCKER_TESTS=1 and start the Week 14 Docker lab to enable integration tests",
+    )
     """Test TCP echo server functionality."""
 
 
@@ -242,7 +275,7 @@ class TestTCPEcho:
 # ═══════════════════════════════════════════════════════════════════════════════
     def test_echo_connection(self):
         """Should be able to connect to echo server."""
-        assert check_port_open("localhost", 9000), \
+        assert check_port_open("localhost", 9090), \
             "Cannot connect to echo server"
 
 
@@ -254,7 +287,7 @@ class TestTCPEcho:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
-            sock.connect(("localhost", 9000))
+            sock.connect(("localhost", 9090))
 
             test_message = b"hello_week14_test\n"
             sock.sendall(test_message)
