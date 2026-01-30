@@ -411,13 +411,29 @@ def ipv6_expand(address: str) -> str:
 
 
 def ipv6_info(address_or_network: str) -> IPv6Info:
-    """Analyse an IPv6 address or network."""
+    """Analyse an IPv6 address or network.
+
+    Notes
+    -----
+    The standard library's :mod:`ipaddress` distinguishes between *globally routable*
+    addresses (``is_global``) and the wider *global unicast* space (``2000::/3``).
+    For teaching purposes we classify documentation addresses (``2001:db8::/32``)
+    as **global-unicast** because they sit inside ``2000::/3`` even though they are
+    not publicly routable.
+
+    Args:
+        address_or_network: IPv6 address with optional prefix length (for example
+            ``2001:db8::1`` or ``2001:db8::/64``)
+
+    Returns:
+        IPv6Info with classification and scope.
+    """
     # ─────────────────────────────────────────────────────────────────────────
     # PARSE_ADDRESS
     # ─────────────────────────────────────────────────────────────────────────
-    network = None
+    network: Optional[ipaddress.IPv6Network] = None
     try:
-        if '/' in address_or_network:
+        if "/" in address_or_network:
             iface = ipaddress.IPv6Interface(address_or_network)
             addr = iface.ip
             network = iface.network
@@ -425,39 +441,60 @@ def ipv6_info(address_or_network: str) -> IPv6Info:
             addr = ipaddress.IPv6Address(address_or_network)
     except ValueError as e:
         raise ValueError(f"Invalid IPv6 address: {address_or_network}") from e
-    
+
     # ─────────────────────────────────────────────────────────────────────────
     # DETERMINE_TYPE_AND_SCOPE
     # ─────────────────────────────────────────────────────────────────────────
-    if addr.is_loopback:
+    global_unicast = ipaddress.IPv6Network("2000::/3")
+    unique_local = ipaddress.IPv6Network("fc00::/7")
+
+    if addr.is_unspecified:
+        addr_type = "unspecified"
+        scope = "none"
+    elif addr.ipv4_mapped is not None:
+        addr_type = "ipv4-mapped"
+        scope = "compatibility"
+    elif addr.is_loopback:
         addr_type = "loopback"
         scope = "node-local"
     elif addr.is_link_local:
         addr_type = "link-local"
         scope = "link-local"
     elif addr.is_site_local:
+        # Deprecated, but still useful to recognise for legacy materials
         addr_type = "site-local (deprecated)"
         scope = "site-local"
     elif addr.is_multicast:
         addr_type = "multicast"
         scope_nibble = (int(addr) >> 112) & 0xF
-        scope_map = {1: "interface-local", 2: "link-local", 5: "site-local",
-                     8: "organisation-local", 14: "global"}
+        scope_map = {
+            1: "interface-local",
+            2: "link-local",
+            5: "site-local",
+            8: "organisation-local",
+            14: "global",
+        }
         scope = scope_map.get(scope_nibble, f"scope-{scope_nibble}")
-    elif addr.is_private:
+    elif addr in unique_local:
         addr_type = "unique-local"
-        scope = "global (private)"
-    elif addr.is_global:
+        scope = "organisation-local"
+    elif addr in global_unicast:
         addr_type = "global-unicast"
         scope = "global"
     else:
         addr_type = "other"
         scope = "unknown"
-    
+
     return IPv6Info(
-        full_form=addr.exploded, compressed=str(addr), exploded=addr.exploded,
-        network=network, address_type=addr_type, scope=scope
+        full_form=addr.exploded,
+        compressed=str(addr),
+        exploded=addr.exploded,
+        network=network,
+        address_type=addr_type,
+        scope=scope,
     )
+
+
 
 
 def ipv6_subnets_from_prefix(base_prefix: str, target_prefix: int, count: int) -> List[ipaddress.IPv6Network]:

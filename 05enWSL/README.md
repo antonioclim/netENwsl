@@ -10,14 +10,14 @@
 
 | Version | Last Updated | Quiz Questions | LO Coverage |
 |---------|--------------|----------------|-------------|
-| 1.2.0 | 2026-01-25 | 12 (Bloom L1-L6) | 6/6 Complete |
+| 1.1.0 | 2026-01-24 | 12 (Bloom L1-L6) | 6/6 Complete |
 
 ---
 
 ## Quick Start
 
 ```bash
-# Go to kit directory
+# Navigate to kit directory
 cd /mnt/d/NETWORKING/WEEK5/05enWSL
 
 # Start Docker
@@ -76,6 +76,37 @@ python3 formative/export_to_lms.py --format json --pretty
 
 ---
 
+## Anti-AI submission workflow
+
+This kit supports an evidence-based workflow for homework submission.
+Each student receives an individual challenge file, then generates two JSON artefacts that include per-task tokens.
+
+```bash
+# 1) Generate your challenge
+make anti-ai-challenge STUDENT_ID=ABC123
+
+# 2) Produce the required artefacts
+python homework/exercises/hw_5_01_subnet_design.py \
+  --challenge artifacts/anti_ai/challenge_ABC123.yaml \
+  --non-interactive
+
+python homework/exercises/hw_5_02_ipv6_transition.py \
+  --challenge artifacts/anti_ai/challenge_ABC123.yaml \
+  --non-interactive
+
+# 3) Collect evidence and validate locally
+make anti-ai-evidence STUDENT_ID=ABC123
+make anti-ai-validate STUDENT_ID=ABC123
+```
+
+Submission package (Week 5):
+- `artifacts/anti_ai/challenge_<STUDENT_ID>.yaml`
+- `subnet_plan_<STUDENT_ID>.json`
+- `ipv6_report_<STUDENT_ID>.json`
+- `evidence_<STUDENT_ID>.json`
+
+---
+
 ## Make Targets
 
 | Target | Description |
@@ -98,18 +129,6 @@ python3 formative/export_to_lms.py --format json --pretty
 | Python Container | 10.5.0.10 |
 | UDP Server | 10.5.0.20:9999 |
 | UDP Client | 10.5.0.30 |
-
----
-
-## Known Issues
-
-In previous cohorts, these problems appeared frequently:
-
-1. **Docker not starting** — Run `sudo service docker start` inside WSL, not PowerShell
-2. **Port 9999 already in use** — Check with `ss -tlnp | grep 9999` and kill the process
-3. **Quiz YAML parse errors** — Ensure no tabs in quiz.yaml (spaces only)
-
-If this breaks unexpectedly, check the Docker daemon first. Nine times out of ten, that's the culprit.
 
 ---
 

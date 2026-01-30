@@ -53,6 +53,44 @@ Before starting, ensure you have completed:
 
 ## Submission Guidelines
 
+### Anti-AI requirements (if a challenge file is issued)
+
+For this week the homework can be issued as an individual challenge.
+If you receive a challenge file you must follow the workflow below.
+
+1. Generate (or receive) your challenge file:
+
+```bash
+make anti-ai-challenge STUDENT_ID=ABC123
+```
+
+2. Run both homework scripts using the challenge file so that your outputs include the required tokens:
+
+```bash
+python homework/exercises/hw_5_01_subnet_design.py \
+  --challenge artifacts/anti_ai/challenge_ABC123.yaml
+
+python homework/exercises/hw_5_02_ipv6_transition.py \
+  --challenge artifacts/anti_ai/challenge_ABC123.yaml
+```
+
+3. Collect evidence and validate locally:
+
+```bash
+make anti-ai-evidence STUDENT_ID=ABC123
+make anti-ai-validate STUDENT_ID=ABC123
+```
+
+4. Submit exactly these four files:
+
+- `artifacts/anti_ai/challenge_<STUDENT_ID>.yaml`
+- `subnet_plan_<STUDENT_ID>.json`
+- `ipv6_report_<STUDENT_ID>.json`
+- `evidence_<STUDENT_ID>.json`
+
+
+### Standard checklist
+
 1. Complete all `TODO` sections in each file
 2. Run the built-in verification tests
 3. Ensure all prediction prompts are answered thoughtfully
